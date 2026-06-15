@@ -1,0 +1,7 @@
+{
+  "tool_name": "Bash",
+  "tool_input_preview": "{\"command\":\"tail -20 /private/tmp/claude-502/-Users-davidpark-private-project/0e4f2148-0994-427b-b356-d8fa8bdc36c7/tasks/blc5hcvhv.output; echo \\\"=== react version installed ===\\\"; node -p \\\"require('...",
+  "error": "Exit code 1\n\nadded 297 packages, and audited 298 packages in 24s\n\n52 packages are looking for funding\n  run `npm fund` for details\n\nfound 0 vulnerabilities\n=== react version installed ===\nnode:internal/modules/cjs/loader:691\n      throw e;\n      ^\n\nError [ERR_PACKAGE_PATH_NOT_EXPORTED]: Package subpath './package.json' is not defined by \"exports\" in /Users/davidpark/private_project/portfolio/node_modules/three/package.json\n    at exportsNotFound (node:internal/modules/esm/resolve:310:10)\n    at ...",
+  "timestamp": "2026-06-15T02:48:34.527Z",
+  "retry_count": 1
+}

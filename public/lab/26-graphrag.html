@@ -296,6 +296,26 @@ input[type=range]::-moz-range-thumb{
 .foot a:hover{color:var(--signal)}
 .foot .sep{color:var(--ink-4);margin:0 8px}
 
+/* ─── live retrieval log ─── */
+#logStrip{
+  position:absolute;bottom:44px;right:11px;z-index:7;
+  width:260px;display:flex;flex-direction:column;gap:3px;
+  pointer-events:none;
+}
+.log-line{
+  font-family:var(--mono);font-size:9px;color:var(--ink-3);
+  background:rgba(6,7,11,.68);border:1px solid var(--line-soft);
+  border-radius:6px;padding:4px 8px;
+  opacity:0;transform:translateY(4px);
+  transition:opacity .32s, transform .32s;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  letter-spacing:.25px;
+}
+.log-line.show{opacity:1;transform:translateY(0)}
+.log-line .lk{color:var(--signal)}
+.log-line .la{color:var(--amber)}
+.log-line .lm{color:var(--magenta)}
+
 /* loading veil until fonts ready */
 #veil{position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;align-items:center;justify-content:center;
   transition:opacity .4s;font-family:var(--mono);font-size:12px;color:var(--ink-3);letter-spacing:1px}
@@ -369,6 +389,7 @@ input[type=range]::-moz-range-thumb{
           <div class="row"><span class="ln contra"></span>contradicts</div>
         </div>
 
+        <div id="logStrip"></div>
         <div class="entcard" id="entcard">
           <div class="eh"><span class="edot"></span><span class="et"></span><span class="ek"></span></div>
           <div class="ebody"></div>
@@ -738,6 +759,9 @@ function drawEdge(e, dim, inTrace){
 
 function drawNode(n, c, dim, inTrace){
   const r=n.r;
+  // community glow pulse per node (each community offset by id for variety)
+  const glowPhase = _glowT * 1.1 + n.c * 1.3 + n.r * 0.07;
+  const glowPulse = 0.5 + 0.5 * Math.sin(glowPhase); // 0..1
   // glow
   if(inTrace){
     ctx.beginPath(); ctx.arc(n.x,n.y,r+7,0,7);
@@ -745,6 +769,11 @@ function drawNode(n, c, dim, inTrace){
   } else if(hoverNode===n){
     ctx.beginPath(); ctx.arc(n.x,n.y,r+6,0,7);
     ctx.fillStyle=hexA(c.color,0.16); ctx.fill();
+  } else if(!dim){
+    // subtle community glow pulse ring
+    const glowR = r + 3 + glowPulse * 4;
+    ctx.beginPath(); ctx.arc(n.x,n.y,glowR,0,7);
+    ctx.fillStyle=hexA(c.color, 0.04 + glowPulse * 0.06); ctx.fill();
   }
   ctx.beginPath(); ctx.arc(n.x,n.y,r,0,7);
   const grad=ctx.createRadialGradient(n.x-r*0.35,n.y-r*0.35,1,n.x,n.y,r);
@@ -752,7 +781,8 @@ function drawNode(n, c, dim, inTrace){
   grad.addColorStop(0, hexA(col, dim?0.35:1));
   grad.addColorStop(1, hexA(col, dim?0.12:0.65));
   ctx.fillStyle=grad;
-  if(!dim){ ctx.shadowColor=col; ctx.shadowBlur=inTrace?14:8; }
+  const shadowBlurBase = inTrace ? 14 : (8 + glowPulse * 5);
+  if(!dim){ ctx.shadowColor=col; ctx.shadowBlur=shadowBlurBase; }
   ctx.fill(); ctx.shadowBlur=0;
   ctx.lineWidth=1.2/view.k;
   ctx.strokeStyle=hexA("#ffffff", dim?0.06:(inTrace?0.55:0.18));
@@ -804,18 +834,44 @@ function ease(t){return t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;}
 function hexA(hex,a){
   if(hex[0]!=="#") hex="#5bd6ff";
   const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-  return `rgba(${r},${g},${b},${a})`;
+  // guard: NaN/Infinity alpha → clamp to [0,1]
+  const sa = (isFinite(a) && a===a) ? Math.max(0,Math.min(1,a)) : 0;
+  return `rgba(${r},${g},${b},${sa})`;
 }
 
 /* ───────────────────────── LOOP ───────────────────────── */
 let alpha=1.0;
-function tick(){
-  if(alpha>0.02){ simStep(alpha); alpha*=0.985; }
+let _glowT = 0;   // declared here so drawQuad/drawNode can read it before first tick
+let _lastTs=0;
+function tick(ts){
+  ts = (ts && isFinite(ts)) ? ts : performance.now(); // guard: first call from boot() passes no ts
+  const dt = Math.min(ts - _lastTs, 80); // clamp spike frames
+  _lastTs = ts;
+  const dtN = dt / (1000/60); // normalise to 60fps units
+
+  if(alpha>0.02){ simStep(alpha); alpha*=Math.pow(0.985, dtN); }
+
+  // node micro-jitter: gentle brownian motion after sim settles
+  if(alpha<0.18){
+    const j=0.012*dtN;
+    NODES.forEach(n=>{
+      if(!n.fixed){
+        n.x += (Math.random()-.5)*j*n.r;
+        n.y += (Math.random()-.5)*j*n.r;
+      }
+    });
+  }
+
   if(trace.active){
-    trace.pulse += 0.022;
+    trace.pulse += 0.022 * dtN;
     if(trace.pulse > trace.edges.length+0.6){ trace.pulse=0; } // loop the pulse
   }
+
+  // community glow pulse (time-based, independent of rAF count)
+  _glowT = (ts * 0.001); // seconds
+
   draw();
+  drawQuad(); // live quad: point jitter + halo pulse every frame
   requestAnimationFrame(tick);
 }
 
@@ -1046,11 +1102,13 @@ COMM.forEach(c=>{
 /* ───────────────────────── QUADRANT (verifiability × explainability) ───────────────────────── */
 const qc=document.getElementById("quad"), qx=qc.getContext("2d");
 const QUAD_METHODS=[
-  {label:"형식증명", x:0.86, y:0.16, col:"#b18cff", note:"verifiable·unexplainable"},
-  {label:"벡터검색", x:0.18, y:0.84, col:"#ff6f91", note:"explainable·unverifiable"},
-  {label:"규칙엔진", x:0.72, y:0.62, col:"#ffa94d", note:"rule-based"},
-  {label:"GraphRAG", x:0.66, y:0.70, col:"#5bd6ff", note:"균형점 · balance", star:true},
+  {label:"형식증명", x:0.86, y:0.16, col:"#b18cff", note:"verifiable·unexplainable", ox:0, oy:0},
+  {label:"벡터검색", x:0.18, y:0.84, col:"#ff6f91", note:"explainable·unverifiable", ox:0, oy:0},
+  {label:"규칙엔진", x:0.72, y:0.62, col:"#ffa94d", note:"rule-based", ox:0, oy:0},
+  {label:"GraphRAG", x:0.66, y:0.70, col:"#5bd6ff", note:"균형점 · balance", star:true, ox:0, oy:0},
 ];
+// seed per-point jitter phase so they drift independently
+QUAD_METHODS.forEach((m,i)=>{ m._phase=i*1.57; });
 let qW,qH;
 function sizeQuad(){
   const r=qc.parentElement.getBoundingClientRect();
@@ -1077,14 +1135,18 @@ function drawQuad(){
   qx.fillText("검증가능성 →", X(0.5), Y(0)+18);
   qx.save(); qx.translate(ox-16, oy+h/2); qx.rotate(-Math.PI/2);
   qx.fillText("설명가능성 →", 0, 0); qx.restore();
-  // sweet-spot halo for graphrag
+  // sweet-spot halo for graphrag (pulses with _glowT)
   const g=QUAD_METHODS.find(m=>m.star);
+  const haloPulse = 0.18 + 0.07 * Math.sin(_glowT * 0.9);
   const hg=qx.createRadialGradient(X(g.x),Y(g.y),2,X(g.x),Y(g.y),46);
-  hg.addColorStop(0,"rgba(91,214,255,.22)"); hg.addColorStop(1,"rgba(91,214,255,0)");
+  hg.addColorStop(0,`rgba(91,214,255,${haloPulse})`); hg.addColorStop(1,"rgba(91,214,255,0)");
   qx.fillStyle=hg; qx.beginPath(); qx.arc(X(g.x),Y(g.y),46,0,7); qx.fill();
-  // points
+  // points — each drifts by a tiny jitter offset
   QUAD_METHODS.forEach(m=>{
-    const px=X(m.x),py=Y(m.y);
+    const jAmp = m.star ? 0.006 : 0.009;
+    const jx = jAmp * Math.sin(_glowT * 0.7 + m._phase);
+    const jy = jAmp * Math.cos(_glowT * 0.5 + m._phase + 1.1);
+    const px=X(m.x + jx), py=Y(m.y + jy);
     qx.beginPath(); qx.arc(px,py, m.star?7:5.5, 0,7);
     qx.fillStyle=m.col; qx.shadowColor=m.col; qx.shadowBlur=m.star?16:8; qx.fill(); qx.shadowBlur=0;
     if(m.star){ qx.strokeStyle="#fff"; qx.lineWidth=1.6; qx.stroke(); }
@@ -1155,6 +1217,71 @@ function drawGround(){
 }
 slider.addEventListener("input",drawGround);
 
+/* ───────────────────────── LIVE RETRIEVAL LOG STREAM ───────────────────────── */
+const LOG_TEMPLATES = [
+  ()=>`<span class="lk">EMB</span> 임베딩 검색 · sim <b>${(0.72+Math.random()*0.27).toFixed(3)}</b> · "${_randEntity()}"`,
+  ()=>`<span class="la">HOP</span> 멀티홉 인용 · ${_randRel()} → "${_randEntity()}" · w ${(0.6+Math.random()*0.38).toFixed(2)}`,
+  ()=>`<span class="lk">COM</span> Leiden 커뮤니티 <b>${Math.floor(Math.random()*5)}</b> 할당 · mod ${(0.31+Math.random()*0.18).toFixed(3)}`,
+  ()=>`<span class="lk">IDX</span> triple 색인 · (${_randEntity()}, ${_randRel()}, ${_randEntity()})`,
+  ()=>`<span class="la">VER</span> 검증 게이트 · 재추적 ${Math.floor(2+Math.random()*4)}홉 · <b>OK</b>`,
+  ()=>`<span class="lm">CON</span> 충돌 감지 · contradicts edge · 해소 ${Math.random()>0.5?"보류":"완료"}`,
+  ()=>`<span class="lk">GRD</span> 그라운딩 점수 <b>${(0.55+Math.random()*0.42).toFixed(3)}</b> · schema-width ${Math.floor(35+Math.random()*45)}%`,
+  ()=>`<span class="la">SIM</span> 유사도 이웃 k=${Math.floor(3+Math.random()*5)} · top: "${_randEntity()}"`,
+  ()=>`<span class="lk">SYM</span> 기호 추론 · 규칙 적용 ${Math.floor(1+Math.random()*4)}건 · verif <b>${Math.random()>0.3?"PASS":"WARN"}</b>`,
+  ()=>`<span class="la">HOP</span> 커뮤니티 경계 횡단 · ${_randCom()} → ${_randCom()}`,
+];
+const _ENTITIES = ["GraphRAG","Leiden","triple","벡터검색","형식증명","그라운딩","MCP","SSOT","neurosym","schema","verif","hybrid","repcost","콰인"];
+const _RELS = ["partOf","derivedFrom","refines","introducedBy","contradicts"];
+const _COMS = ["AI·검색","제조·공정","철학·기호","데이터·SSOT","심리·인지"];
+function _randEntity(){ return _ENTITIES[Math.floor(Math.random()*_ENTITIES.length)]; }
+function _randRel(){ return _RELS[Math.floor(Math.random()*_RELS.length)]; }
+function _randCom(){ return _COMS[Math.floor(Math.random()*_COMS.length)]; }
+
+const LOG_MAX = 5; // visible rows
+const logStrip = document.getElementById("logStrip");
+const _logLines = [];
+
+function _pushLog(){
+  const tmpl = LOG_TEMPLATES[Math.floor(Math.random()*LOG_TEMPLATES.length)];
+  const el = document.createElement("div");
+  el.className = "log-line";
+  el.innerHTML = tmpl();
+  logStrip.prepend(el);
+  _logLines.unshift(el);
+  // fade in next frame
+  requestAnimationFrame(()=>{ el.classList.add("show"); });
+  // trim old
+  while(_logLines.length > LOG_MAX){
+    const old = _logLines.pop();
+    old.classList.remove("show");
+    setTimeout(()=>old.remove(), 360);
+  }
+}
+
+function _startLogStream(){
+  // initial burst
+  for(let i=0;i<3;i++) setTimeout(_pushLog, i*280);
+  // then rolling stream with slight jitter
+  function _schedLog(){
+    _pushLog();
+    setTimeout(_schedLog, 900 + Math.random()*900);
+  }
+  setTimeout(_schedLog, 1200);
+}
+
+/* stat header micro-variation */
+function _startStatDrift(){
+  const statN = document.getElementById("statN");
+  const statE = document.getElementById("statE");
+  const baseN = NODES.length, baseE = EDGES.length;
+  setInterval(()=>{
+    const dn = Math.floor((Math.random()-.5)*4);
+    const de = Math.floor((Math.random()-.5)*4);
+    statN.textContent = baseN + dn;
+    statE.textContent = baseE + de;
+  }, 1800);
+}
+
 /* ───────────────────────── BOOT ───────────────────────── */
 function resizeAll(){ sizeGraph(); sizeQuad(); sizeGround(); drawQuad(); drawGround(); }
 window.addEventListener("resize",resizeAll);
@@ -1196,6 +1323,9 @@ function boot(){
   setTimeout(()=>{ trace.active=true; trace.pulse=0; }, 700);
   // start auto-cycle: first switch after initial hybrid has been shown
   scheduleNextCycle();
+  // live retrieval log stream + stat drift
+  _startLogStream();
+  _startStatDrift();
 }
 
 if(document.fonts && document.fonts.ready){

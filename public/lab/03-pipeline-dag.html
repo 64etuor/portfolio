@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>park_yangha.dag — Data Pipeline Portfolio</title>
+<title>park_yangha.dag — Notion OS · Org Operating System</title>
 <style>
   :root{
     --bg:#0a0e14;
@@ -128,11 +128,11 @@
 
   /* group tint by kind */
   .node[data-kind="source"] .ico{color:var(--blue);background:rgba(74,168,255,.1);border-color:rgba(74,168,255,.2)}
-  .node[data-kind="exp"] .ico{color:var(--purple);background:rgba(176,140,255,.1);border-color:rgba(176,140,255,.2)}
-  .node[data-kind="skill"] .ico{color:var(--cyan);background:rgba(54,217,217,.1);border-color:rgba(54,217,217,.2)}
+  .node[data-kind="decision"] .ico{color:var(--purple);background:rgba(176,140,255,.1);border-color:rgba(176,140,255,.2)}
+  .node[data-kind="okr"] .ico{color:var(--cyan);background:rgba(54,217,217,.1);border-color:rgba(54,217,217,.2)}
   .node[data-kind="metric"] .ico{color:var(--accent);background:rgba(94,227,161,.1);border-color:rgba(94,227,161,.2)}
   .node[data-kind="sink"] .ico{color:var(--pink);background:rgba(255,126,182,.1);border-color:rgba(255,126,182,.2)}
-  .node[data-kind="ml"] .ico{color:var(--running);background:rgba(240,180,41,.1);border-color:rgba(240,180,41,.2)}
+  .node[data-kind="ai"] .ico{color:var(--running);background:rgba(240,180,41,.1);border-color:rgba(240,180,41,.2)}
 
   /* metric big number */
   .node.metric{width:170px}
@@ -146,8 +146,8 @@
   .port.in{left:-5px}.port.out{right:-5px}
   .node[data-status="success"] .port{border-color:var(--accent)}
 
-  /* ML mini-chart */
-  #mlcanvas{display:block;width:100%;height:54px;background:rgba(0,0,0,.25);border-radius:5px;margin-top:2px}
+  /* AI mini-chart (AI reconciliation live trend) */
+  #aicanvas{display:block;width:100%;height:54px;background:rgba(0,0,0,.25);border-radius:5px;margin-top:2px}
 
   /* edge schema tooltip */
   #schema{position:fixed;z-index:60;pointer-events:none;display:none;
@@ -241,17 +241,17 @@
 <body>
 
 <div id="toolbar">
-  <div class="brand"><span class="dot"></span><b>park_yangha</b><span class="path">/ career.dag</span></div>
+  <div class="brand"><span class="dot"></span><b>park_yangha</b><span class="path">/ notion-os.dag</span></div>
   <div class="tb-sep"></div>
   <div class="tb-meta">
-    <span><span class="k">owner:</span> <span class="v">박양하</span></span>
-    <span><span class="k">role:</span> <span class="v">생산운영 PM · 공정기술 · 총괄본부장</span></span>
+    <span><span class="k">project:</span> <span class="v">Notion OS</span></span>
+    <span><span class="k">domain:</span> <span class="v">조직 운영 시스템 · 의사결정 OS</span></span>
     <span><span class="k">schedule:</span> <span class="v">@continuous</span></span>
   </div>
   <div class="spacer"></div>
-  <div class="banner"><span class="ok"></span>last run: success · 2025.08 → present</div>
-  <button class="btn run" id="runBtn"><span class="tri">▶</span> RUN PIPELINE</button>
-  <button class="btn-ghost" id="resetBtn" title="reset view">⤢ fit</button>
+  <div class="banner"><span class="ok"></span>SSOT: Notion · GitHub · Drive · 운영 중</div>
+  <button class="btn run" id="runBtn"><span class="tri">&#9654;</span> RUN PIPELINE</button>
+  <button class="btn-ghost" id="resetBtn" title="reset view">&#10562; fit</button>
 </div>
 <div id="runbar"></div>
 
@@ -265,7 +265,7 @@
 
 <div id="zoomctl">
   <button id="zin">+</button>
-  <button id="zout">−</button>
+  <button id="zout">&#8722;</button>
   <button id="zfit">FIT</button>
 </div>
 <div id="zlabel">100%</div>
@@ -280,183 +280,195 @@
 </div>
 
 <div id="legend">
-  <span class="leg"><span class="d" style="background:var(--blue)"></span>source</span>
-  <span class="leg"><span class="d" style="background:var(--purple)"></span>experience</span>
-  <span class="leg"><span class="d" style="background:var(--cyan)"></span>transform</span>
-  <span class="leg"><span class="d" style="background:var(--running)"></span>ml</span>
+  <span class="leg"><span class="d" style="background:var(--blue)"></span>input</span>
+  <span class="leg"><span class="d" style="background:var(--purple)"></span>decision</span>
+  <span class="leg"><span class="d" style="background:var(--cyan)"></span>execution</span>
+  <span class="leg"><span class="d" style="background:var(--running)"></span>ai</span>
   <span class="leg"><span class="d" style="background:var(--accent)"></span>metric</span>
   <span class="leg"><span class="d" style="background:var(--pink)"></span>sink</span>
 </div>
 
 <aside id="panel">
   <div class="ph">
-    <div class="ico" id="picon">⬡</div>
+    <div class="ico" id="picon">&#11041;</div>
     <div>
       <div class="name" id="pname">node</div>
       <div class="meta" id="pmeta"></div>
     </div>
-    <div id="pclose">✕</div>
+    <div id="pclose">&#10005;</div>
   </div>
   <div id="pbody"></div>
 </aside>
 
 <script>
 //==================================================================
-//  DATA — career as a DAG  (real Korean data, no lorem)
+//  DATA — Notion OS : 조직 운영 시스템 DAG
+//  스타트업의 빠른 의사결정이 정보 유실 없이 목표·실행·회고로 이어지는 조직 운영 OS
 //==================================================================
-const NODES = [
-  // ---- SOURCES ----
-  { id:'src_field', kind:'source', col:0, row:0, type:'extract', icon:'🏭', name:'제조현장 경험',
-    sub:'배터리·전자·태양광 제조 라인 운영 현장 데이터', dur:'∞', runs:'src.field.0001',
-    desc:'은성에스아이티 → 이랜텍 → 솔라엣지로 이어진 제조 현장. 공정·품질·원가·설비 데이터를 직접 손으로 만지며 축적한 1차 소스. 모든 변환 노드의 입력 신호.',
-    kv:[['source type','manufacturing floor'],['domain','2차전지 · 전자 · 태양광'],['freshness','realtime']],
-    tags:['공정','품질','원가','설비','현장'] },
-  { id:'src_data', kind:'source', col:0, row:1, type:'extract', icon:'🗄️', name:'데이터',
-    sub:'생산·품질·설비 로그 → DB 적재 및 정제', dur:'streaming', runs:'src.data.0007',
-    desc:'현장에서 발생하는 raw 신호를 수집·정제하여 DB로 적재하는 소스. 의사결정의 근거가 되는 정량 데이터 파이프라인의 출발점.',
-    kv:[['source type','logs / sensors'],['load','MySQL · RDS'],['mode','batch + stream']],
-    tags:['로그','센서','적재','정제'] },
-  { id:'src_edu', kind:'source', col:0, row:2, type:'extract', icon:'🎓', name:'교육 / 배경',
-    sub:'한국외대 이탈리아어(중퇴) · 호주 4년 · TOEIC 930', dur:'2009–', runs:'src.edu.0003',
-    desc:'한국외국어대학교 이탈리아어과 중퇴 후 호주에서 4년 체류. 언어·문화 적응력과 글로벌 커뮤니케이션(TOEIC 930)이라는 비정형 소스를 공급.',
-    kv:[['대학','한국외대 이탈리아어 (중퇴)'],['해외','호주 4년'],['어학','TOEIC 930']],
-    tags:['이탈리아어','영어','호주','글로벌'] },
+var NODES = [
+  // ---- SOURCE : 입력 ----
+  { id:'src_meeting', kind:'source', col:0, row:0, type:'extract', icon:'📋', name:'Meeting',
+    sub:'팀 회의 · 스탠드업 · 스프린트 플래닝 인풋', dur:'realtime', runs:'src.meeting.0001',
+    desc:'모든 정보 흐름의 출발점. 회의에서 오고가는 논의·결정 후보·액션을 구조화된 포맷으로 캡처한다. Notion 회의록 DB에 자동 적재되며 AI 레이어가 결정 후보를 추출한다.',
+    kv:[['source type','meeting notes'],['포맷','Notion DB · 구조화 템플릿'],['freshness','per session']],
+    tags:['회의록','스탠드업','스프린트 플래닝','Notion'] },
 
-  // ---- EXPERIENCE (transform) ----
-  { id:'exp_es', kind:'exp', col:1, row:0, type:'transform', icon:'🔋', name:'은성에스아이티',
-    sub:'생산관리과장 · 2차전지 배터리팩 총괄', dur:'2y 3mo', runs:'job.es.2020',
-    period:'2020.08 – 2022.11', title:'생산관리과장 · 2차전지 배터리팩 총괄',
-    desc:'2차전지 배터리팩 양산 전반을 총괄. 원가 구조를 해부해 단가 재협상을 주도하고, 비전검사를 도입해 품질을 무결점 수준으로 끌어올린 첫 대형 변환 단계.',
-    kv:[['기간','2020.08 – 2022.11'],['직책','생산관리과장'],['도메인','2차전지 배터리팩']],
-    tags:['원가분석','단가협상','비전검사','ERP','IATF16949'],
-    ach:[['+30%','원가분석 기반 단가 30%+ 재협상'],['−85%','운영경비 85%+ 절감'],['0건','품질 불량 0건 달성'],['NEW','머신비전 검사 도입 · ERP 운영']] },
-  { id:'exp_el', kind:'exp', col:1, row:1, type:'transform', icon:'⚙️', name:'이랜텍',
-    sub:'생산라인 PM / 파트장', dur:'10mo', runs:'job.el.2022',
-    period:'2022.11 – 2023.09', title:'생산라인 PM / 파트장',
-    desc:'DOE(실험계획법)로 용착 공정의 불량 메커니즘을 규명. 사이클타임을 절반 가까이 줄이고 전용 Jig를 개발해 생산성을 끌어올린 정밀 공정 최적화 단계.',
-    kv:[['기간','2022.11 – 2023.09'],['직책','PM / 파트장'],['방법','DOE 실험계획법']],
-    tags:['DOE','용착','C/T 단축','Jig개발','생산성'],
-    ach:[['DOE','DOE로 공정 불량 근본원인 규명·제거'],['C/T↓','사이클타임 대폭 단축'],['생산성↑','라인 밸런싱으로 생산성 향상'],['Jig','전용 치공구 개발']] },
-  { id:'exp_se', kind:'exp', col:1, row:2, type:'transform', icon:'☀️', name:'솔라엣지',
-    sub:'공정기술 엔지니어', dur:'1y 3mo', runs:'job.se.2023',
-    period:'2023.09 – 2024.12', title:'공정기술 엔지니어',
-    desc:'데이터 DB와 대시보드를 직접 구축하고 LOB 분석으로 병목을 제거. 검사성적서 자동 발행과 MES 구축으로 사무 공수를 하루 단위로 대폭 절감한 디지털 전환 단계.',
-    kv:[['기간','2023.09 – 2024.12'],['직책','공정기술 엔지니어'],['핵심','데이터·MES·자동화']],
-    tags:['DB구축','대시보드','LOB분석','MES','자동발행'],
-    ach:[['−50%','표준시간(ST) 50% 단축'],['−451분','사무공수 일 451분 절감'],['MES','MES 구축 · 검사성적서 자동발행'],['LOB','LOB 분석으로 병목 제거']] },
-  { id:'exp_mi', kind:'exp', col:1, row:3, type:'deploy', icon:'🚀', name:'미러리스',
-    sub:'총괄본부장 · 현재', dur:'running', runs:'job.mi.2025', status:'running',
-    period:'2025.08 – 현재', title:'총괄본부장',
-    desc:'CRM·키오스크·앱을 직접 설계·개발하고 FastAPI 백엔드와 AWS/GCP 인프라, CI/CD를 운영. RPA와 AI MCP 기반 AX(AI Transformation)로 조직 전체를 자동화하는 현재 진행형 배포 단계.',
-    kv:[['기간','2025.08 – 현재'],['직책','총괄본부장'],['스택','FastAPI · React · AWS/GCP']],
-    tags:['CRM','키오스크','앱','FastAPI','AWS/GCP','CI/CD','RPA','AI MCP','AX'],
-    ach:[['FULL','CRM · 키오스크 · 앱 자체 구축'],['CLOUD','AWS / GCP · CI/CD 운영'],['AX','RPA · AI MCP 기반 자동화'],['LIVE','현재 진행 중인 파이프라인']] },
+  { id:'src_github', kind:'source', col:0, row:1, type:'extract', icon:'&#128570;', name:'GitHub',
+    sub:'PR · 커밋 · 이슈 — 코드 정본(SSOT)', dur:'webhook', runs:'src.github.0002',
+    desc:'코드 단일 출처(SSOT). PR 머지 이벤트가 AI 자동화 레이어를 트리거해 PRD 변경로그를 갱신하고 개발 뉴스를 요약한다. 이슈는 백로그와 실시간 동기화된다.',
+    kv:[['source type','code SSOT'],['트리거','PR merge · issue close'],['연동','Runbook · PRD · Backlog']],
+    tags:['GitHub','PR','이슈','코드SSOT','webhook'] },
 
-  // ---- SKILLS (transform) ----
-  { id:'sk_dev', kind:'skill', col:2, row:0, type:'transform', icon:'⌨️', name:'개발 / 언어',
-    sub:'Python · SQL · FastAPI · React · TS · Electron · Rust', dur:'48ms', runs:'sk.dev.v3',
-    desc:'백엔드부터 데스크톱·웹 프론트까지 풀스택 변환을 수행하는 핵심 처리 노드.',
-    kv:[['backend','Python · FastAPI · Rust'],['frontend','React · TypeScript · Electron'],['data','SQL']],
-    tags:['Python','SQL','FastAPI','React','TypeScript','Electron','Rust'] },
-  { id:'sk_infra', kind:'skill', col:2, row:1, type:'load', icon:'☁️', name:'데이터 / 인프라',
-    sub:'MySQL/RDS · AWS · GCP · BI · ML · RPA · CI/CD', dur:'62ms', runs:'sk.infra.v2',
-    desc:'데이터 적재·분석·배포·자동화를 담당하는 인프라 변환 노드.',
-    kv:[['db','MySQL · RDS'],['cloud','AWS · GCP'],['ops','BI · ML · RPA · CI/CD']],
-    tags:['MySQL/RDS','AWS','GCP','BI','ML','RPA','CI/CD'] },
-  { id:'sk_mfg', kind:'skill', col:2, row:2, type:'transform', icon:'🛠️', name:'공정 / 제조',
-    sub:'PFMEA·CP·PFD·SOP · 용접 · LOB · Jig · 기구설계 · 비전 · 로봇티칭', dur:'71ms', runs:'sk.mfg.v4',
-    desc:'제조 도메인 지식을 데이터·자동화로 변환하는 현장 엔지니어링 노드.',
-    kv:[['품질문서','PFMEA · CP · PFD · SOP'],['설계','Jig개발 · 기구설계 · Draftsight'],['자동화','비전검사 · 로봇티칭']],
-    tags:['PFMEA','CP','PFD','SOP','산업용접','LOB','Jig개발','기구설계','비전검사','로봇티칭','Draftsight'] },
-  { id:'sk_qms', kind:'skill', col:2, row:3, type:'transform', icon:'📐', name:'시스템 / 표준',
-    sub:'ERP · MES · SQ / ISO / IATF16949', dur:'39ms', runs:'sk.qms.v1',
-    desc:'전사 시스템과 품질 표준을 운영·인증 수준으로 정렬하는 거버넌스 노드.',
-    kv:[['시스템','ERP · MES'],['표준','SQ · ISO · IATF16949']],
-    tags:['ERP','MES','SQ','ISO','IATF16949'] },
+  // ---- DECISION OS ----
+  { id:'dec_ledger', kind:'decision', col:1, row:0, type:'transform', icon:'&#128220;', name:'Decision Ledger',
+    sub:'모든 결정의 단일 기록부 — 맥락·근거·책임자', dur:'88ms', runs:'dec.ledger.v1',
+    desc:'Decision OS의 핵심. 회의에서 도출된 결정 후보가 AI 추출을 거쳐 이곳에 영구 기록된다. 결정 날짜·맥락·찬반 근거·책임자·리뷰 일정을 함께 저장해 정보 유실을 방지한다.',
+    kv:[['저장소','Notion Decision DB'],['필드','날짜 / 맥락 / 책임자 / 리뷰 기한'],['연동','Action Items · OKR']],
+    tags:['Decision Ledger','의사결정','SSOT','맥락 보존','책임자'],
+    ach:[['ZERO','결정 유실 0건'],['LINK','결정→액션 자동 연결'],['LOG','근거·반대의견 보존'],['SYNC','OKR 체크인 자동 연계']] },
 
-  // ---- ML node (delight) ----
-  { id:'ml_opt', kind:'ml', col:3, row:0, type:'ml', icon:'🧠', name:'공정 최적화 모델',
-    sub:'DOE + 데이터 기반 불량률 수렴 학습', dur:'training', runs:'ml.opt.epoch', ml:true,
-    desc:'현장 데이터와 DOE 결과를 학습해 불량률을 0으로 수렴시키는 최적화 모델. 아래 손실 곡선은 실시간으로 학습되며, 불량률이 0으로 수렴하는 패턴을 보여줍니다.',
-    kv:[['model','process-optim regressor'],['signal','DOE · 품질로그'],['target','불량률 → 0']],
-    tags:['DOE','수렴학습','불량률','최적화'] },
+  { id:'dec_values', kind:'decision', col:1, row:1, type:'transform', icon:'&#10024;', name:'Core Values',
+    sub:'의사결정 필터 — 원칙 기반 판단 기준', dur:'static', runs:'dec.values.v1',
+    desc:'모든 결정이 이 원칙 레이어를 통과한다. Notion 단일 페이지에 관리되며, 결정이 Core Values와 충돌할 때 자동으로 플래그를 세운다. 조직 문화와 전략적 일관성을 유지하는 거버넌스 게이트.',
+    kv:[['형태','Notion 단일 페이지 (SSOT)'],['역할','의사결정 필터 · 문화 앵커'],['갱신','분기 리뷰 후 업데이트']],
+    tags:['Core Values','원칙','문화','거버넌스','필터'] },
 
-  // ---- METRICS (sink) ----
-  { id:'m1', kind:'metric', col:4, row:0, metric:true, big:'2.4M', dir:'up', lbl:'DV 전산화 레코드', type:'load', name:'DV 레코드',
-    sub:'data_record', dur:'8ms', runs:'out.rows', icon:'🗄️',
-    desc:'DV 데이터(2408 lot 기준) 적재·정제 파이프라인이 처리한 누적 레코드 수.', kv:[['source','data_record'],['type','rows loaded']], tags:['적재','DV'] },
-  { id:'m2', kind:'metric', col:4, row:1, metric:true, big:'99.9%', dir:'up', lbl:'적재 성공률', type:'load', name:'적재 성공률',
-    sub:'load.sla', dur:'8ms', runs:'out.sla', icon:'⏱️',
-    desc:'배치+스트림 적재 SLA — 재시도·멱등 적재로 달성한 파이프라인 성공률.', kv:[['source','load.sla'],['type','success rate']], tags:['SLA','적재'] },
-  { id:'m3', kind:'metric', col:4, row:2, metric:true, big:'p99 45ms', dir:'up', lbl:'쿼리 지연', type:'load', name:'쿼리 p99',
-    sub:'query.latency', dur:'8ms', runs:'out.lat', icon:'🔁',
-    desc:'인덱스·집계 뷰 설계로 확보한 분석 쿼리 p99 지연.', kv:[['source','query.latency'],['type','latency']], tags:['지연','인덱스'] },
-  { id:'m4', kind:'metric', col:4, row:3, metric:true, big:'→ 0.00', dir:'up', lbl:'모델 손실 수렴', type:'load', name:'loss 수렴',
-    sub:'ml.loss', dur:'8ms', runs:'out.loss', icon:'🎯',
-    desc:'공정 최적화 모델의 손실 곡선이 0으로 수렴한 학습 결과.', kv:[['source','ml.loss'],['type','converged']], tags:['수렴','ML'] },
-  { id:'m5', kind:'metric', col:4, row:4, metric:true, big:'+24%', dir:'down', lbl:'처리량 향상', type:'load', name:'처리량',
-    sub:'throughput', dur:'8ms', runs:'out.tput', icon:'📈',
-    desc:'파이프라인 병렬화·배치 튜닝으로 향상된 처리량.', kv:[['source','throughput'],['type','throughput +']], tags:['처리량'] },
-  { id:'m6', kind:'metric', col:4, row:5, metric:true, big:'12 src', dir:'down', lbl:'연결 소스', type:'load', name:'소스 커넥터',
-    sub:'connectors', dur:'8ms', runs:'out.src', icon:'🔌',
-    desc:'로그·센서·DB를 잇는 적재 커넥터 수.', kv:[['source','connectors'],['type','sources']], tags:['소스','커넥터'] },
-  { id:'m7', kind:'metric', col:4, row:6, metric:true, big:'5 min', dir:'up', lbl:'폴링 주기', type:'load', name:'폴링 주기',
-    sub:'schedule', dur:'8ms', runs:'out.sched', icon:'📑',
-    desc:'OPC UA 텔레메트리 폴링·증분 적재 주기.', kv:[['source','schedule'],['type','interval']], tags:['스케줄','증분'] },
-  { id:'m8', kind:'metric', col:4, row:7, metric:true, big:'0', dir:'up', lbl:'스키마 위반', type:'load', name:'스키마 위반',
-    sub:'data_quality', dur:'8ms', runs:'out.dq', icon:'✅',
-    desc:'스키마 검증·계약 테스트로 유지한 데이터 품질 위반 0.', kv:[['source','data_quality'],['type','zero violation']], tags:['데이터품질','검증'] },
+  { id:'dec_actions', kind:'decision', col:1, row:2, type:'transform', icon:'&#9989;', name:'Action Items',
+    sub:'결정 → 담당자·기한·완료 상태 추적', dur:'sync', runs:'dec.actions.v1',
+    desc:'Decision Ledger에서 도출된 액션이 자동으로 이 DB에 생성된다. 담당자·기한·우선순위·완료 여부를 추적하며, 미완료 액션은 다음 회의 아젠다에 자동 삽입된다.',
+    kv:[['필드','담당자 / 기한 / 우선순위 / 상태'],['자동화','미완료 → 다음 회의 아젠다 자동 추가'],['연동','OKR 진척 업데이트 트리거']],
+    tags:['Action Items','추적','완료율','아젠다 자동화'],
+    ach:[['AUTO','미완료 자동 이월'],['LINK','결정→액션 1-to-N'],['TRACK','담당자별 완료율 대시보드'],['GATE','OKR 체크인 트리거']] },
 
-  // ---- CONTACT (sink) ----
-  { id:'sink_contact', kind:'sink', col:5, row:3, type:'load', icon:'📡', name:'CONTACT',
-    sub:'파이프라인 산출물을 받을 엔드포인트', dur:'∞', runs:'sink.contact',
-    desc:'모든 흐름이 도달하는 최종 싱크. 협업·문의를 위한 연결 지점입니다.',
-    kv:[['email','64etuor@gmail.com'],['github','github.com/64etuor'],['tel','010-0000-0000']],
-    tags:['email','github','phone'],
-    contact:true },
+  // ---- AI AUTOMATION ----
+  { id:'ai_layer', kind:'ai', col:2, row:0, type:'ml', icon:'&#129504;', name:'AI Reconciliation Layer',
+    sub:'회의록→결정 추출 · PR→PRD 갱신 · 개발뉴스 요약(자동)', dur:'auto', runs:'ai.layer.v2', ml:true,
+    desc:'세 가지 자동화 파이프라인을 실행하는 AI 레이어. (1) 회의록에서 결정 후보를 자동 추출해 Decision Ledger 초안 생성. (2) GitHub PR 머지 시 PRD 변경로그 자동 갱신. (3) GitHub 이슈/커밋 요약으로 개발 뉴스 자동 생성. 반복 수작업을 제거하고 정보를 즉시 맥락에 연결한다.',
+    kv:[['파이프라인 1','회의록 → 결정 후보 추출'],['파이프라인 2','PR → PRD 변경로그 갱신'],['파이프라인 3','GitHub → 개발 뉴스 자동 요약']],
+    tags:['AI 자동화','결정 추출','PRD 갱신','개발뉴스','MCP'] },
+
+  // ---- EXECUTION ----
+  { id:'exec_okr', kind:'okr', col:3, row:0, type:'transform', icon:'&#127919;', name:'OKR / KPI',
+    sub:'분기 Objectives · Key Results · 체크인 뷰', dur:'quarterly', runs:'exec.okr.v1',
+    desc:'조직 목표의 단일 출처. 분기마다 Objectives와 Key Results를 설정하고, 회의 때는 "체크인 필요" 뷰만 노출해 집중도를 높인다. Action Items 완료가 Key Results 진척에 자동 반영된다.',
+    kv:[['사이클','분기 OKR · 월별 KPI 체크인'],['Notion 뷰','체크인 필요 · 달성 · 위험'],['자동화','액션 완료 → KR 진척 업데이트']],
+    tags:['OKR','KPI','분기','체크인','목표정렬'],
+    ach:[['VIEW','체크인 필요 뷰만 노출'],['AUTO','액션→KR 자동 연산'],['RISK','지연 KR 자동 플래그'],['LOG','분기별 Objectives Logs 보관']] },
+
+  { id:'exec_backlog', kind:'okr', col:3, row:1, type:'transform', icon:'&#128190;', name:'Backlog / Epic',
+    sub:'우선순위 에픽 · GitHub 이슈 실시간 동기화', dur:'sync', runs:'exec.backlog.v1',
+    desc:'제품 로드맵의 실행 큐. OKR 하위로 에픽이 구성되고, GitHub 이슈가 실시간 동기화된다. 우선순위·스프린트·담당팀이 Notion에서 관리되며 PRD로 업스트림한다.',
+    kv:[['구조','OKR → Epic → Story → Task'],['동기화','GitHub 이슈 양방향 sync'],['우선순위','MoSCoW · 분기 OKR 정렬']],
+    tags:['백로그','에픽','GitHub sync','로드맵','스프린트'] },
+
+  { id:'exec_prd', kind:'okr', col:3, row:2, type:'transform', icon:'&#128196;', name:'PRD',
+    sub:'제품 요구사항 문서 · AI 변경로그 자동 갱신', dur:'living doc', runs:'exec.prd.v1',
+    desc:'제품 요구사항의 단일 출처. Backlog에픽에서 업스트림된 스펙과 AI 레이어가 PR마다 자동 갱신하는 변경로그가 한 문서에 공존한다. Runbook 실행 전 반드시 PRD가 승인된 상태여야 한다.',
+    kv:[['갱신','PR 머지 시 AI 자동 변경로그 추가'],['승인 게이트','PRD approved → Runbook 실행'],['연동','Backlog · AI Layer · Runbook']],
+    tags:['PRD','변경로그','제품 스펙','승인 게이트','AI 갱신'] },
+
+  { id:'exec_runbook', kind:'okr', col:3, row:3, type:'deploy', icon:'&#9881;', name:'Runbook',
+    sub:'실행 절차서 · 배포·온보딩·장애 대응 SOP', dur:'running', runs:'exec.runbook.v1', status:'running',
+    desc:'PRD 승인 이후 실제 실행을 정의하는 절차서. 배포 체크리스트·온보딩 가이드·장애 대응 플레이북이 포함된다. GitHub Actions와 연동돼 배포 트리거가 자동으로 Runbook 실행 로그를 생성한다.',
+    kv:[['포함','배포 체크리스트 · 온보딩 · 장애 플레이북'],['자동화','GitHub Actions → 실행 로그 자동 생성'],['전제','PRD approved']],
+    tags:['Runbook','SOP','배포','장애대응','GitHub Actions'],
+    ach:[['AUTO','배포 로그 자동 생성'],['SOP','온보딩 표준화'],['GATE','PRD 승인 필수'],['LIVE','현재 운영 중']] },
+
+  // ---- SSOT GOVERNANCE ----
+  { id:'gov_dash', kind:'metric', col:2, row:2, metric:true, big:'SSOT', dir:'up', lbl:'단일 출처 원칙', type:'load', name:'SSOT 거버넌스',
+    sub:'gov.ssot', dur:'always', runs:'gov.ssot.v1', icon:'&#127963;',
+    desc:'Notion(문서), GitHub(코드), Google Drive(민감 문서) 세 출처가 각자 정본을 담당한다. 중복 저장 금지 원칙으로 정보 충돌 및 유실을 방지한다.', kv:[['Notion','문서 · 결정 · 프로세스 정본'],['GitHub','코드 · 이슈 정본'],['Drive','민감 문서 정본']], tags:['SSOT','거버넌스','Notion','GitHub','Drive'] },
+
+  { id:'gov_opdash', kind:'metric', col:2, row:3, metric:true, big:'LIVE', dir:'up', lbl:'Operating Dashboard', type:'load', name:'Operating Dashboard',
+    sub:'ops.dashboard', dur:'realtime', runs:'gov.opdash.v1', icon:'&#128202;',
+    desc:'OKR 진척·Action Items 완료율·AI 파이프라인 상태를 한 화면에 집계하는 운영 대시보드. Notion 데이터베이스 연산으로 실시간 갱신된다.', kv:[['갱신','realtime (Notion 자동 집계)'],['포함','OKR · 액션 · AI 상태'],['접근','전 팀원 공개']], tags:['대시보드','OKR','Action Items','Notion 집계'] },
+
+  // ---- METRICS (output) ----
+  { id:'m1', kind:'metric', col:4, row:0, metric:true, big:'100%', dir:'up', lbl:'결정 추적률', type:'load', name:'결정 추적률',
+    sub:'dec.coverage', dur:'8ms', runs:'out.dec', icon:'&#128220;',
+    desc:'회의에서 도출된 모든 결정이 Decision Ledger에 기록되는 비율. AI 추출 + 수동 보완으로 100% 달성.', kv:[['source','dec.coverage'],['type','coverage %']], tags:['결정','추적','커버리지'] },
+  { id:'m2', kind:'metric', col:4, row:1, metric:true, big:'&lt;2h', dir:'up', lbl:'결정→액션 지연', type:'load', name:'결정→액션 지연',
+    sub:'dec.lag', dur:'8ms', runs:'out.lag', icon:'&#9889;',
+    desc:'결정이 Decision Ledger에 기록된 후 Action Items에 생성되기까지 걸리는 시간. 자동화로 2시간 이내 달성.', kv:[['source','dec.lag'],['type','time-to-action']], tags:['자동화','지연','액션'] },
+  { id:'m3', kind:'metric', col:4, row:2, metric:true, big:'Q+1', dir:'up', lbl:'OKR 사이클', type:'load', name:'OKR 사이클',
+    sub:'okr.cycle', dur:'8ms', runs:'out.okr', icon:'&#127919;',
+    desc:'분기 OKR 체크인 완료율. 매 분기 시작 전 다음 분기 OKR이 확정되는 Q+1 패턴 운영.', kv:[['source','okr.cycle'],['type','quarterly cadence']], tags:['OKR','분기','체크인'] },
+  { id:'m4', kind:'metric', col:4, row:3, metric:true, big:'3 src', dir:'up', lbl:'SSOT 출처 수', type:'load', name:'SSOT 출처',
+    sub:'ssot.count', dur:'8ms', runs:'out.ssot', icon:'&#127963;',
+    desc:'Notion · GitHub · Google Drive — 세 출처가 각자 영역의 단일 정본 역할. 중복 없음.', kv:[['source','ssot.count'],['type','source count']], tags:['SSOT','출처','거버넌스'] },
+  { id:'m5', kind:'metric', col:4, row:4, metric:true, big:'0', dir:'up', lbl:'정보 유실 건수', type:'load', name:'정보 유실',
+    sub:'info.loss', dur:'8ms', runs:'out.loss', icon:'&#10003;',
+    desc:'구조화 캡처 + AI 추출 + SSOT 원칙으로 달성한 결정/액션 정보 유실 0건.', kv:[['source','info.loss'],['type','zero loss']], tags:['유실','품질','SSOT'] },
+  { id:'m6', kind:'metric', col:4, row:5, metric:true, big:'AUTO', dir:'up', lbl:'AI 파이프라인', type:'load', name:'AI 파이프라인',
+    sub:'ai.pipelines', dur:'8ms', runs:'out.ai', icon:'&#129504;',
+    desc:'회의록 추출 · PR 갱신 · 개발뉴스 요약 — 세 파이프라인이 상시 자동 실행.', kv:[['source','ai.pipelines'],['type','automation']], tags:['AI','자동화','파이프라인'] },
+
+  // ---- RETROSPECTIVE (sink) ----
+  { id:'sink_retro', kind:'sink', col:5, row:2, type:'load', icon:'&#128260;', name:'Retrospective',
+    sub:'스프린트 회고 · 조직 학습 싱크', dur:'sprint', runs:'sink.retro.v1',
+    desc:'모든 흐름이 수렴하는 최종 싱크. 스프린트 완료 후 Decision Ledger · Action Items · OKR 달성 결과를 종합해 회고록을 생성한다. 회고의 개선 사항은 다음 사이클의 Meeting 인풋으로 피드백되며 루프를 닫는다.',
+    kv:[['산출물','스프린트 회고록 · 개선 액션'],['피드백','개선사항 → 다음 Meeting 인풋'],['주기','스프린트 종료 · 분기 말']],
+    tags:['회고','스프린트','조직학습','피드백 루프'] },
 ];
 
-// edges: [from, to]
-const EDGES = [
-  ['src_field','exp_es'],['src_field','exp_el'],['src_field','exp_se'],
-  ['src_data','exp_se'],['src_data','exp_mi'],['src_data','ml_opt'],
-  ['src_edu','exp_es'],['src_edu','exp_mi'],
-  // experience -> skills
-  ['exp_es','sk_mfg'],['exp_es','sk_qms'],
-  ['exp_el','sk_mfg'],['exp_el','ml_opt'],
-  ['exp_se','sk_dev'],['exp_se','sk_infra'],['exp_se','sk_qms'],
-  ['exp_mi','sk_dev'],['exp_mi','sk_infra'],
-  // skills -> ml / metrics
-  ['sk_mfg','ml_opt'],
-  ['ml_opt','m4'],['ml_opt','m8'],
-  ['exp_es','m1'],['exp_es','m6'],['exp_es','m8'],
-  ['exp_el','m3'],['exp_el','m4'],['exp_el','m5'],
-  ['exp_se','m2'],['exp_se','m7'],
-  ['sk_dev','m7'],['sk_infra','m2'],
-  // metrics -> contact
-  ['m1','sink_contact'],['m2','sink_contact'],['m3','sink_contact'],['m4','sink_contact'],
-  ['m5','sink_contact'],['m6','sink_contact'],['m7','sink_contact'],['m8','sink_contact'],
+// edges: 위상정렬 순서 — Meeting → Decision → Action → OKR → Backlog → PRD → Runbook → Retro
+var EDGES = [
+  // 입력 → Decision OS
+  ['src_meeting','dec_ledger'],
+  ['src_meeting','ai_layer'],
+  ['src_github','ai_layer'],
+  ['src_github','exec_backlog'],
+  // Core Values 필터
+  ['dec_values','dec_ledger'],
+  ['dec_values','dec_actions'],
+  // Decision → Action
+  ['dec_ledger','dec_actions'],
+  ['dec_ledger','exec_okr'],
+  // AI 자동화
+  ['ai_layer','dec_ledger'],
+  ['ai_layer','exec_prd'],
+  ['ai_layer','gov_dash'],
+  // Action → OKR
+  ['dec_actions','exec_okr'],
+  ['dec_actions','exec_backlog'],
+  // SSOT 거버넌스
+  ['gov_dash','gov_opdash'],
+  ['gov_opdash','exec_okr'],
+  // OKR → Backlog → PRD → Runbook
+  ['exec_okr','exec_backlog'],
+  ['exec_backlog','exec_prd'],
+  ['exec_prd','exec_runbook'],
+  // → 메트릭
+  ['dec_ledger','m1'],
+  ['dec_actions','m2'],
+  ['exec_okr','m3'],
+  ['gov_dash','m4'],
+  ['ai_layer','m5'],
+  ['ai_layer','m6'],
+  // → 회고 싱크
+  ['exec_runbook','sink_retro'],
+  ['exec_okr','sink_retro'],
+  ['m1','sink_retro'],['m3','sink_retro'],['m5','sink_retro'],
 ];
 
 //==================================================================
 //  LAYOUT
 //==================================================================
-const COLX = [80, 400, 740, 1080, 1380, 1720];   // x per column
-const ROWH = 150;                                  // base row height
-const NODE_W = 230, NODE_MW = 170;
-const nodeById = {};
-NODES.forEach(n=>nodeById[n.id]=n);
+var COLX = [80, 370, 700, 1010, 1320, 1650];
+var ROWH = 155;
+var NODE_W = 230, NODE_MW = 170;
+var nodeById = {};
+NODES.forEach(function(n){ nodeById[n.id]=n; });
 
-// vertical centering offsets per column so columns look balanced
 function layout(){
-  const colRows = {};
-  NODES.forEach(n=>{ colRows[n.col]=(colRows[n.col]||0); colRows[n.col]=Math.max(colRows[n.col], n.row+1); });
-  const maxRows = Math.max(...Object.values(colRows));
-  NODES.forEach(n=>{
-    const rows = colRows[n.col];
-    const colHeight = rows*ROWH;
-    const maxHeight = maxRows*ROWH;
-    const offset = (maxHeight-colHeight)/2;
+  var colRows = {};
+  NODES.forEach(function(n){ colRows[n.col]=(colRows[n.col]||0); colRows[n.col]=Math.max(colRows[n.col], n.row+1); });
+  var maxRows = Math.max.apply(null, Object.values(colRows));
+  NODES.forEach(function(n){
+    var rows = colRows[n.col];
+    var colHeight = rows*ROWH;
+    var maxHeight = maxRows*ROWH;
+    var offset = (maxHeight-colHeight)/2;
     n.x = COLX[n.col];
     n.y = 40 + offset + n.row*ROWH;
     n.w = n.metric ? NODE_MW : NODE_W;
@@ -465,69 +477,68 @@ function layout(){
 }
 layout();
 
-// world bounds
 function worldBounds(){
-  let maxX=0,maxY=0;
-  NODES.forEach(n=>{ maxX=Math.max(maxX,n.x+n.w); maxY=Math.max(maxY,n.y+n.h); });
+  var maxX=0, maxY=0;
+  NODES.forEach(function(n){ maxX=Math.max(maxX,n.x+n.w); maxY=Math.max(maxY,n.y+n.h); });
   return {w:maxX+120, h:maxY+120};
 }
-const WB = worldBounds();
+var WB = worldBounds();
 
 //==================================================================
 //  RENDER NODES
 //==================================================================
-const nodesLayer = document.getElementById('nodes');
-const edgesSvg = document.getElementById('edges');
+var nodesLayer = document.getElementById('nodes');
+var edgesSvg = document.getElementById('edges');
 edgesSvg.setAttribute('width', WB.w);
 edgesSvg.setAttribute('height', WB.h);
 
 function statusPill(status){
-  const map = {success:['success','SUCCESS'],running:['running','RUNNING'],queued:['queued','QUEUED'],idle:['idle','IDLE']};
-  const [c,t]=map[status]||map.idle;
-  return `<span class="pill ${c}"><span class="d"></span>${t}</span>`;
+  var map = {success:['success','SUCCESS'],running:['running','RUNNING'],queued:['queued','QUEUED'],idle:['idle','IDLE']};
+  var ct = map[status]||map.idle;
+  var c=ct[0], t=ct[1];
+  return '<span class="pill '+c+'"><span class="d"></span>'+t+'</span>';
 }
 
-const TYPE_LABEL = {extract:'EXTRACT',transform:'TRANSFORM',load:'LOAD',ml:'ML.TRAIN',deploy:'DEPLOY'};
+var TYPE_LABEL = {extract:'EXTRACT',transform:'TRANSFORM',load:'LOAD',ml:'AI.AUTO',deploy:'DEPLOY'};
 
-NODES.forEach(n=>{
-  const el = document.createElement('div');
+NODES.forEach(function(n){
+  var el = document.createElement('div');
   el.className = 'node'+(n.metric?' metric':'');
   el.dataset.id = n.id; el.dataset.kind = n.kind;
-  // initial status: present-day exp_mi running, everything else success (it's a completed career)
   n.status = n.status || 'success';
   el.dataset.status = n.status;
   el.style.left = n.x+'px'; el.style.top = n.y+'px'; el.style.width = n.w+'px';
 
   if(n.metric){
-    el.innerHTML = `
-      <div class="top">
-        <div class="ico">${n.icon}</div>
-        <div class="ttl"><div class="name">${n.name}</div><div class="type">LOAD · OUTPUT</div></div>
-      </div>
-      <div class="body" style="padding-bottom:12px">
-        <div class="big ${n.dir}">${n.big}</div>
-        <div class="lbl">${n.lbl}</div>
-      </div>
-      <span class="port in"></span><span class="port out"></span>`;
+    el.innerHTML =
+      '<div class="top">'+
+        '<div class="ico">'+n.icon+'</div>'+
+        '<div class="ttl"><div class="name">'+n.name+'</div><div class="type">LOAD · OUTPUT</div></div>'+
+      '</div>'+
+      '<div class="body" style="padding-bottom:12px">'+
+        '<div class="big '+n.dir+'">'+n.big+'</div>'+
+        '<div class="lbl">'+n.lbl+'</div>'+
+      '</div>'+
+      '<span class="port in"></span><span class="port out"></span>';
   } else {
-    const mlChart = n.ml ? `<canvas id="mlcanvas"></canvas>` : '';
-    el.innerHTML = `
-      <div class="top">
-        <div class="ico">${n.icon}</div>
-        <div class="ttl"><div class="name">${n.name}</div><div class="type">${TYPE_LABEL[n.type]||'TASK'}</div></div>
-        ${statusPill(n.status)}
-      </div>
-      <div class="body">
-        <div class="sub">${n.sub}</div>
-        ${mlChart}
-      </div>
-      <div class="foot">
-        <span class="runid">${n.runs}</span>
-        <span class="dur">⏱ ${n.dur}</span>
-      </div>
-      <span class="port in"></span><span class="port out"></span>`;
+    var aiChart = n.ml ? '<canvas id="aicanvas"></canvas>' : '';
+    el.innerHTML =
+      '<div class="top">'+
+        '<div class="ico">'+n.icon+'</div>'+
+        '<div class="ttl"><div class="name">'+n.name+'</div><div class="type">'+(TYPE_LABEL[n.type]||'TASK')+'</div></div>'+
+        statusPill(n.status)+
+      '</div>'+
+      '<div class="body">'+
+        '<div class="sub">'+n.sub+'</div>'+
+        aiChart+
+      '</div>'+
+      '<div class="foot">'+
+        '<span class="runid">'+n.runs+'</span>'+
+        '<span class="dur">&#9201; '+n.dur+'</span>'+
+      '</div>'+
+      '<span class="port in"></span><span class="port out"></span>';
   }
-  el.addEventListener('click', (e)=>{ e.stopPropagation(); openPanel(n.id); });
+  el.addEventListener('click', function(e){ e.stopPropagation(); openPanel(n.id); });
   nodesLayer.appendChild(el);
   n.el = el;
 });
@@ -535,290 +546,291 @@ NODES.forEach(n=>{
 //==================================================================
 //  EDGES  (orthogonal-ish bezier) + hit areas + schema tooltips
 //==================================================================
-const NS='http://www.w3.org/2000/svg';
+var NS='http://www.w3.org/2000/svg';
 function edgePath(a,b){
-  const x1=a.x+a.w, y1=a.y+a.h/2;
-  const x2=b.x, y2=b.y+b.h/2;
-  const dx=Math.max(40,(x2-x1)*0.5);
-  return `M ${x1},${y1} C ${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}`;
+  var x1=a.x+a.w, y1=a.y+a.h/2;
+  var x2=b.x, y2=b.y+b.h/2;
+  var dx=Math.max(40,(x2-x1)*0.5);
+  return 'M '+x1+','+y1+' C '+(x1+dx)+','+y1+' '+(x2-dx)+','+y2+' '+x2+','+y2;
 }
 
-// arrow marker + gradient
-const defs=document.createElementNS(NS,'defs');
-defs.innerHTML=`
-  <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-    <path d="M0,0 L10,5 L0,10 z" fill="#2c3848"/>
-  </marker>
-  <marker id="arrowA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
-    <path d="M0,0 L10,5 L0,10 z" fill="#5ee3a1"/>
-  </marker>
-  <linearGradient id="eg" x1="0" y1="0" x2="1" y2="0">
-    <stop offset="0" stop-color="#243040"/><stop offset="1" stop-color="#2c3a4c"/>
-  </linearGradient>`;
+var defs=document.createElementNS(NS,'defs');
+defs.innerHTML=
+  '<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">'+
+    '<path d="M0,0 L10,5 L0,10 z" fill="#2c3848"/>'+
+  '</marker>'+
+  '<marker id="arrowA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">'+
+    '<path d="M0,0 L10,5 L0,10 z" fill="#5ee3a1"/>'+
+  '</marker>'+
+  '<linearGradient id="eg" x1="0" y1="0" x2="1" y2="0">'+
+    '<stop offset="0" stop-color="#243040"/><stop offset="1" stop-color="#2c3a4c"/>'+
+  '</linearGradient>';
 edgesSvg.appendChild(defs);
 
-const SCHEMAS = [
-  {h:'schema: field_signal',rows:[['process_id','string'],['defect_rate','float'],['cycle_time','float'],['cost_unit','int']]},
-  {h:'schema: data_record',rows:[['ts','datetime'],['sensor','float[]'],['lot','string'],['status','enum']]},
-  {h:'schema: skill_vector',rows:[['name','string'],['level','int'],['domain','string']]},
-  {h:'schema: kpi_delta',rows:[['metric','string'],['before','float'],['after','float'],['delta','%']]},
+var SCHEMAS = [
+  {h:'schema: meeting_record',rows:[['decision_candidate','string'],['action_item','string'],['owner','string'],['ts','datetime']]},
+  {h:'schema: decision_entry',rows:[['id','uuid'],['context','text'],['owner','string'],['review_date','date']]},
+  {h:'schema: action_item',rows:[['title','string'],['owner','string'],['due','date'],['status','enum']]},
+  {h:'schema: okr_entry',rows:[['objective','string'],['key_result','string[]'],['progress','float'],['quarter','string']]},
+  {h:'schema: prd_change',rows:[['pr_id','string'],['summary','text'],['affected_spec','string[]'],['ts','datetime']]},
 ];
 
-const edgeEls=[];
-EDGES.forEach((e,i)=>{
-  const a=nodeById[e[0]], b=nodeById[e[1]];
+var edgeEls=[];
+EDGES.forEach(function(e,i){
+  var a=nodeById[e[0]], b=nodeById[e[1]];
   if(!a||!b) return;
-  const d=edgePath(a,b);
-  const p=document.createElementNS(NS,'path');
+  var d=edgePath(a,b);
+  var p=document.createElementNS(NS,'path');
   p.setAttribute('d',d); p.setAttribute('fill','none');
   p.setAttribute('stroke','url(#eg)'); p.setAttribute('stroke-width','1.4');
   p.setAttribute('marker-end','url(#arrow)');
   p.setAttribute('opacity','0.85');
   edgesSvg.appendChild(p);
 
-  // hit area for schema hover
-  const hit=document.createElementNS(NS,'path');
+  var hit=document.createElementNS(NS,'path');
   hit.setAttribute('d',d); hit.setAttribute('class','ehit');
-  const schema = SCHEMAS[i % SCHEMAS.length];
-  hit.addEventListener('mousemove',(ev)=>showSchema(ev,schema));
-  hit.addEventListener('mouseenter',()=>{ p.setAttribute('stroke','#5ee3a1'); p.setAttribute('stroke-width','2'); p.setAttribute('marker-end','url(#arrowA)'); });
-  hit.addEventListener('mouseleave',()=>{ hideSchema(); p.setAttribute('stroke','url(#eg)'); p.setAttribute('stroke-width','1.4'); p.setAttribute('marker-end','url(#arrow)'); });
+  var schema = SCHEMAS[i % SCHEMAS.length];
+  hit.addEventListener('mousemove',function(ev){ showSchema(ev,schema); });
+  hit.addEventListener('mouseenter',function(){
+    p.setAttribute('stroke','#5ee3a1'); p.setAttribute('stroke-width','2'); p.setAttribute('marker-end','url(#arrowA)');
+  });
+  hit.addEventListener('mouseleave',function(){
+    hideSchema(); p.setAttribute('stroke','url(#eg)'); p.setAttribute('stroke-width','1.4'); p.setAttribute('marker-end','url(#arrow)');
+  });
   edgesSvg.appendChild(hit);
 
-  // moving token (animated data packet)
-  const tok=document.createElementNS(NS,'circle');
+  var tok=document.createElementNS(NS,'circle');
   tok.setAttribute('r','2.6'); tok.setAttribute('fill','#5ee3a1');
-  tok.setAttribute('filter','');
   tok.style.filter='drop-shadow(0 0 4px #5ee3a1)';
   edgesSvg.appendChild(tok);
 
-  edgeEls.push({a:e[0],b:e[1],path:p,len:p.getTotalLength(),tok,phase:Math.random(),speed:0.10+Math.random()*0.13,active:true});
+  edgeEls.push({a:e[0],b:e[1],path:p,len:p.getTotalLength(),tok:tok,phase:Math.random(),speed:0.10+Math.random()*0.13,active:true});
 });
 
 //==================================================================
-//  TOKEN ANIMATION (60fps)
+//  TOKEN ANIMATION (60fps) — 자동 시작, 루프 무한 반복
 //==================================================================
-let lastT=performance.now();
+var lastT=performance.now();
 function animate(t){
-  const dt=Math.min(0.05,(t-lastT)/1000); lastT=t;
-  for(const e of edgeEls){
+  var dt=Math.min(0.05,(t-lastT)/1000); lastT=t;
+  for(var i=0;i<edgeEls.length;i++){
+    var e=edgeEls[i];
     if(!e.active){ e.tok.style.opacity=0; continue; }
     e.phase += e.speed*dt;
     if(e.phase>1) e.phase-=1;
-    const pt=e.path.getPointAtLength(e.phase*e.len);
+    var pt=e.path.getPointAtLength(e.phase*e.len);
     e.tok.setAttribute('cx',pt.x); e.tok.setAttribute('cy',pt.y);
-    // fade in/out at ends
-    const edge = Math.min(e.phase, 1-e.phase);
+    var edge = Math.min(e.phase, 1-e.phase);
     e.tok.style.opacity = Math.min(1, edge*8)*0.95;
   }
-  drawML(t);
+  drawAI(t);
   requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);
 
 //==================================================================
-//  ML mini live-trained loss curve (delight)
+//  AI mini live trend chart (AI Reconciliation Layer delight)
 //==================================================================
-let mlCanvas=null, mlCtx=null, mlData=[], mlSeed=0;
-function initML(){
-  mlCanvas=document.getElementById('mlcanvas');
-  if(!mlCanvas) return;
-  const dpr=window.devicePixelRatio||1;
-  mlCanvas.width=206*dpr; mlCanvas.height=54*dpr;
-  mlCtx=mlCanvas.getContext('2d'); mlCtx.scale(dpr,dpr);
-  // generate a converging loss curve (15% -> ~0)
-  mlData=[];
-  for(let i=0;i<60;i++){
-    const x=i/59;
-    const base=0.15*Math.exp(-3.2*x);
-    const noise=(Math.sin(i*1.7)+Math.cos(i*0.9))*0.006*(1-x);
-    mlData.push(Math.max(0,base+noise));
+var aiCanvas=null, aiCtx=null, aiData=[], aiReveal=0;
+function initAI(){
+  aiCanvas=document.getElementById('aicanvas');
+  if(!aiCanvas) return;
+  var dpr=window.devicePixelRatio||1;
+  aiCanvas.width=206*dpr; aiCanvas.height=54*dpr;
+  aiCtx=aiCanvas.getContext('2d'); aiCtx.scale(dpr,dpr);
+  aiData=[];
+  // three pipeline pulses overlaid as a multi-wave trend
+  for(var i=0;i<60;i++){
+    var x=i/59;
+    var v = 0.3+0.5*(Math.sin(x*Math.PI*3)*0.4 + Math.cos(x*Math.PI*5+1)*0.3 + Math.sin(x*Math.PI*7+2)*0.2);
+    aiData.push(Math.max(0,Math.min(1,v)));
   }
+  aiReveal=0;
 }
-let mlReveal=0;
-function drawML(t){
-  if(!mlCtx) return;
-  const W=206,H=54,pad=4;
-  mlCtx.clearRect(0,0,W,H);
-  // grid
-  mlCtx.strokeStyle='rgba(255,255,255,.04)'; mlCtx.lineWidth=1;
-  for(let g=1;g<4;g++){ const y=pad+(H-2*pad)*g/4; mlCtx.beginPath();mlCtx.moveTo(pad,y);mlCtx.lineTo(W-pad,y);mlCtx.stroke(); }
-  // reveal animation
-  mlReveal=Math.min(mlData.length, mlReveal + 0.4);
-  const n=Math.floor(mlReveal);
-  const max=0.16;
+function drawAI(t){
+  if(!aiCtx) return;
+  var W=206,H=54,pad=4;
+  aiCtx.clearRect(0,0,W,H);
+  aiCtx.strokeStyle='rgba(255,255,255,.04)'; aiCtx.lineWidth=1;
+  for(var g=1;g<4;g++){
+    var y=pad+(H-2*pad)*g/4;
+    aiCtx.beginPath(); aiCtx.moveTo(pad,y); aiCtx.lineTo(W-pad,y); aiCtx.stroke();
+  }
+  aiReveal=Math.min(aiData.length, aiReveal + 0.4);
+  var n=Math.floor(aiReveal);
   // area
-  mlCtx.beginPath();
-  for(let i=0;i<n;i++){
-    const x=pad+(W-2*pad)*i/(mlData.length-1);
-    const y=pad+(H-2*pad)*(1-mlData[i]/max);
-    i===0?mlCtx.moveTo(x,y):mlCtx.lineTo(x,y);
+  aiCtx.beginPath();
+  for(var i=0;i<n;i++){
+    var x=pad+(W-2*pad)*i/(aiData.length-1);
+    var yv=pad+(H-2*pad)*(1-aiData[i]);
+    if(i===0){ aiCtx.moveTo(x,yv); } else { aiCtx.lineTo(x,yv); }
   }
   if(n>0){
-    const lastX=pad+(W-2*pad)*(n-1)/(mlData.length-1);
-    mlCtx.lineTo(lastX,H-pad); mlCtx.lineTo(pad,H-pad); mlCtx.closePath();
-    const grad=mlCtx.createLinearGradient(0,0,0,H);
+    var lastX=pad+(W-2*pad)*(n-1)/(aiData.length-1);
+    aiCtx.lineTo(lastX,H-pad); aiCtx.lineTo(pad,H-pad); aiCtx.closePath();
+    var grad=aiCtx.createLinearGradient(0,0,0,H);
     grad.addColorStop(0,'rgba(240,180,41,.30)'); grad.addColorStop(1,'rgba(240,180,41,0)');
-    mlCtx.fillStyle=grad; mlCtx.fill();
+    aiCtx.fillStyle=grad; aiCtx.fill();
   }
   // line
-  mlCtx.beginPath();
-  for(let i=0;i<n;i++){
-    const x=pad+(W-2*pad)*i/(mlData.length-1);
-    const y=pad+(H-2*pad)*(1-mlData[i]/max);
-    i===0?mlCtx.moveTo(x,y):mlCtx.lineTo(x,y);
+  aiCtx.beginPath();
+  for(var j=0;j<n;j++){
+    var xj=pad+(W-2*pad)*j/(aiData.length-1);
+    var yj=pad+(H-2*pad)*(1-aiData[j]);
+    if(j===0){ aiCtx.moveTo(xj,yj); } else { aiCtx.lineTo(xj,yj); }
   }
-  mlCtx.strokeStyle='#f0b429'; mlCtx.lineWidth=1.6; mlCtx.lineJoin='round'; mlCtx.stroke();
+  aiCtx.strokeStyle='#f0b429'; aiCtx.lineWidth=1.6; aiCtx.lineJoin='round'; aiCtx.stroke();
   // moving head dot
   if(n>0){
-    const i=n-1;
-    const x=pad+(W-2*pad)*i/(mlData.length-1);
-    const y=pad+(H-2*pad)*(1-mlData[i]/max);
-    mlCtx.beginPath(); mlCtx.arc(x,y,2.4,0,7); mlCtx.fillStyle='#5ee3a1'; mlCtx.fill();
+    var ii=n-1;
+    var xi=pad+(W-2*pad)*ii/(aiData.length-1);
+    var yi=pad+(H-2*pad)*(1-aiData[ii]);
+    aiCtx.beginPath(); aiCtx.arc(xi,yi,2.4,0,7); aiCtx.fillStyle='#5ee3a1'; aiCtx.fill();
   }
-  // label
-  mlCtx.fillStyle='rgba(201,212,227,.5)'; mlCtx.font='8px monospace';
-  mlCtx.fillText('loss · defect_rate', 6, 11);
-  mlCtx.fillStyle='#5ee3a1';
-  mlCtx.fillText('→ 0.00', W-34, 11);
-  if(mlReveal>=mlData.length) mlReveal=mlData.length; // hold
+  aiCtx.fillStyle='rgba(201,212,227,.5)'; aiCtx.font='8px monospace';
+  aiCtx.fillText('ai.pipelines · throughput', 6, 11);
+  aiCtx.fillStyle='#5ee3a1';
+  aiCtx.fillText('AUTO', W-34, 11);
+  if(aiReveal>=aiData.length){
+    // loop the reveal
+    aiReveal=0;
+  }
 }
-initML();
+initAI();
 
 //==================================================================
 //  PAN / ZOOM
 //==================================================================
-const stage=document.getElementById('stage');
-const world=document.getElementById('world');
-const zlabel=document.getElementById('zlabel');
-let scale=1, tx=0, ty=0;
+var stage=document.getElementById('stage');
+var world=document.getElementById('world');
+var zlabel=document.getElementById('zlabel');
+var scale=1, tx=0, ty=0;
 function applyTransform(){
-  world.style.transform=`translate(${tx}px,${ty}px) scale(${scale})`;
+  world.style.transform='translate('+tx+'px,'+ty+'px) scale('+scale+')';
   zlabel.textContent=Math.round(scale*100)+'%';
   drawGrid(); updateMinimap();
 }
 function fit(){
-  const vw=stage.clientWidth, vh=stage.clientHeight;
-  const s=Math.min(vw/(WB.w+60), vh/(WB.h+60), 1.2);
+  var vw=stage.clientWidth, vh=stage.clientHeight;
+  var s=Math.min(vw/(WB.w+60), vh/(WB.h+60), 1.2);
   scale=s;
   tx=(vw - WB.w*s)/2; ty=(vh - WB.h*s)/2;
   applyTransform();
 }
 
-let dragging=false, sx,sy, stx,sty, moved=false;
-stage.addEventListener('mousedown',e=>{
+var dragging=false, sx, sy, stx, sty, moved=false;
+stage.addEventListener('mousedown',function(e){
   if(e.target.closest('.node')||e.target.closest('.ehit')) return;
   dragging=true; moved=false; sx=e.clientX; sy=e.clientY; stx=tx; sty=ty;
   stage.classList.add('grabbing');
 });
-window.addEventListener('mousemove',e=>{
+window.addEventListener('mousemove',function(e){
   if(!dragging) return;
   tx=stx+(e.clientX-sx); ty=sty+(e.clientY-sy);
   if(Math.abs(e.clientX-sx)+Math.abs(e.clientY-sy)>3) moved=true;
   applyTransform();
 });
-window.addEventListener('mouseup',()=>{ dragging=false; stage.classList.remove('grabbing'); });
+window.addEventListener('mouseup',function(){ dragging=false; stage.classList.remove('grabbing'); });
 
-stage.addEventListener('wheel',e=>{
+stage.addEventListener('wheel',function(e){
   e.preventDefault();
-  const rect=stage.getBoundingClientRect();
-  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
-  const wx=(mx-tx)/scale, wy=(my-ty)/scale;
-  const factor=e.deltaY<0?1.12:0.89;
+  var rect=stage.getBoundingClientRect();
+  var mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  var wx=(mx-tx)/scale, wy=(my-ty)/scale;
+  var factor=e.deltaY<0?1.12:0.89;
   scale=Math.min(2.4,Math.max(0.25,scale*factor));
   tx=mx-wx*scale; ty=my-wy*scale;
   applyTransform();
 },{passive:false});
 
-document.getElementById('zin').onclick=()=>zoomBtn(1.2);
-document.getElementById('zout').onclick=()=>zoomBtn(0.83);
+document.getElementById('zin').onclick=function(){ zoomBtn(1.2); };
+document.getElementById('zout').onclick=function(){ zoomBtn(0.83); };
 document.getElementById('zfit').onclick=fit;
 document.getElementById('zfit').textContent='FIT';
 function zoomBtn(f){
-  const cx=stage.clientWidth/2, cy=stage.clientHeight/2;
-  const wx=(cx-tx)/scale, wy=(cy-ty)/scale;
+  var cx=stage.clientWidth/2, cy=stage.clientHeight/2;
+  var wx=(cx-tx)/scale, wy=(cy-ty)/scale;
   scale=Math.min(2.4,Math.max(0.25,scale*f));
   tx=cx-wx*scale; ty=cy-wy*scale; applyTransform();
 }
 document.getElementById('resetBtn').onclick=fit;
 
 //==================================================================
-//  GRID BACKGROUND (canvas, follows transform)
+//  GRID BACKGROUND
 //==================================================================
-const grid=document.getElementById('gridbg');
-const gctx=grid.getContext('2d');
+var grid=document.getElementById('gridbg');
+var gctx=grid.getContext('2d');
 function sizeGrid(){
-  const dpr=window.devicePixelRatio||1;
+  var dpr=window.devicePixelRatio||1;
   grid.width=stage.clientWidth*dpr; grid.height=stage.clientHeight*dpr;
   grid.style.width=stage.clientWidth+'px'; grid.style.height=stage.clientHeight+'px';
   gctx.setTransform(dpr,0,0,dpr,0,0);
   drawGrid();
 }
 function drawGrid(){
-  const w=stage.clientWidth, h=stage.clientHeight;
+  var w=stage.clientWidth, h=stage.clientHeight;
   gctx.clearRect(0,0,w,h);
-  const step=40*scale;
+  var step=40*scale;
   if(step<6) return;
-  const ox=((tx%step)+step)%step, oy=((ty%step)+step)%step;
+  var ox=((tx%step)+step)%step, oy=((ty%step)+step)%step;
   gctx.strokeStyle='rgba(255,255,255,.025)'; gctx.lineWidth=1;
   gctx.beginPath();
-  for(let x=ox;x<w;x+=step){ gctx.moveTo(x,0); gctx.lineTo(x,h); }
-  for(let y=oy;y<h;y+=step){ gctx.moveTo(0,y); gctx.lineTo(w,y); }
+  for(var x=ox;x<w;x+=step){ gctx.moveTo(x,0); gctx.lineTo(x,h); }
+  for(var y=oy;y<h;y+=step){ gctx.moveTo(0,y); gctx.lineTo(w,y); }
   gctx.stroke();
-  // major dots
-  const mstep=step*5;
-  const mox=((tx%mstep)+mstep)%mstep, moy=((ty%mstep)+mstep)%mstep;
+  var mstep=step*5;
+  var mox=((tx%mstep)+mstep)%mstep, moy=((ty%mstep)+mstep)%mstep;
   gctx.fillStyle='rgba(94,227,161,.10)';
-  for(let x=mox;x<w;x+=mstep) for(let y=moy;y<h;y+=mstep){
-    gctx.beginPath(); gctx.arc(x,y,1.3,0,7); gctx.fill();
+  for(var xi=mox;xi<w;xi+=mstep){
+    for(var yi=moy;yi<h;yi+=mstep){
+      gctx.beginPath(); gctx.arc(xi,yi,1.3,0,7); gctx.fill();
+    }
   }
 }
 
 //==================================================================
 //  MINIMAP
 //==================================================================
-const mmsvg=document.getElementById('mmsvg');
+var mmsvg=document.getElementById('mmsvg');
 function buildMinimap(){
   mmsvg.innerHTML='';
-  const bbox=mmsvg.getBoundingClientRect();
-  const mw=bbox.width||200, mh=bbox.height||108;
-  const s=Math.min(mw/WB.w, mh/WB.h)*0.92;
-  const offx=(mw-WB.w*s)/2, offy=(mh-WB.h*s)/2;
+  var bbox=mmsvg.getBoundingClientRect();
+  var mw=bbox.width||200, mh=bbox.height||108;
+  var s=Math.min(mw/WB.w, mh/WB.h)*0.92;
+  var offx=(mw-WB.w*s)/2, offy=(mh-WB.h*s)/2;
   mmsvg._s=s; mmsvg._ox=offx; mmsvg._oy=offy;
-  // edges
-  EDGES.forEach(e=>{
-    const a=nodeById[e[0]],b=nodeById[e[1]]; if(!a||!b)return;
-    const l=document.createElementNS(NS,'line');
+  EDGES.forEach(function(e){
+    var a=nodeById[e[0]], b=nodeById[e[1]]; if(!a||!b) return;
+    var l=document.createElementNS(NS,'line');
     l.setAttribute('x1',offx+(a.x+a.w)*s); l.setAttribute('y1',offy+(a.y+a.h/2)*s);
     l.setAttribute('x2',offx+b.x*s); l.setAttribute('y2',offy+(b.y+b.h/2)*s);
     l.setAttribute('stroke','#2a3543'); l.setAttribute('stroke-width','0.6');
     mmsvg.appendChild(l);
   });
-  const COLOR={source:'#4aa8ff',exp:'#b08cff',skill:'#36d9d9',metric:'#5ee3a1',sink:'#ff7eb6',ml:'#f0b429'};
-  NODES.forEach(n=>{
-    const r=document.createElementNS(NS,'rect');
+  var COLOR={source:'#4aa8ff',decision:'#b08cff',okr:'#36d9d9',metric:'#5ee3a1',sink:'#ff7eb6',ai:'#f0b429'};
+  NODES.forEach(function(n){
+    var r=document.createElementNS(NS,'rect');
     r.setAttribute('x',offx+n.x*s); r.setAttribute('y',offy+n.y*s);
     r.setAttribute('width',Math.max(3,n.w*s)); r.setAttribute('height',Math.max(2,n.h*s));
     r.setAttribute('rx','1.5'); r.setAttribute('fill',COLOR[n.kind]||'#888'); r.setAttribute('opacity','.85');
     r.dataset.id=n.id;
     mmsvg.appendChild(r);
   });
-  const view=document.createElementNS(NS,'rect');
+  var view=document.createElementNS(NS,'rect');
   view.setAttribute('id','mmview'); view.setAttribute('rx','2');
   mmsvg.appendChild(view);
 }
 function updateMinimap(){
-  const view=document.getElementById('mmview'); if(!view)return;
-  const s=mmsvg._s, offx=mmsvg._ox, offy=mmsvg._oy;
-  // visible world rect
-  const vx=-tx/scale, vy=-ty/scale, vw=stage.clientWidth/scale, vh=stage.clientHeight/scale;
+  var view=document.getElementById('mmview'); if(!view) return;
+  var s=mmsvg._s, offx=mmsvg._ox, offy=mmsvg._oy;
+  var vx=-tx/scale, vy=-ty/scale, vw=stage.clientWidth/scale, vh=stage.clientHeight/scale;
   view.setAttribute('x',offx+vx*s); view.setAttribute('y',offy+vy*s);
   view.setAttribute('width',vw*s); view.setAttribute('height',vh*s);
 }
-mmsvg.addEventListener('click',e=>{
-  const rect=mmsvg.getBoundingClientRect();
-  const s=mmsvg._s,offx=mmsvg._ox,offy=mmsvg._oy;
-  const wx=((e.clientX-rect.left)-offx)/s, wy=((e.clientY-rect.top)-offy)/s;
+mmsvg.addEventListener('click',function(e){
+  var rect=mmsvg.getBoundingClientRect();
+  var s=mmsvg._s, offx=mmsvg._ox, offy=mmsvg._oy;
+  var wx=((e.clientX-rect.left)-offx)/s, wy=((e.clientY-rect.top)-offy)/s;
   tx=stage.clientWidth/2 - wx*scale; ty=stage.clientHeight/2 - wy*scale;
   applyTransform();
 });
@@ -826,12 +838,14 @@ mmsvg.addEventListener('click',e=>{
 //==================================================================
 //  SCHEMA TOOLTIP (edge hover)
 //==================================================================
-const schemaEl=document.getElementById('schema');
+var schemaEl=document.getElementById('schema');
 function showSchema(ev,sch){
   schemaEl.style.display='block';
-  schemaEl.innerHTML=`<div class="h">${sch.h}</div>`+
-    sch.rows.map(r=>`<div class="row"><span class="key">${r[0]}</span>: <span class="ty">${r[1]}</span></div>`).join('');
-  let x=ev.clientX+14, y=ev.clientY+14;
+  schemaEl.innerHTML='<div class="h">'+sch.h+'</div>'+
+    sch.rows.map(function(r){
+      return '<div class="row"><span class="key">'+r[0]+'</span>: <span class="ty">'+r[1]+'</span></div>';
+    }).join('');
+  var x=ev.clientX+14, y=ev.clientY+14;
   if(x+260>window.innerWidth) x=ev.clientX-260;
   schemaEl.style.left=x+'px'; schemaEl.style.top=y+'px';
 }
@@ -840,152 +854,161 @@ function hideSchema(){ schemaEl.style.display='none'; }
 //==================================================================
 //  DETAIL PANEL
 //==================================================================
-const panel=document.getElementById('panel');
-const pbody=document.getElementById('pbody');
-let selId=null;
+var panel=document.getElementById('panel');
+var pbody=document.getElementById('pbody');
+var selId=null;
 function openPanel(id){
-  const n=nodeById[id]; if(!n)return;
+  var n=nodeById[id]; if(!n) return;
   if(selId) nodeById[selId].el.classList.remove('sel');
   selId=id; n.el.classList.add('sel');
   document.getElementById('picon').textContent=n.icon;
   document.getElementById('pname').textContent=n.name;
-  const kindLabel={source:'SOURCE',exp:'EXPERIENCE',skill:'TRANSFORM',metric:'METRIC',sink:'SINK',ml:'ML'}[n.kind];
+  var kindLabel={source:'SOURCE',decision:'DECISION',okr:'EXECUTION',metric:'METRIC',sink:'SINK',ai:'AI.AUTO'}[n.kind];
   document.getElementById('pmeta').innerHTML=
-    `<span>${statusPill(n.status)}</span>`+
-    `<span style="color:var(--txt-faint)">${kindLabel} · ${TYPE_LABEL[n.type]||'TASK'}</span>`+
-    `<span style="color:var(--txt-faint)">⏱ ${n.dur}</span>`;
+    '<span>'+statusPill(n.status)+'</span>'+
+    '<span style="color:var(--txt-faint)">'+kindLabel+' · '+(TYPE_LABEL[n.type]||'TASK')+'</span>'+
+    '<span style="color:var(--txt-faint)">&#9201; '+n.dur+'</span>';
 
-  let html='';
-  html+=`<div class="sec"><h4>description</h4><div class="desc">${n.desc}</div></div>`;
-  if(n.period||n.title){
-    html+=`<div class="sec"><h4>task metadata</h4>`;
-    (n.kv||[]).forEach(kv=>{ html+=`<div class="kv"><span class="k">${kv[0]}</span><span class="v">${kv[1]}</span></div>`; });
-    html+=`</div>`;
-  } else if(n.kv){
-    html+=`<div class="sec"><h4>params</h4>`;
-    n.kv.forEach(kv=>{
-      let v=kv[1];
-      if(n.contact){
-        if(kv[0]==='email') v=`<a href="mailto:${v}" style="color:var(--accent)">${v}</a>`;
-        if(kv[0]==='github') v=`<a href="https://${v}" target="_blank" style="color:var(--accent)">${v}</a>`;
-        if(kv[0]==='tel') v=`<a href="tel:010-0000-0000" style="color:var(--accent)">${v}</a>`;
-      }
-      html+=`<div class="kv"><span class="k">${kv[0]}</span><span class="v">${v}</span></div>`;
+  var html='';
+  html+='<div class="sec"><h4>description</h4><div class="desc">'+n.desc+'</div></div>';
+  if(n.kv){
+    html+='<div class="sec"><h4>params</h4>';
+    n.kv.forEach(function(kv){
+      html+='<div class="kv"><span class="k">'+kv[0]+'</span><span class="v">'+kv[1]+'</span></div>';
     });
-    html+=`</div>`;
+    html+='</div>';
   }
   if(n.ach){
-    html+=`<div class="sec"><h4>output metrics</h4>`;
-    n.ach.forEach(a=>{ html+=`<div class="ach"><span class="n">${a[0]}</span><span class="t">${a[1]}</span></div>`; });
-    html+=`</div>`;
+    html+='<div class="sec"><h4>output metrics</h4>';
+    n.ach.forEach(function(a){ html+='<div class="ach"><span class="n">'+a[0]+'</span><span class="t">'+a[1]+'</span></div>'; });
+    html+='</div>';
   }
   if(n.tags){
-    html+=`<div class="sec"><h4>tags</h4><div class="tags">`+
-      n.tags.map(t=>`<span class="tag ${n.kind==='skill'?'hl':''}">${t}</span>`).join('')+`</div></div>`;
+    html+='<div class="sec"><h4>tags</h4><div class="tags">'+
+      n.tags.map(function(t){ return '<span class="tag '+(n.kind==='okr'?'hl':'')+'">'+t+'</span>'; }).join('')+
+      '</div></div>';
   }
-  // upstream / downstream
-  const up=EDGES.filter(e=>e[1]===id).map(e=>nodeById[e[0]]?.name).filter(Boolean);
-  const down=EDGES.filter(e=>e[0]===id).map(e=>nodeById[e[1]]?.name).filter(Boolean);
-  html+=`<div class="sec"><h4>dependencies</h4>`;
-  html+=`<div class="kv"><span class="k">upstream ↑</span><span class="v">${up.length?up.join(', '):'— (root source)'}</span></div>`;
-  html+=`<div class="kv"><span class="k">downstream ↓</span><span class="v">${down.length?down.join(', '):'— (terminal sink)'}</span></div>`;
-  html+=`</div>`;
-  // fake task log
-  html+=`<div class="sec"><h4>task log</h4><div class="logbox">`+
-    `<div class="l"><span class="t">[${n.runs}]</span> queued → scheduler</div>`+
-    `<div class="l"><span class="t">[exec]</span> task_instance started</div>`+
+  var up=EDGES.filter(function(e){ return e[1]===id; }).map(function(e){ return nodeById[e[0]]?nodeById[e[0]].name:null; }).filter(Boolean);
+  var down=EDGES.filter(function(e){ return e[0]===id; }).map(function(e){ return nodeById[e[1]]?nodeById[e[1]].name:null; }).filter(Boolean);
+  html+='<div class="sec"><h4>dependencies</h4>';
+  html+='<div class="kv"><span class="k">upstream &#8593;</span><span class="v">'+(up.length?up.join(', '):'&#8212; (root source)')+'</span></div>';
+  html+='<div class="kv"><span class="k">downstream &#8595;</span><span class="v">'+(down.length?down.join(', '):'&#8212; (terminal sink)')+'</span></div>';
+  html+='</div>';
+  html+='<div class="sec"><h4>task log</h4><div class="logbox">'+
+    '<div class="l"><span class="t">['+n.runs+']</span> queued &#8594; scheduler</div>'+
+    '<div class="l"><span class="t">[exec]</span> task_instance started</div>'+
     (n.status==='running'
-      ? `<div class="l w">[exec] running… (live)</div>`
-      : `<div class="l ok">[exec] marked SUCCESS in ${n.dur}</div>`)+
-    `</div></div>`;
+      ? '<div class="l w">[exec] running&#8230; (live)</div>'
+      : '<div class="l ok">[exec] marked SUCCESS in '+n.dur+'</div>')+
+    '</div></div>';
   pbody.innerHTML=html;
   pbody.scrollTop=0;
   panel.classList.add('open');
-  if(n.ml) requestAnimationFrame(()=>{ if(document.getElementById('mlcanvas')) initML(); });
+  if(n.ml) requestAnimationFrame(function(){ if(document.getElementById('aicanvas')) initAI(); });
 }
-function closePanel(){ panel.classList.remove('open'); if(selId){nodeById[selId].el.classList.remove('sel');selId=null;} }
+function closePanel(){ panel.classList.remove('open'); if(selId){ nodeById[selId].el.classList.remove('sel'); selId=null; } }
 document.getElementById('pclose').onclick=closePanel;
-stage.addEventListener('click',e=>{ if(!moved && !e.target.closest('.node')) closePanel(); });
+stage.addEventListener('click',function(e){ if(!moved && !e.target.closest('.node')) closePanel(); });
 
 //==================================================================
-//  RUN PIPELINE — topological execution sweep
+//  RUN PIPELINE — 위상정렬 실행 스윕 (Meeting → Retro)
 //==================================================================
 function topoOrder(){
-  const indeg={}, adj={};
-  NODES.forEach(n=>{indeg[n.id]=0;adj[n.id]=[];});
-  EDGES.forEach(e=>{ if(adj[e[0]]&&indeg[e[1]]!=null){adj[e[0]].push(e[1]);indeg[e[1]]++;} });
-  const q=NODES.filter(n=>indeg[n.id]===0).map(n=>n.id);
-  const order=[];
+  var indeg={}, adj={};
+  NODES.forEach(function(n){ indeg[n.id]=0; adj[n.id]=[]; });
+  EDGES.forEach(function(e){ if(adj[e[0]]&&indeg[e[1]]!=null){ adj[e[0]].push(e[1]); indeg[e[1]]++; } });
+  var q=NODES.filter(function(n){ return indeg[n.id]===0; }).map(function(n){ return n.id; });
+  var order=[];
   while(q.length){
-    const id=q.shift(); order.push(id);
-    (adj[id]||[]).forEach(t=>{ if(--indeg[t]===0) q.push(t); });
+    var id=q.shift(); order.push(id);
+    (adj[id]||[]).forEach(function(t){ if(--indeg[t]===0) q.push(t); });
   }
   return order;
 }
-let running=false;
-const runBtn=document.getElementById('runBtn');
-const runbar=document.getElementById('runbar');
+var running=false;
+var runBtn=document.getElementById('runBtn');
+var runbar=document.getElementById('runbar');
 runBtn.onclick=runPipeline;
-async function runPipeline(){
+
+function runPipeline(){
   if(running) return;
   running=true;
   runBtn.classList.add('running');
-  runBtn.innerHTML='<span class="tri">■</span> RUNNING…';
-  // reset
-  NODES.forEach(n=>{ n.status='queued'; n.el.dataset.status='queued'; updatePill(n); });
-  edgeEls.forEach(e=>{ e.active=false; });
-  const order=topoOrder();
-  const total=order.length;
-  for(let i=0;i<order.length;i++){
-    const n=nodeById[order[i]];
+  runBtn.innerHTML='<span class="tri">&#9632;</span> RUNNING&#8230;';
+  NODES.forEach(function(n){ n.status='queued'; n.el.dataset.status='queued'; updatePill(n); });
+  edgeEls.forEach(function(e){ e.active=false; });
+  var order=topoOrder();
+  var total=order.length;
+  var i=0;
+  function step(){
+    if(i>=order.length){
+      runbar.style.width='100%';
+      setTimeout(function(){
+        runbar.style.width='0%';
+        edgeEls.forEach(function(e){ e.active=true; });
+        runBtn.classList.remove('running');
+        runBtn.innerHTML='<span class="tri">&#10003;</span> RUN AGAIN';
+        running=false;
+        // 자동 재실행: 완료 후 2초 뒤 다시 스윕
+        setTimeout(runPipeline, 2000);
+      }, 400);
+      return;
+    }
+    var n=nodeById[order[i]];
     n.status='running'; n.el.dataset.status='running'; updatePill(n);
-    // activate incoming edges
-    edgeEls.forEach(e=>{ if(e.b===n.id){ e.active=true; e.phase=0; e.speed=0.9; } });
+    edgeEls.forEach(function(e){ if(e.b===n.id){ e.active=true; e.phase=0; e.speed=0.9; } });
     runbar.style.width=((i+0.5)/total*100)+'%';
-    // briefly flash the node by centering minimap node highlight
-    await sleep(n.metric?170:300);
-    n.status='success'; n.el.dataset.status='success'; updatePill(n);
-    edgeEls.forEach(e=>{ if(e.b===n.id){ e.speed=0.12+Math.random()*0.1; } });
+    var delay=n.metric?170:300;
+    setTimeout(function(){
+      n.status='success'; n.el.dataset.status='success'; updatePill(n);
+      edgeEls.forEach(function(e){ if(e.b===n.id){ e.speed=0.12+Math.random()*0.1; } });
+      i++;
+      step();
+    }, delay);
   }
-  runbar.style.width='100%';
-  await sleep(400);
-  runbar.style.width='0%';
-  edgeEls.forEach(e=>{ e.active=true; });
-  runBtn.classList.remove('running');
-  runBtn.innerHTML='<span class="tri">✓</span> RUN AGAIN';
-  running=false;
+  step();
 }
+
 function updatePill(n){
   if(n.metric) return;
-  const pill=n.el.querySelector('.pill');
+  var pill=n.el.querySelector('.pill');
   if(!pill) return;
-  const map={success:['success','SUCCESS'],running:['running','RUNNING'],queued:['queued','QUEUED'],idle:['idle','IDLE']};
-  const [c,t]=map[n.status]||map.idle;
-  pill.className='pill '+c;
-  pill.innerHTML='<span class="d"></span>'+t;
+  var map={success:['success','SUCCESS'],running:['running','RUNNING'],queued:['queued','QUEUED'],idle:['idle','IDLE']};
+  var ct=map[n.status]||map.idle;
+  pill.className='pill '+ct[0];
+  pill.innerHTML='<span class="d"></span>'+ct[1];
 }
-function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+function sleep(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
 
 //==================================================================
-//  INIT
+//  INIT — 자동재생 보장 (레이아웃 게이트 + setTimeout 재시도)
 //==================================================================
+var booted=false;
 function boot(){
+  if(booted) return;
+  booted=true;
   sizeGrid();
   buildMinimap();
   fit();
-  // entrance: nudge run-mi to running pill state already (present day)
-  const mi=nodeById['exp_mi']; mi.status='running'; mi.el.dataset.status='running'; updatePill(mi);
-  // auto-hide hint
-  setTimeout(()=>{const h=document.getElementById('hint'); if(h) h.style.opacity='0';},6500);
+  // exec_runbook 은 현재 운영 중 상태
+  var rb=nodeById['exec_runbook'];
+  rb.status='running'; rb.el.dataset.status='running'; updatePill(rb);
+  // 힌트 자동 숨김
+  setTimeout(function(){ var h=document.getElementById('hint'); if(h) h.style.opacity='0'; }, 6500);
+  // 자동 실행 스윕 시작 — 레이아웃이 준비된 후 바로 시작
+  setTimeout(runPipeline, 800);
 }
-window.addEventListener('resize',()=>{ sizeGrid(); buildMinimap(); updateMinimap(); });
 
-// await fonts for headless PDF correctness, then boot
+window.addEventListener('resize',function(){ sizeGrid(); buildMinimap(); updateMinimap(); });
+
+// 1차: 폰트 로드 완료 후 boot
 if(document.fonts && document.fonts.ready){
   document.fonts.ready.then(boot);
 } else { boot(); }
-// fallback boot in case fonts.ready never resolves in headless
-setTimeout(()=>{ if(!mmsvg._s) boot(); }, 300);
+// 2차 fallback: 폰트 이벤트가 오지 않는 헤드리스 환경 대비
+setTimeout(function(){ if(!booted) boot(); }, 300);
+// 3차 fallback: 레이아웃이 아직 미완료인 경우 재시도
+setTimeout(function(){ if(!booted) boot(); }, 800);
 </script>
 </body>
 </html>

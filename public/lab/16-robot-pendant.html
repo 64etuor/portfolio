@@ -694,7 +694,7 @@ body{
           <div class="detail" id="detail"><!-- filled by JS --></div>
         </div>
         <div class="lcd-status">
-          <div class="seg">TOOL <b id="st-tool">UT:1 [WELD-TCP]</b></div>
+          <div class="seg">TOOL <b id="st-tool">UT:1 [PROC-TCP]</b></div>
           <div class="seg amb">SPD <b id="st-spd">100%</b></div>
           <div class="seg">MOTN <b id="st-motn">FINE</b></div>
           <div class="seg grow" id="st-msg">2020.08 — 현재 · 5 WAYPOINTS TAUGHT</div>
@@ -800,19 +800,19 @@ const WAYPOINTS = [
     code:[["mv","J"],["pt"," P[1]"],["sp"," 100% FINE"],["cm","  ; 은성-배터리팩 총괄"]],
     company:"은성에스아이티", role:"생산관리과장 · 배터리팩 생산 총괄",
     period:"2020.08 — 2022.11",
-    desc:"배터리팩 생산라인 전체를 총괄. 공정 재설계와 협상으로 제품 단가를 +30% 개선하고, 운영경비를 −85% 절감. 비전검사 도입으로 출하 불량 0건을 달성하고 IATF16949 품질시스템을 구축·운영했다.",
-    regs:[["단가","+30%"],["운영경비","−85%"],["불량","0건"],["품질","IATF16949"]],
+    desc:"배터리팩 생산라인 전체를 총괄. 공정 재설계와 협상으로 제품 단가 구조를 개선하고 운영경비를 절감. 비전검사 도입으로 출하 품질을 끌어올리고 IATF16949 품질시스템을 구축·운영했다.",
+    regs:[["배터리팩","생산 총괄"],["원가","구조 재설계"],["비전","검사 도입"],["품질","IATF16949"]],
     tool:"UT:1 [PACK-JIG]",
     pose:[ -42, 28, -38, 0, 35, 10 ]
   },
   {
     id:2, co:"elen", speed:75, motn:"CNT50", weld:true,
-    code:[["mv","L"],["pt"," P[2]"],["sp"," 75% CNT50"],["cm","  ; 이랜텍-용착 DOE"]],
+    code:[["mv","L"],["pt"," P[2]"],["sp"," 75% CNT50"],["cm","  ; 이랜텍-공정 재교시(편차보정)"]],
     company:"이랜텍", role:"생산라인 PM · 파트장",
     period:"2022.11 — 2023.09",
-    desc:"DOE(실험계획법)로 초음파 용착 불량을 15%→0%로 잡고, Jig 개발과 라인 밸런싱으로 사이클타임을 −49%, 생산성을 +24% 끌어올렸다. 라인 PM으로서 작업표준(SOP)과 PFMEA를 정비했다.",
-    regs:[["용착불량","15%→0%"],["C/T","−49%"],["생산성","+24%"],["Jig","개발"]],
-    tool:"UT:1 [WELD-TCP]",
+    desc:"DOE(실험계획법)로 공정 핵심 인자를 규명하고, Jig 개발과 라인 밸런싱으로 사이클타임과 생산성을 끌어올렸다. 라인 PM으로서 작업표준(SOP)과 PFMEA를 정비했다.",
+    regs:[["DOE","공정 최적화"],["Jig","개발"],["라인","밸런싱"],["SOP","PFMEA"]],
+    tool:"UT:1 [PROC-TCP]",
     pose:[ -8, 52, -64, 5, 40, -12 ]
   },
   {
@@ -820,8 +820,8 @@ const WAYPOINTS = [
     code:[["mv","J"],["pt"," P[3]"],["sp"," 50% FINE"],["cm","  ; 솔라엣지-MES/DB"]],
     company:"솔라엣지", role:"공정기술 엔지니어",
     period:"2023.09 — 2024.12",
-    desc:"공정 데이터 DB와 대시보드를 구축해 표준시간(ST)을 −50% 단축. 검사성적서 자동발행 및 MES 연동으로 일일 사무공수를 −451분/일 절감했다. 데이터 기반 공정관리로 전환을 주도.",
-    regs:[["ST","−50%"],["사무공수","−451분/일"],["검사성적서","자동발행"],["MES","연동"]],
+    desc:"공정 데이터 DB와 대시보드를 구축해 표준시간(ST)을 단축. 검사성적서 자동발행 및 MES 연동으로 일일 사무공수를 절감했다. 데이터 기반 공정관리로 전환을 주도.",
+    regs:[["ST","표준시간 단축"],["사무공수","자동화 절감"],["검사성적서","자동발행"],["MES","연동"]],
     tool:"UT:2 [PROBE]",
     pose:[ 30, 40, -50, -8, 30, 24 ]
   },
@@ -1000,22 +1000,22 @@ function setMode(m){
 }
 
 /* ============================================================
-   WELD RE-TEACH DELIGHT  (P[2]: 불량 15% -> 0%)
+   RE-TEACH DELIGHT  (P[2]: 위치 편차 재교시로 수렴)
    ============================================================ */
 function startWeldReteach(){
   S.weldFx = 1;            // engage spark fx in canvas
-  $("st-msg").textContent = "DOE 용착 재교시 중… 불량 15%";
-  toast("⚠ 용착 불량 검출 15% — 재교시(RE-TEACH) 실행", true);
+  $("st-msg").textContent = "재교시 중… 위치 편차 0.15mm";
+  toast("⚠ 위치 편차 검출 — 재교시(RE-TEACH) 실행", true);
   let pct = 15;
   const t = setInterval(()=>{
     pct -= 3;
     if(pct<=0){
       pct=0; clearInterval(t);
       S.weldFx = 0; S.weldDone = true;
-      $("st-msg").textContent = "RE-TEACH 완료 · 용착 불량 0% ✓";
-      toast("✓ P[2] 재교시 완료 — 불량 0% 달성");
+      $("st-msg").textContent = "RE-TEACH 완료 · 편차 수렴 ✓";
+      toast("✓ P[2] 재교시 완료 — 편차 보정 수렴");
     } else {
-      $("st-msg").textContent = `DOE 용착 재교시 중… 불량 ${pct}%`;
+      $("st-msg").textContent = `재교시 중… 위치 편차 ${(pct/100).toFixed(2)}mm`;
     }
   }, 320);
 }

@@ -254,14 +254,14 @@
   <div class="right">
     <div class="sectlabel">SIGNAL READOUTS</div>
     <div class="readouts">
-      <div class="ro"><div class="l">운영경비</div><div class="n">−85%</div></div>
-      <div class="ro"><div class="l">표준시간 ST</div><div class="n">−50%</div></div>
-      <div class="ro"><div class="l">사이클타임 C/T</div><div class="n">−49%</div></div>
-      <div class="ro"><div class="l">용착 불량률</div><div class="n hot" id="weldro">15→0%</div></div>
-      <div class="ro"><div class="l">생산성</div><div class="n teal">+24%</div></div>
-      <div class="ro"><div class="l">단가</div><div class="n teal">+30%</div></div>
-      <div class="ro"><div class="l">사무공수</div><div class="n amb">−451분/일</div></div>
-      <div class="ro"><div class="l">불량 잔존</div><div class="n teal">0건</div></div>
+      <div class="ro"><div class="l">VIDEO 프레임</div><div class="n">60 fps</div></div>
+      <div class="ro"><div class="l">검사 주기</div><div class="n">5 min</div></div>
+      <div class="ro"><div class="l">스트림 채널</div><div class="n">4 ch</div></div>
+      <div class="ro"><div class="l">아노말리 LOBE</div><div class="n hot" id="weldro">HOT</div></div>
+      <div class="ro"><div class="l">처리량</div><div class="n teal">live</div></div>
+      <div class="ro"><div class="l">GPU 필터</div><div class="n teal">WebGL2</div></div>
+      <div class="ro"><div class="l">이벤트 큐</div><div class="n amb">async</div></div>
+      <div class="ro"><div class="l">SSOT 적재</div><div class="n teal">PG17</div></div>
     </div>
 
     <div class="sectlabel">ACOUSTIC EVENT LOG</div>
@@ -280,7 +280,7 @@
     <div class="seg">NOISE FLOOR<b>−88 dB</b></div>
     <div class="seg">SNR<b class="amb" id="snr">21.4 dB</b></div>
     <div class="seg">SWEEP<b id="sweep">0.0 s</b></div>
-    <div class="seg right">DOE EVENT ARMED · CH-WELD ANOMALY MONITOR · click channel label to inspect ▸</div>
+    <div class="seg right">ANOMALY EVENT ARMED · CH4 ANOMALY MONITOR · click channel label to inspect ▸</div>
   </div>
 </div>
 
@@ -337,12 +337,12 @@
     },
     {
       id:"CH4", color:"#ff7a5c", key:"weld",
-      name:"솔라엣지 Power BI / RPA", short:"TELEMETRY + WELD DOE",
+      name:"솔라엣지 Power BI / RPA", short:"TELEMETRY + ANOMALY",
       freq:"TELEM", hz:"live",
-      band:"BAND 3 · 실시간 텔레메트리 · OEE/불량/공수",
-      desc:"생산현황 · 불량 · OEE · 공수의 <em>실시간 텔레메트리</em>를 Power BI dataset 갱신 트리거와 RPA로 자동화. 이 채널에는 이랜텍 <em>초음파 용착 불량 핫 아노말리</em>가 기록되어 있으며 — <em>DOE 적용 마커</em> 이후 불량률이 15%에서 0% 베이스라인으로 냉각되는 과정이 그대로 남아 있다.",
-      stack:["Power BI","RPA","DOE / 실험계획","Dataset Trigger","OEE Telemetry","초음파 용착"],
-      out:[["용착 불량","15% → 0%","hot"],["방법","DOE 실험계획"],["불량 잔존","0건"],["갱신","dataset trigger"]],
+      band:"BAND 3 · 실시간 텔레메트리 · OEE/공정 이상감지",
+      desc:"생산현황 · OEE · 공수의 <em>실시간 텔레메트리</em>를 Power BI dataset 갱신 트리거와 RPA로 자동화. 이 채널에는 공정 <em>핫 아노말리</em>가 기록되어 있으며 — <em>보정 마커</em> 이후 이상 신호가 베이스라인으로 냉각되는 과정이 그대로 남아 있다.",
+      stack:["Power BI","RPA","이상감지","Dataset Trigger","OEE Telemetry","baseline 수렴"],
+      out:[["아노말리","HOT → CLEARED","hot"],["방법","베이스라인 보정"],["갱신","dataset trigger"],["자동화","RPA"]],
       base:0.30, var:0.16, speed:1.1, weld:true   // anomaly band logic in render
     }
   ];
@@ -665,10 +665,10 @@
     }
     if(weldPhase<DOE_AT && doeFired){ doeFired=false; }  // re-arm each cycle
 
-    // weld readout flips at DOE
+    // anomaly readout cools after the correction marker
     const weldRo=document.getElementById("weldro");
-    if(weldPhase>=DOE_AT){ weldRo.textContent="0% ✓"; weldRo.className="n teal"; }
-    else { weldRo.textContent="15→0%"; weldRo.className="n hot"; }
+    if(weldPhase>=DOE_AT){ weldRo.textContent="CLEARED"; weldRo.className="n teal"; }
+    else { weldRo.textContent="HOT"; weldRo.className="n hot"; }
 
     acc+=dt;
     let pushed=0;
@@ -727,7 +727,7 @@
       octx.fillStyle="#ffe27a";
       octx.font="9px 'Share Tech Mono', monospace";
       octx.textBaseline="top";
-      octx.fillText("◆ DOE 적용 →0%",x+6,y+4);
+      octx.fillText("◆ 이상 보정 마커",x+6,y+4);
       octx.restore();
     }
   }
@@ -743,14 +743,14 @@
     ['wn','CH3','Notion sync · agent job queued · async'],
     ['ok','CH4','OEE telemetry push · dataset trigger fired'],
     ['cy','CH1','MediaPipe face mesh · 468 lm · on-device'],
-    ['ok','CH4','RPA routine · 사무공수 −451분/일'],
+    ['ok','CH4','RPA routine · dataset trigger 갱신'],
     ['wn','CH3','calendar delta · GitHub PR merged'],
   ];
   let evi=0;
   function logEvent(kind){
     let cls,tag,msg;
     if(kind==="doe"){
-      cls="er";tag="CH4";msg="◆ DOE 적용 — 초음파 용착 불량률 15% → 0% · 냉각 시작";
+      cls="er";tag="CH4";msg="◆ 이상 보정 적용 — 공정 아노말리 HOT → 베이스라인 · 냉각 시작";
     }else{
       const e=evPool[evi%evPool.length];evi++;
       cls=e[0];tag=e[1];msg=e[2];

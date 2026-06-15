@@ -384,13 +384,13 @@ footnote,.foot{display:block;text-align:center;font-family:var(--mono);font-size
       <!-- DELIGHT: defect → reprint -->
       <div class="defect" id="defect">
         <div class="dh">
-          <span class="lbl"><span class="dot"></span><span id="def-lbl">DEFECT DETECTED · 용착불량 15%</span></span>
+          <span class="lbl"><span class="dot"></span><span id="def-lbl">DEFECT DETECTED · 레이어 적층 불량</span></span>
           <span id="def-tag" style="color:var(--ink-3)">layer 042</span>
         </div>
         <div class="db">
           <div class="dcanvaswrap"><canvas id="defectcv"></canvas></div>
-          <div class="dtxt" id="def-txt"><b>이랜텍 라인:</b> 용착 불량 15% 검출. DOE로 파라미터 최적화 후 <b>재출력(re-print)</b> 시 불량 0%로 솔리드화.</div>
-          <button class="reprint" id="reprintbtn">▶ RE-PRINT LAYER 042 — DOE 최적화 적용</button>
+          <div class="dtxt" id="def-txt"><b>품질 검출:</b> layer 042 적층 비드 불량 검출. 슬라이싱 파라미터 최적화 후 <b>재출력(re-print)</b> 시 불량 0%로 솔리드화.</div>
+          <button class="reprint" id="reprintbtn">▶ RE-PRINT LAYER 042 — 파라미터 최적화 적용</button>
         </div>
       </div>
     </div>
@@ -445,22 +445,23 @@ const CAREER = [
     body:"생산 데이터 DB·대시보드 구축, LOB 분석. 표준시간(ST) −50% 단축, 검사성적서 자동발행 시스템, MES 구축으로 사무공수 −451분/일 절감.",
     tags:[["MES구축",1],["ST −50%",1],["LOB분석",0],["자동발행",0],["BI",0]] },
   { org:"이랜텍 (ELENTEC)", role:"생산라인 PM / 파트장", date:"2022.11–2023.09", layerNo:"LAYER 023–044",
-    body:"DOE 기반 용착불량 15%→0% 개선, Cycle Time −49%, 생산성 +24% 향상. 전용 Jig 개발로 공정 안정화 및 품질 확보.",
-    tags:[["DOE",1],["용착 15%→0%",1],["C/T −49%",1],["Jig개발",1]] },
+    body:"DOE 기반 용착 공정 개선, 사이클타임 단축, 생산성 향상. 전용 Jig 개발로 공정 안정화 및 품질 확보.",
+    tags:[["DOE",1],["공정개선",1],["Jig개발",1]] },
   { org:"은성에스아이티", role:"생산관리과장 · 2차전지 배터리팩 총괄", date:"2020.08–2022.11", layerNo:"LAYER 001–022 · base",
     body:"단가 30%+ 재협상, 운영경비 85%+ 절감. 비전검사 도입으로 불량 0건 달성, IATF16949 품질시스템 운영. 2차전지 배터리팩 생산 총괄.",
     tags:[["단가 +30%",1],["운영경비 −85%",1],["비전검사",0],["불량 0건",1],["IATF16949",0]] },
 ];
 
+// QC = print-quality report (dimensional/surface readouts), not career KPIs.
 const METRICS = [
-  { label:"운영경비", val:"−85%", cls:"good", w:95 },
-  { label:"표준시간 ST", val:"−50%", cls:"good", w:70 },
-  { label:"Cycle Time", val:"−49%", cls:"good", w:69 },
-  { label:"용착불량", val:"15%→0%", cls:"good", w:100 },
-  { label:"생산성", val:"+24%", cls:"up", w:55 },
-  { label:"단가 재협상", val:"+30%", cls:"up", w:60 },
-  { label:"사무공수", val:"−451분/일", cls:"good", w:88 },
-  { label:"품질 불량", val:"0건", cls:"zero", w:100 },
+  { label:"치수 정밀도 ±", val:"0.08mm", cls:"good", w:95 },
+  { label:"표면 거칠기 Ra", val:"6.4µm", cls:"good", w:70 },
+  { label:"레이어 접착", val:"강함", cls:"good", w:88 },
+  { label:"용착/이음 품질", val:"PASS", cls:"good", w:100 },
+  { label:"인필 밀도", val:"20%", cls:"up", w:55 },
+  { label:"치수 정확도", val:"99.4%", cls:"up", w:92 },
+  { label:"빌드 시간", val:"42분", cls:"good", w:60 },
+  { label:"출력 불량", val:"0건", cls:"zero", w:100 },
 ];
 
 const SKILLS = [
@@ -1134,16 +1135,16 @@ function drawDefect(){
 function startReprint(){
   if(defectAnim.fixing||defectAnim.fixed) return;
   defectAnim.fixing=true; defectAnim.fixStart=defectAnim.t;
-  document.getElementById("def-lbl").textContent="RE-PRINTING · DOE 파라미터 최적화…";
+  document.getElementById("def-lbl").textContent="RE-PRINTING · 파라미터 최적화…";
   const btn=document.getElementById("reprintbtn");
   btn.textContent="… 재출력 중 (sweep)";
 }
 function onDefectFixed(){
   const d=document.getElementById("defect");
   d.classList.add("fixed");
-  document.getElementById("def-lbl").textContent="RESOLVED · 용착불량 0%";
+  document.getElementById("def-lbl").textContent="RESOLVED · 적층 불량 0%";
   document.getElementById("def-tag").textContent="layer 042 ✓";
-  document.getElementById("def-txt").innerHTML="<b>완료:</b> DOE 최적화로 용착 파라미터 재설정. 동일 레이어 재출력 결과 <b>불량 0%</b> — 솔리드 비드로 깨끗하게 적층됨.";
+  document.getElementById("def-txt").innerHTML="<b>완료:</b> 슬라이싱 파라미터 재설정. 동일 레이어 재출력 결과 <b>불량 0%</b> — 솔리드 비드로 깨끗하게 적층됨.";
   document.getElementById("reprintbtn").textContent="✓ RE-PRINT COMPLETE — 0% DEFECT";
 }
 document.getElementById("reprintbtn").addEventListener("click", startReprint);
@@ -1187,10 +1188,10 @@ function reset(){
   document.getElementById("statetag").classList.remove("done");
   document.getElementById("statetxt").textContent="PRINTING — PYH.gcode";
   document.getElementById("defect").classList.remove("fixed");
-  document.getElementById("def-lbl").textContent="DEFECT DETECTED · 용착불량 15%";
+  document.getElementById("def-lbl").textContent="DEFECT DETECTED · 레이어 적층 불량";
   document.getElementById("def-tag").textContent="layer 042";
-  document.getElementById("def-txt").innerHTML="<b>이랜텍 라인:</b> 용착 불량 15% 검출. DOE로 파라미터 최적화 후 <b>재출력(re-print)</b> 시 불량 0%로 솔리드화.";
-  document.getElementById("reprintbtn").textContent="▶ RE-PRINT LAYER 042 — DOE 최적화 적용";
+  document.getElementById("def-txt").innerHTML="<b>품질 검출:</b> layer 042 적층 비드 불량 검출. 슬라이싱 파라미터 최적화 후 <b>재출력(re-print)</b> 시 불량 0%로 솔리드화.";
+  document.getElementById("reprintbtn").textContent="▶ RE-PRINT LAYER 042 — 파라미터 최적화 적용";
   document.getElementById("mat-meta").textContent=`로드된 스풀 0 / ${SKILLS.length}`;
   emitHeader();
 }

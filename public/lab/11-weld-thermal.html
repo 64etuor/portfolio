@@ -238,15 +238,13 @@
     </div>
   </div>
 
-  <!-- metric tickers -->
+  <!-- metric tickers — 용착/용접 서사 전용 (다른 KPI는 각 씬이 소유) -->
   <div id="metrics">
     <div class="m"><span class="lab">용착불량 &nbsp;</span><span class="num up" id="mt-weld">15→0%</span></div>
-    <div class="m"><span class="lab">운영경비 &nbsp;</span><span class="num dn">−85%</span></div>
-    <div class="m"><span class="lab">C/T &nbsp;</span><span class="num dn">−49%</span></div>
-    <div class="m"><span class="lab">ST &nbsp;</span><span class="num dn">−50%</span></div>
-    <div class="m"><span class="lab">생산성 &nbsp;</span><span class="num up">+24%</span></div>
-    <div class="m"><span class="lab">단가 &nbsp;</span><span class="num up">+30%</span></div>
-    <div class="m"><span class="lab">사무공수 &nbsp;</span><span class="num dn">−451분/일</span></div>
+    <div class="m"><span class="lab">결함유형 &nbsp;</span><span class="num dn">스패터·콜드랩</span></div>
+    <div class="m"><span class="lab">DOE 인자 &nbsp;</span><span class="num up">최적화</span></div>
+    <div class="m"><span class="lab">검사 &nbsp;</span><span class="num up">비전 박싱</span></div>
+    <div class="m"><span class="lab">비드 &nbsp;</span><span class="num up">균일</span></div>
   </div>
 
   <!-- active pass detail -->
@@ -365,13 +363,13 @@ function layoutScale(){
 const PASSES = [
   { yr:'2020.08–2022.11', co:'은성에스아이티', ro:'생산관리과장 · 배터리팩 총괄',
     x:0.20, y:0.40, peak:980,
-    desc:'배터리팩 라인 총괄 · <b>비전검사 도입</b>으로 <b>불량 0건</b>, 단가 <span class="hot">+30%</span> · 운영경비 <span class="hot">−85%</span> · <b>IATF16949</b> 대응.' },
+    desc:'배터리팩 라인 총괄 · <b>비전검사 도입</b>으로 출하 품질 안정화 · <b>IATF16949</b> 자동차 품질체계 대응.' },
   { yr:'2022.11–2023.09', co:'이랜텍', ro:'생산라인 PM · 파트장',
     x:0.40, y:0.56, peak:1480, signature:true,
-    desc:'<b>DOE</b>로 초음파 <span class="hot">용착불량 15% → 0%</span> · C/T <span class="hot">−49%</span> · 생산성 <span class="hot">+24%</span> · 전용 <b>Jig 개발</b>. — 핵심 용접 서사' },
+    desc:'<b>DOE</b> 인자 최적화로 초음파 <span class="hot">용착불량 15% → 0%</span> · 스패터·콜드랩 결함 제거 · 전용 <b>Jig 개발</b>·로봇 티칭. — 핵심 용접 서사' },
   { yr:'2023.09–2024.12', co:'솔라엣지', ro:'공정기술 엔지니어',
     x:0.60, y:0.40, peak:1120,
-    desc:'데이터 <b>DB · 대시보드 · MES</b> 구축 · 검사성적서 자동발행 · ST <span class="hot">−50%</span> · 사무공수 <span class="hot">−451분/일</span>.' },
+    desc:'데이터 <b>DB · 대시보드 · MES</b> 구축 · 검사성적서 <b>자동발행</b> — 현장 엔지니어링에서 데이터 엔지니어링으로의 전환.' },
   { yr:'2025.08–현재', co:'미러리스', ro:'총괄본부장',
     x:0.80, y:0.56, peak:1320,
     desc:'CRM · 키오스크 · 앱 · <b>FastAPI · AWS/GCP · CI/CD</b> · <b>RPA · AI MCP</b> 기반 전사 AX 총괄.' }
@@ -611,7 +609,7 @@ function doeStep(now,dt){
     if(f>=1){ doe.phase='done'; doe.t=0; }
   }
   else if(doe.phase==='done'){
-    doeState.textContent='✔ 용착불량 0% · 균일 비드 검증 완료 (C/T −49% · 생산성 +24%)';
+    doeState.textContent='✔ 용착불량 0% · 균일 비드 검증 완료 (DOE 인자 고정 · 비전 합격)';
     if(doe.t>2.2){
       doe.active=false; doe.phase='idle'; doe.defects=[];
       doeState.textContent='';

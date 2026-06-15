@@ -518,9 +518,12 @@ function norm2px(nx,ny){
   return [x,y];
 }
 
-let t=0;
-function draw(){
-  t+=0.006;
+let t=0, lastRaf=0;
+function draw(now){
+  const raw = lastRaf ? now - lastRaf : 16.67;
+  lastRaf = now;
+  const dt = Math.min(raw, 80) / 16.67; // normalized: 1.0 at 60fps
+  t += 0.006 * dt;
   ctx.clearRect(0,0,W,H);
 
   // grid backdrop
@@ -529,8 +532,8 @@ function draw(){
   for(let gx=0;gx<W;gx+=step){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,H);ctx.stroke();}
   for(let gy=0;gy<H;gy+=step){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(W,gy);ctx.stroke();}
 
-  // ease symMix toward target (vector ↔ symbol transition)
-  symMix += (symTarget - symMix)*0.08;
+  // ease symMix toward target (vector ↔ symbol transition) — dt-based
+  symMix += (symTarget - symMix) * (1 - Math.pow(0.92, dt));
   // compute positions w/ gentle drift (drift suppressed in symbol view)
   const driftAmt = 0.022*(1-symMix*0.85);
   nodes.forEach(n=>{
@@ -594,7 +597,7 @@ function draw(){
   // points
   nodes.forEach(n=>{
     const faded = dimFilter && dimFilter!==n.dom;
-    n.lit *= 0.96; // decay
+    n.lit *= Math.pow(0.96, dt); // dt-based decay
     const isHover = n===hoverNode;
     const glow = Math.max(n.lit, isHover?1:0);
     let r=n.rad*(1+glow*0.9);
@@ -757,55 +760,6 @@ function speedForTemp(){ // higher temp → slightly more jittery cadence
   return 16 + tempVal*30;
 }
 
-async function runStream(key){
-  const my=++runId;
-  // reset
-  stream.innerHTML="";caret.classList.remove("off");
-  qtextEl.textContent=QTEXT[key];
-  attnq.textContent="q: "+QTEXT[key];
-  totalTokens=0;tcountEl.textContent="0";tpsEl.textContent="0.0";
-  latEl.textContent="—";rcountEl.textContent="0";
-
-  // thinking phase
-  think.classList.add("on");retr.classList.add("on");
-  const rN=retrieveFor(key);
-  for(let p=0;p<=100;p+=8){ if(my!==runId)return; thinkpct.textContent=p+"%"; await wait(22); }
-  think.classList.remove("on");
-  rcountEl.textContent=rN;
-  const t0=performance.now();
-
-  // build attention + start pulsing
-  const toks=tokenize(ANSWERS[key]);
-  buildHeat(Math.min(48,Math.max(24,toks.length/3|0)));
-  attn.classList.add("on");
-  const heatTimer=setInterval(pulseHeat,90);
-
-  // stream tokens
-  for(let k=0;k<toks.length;k++){
-    if(my!==runId){clearInterval(heatTimer);return;}
-    const span=document.createElement("span");
-    span.className="tok";span.innerHTML=toks[k].html;
-    stream.appendChild(span);
-    totalTokens++;
-    tcountEl.textContent=totalTokens;
-    const elapsed=(performance.now()-t0)/1000;
-    tpsEl.textContent=(totalTokens/Math.max(elapsed,0.05)).toFixed(1);
-    scroll.scrollTop=scroll.scrollHeight;
-    // cadence: punctuation pauses longer; temp jitter
-    let d=speedForTemp();
-    if(/[.\n]/.test(toks[k].plain)) d+=140;
-    d += (Math.random()-0.5)*tempVal*40;
-    await wait(Math.max(6,d));
-  }
-  if(my!==runId){clearInterval(heatTimer);return;}
-  caret.classList.add("off");
-  clearInterval(heatTimer);
-  // settle heat low
-  [...heat.children].forEach(b=>{b.style.height="22%";b.style.opacity="0.2";});
-  retr.classList.remove("on");
-  latEl.textContent=((performance.now()-t0)/1000).toFixed(2)+"s";
-  tpsEl.textContent=(totalTokens/Math.max((performance.now()-t0)/1000,0.05)).toFixed(1);
-}
 function wait(ms){return new Promise(r=>setTimeout(r,ms));}
 
 /* ════════════════════════════════════════════════════════════════
@@ -813,10 +767,13 @@ function wait(ms){return new Promise(r=>setTimeout(r,ms));}
    ════════════════════════════════════════════════════════════════ */
 document.querySelectorAll(".chip-btn").forEach(btn=>{
   btn.addEventListener("click",()=>{
+    clearTimeout(autoCycleTimer);
     document.querySelectorAll(".chip-btn").forEach(b=>b.classList.remove("active"));
     btn.classList.add("active");
+    const key = btn.dataset.key;
+    cycleIdx = KEYS.indexOf(key);
     nodes.forEach(n=>n.lit=0);
-    runStream(btn.dataset.key);
+    runStreamAuto(key);
   });
 });
 
@@ -835,16 +792,180 @@ tempInput.addEventListener("input",()=>{
 });
 
 /* ════════════════════════════════════════════════════════════════
+   FAKE LIVE LOG — continuous embedding / query log stream
+   ════════════════════════════════════════════════════════════════ */
+const LOG_LINES = [
+  "[embed] PFMEA·CP·PFD·SOP            dim=1024  norm=0.9821",
+  "[embed] 비트겐슈타인 · 의미는 사용  dim=1024  norm=0.9743",
+  "[embed] GraphRAG                     dim=1024  norm=0.9867",
+  "[umap]  projecting 34 notes → 2d    n_neighbors=15  min_dist=0.08",
+  "[hdbscan] 8 clusters found           min_cluster_size=3",
+  "[query] q='의미는 사용이다'          cos_sim top-1=0.927 (비트겐슈타인)",
+  "[embed] ERP·MES                      dim=1024  norm=0.9611",
+  "[embed] 들뢰즈 · 차이와 반복        dim=1024  norm=0.9755",
+  "[umap]  epoch 180/200               loss=0.0431",
+  "[query] q='제조 자동화'              cos_sim top-1=0.912 (RPA·AX 업무시스템)",
+  "[embed] vector ↔ symbol              dim=1024  norm=0.9802",
+  "[hdbscan] cluster 제조/공정 n=7     persistence=0.74",
+  "[query] q='neuro-symbolic 통합'      cos_sim top-1=0.944 (neuro-symbolic)",
+  "[embed] 융 · 개성화(individuation)  dim=1024  norm=0.9688",
+  "[umap]  projecting 34 notes → 2d    n_neighbors=15  min_dist=0.08",
+  "[embed] Machine Learning             dim=1024  norm=0.9734",
+  "[query] q='BGE-M3 파이프라인'        cos_sim top-1=0.956 (BGE-M3 임베딩)",
+  "[embed] 검증가능성 ≠ 설명가능성     dim=1024  norm=0.9799",
+  "[hdbscan] cluster AI Agent n=6      persistence=0.81",
+  "[embed] 표상비용(representation cost) dim=1024 norm=0.9712",
+  "[query] q='온톨로지 표상'            cos_sim top-1=0.938 (온톨로지)",
+  "[embed] 비전검사                      dim=1024  norm=0.9651",
+  "[umap]  converged at epoch 200      stress=0.0389",
+  "[query] q='GraphRAG 구조'            cos_sim top-1=0.961 (GraphRAG)",
+  "[embed] 의사결정 트리                 dim=1024  norm=0.9623",
+  "[hdbscan] cluster 철학 n=4          persistence=0.69",
+  "[embed] MCP 서버                      dim=1024  norm=0.9841",
+  "[query] q='vault 의미지도'            cos_sim top-1=0.949 (BGE-M3 임베딩)",
+];
+let logIdx = 0;
+let liveLogEl = null;
+
+function initLiveLog() {
+  // inject a live-log strip above the footer inside the shell
+  const shell = document.querySelector(".shell");
+  const footer = shell.querySelector("footer");
+  const wrap = document.createElement("div");
+  wrap.id = "liveLog";
+  wrap.style.cssText = [
+    "border:1px solid var(--line)",
+    "border-radius:12px",
+    "background:var(--panel)",
+    "padding:9px 16px",
+    "font-family:var(--mono)",
+    "font-size:10.5px",
+    "color:var(--ink-3)",
+    "overflow:hidden",
+    "height:34px",
+    "display:flex",
+    "align-items:center",
+    "gap:14px",
+    "letter-spacing:.35px",
+  ].join(";");
+  const badge = document.createElement("span");
+  badge.textContent = "live";
+  badge.style.cssText = "color:var(--signal);border:1px solid var(--signal-dim);border-radius:999px;padding:1px 8px;font-size:9.5px;flex-shrink:0";
+  const line = document.createElement("span");
+  line.id = "liveLogLine";
+  line.style.cssText = "flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;transition:opacity .25s";
+  wrap.appendChild(badge);
+  wrap.appendChild(line);
+  shell.insertBefore(wrap, footer);
+  liveLogEl = line;
+  tickLog();
+}
+
+function tickLog() {
+  if (!liveLogEl) return;
+  liveLogEl.style.opacity = "0";
+  setTimeout(() => {
+    const raw = LOG_LINES[logIdx % LOG_LINES.length];
+    logIdx++;
+    // color-code by type
+    let colored = raw;
+    if (raw.startsWith("[embed]")) colored = '<span style="color:var(--c-dev)">[embed]</span>' + esc(raw.slice(7));
+    else if (raw.startsWith("[umap]")) colored = '<span style="color:var(--c-data)">[umap] </span>' + esc(raw.slice(6));
+    else if (raw.startsWith("[hdbscan]")) colored = '<span style="color:var(--c-ai)">[hdbscan]</span>' + esc(raw.slice(9));
+    else if (raw.startsWith("[query]")) colored = '<span style="color:var(--amber)">[query]</span>' + esc(raw.slice(7));
+    liveLogEl.innerHTML = colored;
+    liveLogEl.style.opacity = "1";
+  }, 260);
+  const delay = 1400 + Math.random() * 900;
+  setTimeout(tickLog, delay);
+}
+
+/* ════════════════════════════════════════════════════════════════
+   AUTO-CYCLE — rotate through all prompts after each stream ends
+   ════════════════════════════════════════════════════════════════ */
+const KEYS = ["who","meaning","vecsym","verify","pipeline","mfgai"];
+let cycleIdx = 0;
+let autoCycleTimer = null;
+
+function scheduleNextCycle(delay) {
+  clearTimeout(autoCycleTimer);
+  autoCycleTimer = setTimeout(() => {
+    cycleIdx = (cycleIdx + 1) % KEYS.length;
+    const key = KEYS[cycleIdx];
+    // update active chip UI
+    document.querySelectorAll(".chip-btn").forEach(b => {
+      b.classList.toggle("active", b.dataset.key === key);
+    });
+    nodes.forEach(n => n.lit = 0);
+    runStreamAuto(key);
+  }, delay);
+}
+
+async function runStreamAuto(key) {
+  const my = ++runId;
+  stream.innerHTML = ""; caret.classList.remove("off");
+  qtextEl.textContent = QTEXT[key];
+  attnq.textContent = "q: " + QTEXT[key];
+  totalTokens = 0; tcountEl.textContent = "0"; tpsEl.textContent = "0.0";
+  latEl.textContent = "--"; rcountEl.textContent = "0";
+
+  think.classList.add("on"); retr.classList.add("on");
+  const rN = retrieveFor(key);
+  for (let p = 0; p <= 100; p += 8) {
+    if (my !== runId) return;
+    thinkpct.textContent = p + "%";
+    await wait(22);
+  }
+  think.classList.remove("on");
+  rcountEl.textContent = rN;
+  const t0 = performance.now();
+
+  const toks = tokenize(ANSWERS[key]);
+  buildHeat(Math.min(48, Math.max(24, toks.length / 3 | 0)));
+  attn.classList.add("on");
+  const heatTimer = setInterval(pulseHeat, 90);
+
+  for (let k = 0; k < toks.length; k++) {
+    if (my !== runId) { clearInterval(heatTimer); return; }
+    const span = document.createElement("span");
+    span.className = "tok"; span.innerHTML = toks[k].html;
+    stream.appendChild(span);
+    totalTokens++;
+    tcountEl.textContent = totalTokens;
+    const elapsed = (performance.now() - t0) / 1000;
+    tpsEl.textContent = (totalTokens / Math.max(elapsed, 0.05)).toFixed(1);
+    scroll.scrollTop = scroll.scrollHeight;
+    let d = speedForTemp();
+    if (/[.\n]/.test(toks[k].plain)) d += 140;
+    d += (Math.random() - 0.5) * tempVal * 40;
+    await wait(Math.max(6, d));
+  }
+  if (my !== runId) { clearInterval(heatTimer); return; }
+  caret.classList.add("off");
+  clearInterval(heatTimer);
+  [...heat.children].forEach(b => { b.style.height = "22%"; b.style.opacity = "0.2"; });
+  retr.classList.remove("on");
+  latEl.textContent = ((performance.now() - t0) / 1000).toFixed(2) + "s";
+  tpsEl.textContent = (totalTokens / Math.max((performance.now() - t0) / 1000, 0.05)).toFixed(1);
+
+  // schedule next auto cycle (pause 3.5s before next prompt)
+  scheduleNextCycle(3500);
+}
+
+/* ════════════════════════════════════════════════════════════════
    BOOT — render alive on first paint (static screenshot looks live)
    ════════════════════════════════════════════════════════════════ */
 function boot(){
   resize();
   requestAnimationFrame(draw);
   buildHeat(36);
-  // ensure fonts ready then stream default answer
-  const start=()=>{ retrieveFor("who"); rcountEl.textContent=RETRIEVE.who.length;
-                    runStream("who"); };
-  if(document.fonts&&document.fonts.ready){document.fonts.ready.then(start);}
+  initLiveLog();
+  const start = () => {
+    retrieveFor("who");
+    rcountEl.textContent = RETRIEVE.who.length;
+    runStreamAuto("who");
+  };
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(start); }
   else start();
 }
 window.addEventListener("resize",resize);

@@ -328,6 +328,35 @@ main{position:relative; z-index:1; padding-top:76px;}
 .crosshair::before{left:50%;top:0;width:1px;height:100%;transform:translateX(-50%);}
 .crosshair::after{top:50%;left:0;height:1px;width:100%;transform:translateY(-50%);}
 
+/* ============ LIVE LOG STREAM PANEL ============ */
+.log-panel{
+  position:absolute; right:18px; top:18px; bottom:18px;
+  width:220px; background:rgba(10,12,13,.85);
+  border:1px solid var(--steel-line); border-radius:2px;
+  overflow:hidden; display:flex; flex-direction:column;
+  font-family:var(--mono); font-size:9px;
+}
+.log-panel .lp-head{
+  padding:5px 9px; background:#0a0c0d;
+  border-bottom:1px solid var(--steel-line);
+  color:var(--hazard); letter-spacing:.14em; text-transform:uppercase;
+  font-size:8px; flex:none;
+}
+.log-panel .lp-body{
+  flex:1; overflow:hidden; padding:4px 0; position:relative;
+}
+.log-panel .lp-line{
+  padding:2px 9px; color:var(--ink-faint); line-height:1.5;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  transition:opacity 1.6s ease;
+}
+.log-panel .lp-line.fresh{color:var(--ink);}
+.log-panel .lp-line.stale{opacity:.28;}
+.log-panel .lp-line .ts{color:var(--ink-faint);margin-right:5px;}
+.log-panel .lp-line .ok{color:var(--pass);}
+.log-panel .lp-line .warn{color:var(--hazard);}
+.log-panel .lp-line .err{color:var(--fail);}
+
 /* ============ BOM / PARTS BIN (skills) ============ */
 .bom{margin-top:30px;border:1px solid var(--steel-line);background:var(--panel);}
 .bom-head{
@@ -381,6 +410,17 @@ main{position:relative; z-index:1; padding-top:76px;}
 .defect-meter .pct{font-size:30px;font-weight:700;color:var(--hazard);transition:color .5s;}
 .defect-meter .pct.arrived{color:var(--pass);}
 
+/* ============ OP-20 LIVE LOG ============ */
+.weld-log{
+  position:absolute;top:12px;right:14px;
+  width:180px; font-family:var(--mono); font-size:8px;
+  color:var(--ink-faint); line-height:1.7; overflow:hidden; height:80px;
+}
+.weld-log .wl-line{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity 1.4s ease;}
+.weld-log .wl-line.stale{opacity:.2;}
+.weld-log .lc-ok{color:var(--pass);}
+.weld-log .lc-warn{color:var(--hazard);}
+
 /* ============ ROBOTIC PICK-AND-PLACE (assembly) ============ */
 .gantry{
   position:relative;margin-top:26px;height:260px;background:#0a0c0d;
@@ -410,6 +450,34 @@ main{position:relative; z-index:1; padding-top:76px;}
   62%{opacity:1;}
   100%{left:24px;top:80px;opacity:1;}
 }
+
+/* ============ OP-40 PRODUCTIVITY GAUGE ============ */
+.prod-gauge-wrap{
+  margin-top:18px; padding:14px 18px;
+  background:#0a0c0d; border:1px solid var(--steel-line); border-radius:2px;
+  font-family:var(--mono);
+}
+.prod-gauge-label{font-size:9px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.16em;margin-bottom:8px;}
+.prod-gauge-bar{height:8px;background:#1a2024;overflow:hidden;position:relative;margin-bottom:6px;}
+.prod-gauge-fill{height:100%;width:0%;background:var(--pass);transition:none;position:relative;}
+.prod-gauge-fill::after{
+  content:"";position:absolute;right:0;top:0;bottom:0;width:4px;
+  background:rgba(255,255,255,.4);
+}
+.prod-gauge-val{font-size:28px;font-weight:700;color:var(--pass);line-height:1;}
+.prod-gauge-sub{font-size:9px;color:var(--ink-faint);margin-top:4px;letter-spacing:.1em;}
+
+/* ============ OP-40 LOB LIVE LOG ============ */
+.lob-log{
+  background:#0a0c0d; border:1px solid var(--steel-line); border-radius:2px;
+  font-family:var(--mono); font-size:9px; color:var(--ink-faint);
+  margin-top:14px; height:84px; overflow:hidden; padding:6px 10px;
+}
+.lob-log .ll-line{line-height:1.65;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity 1.6s ease;}
+.lob-log .ll-line.stale{opacity:.2;}
+.lob-log .lc-ok{color:var(--pass);}
+.lob-log .lc-warn{color:var(--hazard);}
+.lob-log .lc-num{color:var(--ink);}
 
 /* ============ SHIPPING / CONTACT ============ */
 .ship{
@@ -527,7 +595,7 @@ main{position:relative; z-index:1; padding-top:76px;}
   <div class="hero-meta reveal d3">
     <span>회사 / <b>이랜텍</b></span>
     <span>직무 / <b>생산라인 PM · 파트장</b></span>
-    <span>기간 / <b>2022.11–2023.09</b></span>
+    <span>기간 / <b>2022.11-2023.09</b></span>
     <span>C/T 단축 / <b>최대 49%</b></span>
   </div>
   <div class="scroll-cue reveal d4">SCROLL TO ADVANCE LINE <span class="arr"></span></div>
@@ -613,13 +681,14 @@ main{position:relative; z-index:1; padding-top:76px;}
     <div class="welder-arm"></div>
     <div class="workpiece"></div>
     <div class="weld-jig"></div>
+    <div class="weld-log" id="weldLog"></div>
   </div>
 
   <div class="grid">
     <div class="card span6 reveal d2">
       <div class="ch">WORK ORDER <span class="barcode"></span> OP-20</div>
       <h3>커팅 Jig 개발 — Neck 공정 단축</h3>
-      <div class="role">이랜텍 · 생산라인 PM / 파트장 · 2022.11–2023.09</div>
+      <div class="role">이랜텍 · 생산라인 PM / 파트장 · 2022.11-2023.09</div>
       <ul>
         <li>커팅 공정 병목 원인 분석 → <b>전용 Jig 설계·제작</b></li>
         <li>C/T <b>16.72s → 12.76s</b> (31% 단축)</li>
@@ -646,7 +715,7 @@ main{position:relative; z-index:1; padding-top:76px;}
     <div class="belt-dashes"></div>
     <div class="belt-rails bot"></div>
     <div class="part" style="left:30%;">
-      <span class="pn">NECK C/T</span><span>16.72→12.76s</span><span>−31%</span>
+      <span class="pn">NECK C/T</span><span>16.72→12.76s</span><span>-31%</span>
     </div>
   </div>
 </section>
@@ -659,9 +728,9 @@ main{position:relative; z-index:1; padding-top:76px;}
   <div class="station-tag reveal">
     <span class="op-no">OP-30</span>
     <span class="op-ko">검사 · Function Test Jig 개조</span>
-    <span class="op-en">INSPECTION C/T −49%</span>
+    <span class="op-en">INSPECTION C/T -49%</span>
   </div>
-  <h2 class="reveal d1"><span class="hl">−49%</span> — 검사 C/T를<br/>절반으로 줄이다</h2>
+  <h2 class="reveal d1"><span class="hl">-49%</span> — 검사 C/T를<br/>절반으로 줄이다</h2>
   <p class="sub reveal d2">Core-pack Function Test Jig를 개조해 검사 사이클타임을 55초에서 28초로 단축합니다. 이 시안의 핵심 지표입니다.</p>
 
   <!-- CAMERA SCAN DELIGHT — 55s → 28s 표시 -->
@@ -685,7 +754,12 @@ main{position:relative; z-index:1; padding-top:76px;}
     </div>
     <!-- QC stamp lands here -->
     <div class="stamp" id="inspStamp" style="right:36px;top:28px;">
-      <span class="big">−49%</span><span class="small">C/T · INSP · OP-30</span>
+      <span class="big">-49%</span><span class="small">C/T · INSP · OP-30</span>
+    </div>
+    <!-- live log panel -->
+    <div class="log-panel" id="scanLog">
+      <div class="lp-head">INSP LOG · LIVE</div>
+      <div class="lp-body" id="scanLogBody"></div>
     </div>
   </div>
 
@@ -693,7 +767,7 @@ main{position:relative; z-index:1; padding-top:76px;}
   <div class="kpis reveal d3">
     <div class="kpi"><div class="k-l">Function Test / C/T 전</div><div class="k-v" style="color:var(--fail)">55<span class="u">s</span></div><div class="k-bar"><i data-w="100"></i></div></div>
     <div class="kpi"><div class="k-l">Function Test / C/T 후</div><div class="k-v good">28<span class="u">s</span></div><div class="k-bar"><i class="good" data-w="51"></i></div></div>
-    <div class="kpi"><div class="k-l">C/T 단축률</div><div class="k-v good">−49<span class="u">%</span></div><div class="k-bar"><i class="good" data-w="49"></i></div></div>
+    <div class="kpi"><div class="k-l">C/T 단축률</div><div class="k-v good">-49<span class="u">%</span></div><div class="k-bar"><i class="good" data-w="49"></i></div></div>
     <div class="kpi"><div class="k-l">Neck C/T 전</div><div class="k-v" style="color:var(--signal)">16.72<span class="u">s</span></div><div class="k-bar"><i data-w="66"></i></div></div>
     <div class="kpi"><div class="k-l">Neck C/T 후</div><div class="k-v good">12.76<span class="u">s</span></div><div class="k-bar"><i class="good" data-w="50"></i></div></div>
   </div>
@@ -727,8 +801,17 @@ main{position:relative; z-index:1; padding-top:76px;}
     </div>
   </div>
 
+  <!-- 생산성 게이지 + LOB 라이브 로그 -->
+  <div class="prod-gauge-wrap reveal d2">
+    <div class="prod-gauge-label">LINE PRODUCTIVITY · LIVE GAUGE</div>
+    <div class="prod-gauge-bar"><div class="prod-gauge-fill" id="prodGaugeFill"></div></div>
+    <div class="prod-gauge-val" id="prodGaugeVal">+0%</div>
+    <div class="prod-gauge-sub">LOB 개선 / 연 환산 절감 4,437만원</div>
+  </div>
+  <div class="lob-log reveal d2" id="lobLog"></div>
+
   <div class="card traveler span12 reveal d3" style="margin-top:18px;">
-    <div class="wo-head"><span>LOB IMPROVEMENT ORDER / 라인 개선 지시서</span><span class="no">이랜텍 · 2022.11–2023.09</span></div>
+    <div class="wo-head"><span>LOB IMPROVEMENT ORDER / 라인 개선 지시서</span><span class="no">이랜텍 · 2022.11-2023.09</span></div>
     <div class="grid" style="gap:14px;">
       <ul class="span6" style="margin:0;">
         <li>소형 배터리팩 라인 <b>LOB 전수 분석</b></li>
@@ -748,8 +831,8 @@ main{position:relative; z-index:1; padding-top:76px;}
     <div class="bom-head"><div>REF</div><div>개선 활동 명세 · LOB IMPROVEMENT BOM</div><div>CLASS</div><div>효과</div></div>
 
     <div class="bom-grp">A · C/T 단축 / 사이클타임 개선</div>
-    <div class="bom-row"><div class="ref">A1</div><div class="desc">커팅 Jig 개발 — Neck 공정 C/T 단축</div><div>JIG DEV</div><div class="qty">−31%</div></div>
-    <div class="bom-row"><div class="ref">A2</div><div class="desc">검사 Jig 개조 — Function Test C/T 단축</div><div>JIG REWORK</div><div class="qty">−49%</div></div>
+    <div class="bom-row"><div class="ref">A1</div><div class="desc">커팅 Jig 개발 — Neck 공정 C/T 단축</div><div>JIG DEV</div><div class="qty">-31%</div></div>
+    <div class="bom-row"><div class="ref">A2</div><div class="desc">검사 Jig 개조 — Function Test C/T 단축</div><div>JIG REWORK</div><div class="qty">-49%</div></div>
 
     <div class="bom-grp">B · LOB 개선 / 라인밸런스</div>
     <div class="bom-row"><div class="ref">B1</div><div class="desc">전 공정 C/T 전수 측정 · 병목 식별</div><div>ANALYSIS</div><div class="qty">계측</div></div>
@@ -774,16 +857,16 @@ main{position:relative; z-index:1; padding-top:76px;}
     <span class="op-ko">결과 · 연락</span>
     <span class="op-en">RESULTS</span>
   </div>
-  <h2 class="reveal d1"><span class="hl">출하</span> 준비 완료<br/>— C/T −49% · 생산성 +24%</h2>
+  <h2 class="reveal d1"><span class="hl">출하</span> 준비 완료<br/>— C/T -49% · 생산성 +24%</h2>
   <p class="sub reveal d2">전 공정 개선 완료. 이랜텍 소형 배터리팩 라인의 두 핵심 지표가 검증되었습니다. 다음 라인은 당신의 조직입니다.</p>
 
   <div class="ship">
     <!-- SHIPPING LABEL -->
     <div class="shipping-label reveal d2">
-      <div class="sl-top"><span>RESULT SHEET</span><span>이랜텍 · 2022.11–2023.09</span></div>
+      <div class="sl-top"><span>RESULT SHEET</span><span>이랜텍 · 2022.11-2023.09</span></div>
       <div class="sl-body">
         <div class="sl-line"><span class="k">회사</span><span class="v">이랜텍 · 생산라인 PM / 파트장</span></div>
-        <div class="sl-line"><span class="k">C/T 단축</span><span class="v">Function Test 55s → 28s (−49%)</span></div>
+        <div class="sl-line"><span class="k">C/T 단축</span><span class="v">Function Test 55s → 28s (-49%)</span></div>
         <div class="sl-line"><span class="k">생산성</span><span class="v">LOB 개선 +24% (연 4,437만원 절감)</span></div>
         <div class="sl-line"><span class="k">Email</span><span class="v"><a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a></span></div>
         <div class="sl-line"><span class="k">GitHub</span><span class="v"><a href="https://github.com/64etuor" target="_blank" rel="noopener">github.com/64etuor</a></span></div>
@@ -801,9 +884,9 @@ main{position:relative; z-index:1; padding-top:76px;}
         <div class="oc-photo"></div>
         <div class="oc-info">
           <div class="nm">박양하 <small>PARK YANGHA</small></div>
-          <div class="ti">생산라인 PM · 파트장<br/>이랜텍 · 2022.11–2023.09<br/>공정기술 / LOB · C/T 개선</div>
+          <div class="ti">생산라인 PM · 파트장<br/>이랜텍 · 2022.11-2023.09<br/>공정기술 / LOB · C/T 개선</div>
           <div class="oc-tags">
-            <span>C/T −49%</span><span>LOB +24%</span><span>JIG DEV</span><span>PM</span><span>PROCESS</span><span>DATA</span>
+            <span>C/T -49%</span><span>LOB +24%</span><span>JIG DEV</span><span>PM</span><span>PROCESS</span><span>DATA</span>
           </div>
         </div>
       </div>
@@ -812,7 +895,7 @@ main{position:relative; z-index:1; padding-top:76px;}
 
   <div class="plate reveal d3">
     <span>ELENTEC LINE · ASSEMBLY LINE PORTFOLIO</span>
-    <span>C/T −49% · 생산성 +24% · 연 4,437만원 절감</span>
+    <span>C/T -49% · 생산성 +24% · 연 4,437만원 절감</span>
     <span>© 2025 PARK YANGHA · REV.A</span>
   </div>
 </section>
@@ -865,12 +948,33 @@ main{position:relative; z-index:1; padding-top:76px;}
   var stations = ['op00','op10','op20','op30','op40','op50'];
   var stationLabels = {
     op00:'OP-00 / 라인 대기', op10:'OP-10 / 분석·계측', op20:'OP-20 / Neck C/T 단축',
-    op30:'OP-30 / 검사 C/T −49%', op40:'OP-40 / LOB 개선 +24%', op50:'OP-50 / 결과·연락'
+    op30:'OP-30 / 검사 C/T -49%', op40:'OP-40 / LOB 개선 +24%', op50:'OP-50 / 결과·연락'
   };
   var hmiStation = document.getElementById('hmiStation');
-  var hmiTakt   = document.getElementById('hmiTakt');
+  var hmiTaktEl  = document.getElementById('hmiTakt');
   var railStops  = Array.prototype.slice.call(document.querySelectorAll('.rail .stop'));
-  var taktByStation = {op00:'28.0s',op10:'55.0s',op20:'16.72s',op30:'28.0s',op40:'12.76s',op50:'28.0s'};
+  var taktByStation = {op00:28.0,op10:55.0,op20:16.72,op30:28.0,op40:12.76,op50:28.0};
+
+  /* HMI Takt tween — 딱딱한 점프 대신 숫자 보간 */
+  var hmiTaktCurrent = 28.0;
+  var hmiTaktTarget  = 28.0;
+  var hmiTaktHandle  = null;
+  var hmiTaktPrev    = null;
+  function tweenTakt(ts){
+    if(!hmiTaktPrev) hmiTaktPrev = ts;
+    var dt = Math.min(ts - hmiTaktPrev, 64);
+    hmiTaktPrev = ts;
+    var diff = hmiTaktTarget - hmiTaktCurrent;
+    if(Math.abs(diff) < 0.01){
+      hmiTaktCurrent = hmiTaktTarget;
+      if(hmiTaktEl) hmiTaktEl.textContent = hmiTaktCurrent.toFixed(2)+'s';
+      hmiTaktHandle = null;
+      return;
+    }
+    hmiTaktCurrent += diff * (1 - Math.pow(0.004, dt / 1000));
+    if(hmiTaktEl) hmiTaktEl.textContent = hmiTaktCurrent.toFixed(2)+'s';
+    hmiTaktHandle = requestAnimationFrame(tweenTakt);
+  }
 
   function setActive(id){
     var idx = stations.indexOf(id);
@@ -879,7 +983,13 @@ main{position:relative; z-index:1; padding-top:76px;}
       s.classList.toggle('done', i<idx);
     });
     if(hmiStation) hmiStation.textContent = stationLabels[id]||id;
-    if(hmiTakt)    hmiTakt.textContent    = taktByStation[id]||'28.0s';
+    if(taktByStation[id] !== undefined){
+      hmiTaktTarget = taktByStation[id];
+      if(!hmiTaktHandle && !prefersReduced){
+        hmiTaktPrev = null;
+        hmiTaktHandle = requestAnimationFrame(tweenTakt);
+      }
+    }
   }
 
   if('IntersectionObserver' in window){
@@ -892,40 +1002,55 @@ main{position:relative; z-index:1; padding-top:76px;}
   }
 
   /* ==========================================================
-     MASTER BELT PART — 자동 루프 + 스크롤 혼합
-     ~6 s 사이클: 좌→우 이동 후 순간 리셋
+     MASTER BELT PART — rAF + dt 기반 연속 루프
+     스크롤 없이도 등속 자동 이동, 사이클 끝에서 fade 리셋
   ========================================================== */
   var masterPart = document.getElementById('masterPart');
   var hero       = document.getElementById('op00');
-  var autoLoop   = null;        // rAF handle
-  var autoProg   = 0;           // 0~1
-  var CYCLE      = 6000;        // ms
-  var lastTS     = null;
-  var scrollOverride = false;   // 스크롤 중에는 스크롤값 우선
+  var autoProg   = 0;           // 0 ~ 1
+  var CYCLE      = 6000;        // ms per lap
+  var lastAutoTS = null;
+  var scrollOverride = false;
   var scrollTimer = null;
 
   function applyProg(p){
-    if(masterPart) masterPart.style.left = (8 + p*78) + '%';
+    if(masterPart) masterPart.style.left = (8 + p * 78) + '%';
   }
 
+  /* rAF 루프 — dt 기반 등속, 리셋은 opacity 페이드 */
   function autoStep(ts){
-    if(!lastTS) lastTS = ts;
-    var dt = ts - lastTS; lastTS = ts;
+    if(!lastAutoTS) lastAutoTS = ts;
+    var dt = Math.min(ts - lastAutoTS, 64); // 탭 비활성 복귀시 큰 점프 방지
+    lastAutoTS = ts;
+
     if(!scrollOverride){
       autoProg += dt / CYCLE;
       if(autoProg >= 1){
-        autoProg = 0;                     // 순간 리셋
-        if(masterPart){ masterPart.style.transition='none'; applyProg(0); }
-        setTimeout(function(){ if(masterPart) masterPart.style.transition=''; }, 30);
+        /* 리셋: 잠깐 fade-out 후 왼쪽에서 재등장 */
+        autoProg = 0;
+        if(masterPart){
+          masterPart.style.transition = 'opacity .18s ease';
+          masterPart.style.opacity = '0';
+          /* 투명한 동안 왼쪽으로 위치 이동 */
+          setTimeout(function(){
+            applyProg(0);
+            if(masterPart){
+              masterPart.style.transition = 'opacity .22s ease';
+              masterPart.style.opacity = '1';
+              /* 이후 transition 초기화 */
+              setTimeout(function(){ if(masterPart) masterPart.style.transition = ''; }, 250);
+            }
+          }, 190);
+        }
       } else {
         applyProg(autoProg);
       }
     }
-    autoLoop = requestAnimationFrame(autoStep);
+    requestAnimationFrame(autoStep);
   }
 
   if(!prefersReduced){
-    autoLoop = requestAnimationFrame(autoStep);
+    requestAnimationFrame(autoStep);
   }
 
   /* 스크롤 중에는 스크롤값 우선, 멈추면 자동으로 복귀 */
@@ -944,16 +1069,62 @@ main{position:relative; z-index:1; padding-top:76px;}
   }, {passive:true});
 
   /* ==========================================================
+     스테이션 컨베이어 벨트 파트 — rAF + dt 기반, 끊김 없는 리셋
+     각 .station 안의 .part를 좌→우 자동 이동
+  ========================================================== */
+  if(!prefersReduced){
+    var stationBelts = Array.prototype.slice.call(document.querySelectorAll('.station .belt-wrap'));
+    stationBelts.forEach(function(wrap){
+      var part = wrap.querySelector('.part');
+      if(!part || part.id === 'masterPart') return;
+      var startPct = parseFloat(part.style.left) || 14;
+      var endPct   = 88;
+      var cyc      = 5200 + Math.random() * 1400; // ms per lap
+      var elapsed  = Math.random() * cyc;          // 위상 랜덤 오프셋
+      var prevTS   = null;
+      var fading   = false;
+
+      function runBelt(ts){
+        if(!prevTS) prevTS = ts;
+        var dt = Math.min(ts - prevTS, 64);
+        prevTS = ts;
+        elapsed += dt;
+
+        if(elapsed >= cyc && !fading){
+          fading = true;
+          part.style.transition = 'opacity .16s ease';
+          part.style.opacity = '0';
+          setTimeout(function(){
+            elapsed = 0;
+            part.style.left = startPct + '%';
+            part.style.transition = 'opacity .2s ease';
+            part.style.opacity = '1';
+            setTimeout(function(){ part.style.transition = ''; fading = false; }, 220);
+          }, 170);
+        } else if(!fading){
+          var p = elapsed / cyc;
+          part.style.left = (startPct + p * (endPct - startPct)) + '%';
+        }
+        requestAnimationFrame(runBelt);
+      }
+      requestAnimationFrame(runBelt);
+    });
+  }
+
+  /* ==========================================================
      OP-20 — 커팅 Jig C/T 카운터 자동 루프
-     16.72 → 12.76 s を 2.5s で下げ、1s 停止後リセット
-     총 사이클 ~6s
+     16.72 → 12.76 s를 ease-out cubic으로 부드럽게 하강
+     사이클: pause(1.4s) → down(2.5s) → hold(0.8s) → flash-reset → pause
   ========================================================== */
   var ctEl     = document.getElementById('defectPct');
   var CT_START = 16.72, CT_END = 12.76;
-  var CT_DOWN  = 2500;  // 감소 구간 ms
-  var CT_HOLD  = 800;   // 도착 후 유지 ms
-  var CT_RESET = 300;   // 리셋 후 대기 ms
-  var CT_PAUSE = 1400;  // 시작 전 대기 ms
+  var CT_DOWN  = 2500;
+  var CT_HOLD  = 900;
+  var CT_PAUSE = 1400;
+
+  function ctRender(v){
+    if(ctEl) ctEl.innerHTML = v.toFixed(2)+'<span style="font-size:16px">s</span>';
+  }
 
   function ctLoop(){
     if(!ctEl || prefersReduced) return;
@@ -962,49 +1133,105 @@ main{position:relative; z-index:1; padding-top:76px;}
       var r = weld.getBoundingClientRect();
       return r.top < window.innerHeight && r.bottom > 0;
     })();
-    if(!onScreen){ setTimeout(ctLoop, 600); return; }
+    if(!onScreen){ setTimeout(ctLoop, 500); return; }
 
-    // 16.72에서 12.76으로 카운트다운
-    var t0 = null;
     ctEl.classList.remove('arrived');
-    ctEl.innerHTML = CT_START.toFixed(2)+'<span style="font-size:16px">s</span>';
+    ctRender(CT_START);
 
+    var t0 = null;
     function down(ts){
-      if(!t0) t0=ts;
-      var p = Math.min(1,(ts-t0)/CT_DOWN);
-      var e = 1-Math.pow(1-p,3);
-      var v = CT_START-(CT_START-CT_END)*e;
-      ctEl.innerHTML = v.toFixed(2)+'<span style="font-size:16px">s</span>';
-      if(p<1){ requestAnimationFrame(down); }
-      else {
-        ctEl.innerHTML = CT_END.toFixed(2)+'<span style="font-size:16px">s</span>';
+      if(!t0) t0 = ts;
+      var p = Math.min(1, (ts - t0) / CT_DOWN);
+      var e = 1 - Math.pow(1 - p, 3); // ease-out cubic
+      ctRender(CT_START - (CT_START - CT_END) * e);
+      if(p < 1){
+        requestAnimationFrame(down);
+      } else {
+        ctRender(CT_END);
         ctEl.classList.add('arrived');
-        // 유지 → 리셋 → 다음 사이클
+        /* hold → fade-reset → pause → 다음 사이클 */
         setTimeout(function(){
           ctEl.classList.remove('arrived');
-          ctEl.innerHTML = CT_START.toFixed(2)+'<span style="font-size:16px">s</span>';
-          setTimeout(ctLoop, CT_PAUSE);
-        }, CT_HOLD + CT_RESET);
+          /* 빠른 fade-in으로 CT_START 복귀 */
+          ctEl.style.transition = 'opacity .25s ease';
+          ctEl.style.opacity = '0';
+          setTimeout(function(){
+            ctRender(CT_START);
+            ctEl.style.opacity = '1';
+            setTimeout(function(){
+              ctEl.style.transition = '';
+              setTimeout(ctLoop, CT_PAUSE);
+            }, 260);
+          }, 260);
+        }, CT_HOLD);
       }
     }
-    setTimeout(function(){ requestAnimationFrame(down); }, CT_PAUSE);
+    setTimeout(function(){ var t = null; requestAnimationFrame(function(ts){ t = ts; down(ts); }); }, CT_PAUSE);
   }
   ctLoop();
 
   /* ==========================================================
-     OP-30 — Function Test C/T 카운터 자동 루프
-     55 → 28 s를 2.5s에 감소, 스탬프 thunk, 1s 유지 후 리셋
-     총 사이클 ~7s
+     OP-20 — Jig 작업 라이브 로그 (weld-log)
+     rAF-free: setTimeout 체인, 가짜 계측 이벤트 스트리밍
   ========================================================== */
-  var ftReadout = document.querySelector('#scanStage .scan-readout');
-  var ftAfterEl = ftReadout && ftReadout.querySelector('.ft-after');
+  var weldLogEl = document.getElementById('weldLog');
+  var weldLogLines = [];
+  var weldLogPool = [
+    ['ok','JIG ENGAGE OK'],['ok','CUTTING OK'],['warn','C/T 16.72s'],
+    ['ok','JIG V2 APPLIED'],['ok','C/T 12.76s'],['ok','SOP REV.B'],
+    ['ok','NECK OK'],['warn','BOTTLENECK CLR'],['ok','CAPA+'],
+    ['ok','CYCLE +1'],['ok','PART PASS'],['warn','JIG CHECK'],
+    ['ok','WELD ARM OK'],['ok','LOT ADVANCE'],
+  ];
+  var weldLogIdx = 0;
+
+  function weldLogPush(){
+    if(!weldLogEl || prefersReduced) return;
+    var r = weld_isVisible();
+    if(!r){ setTimeout(weldLogPush, 800); return; }
+
+    var entry = weldLogPool[weldLogIdx % weldLogPool.length];
+    weldLogIdx++;
+    var now = new Date();
+    var ts = [now.getHours(),now.getMinutes(),now.getSeconds()].map(function(n){return(n<10?'0':'')+n;}).join(':');
+
+    var line = document.createElement('div');
+    line.className = 'wl-line';
+    line.innerHTML = '<span style="color:var(--ink-faint)">' + ts + '</span> '
+      + '<span class="lc-' + entry[0] + '">' + entry[1] + '</span>';
+    weldLogEl.appendChild(line);
+    weldLogLines.push(line);
+
+    /* 최대 5줄 유지 — 오래된 줄 페이드 후 제거 */
+    if(weldLogLines.length > 5){
+      var old = weldLogLines.shift();
+      old.classList.add('stale');
+      setTimeout(function(){ if(old.parentNode) old.parentNode.removeChild(old); }, 1500);
+    }
+
+    /* 다음 줄: 700~1600ms 랜덤 시차 */
+    setTimeout(weldLogPush, 700 + Math.random() * 900);
+  }
+
+  function weld_isVisible(){
+    var el = document.getElementById('weldStage');
+    if(!el) return false;
+    var r = el.getBoundingClientRect();
+    return r.top < window.innerHeight && r.bottom > 0;
+  }
+
+  if(!prefersReduced) setTimeout(weldLogPush, 1200);
+
+  /* ==========================================================
+     OP-30 — Function Test C/T 카운터 자동 루프 (55 → 28)
+     ease-out cubic, 스탬프 thunk, hold → fade-reset
+  ========================================================== */
   var inspStamp = document.getElementById('inspStamp');
   var FT_START  = 55, FT_END = 28;
   var FT_DOWN   = 2500;
   var FT_HOLD   = 1200;
   var FT_PAUSE  = 1000;
 
-  /* scan-readout 안의 숫자 업데이트용 span을 동적으로 찾아 씀 */
   function ftLoop(){
     if(prefersReduced) return;
     var scanStage = document.getElementById('scanStage');
@@ -1012,33 +1239,39 @@ main{position:relative; z-index:1; padding-top:76px;}
       var r = scanStage.getBoundingClientRect();
       return r.top < window.innerHeight && r.bottom > 0;
     })();
-    if(!onScreen){ setTimeout(ftLoop, 600); return; }
+    if(!onScreen){ setTimeout(ftLoop, 500); return; }
 
-    /* 스탬프 초기화 */
-    if(inspStamp){ inspStamp.classList.remove('hit'); }
-
-    var t0=null;
-    /* scan-readout 내 "C/T AFTER" 줄의 숫자 span */
+    if(inspStamp) inspStamp.classList.remove('hit');
     var afterSpan = document.getElementById('ftAfterVal');
 
+    var t0 = null;
     function down(ts){
-      if(!t0) t0=ts;
-      var p = Math.min(1,(ts-t0)/FT_DOWN);
-      var e = 1-Math.pow(1-p,3);
-      var v = FT_START-(FT_START-FT_END)*e;
-      if(afterSpan) afterSpan.textContent = v.toFixed(0)+'s';
-      if(p<1){ requestAnimationFrame(down); }
-      else {
-        if(afterSpan) afterSpan.textContent = FT_END+'s ▼49%';
-        /* 스탬프 thunk */
+      if(!t0) t0 = ts;
+      var p = Math.min(1, (ts - t0) / FT_DOWN);
+      var e = 1 - Math.pow(1 - p, 3);
+      var v = FT_START - (FT_START - FT_END) * e;
+      if(afterSpan) afterSpan.textContent = v.toFixed(0) + 's';
+      if(p < 1){
+        requestAnimationFrame(down);
+      } else {
+        if(afterSpan) afterSpan.textContent = FT_END + 's -49%';
         if(inspStamp){
-          void inspStamp.offsetWidth; // reflow to re-trigger animation
+          void inspStamp.offsetWidth;
           inspStamp.classList.add('hit');
         }
         setTimeout(function(){
           if(inspStamp) inspStamp.classList.remove('hit');
-          if(afterSpan) afterSpan.textContent = FT_START+'s';
-          setTimeout(ftLoop, FT_PAUSE);
+          /* fade-reset */
+          if(afterSpan){
+            afterSpan.style.transition = 'opacity .2s ease';
+            afterSpan.style.opacity = '0';
+            setTimeout(function(){
+              if(afterSpan){ afterSpan.textContent = FT_START + 's'; afterSpan.style.opacity = '1'; }
+              setTimeout(function(){ if(afterSpan) afterSpan.style.transition = ''; setTimeout(ftLoop, FT_PAUSE); }, 220);
+            }, 220);
+          } else {
+            setTimeout(ftLoop, FT_PAUSE);
+          }
         }, FT_HOLD);
       }
     }
@@ -1047,93 +1280,231 @@ main{position:relative; z-index:1; padding-top:76px;}
   ftLoop();
 
   /* ==========================================================
-     OP-40 — HMI 생산성 게이지 자동 루프
-     0 → +24% を 3s でカウントアップ、1s停止後リセット
+     OP-30 — 검사 라이브 로그 스트리밍 (scan-log panel)
   ========================================================== */
-  var hmiProdEl = document.getElementById('hmiProd');
-  var PROD_DUR  = 3000;
-  var PROD_HOLD = 1500;
-  var PROD_PAUSE= 1000;
+  var scanLogBody = document.getElementById('scanLogBody');
+  var scanLogLines = [];
+  var scanLogPool = [
+    ['ok','SCAN OK · SN-0441'],['ok','VOLTAGE 3.82V'],['ok','RESISTANCE 12mOhm'],
+    ['warn','TEMP 38.2C'],['ok','FUNC TEST PASS'],['ok','C/T 28.1s'],
+    ['ok','SCAN OK · SN-0442'],['ok','CAPACITY 98.4%'],['ok','INSULATION OK'],
+    ['err','RETRY · SN-0443'],['ok','RETEST PASS'],['ok','LOT ADV'],
+    ['ok','SCAN OK · SN-0444'],['ok','OCV 4.196V'],['warn','C/T 29.0s'],
+    ['ok','SCAN OK · SN-0445'],['ok','DISCHARGE OK'],['ok','LABEL PRINT'],
+  ];
+  var scanLogIdx = Math.floor(Math.random() * scanLogPool.length);
+  var MAX_LOG_LINES = 7;
+
+  function scanLogPush(){
+    if(!scanLogBody || prefersReduced) return;
+    var stage = document.getElementById('scanStage');
+    var vis = stage && (function(){ var r = stage.getBoundingClientRect(); return r.top < window.innerHeight && r.bottom > 0; })();
+    if(!vis){ setTimeout(scanLogPush, 700); return; }
+
+    var entry = scanLogPool[scanLogIdx % scanLogPool.length];
+    scanLogIdx++;
+    var now = new Date();
+    var ts = [now.getHours(),now.getMinutes(),now.getSeconds()].map(function(n){return(n<10?'0':'')+n;}).join(':');
+
+    var line = document.createElement('div');
+    line.className = 'lp-line fresh';
+    line.innerHTML = '<span class="ts">' + ts + '</span>'
+      + '<span class="' + entry[0] + '">' + entry[1] + '</span>';
+    scanLogBody.appendChild(line);
+    scanLogLines.push(line);
+
+    /* fresh → dim 전환 */
+    setTimeout(function(){ line.classList.remove('fresh'); }, 800);
+
+    if(scanLogLines.length > MAX_LOG_LINES){
+      var old = scanLogLines.shift();
+      old.classList.add('stale');
+      setTimeout(function(){ if(old.parentNode) old.parentNode.removeChild(old); }, 1700);
+    }
+
+    setTimeout(scanLogPush, 600 + Math.random() * 1000);
+  }
+  if(!prefersReduced) setTimeout(scanLogPush, 800);
+
+  /* ==========================================================
+     OP-40 — 생산성 게이지 rAF tween + 미세 진동
+     0 → +24% ease-out cubic, 도착 후 미세 wobble, fade-reset
+  ========================================================== */
+  var prodFillEl = document.getElementById('prodGaugeFill');
+  var prodValEl  = document.getElementById('prodGaugeVal');
+  var PROD_MAX   = 24;
+  var PROD_DUR   = 3200;
+  var PROD_HOLD  = 2000;
+  var PROD_PAUSE = 800;
+
+  /* wobble: +24% 도달 후 ±0.4% 미세 진동 */
+  var wobbleHandle = null;
+  var wobblePrev   = null;
+  var wobblePhase  = 0;
+
+  function stopWobble(){
+    if(wobbleHandle){ cancelAnimationFrame(wobbleHandle); wobbleHandle = null; }
+  }
+
+  function startWobble(){
+    stopWobble();
+    wobblePrev = null;
+    function wf(ts){
+      if(!wobblePrev) wobblePrev = ts;
+      var dt = Math.min(ts - wobblePrev, 64);
+      wobblePrev = ts;
+      wobblePhase += dt * 0.0038;
+      var noise = Math.sin(wobblePhase * 2.3) * 0.22 + Math.sin(wobblePhase * 5.1) * 0.12;
+      var v = PROD_MAX + noise;
+      if(prodFillEl) prodFillEl.style.width = (v / PROD_MAX * 100) + '%';
+      if(prodValEl) prodValEl.textContent = '+' + v.toFixed(1) + '%';
+      wobbleHandle = requestAnimationFrame(wf);
+    }
+    wobbleHandle = requestAnimationFrame(wf);
+  }
 
   function prodLoop(){
-    if(prefersReduced || !hmiProdEl) return;
-    var t0=null;
-    hmiProdEl.textContent='+0%';
-    function up(ts){
-      if(!t0) t0=ts;
-      var p=Math.min(1,(ts-t0)/PROD_DUR);
-      var e=1-Math.pow(1-p,3);
-      hmiProdEl.textContent='+'+Math.round(24*e)+'%';
-      if(p<1){ requestAnimationFrame(up); }
-      else {
-        hmiProdEl.textContent='+24%';
-        setTimeout(function(){
-          hmiProdEl.textContent='+0%';
-          setTimeout(prodLoop, PROD_PAUSE);
-        }, PROD_HOLD);
+    if(prefersReduced || !prodFillEl || !prodValEl) return;
+    stopWobble();
+    /* fade-in 시작 */
+    prodValEl.style.transition = 'opacity .25s ease';
+    prodValEl.style.opacity = '0';
+    prodFillEl.style.width = '0%';
+
+    setTimeout(function(){
+      prodValEl.style.opacity = '1';
+      setTimeout(function(){ prodValEl.style.transition = ''; }, 260);
+
+      var t0 = null;
+      function up(ts){
+        if(!t0) t0 = ts;
+        var p = Math.min(1, (ts - t0) / PROD_DUR);
+        var e = 1 - Math.pow(1 - p, 3);
+        var v = PROD_MAX * e;
+        if(prodFillEl) prodFillEl.style.width = (v / PROD_MAX * 100) + '%';
+        if(prodValEl) prodValEl.textContent = '+' + v.toFixed(1) + '%';
+        if(p < 1){
+          requestAnimationFrame(up);
+        } else {
+          if(prodValEl) prodValEl.textContent = '+' + PROD_MAX + '.0%';
+          if(prodFillEl) prodFillEl.style.width = '100%';
+          startWobble();
+          setTimeout(function(){
+            stopWobble();
+            /* fade-out reset */
+            prodValEl.style.transition = 'opacity .3s ease';
+            prodFillEl.style.transition = 'width .3s ease';
+            prodValEl.style.opacity = '0';
+            prodFillEl.style.width = '0%';
+            setTimeout(function(){
+              prodValEl.style.transition = '';
+              prodFillEl.style.transition = '';
+              prodValEl.textContent = '+0.0%';
+              setTimeout(prodLoop, PROD_PAUSE);
+            }, 320);
+          }, PROD_HOLD);
+        }
       }
-    }
-    requestAnimationFrame(up);
+      requestAnimationFrame(up);
+    }, 260);
   }
   prodLoop();
 
   /* ==========================================================
-     스파크 제너레이터 — OP-20 Jig arm
+     OP-40 — LOB 라이브 로그 스트리밍
+  ========================================================== */
+  var lobLogEl = document.getElementById('lobLog');
+  var lobLogLines = [];
+  var lobPool = [
+    ['ok','LOB 분석 완료 · 편차 14%→6%'],['num','생산성 +24% 확인'],
+    ['warn','OP-03 과부하 → 재배분'],['ok','인력 배치 최적화'],
+    ['num','절감 4,437만원/년'],['ok','WBS 진척 100%'],
+    ['ok','SOP 개정 완료'],['num','Capa +1.24x'],
+    ['warn','대기 낭비 감지 → 제거'],['ok','LOB 재측정 OK'],
+    ['ok','Gantt 실적 입력'],['num','C/T 편차 -62%'],
+  ];
+  var lobPoolIdx = Math.floor(Math.random() * lobPool.length);
+
+  function lobLogPush(){
+    if(!lobLogEl || prefersReduced) return;
+    var el40 = document.getElementById('op40');
+    var vis = el40 && (function(){ var r = el40.getBoundingClientRect(); return r.top < window.innerHeight && r.bottom > 0; })();
+    if(!vis){ setTimeout(lobLogPush, 700); return; }
+
+    var entry = lobPool[lobPoolIdx % lobPool.length];
+    lobPoolIdx++;
+    var now = new Date();
+    var ts = [now.getHours(),now.getMinutes(),now.getSeconds()].map(function(n){return(n<10?'0':'')+n;}).join(':');
+
+    var line = document.createElement('div');
+    line.className = 'll-line';
+    line.innerHTML = '<span style="color:var(--ink-faint)">' + ts + '</span> '
+      + '<span class="lc-' + entry[0] + '">' + entry[1] + '</span>';
+    lobLogEl.appendChild(line);
+    lobLogLines.push(line);
+
+    if(lobLogLines.length > 4){
+      var old = lobLogLines.shift();
+      old.classList.add('stale');
+      setTimeout(function(){ if(old.parentNode) old.parentNode.removeChild(old); }, 1600);
+    }
+
+    setTimeout(lobLogPush, 900 + Math.random() * 1100);
+  }
+  if(!prefersReduced) setTimeout(lobLogPush, 600);
+
+  /* ==========================================================
+     OP-20 스파크 제너레이터 — rAF + dt 기반 (setInterval 제거)
   ========================================================== */
   var weldStage = document.getElementById('weldStage');
   function spawnSpark(parent, x, y){
     var s = document.createElement('div');
-    s.className='spark';
-    s.style.left=x+'px'; s.style.top=y+'px';
+    s.className = 'spark';
+    s.style.left = x + 'px'; s.style.top = y + 'px';
     parent.appendChild(s);
-    var dist=18+Math.random()*44;
-    var dx=Math.cos(Math.random()*Math.PI)*dist*(Math.random()<.5?-1:1);
-    var dy=14+Math.random()*52;
-    var dur=280+Math.random()*260;
+    var dist = 18 + Math.random() * 44;
+    var dx = Math.cos(Math.random() * Math.PI) * dist * (Math.random() < .5 ? -1 : 1);
+    var dy = 14 + Math.random() * 52;
+    var dur = 280 + Math.random() * 260;
     s.animate([
       {transform:'translate(0,0) scale(1)',opacity:1,background:'var(--hazard)'},
       {transform:'translate('+dx+'px,'+dy+'px) scale(.2)',opacity:0,background:'var(--signal)'}
-    ],{duration:dur,easing:'cubic-bezier(.3,.7,.6,1)'}).onfinish=function(){ s.remove(); };
-  }
-  if(weldStage && !prefersReduced){
-    setInterval(function(){
-      var r=weldStage.getBoundingClientRect();
-      if(r.bottom<0||r.top>window.innerHeight) return;
-      var arm=weldStage.querySelector('.welder-arm');
-      if(!arm) return;
-      var aR=arm.getBoundingClientRect(), wR=weldStage.getBoundingClientRect();
-      var x=aR.left-wR.left+aR.width/2;
-      for(var i=0;i<4;i++) spawnSpark(weldStage,x,118);
-    },140);
+    ],{duration:dur,easing:'cubic-bezier(.3,.7,.6,1)'}).onfinish = function(){ s.remove(); };
   }
 
-  /* ==========================================================
-     스테이션 컨베이어 벨트 파트 — 각 station 내 미니 벨트
-     각 .station 안의 첫 번째 .part를 좌→우 자동 이동
-  ========================================================== */
-  if(!prefersReduced){
-    var stationBelts = Array.prototype.slice.call(document.querySelectorAll('.station .belt-wrap'));
-    stationBelts.forEach(function(wrap){
-      /* masterPart가 있는 첫 번째 벨트는 별도 처리 */
-      var part = wrap.querySelector('.part');
-      if(!part || part.id==='masterPart') return;
-      var startPct = parseFloat(part.style.left)||14;
-      var t0=null, cyc=5200+Math.random()*1200;
-      function run(ts){
-        if(!t0) t0=ts;
-        var p=((ts-t0)%cyc)/cyc;
-        part.style.left=(startPct + p*(86-startPct))+'%';
-        requestAnimationFrame(run);
+  if(weldStage && !prefersReduced){
+    var sparkPrev = null;
+    var sparkAcc  = 0;
+    var SPARK_INTERVAL = 140; /* ms — 이전과 동일한 주기, rAF로 처리 */
+
+    function sparkLoop(ts){
+      if(!sparkPrev) sparkPrev = ts;
+      var dt = Math.min(ts - sparkPrev, 64);
+      sparkPrev = ts;
+
+      var r = weldStage.getBoundingClientRect();
+      if(r.bottom >= 0 && r.top <= window.innerHeight){
+        sparkAcc += dt;
+        if(sparkAcc >= SPARK_INTERVAL){
+          sparkAcc -= SPARK_INTERVAL;
+          var arm = weldStage.querySelector('.welder-arm');
+          if(arm){
+            var aR = arm.getBoundingClientRect(), wR = weldStage.getBoundingClientRect();
+            var x = aR.left - wR.left + aR.width / 2;
+            for(var i = 0; i < 4; i++) spawnSpark(weldStage, x, 118);
+          }
+        }
       }
-      requestAnimationFrame(run);
-    });
+      requestAnimationFrame(sparkLoop);
+    }
+    requestAnimationFrame(sparkLoop);
   }
 
   /* ---------- rail click nav ---------- */
   railStops.forEach(function(s){
     s.addEventListener('click',function(){
-      var go=s.getAttribute('data-go');
-      var el=document.getElementById(go);
+      var go = s.getAttribute('data-go');
+      var el = document.getElementById(go);
       if(el) el.scrollIntoView({behavior:prefersReduced?'auto':'smooth',block:'start'});
     });
   });

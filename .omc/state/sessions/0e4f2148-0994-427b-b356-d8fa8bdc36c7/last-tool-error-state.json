@@ -1,7 +1,7 @@
 {
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"tail -20 /private/tmp/claude-502/-Users-davidpark-private-project/0e4f2148-0994-427b-b356-d8fa8bdc36c7/tasks/blc5hcvhv.output; echo \\\"=== react version installed ===\\\"; node -p \\\"require('...",
-  "error": "Exit code 1\n\nadded 297 packages, and audited 298 packages in 24s\n\n52 packages are looking for funding\n  run `npm fund` for details\n\nfound 0 vulnerabilities\n=== react version installed ===\nnode:internal/modules/cjs/loader:691\n      throw e;\n      ^\n\nError [ERR_PACKAGE_PATH_NOT_EXPORTED]: Package subpath './package.json' is not defined by \"exports\" in /Users/davidpark/private_project/portfolio/node_modules/three/package.json\n    at exportsNotFound (node:internal/modules/esm/resolve:310:10)\n    at ...",
-  "timestamp": "2026-06-15T02:48:34.527Z",
+  "tool_name": "mcp__plugin_playwright_playwright__browser_evaluate",
+  "tool_input_preview": "{\"function\":\"() => { window.scrollTo(0,0); if (window.lenis) window.lenis.scrollTo(0,{immediate:true}); return { y: window.scrollY, canvas: !!document.querySelector('canvas') } }\"}",
+  "error": "### Error\nTypeError: window.lenis.scrollTo is not a function\n    at eval (eval at <anonymous> (eval at evaluate (:303:30)), <anonymous>:1:63)\n    at eval (eval at evaluate (:303:30), <anonymous>:4:50)\n    at UtilityScript.evaluate (<anonymous>:305:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n### Page\n- Page URL: http://localhost:4173/\n- Page Title: 박양하 — Portfolio\n- Console: 0 errors, 23 warnings\n### Events\n- New console entries: .playwright-mcp/console-2026-06-15T03-15-10-701Z.log#L4...",
+  "timestamp": "2026-06-15T03:15:57.123Z",
   "retry_count": 1
 }

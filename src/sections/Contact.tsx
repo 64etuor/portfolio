@@ -9,7 +9,7 @@ export function Contact() {
   return (
     <section
       id="contact"
-      className="px-6 py-28 md:px-10 md:py-40"
+      className="border-t border-line px-6 py-28 md:px-10 md:py-40"
     >
       <div className="mx-auto max-w-6xl">
         <motion.h2
@@ -17,7 +17,7 @@ export function Contact() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.6 }}
-          className="font-serif text-5xl font-semibold text-paper md:text-7xl"
+          className="font-serif text-5xl font-semibold text-ink md:text-7xl"
         >
           Let&apos;s talk.
         </motion.h2>
@@ -26,7 +26,7 @@ export function Contact() {
           {email && (
             <a
               href={`mailto:${email}`}
-              className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-3 text-sm text-paper/80 transition-colors hover:border-accent hover:text-paper"
+              className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-3 text-sm text-ink/80 transition-colors hover:border-accent hover:text-ink"
             >
               <Mail size={16} /> {email}
             </a>
@@ -34,7 +34,7 @@ export function Contact() {
           {phone && (
             <a
               href={`tel:${phone.replace(/-/g, '')}`}
-              className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-3 text-sm text-paper/80 transition-colors hover:border-accent hover:text-paper"
+              className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-3 text-sm text-ink/80 transition-colors hover:border-accent hover:text-ink"
             >
               <Phone size={16} /> {phone}
             </a>
@@ -44,7 +44,7 @@ export function Contact() {
               href={github.url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-3 text-sm text-paper/80 transition-colors hover:border-accent hover:text-paper"
+              className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-3 text-sm text-ink/80 transition-colors hover:border-accent hover:text-ink"
             >
               <Code size={16} /> {github.username}
             </a>
@@ -54,7 +54,7 @@ export function Contact() {
               href={url}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-3 text-sm text-paper/80 transition-colors hover:border-accent hover:text-paper"
+              className="inline-flex items-center gap-2 rounded-full border border-line px-5 py-3 text-sm text-ink/80 transition-colors hover:border-accent hover:text-ink"
             >
               <Globe size={16} /> {url.replace(/^https?:\/\//, '')}
             </a>

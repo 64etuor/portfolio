@@ -10,7 +10,7 @@ export function About() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.6 }}
-          className="font-serif text-4xl font-semibold text-paper md:text-5xl"
+          className="font-serif text-4xl font-semibold text-ink md:text-5xl"
         >
           About
         </motion.h2>
@@ -21,13 +21,13 @@ export function About() {
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.6, delay: 0.1 }}
         >
-          <p className="text-xl leading-relaxed text-paper/80 md:text-2xl">
+          <p className="text-xl leading-relaxed text-ink/80 md:text-2xl">
             {resume.basics.summary}
           </p>
 
           <div className="mt-12 grid gap-px overflow-hidden rounded-2xl border border-line bg-line sm:grid-cols-2">
             {resume.skills.map((group) => (
-              <div key={group.name} className="bg-ink-soft p-6">
+              <div key={group.name} className="bg-paper-2 p-6">
                 <h3 className="text-sm font-semibold text-accent">
                   {group.name}
                 </h3>

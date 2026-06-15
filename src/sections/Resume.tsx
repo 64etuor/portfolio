@@ -3,19 +3,19 @@ import { resume, fmtPeriod } from '@/data/resume'
 
 export function ResumeSection() {
   return (
-    <section id="resume" className="px-6 py-28 md:px-10 md:py-40">
+    <section id="resume" className="border-t border-line px-6 py-28 md:px-10 md:py-40">
       <div className="mx-auto max-w-6xl">
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true, margin: '-100px' }}
           transition={{ duration: 0.6 }}
-          className="font-serif text-4xl font-semibold text-paper md:text-5xl"
+          className="font-serif text-4xl font-semibold text-ink md:text-5xl"
         >
           Resume
         </motion.h2>
         <p className="mt-3 text-sm text-muted">
-          데이터 출처: <code className="text-paper/70">src/data/resume.json</code>{' '}
+          데이터 출처: <code className="text-ink/70">src/data/resume.json</code>{' '}
           (JSON Resume 표준)
         </p>
 
@@ -35,7 +35,7 @@ export function ResumeSection() {
             >
               <span className="absolute -left-[31px] top-1.5 h-2 w-2 rounded-full bg-accent md:-left-[43px]" />
               <div className="flex flex-wrap items-baseline justify-between gap-x-4">
-                <h4 className="text-lg font-semibold text-paper">
+                <h4 className="text-lg font-semibold text-ink">
                   {job.name}
                   <span className="ml-2 text-base font-normal text-muted">
                     {job.position}
@@ -49,7 +49,7 @@ export function ResumeSection() {
                 {job.highlights?.map((h, j) => (
                   <li
                     key={j}
-                    className="relative pl-4 text-sm leading-relaxed text-paper/70 before:absolute before:left-0 before:text-accent before:content-['–']"
+                    className="relative pl-4 text-sm leading-relaxed text-ink/70 before:absolute before:left-0 before:text-accent before:content-['–']"
                   >
                     {h}
                   </li>
@@ -68,7 +68,7 @@ export function ResumeSection() {
             <ul className="mt-6 space-y-4">
               {resume.education.map((e, i) => (
                 <li key={i}>
-                  <p className="font-semibold text-paper">{e.institution}</p>
+                  <p className="font-semibold text-ink">{e.institution}</p>
                   <p className="text-sm text-muted">
                     {e.area} · {e.studyType}
                     {e.endDate ? ` · ${fmtPeriod(e.startDate, e.endDate)}` : ''}
@@ -82,8 +82,8 @@ export function ResumeSection() {
             </h3>
             <ul className="mt-6 space-y-2">
               {resume.languages.map((l, i) => (
-                <li key={i} className="text-sm text-paper/70">
-                  <span className="font-semibold text-paper">{l.language}</span>
+                <li key={i} className="text-sm text-ink/70">
+                  <span className="font-semibold text-ink">{l.language}</span>
                   {l.fluency ? ` — ${l.fluency}` : ''}
                 </li>
               ))}
@@ -97,7 +97,7 @@ export function ResumeSection() {
             <ul className="mt-6 space-y-4">
               {resume.certificates.map((c, i) => (
                 <li key={i}>
-                  <p className="font-semibold text-paper">{c.name}</p>
+                  <p className="font-semibold text-ink">{c.name}</p>
                   {c.summary ? (
                     <p className="text-sm text-muted">{c.summary}</p>
                   ) : null}

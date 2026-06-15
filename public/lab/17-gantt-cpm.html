@@ -346,9 +346,9 @@ footer .r a:hover{color:var(--crit)}
       <div class="card">
         <div class="card-hd"><span class="t">누적 임팩트</span><span class="b">CUMULATIVE</span></div>
         <div class="hero">
-          <div class="lbl">대표 운영 성과 — 운영경비 절감</div>
-          <div class="big"><span class="num" id="heroNum">0</span><span class="unit">% OPEX ↓</span></div>
-          <div class="sub">배터리팩 총괄 시절 운영경비 <b>−85%</b>, 동시에 조달단가 <b>+30%</b> 재협상 — 비용·마진 양방향 개선.</div>
+          <div class="lbl">대표 운영 성과 — 라인 생산성 향상</div>
+          <div class="big"><span class="num" id="heroNum">0</span><span class="unit">% 생산성 ↑</span></div>
+          <div class="sub">이랜텍 생산라인 PM 시절 <b>LOB 라인밸런싱</b>으로 라인 생산성 <b>+24%</b> — 의존 체인 한가운데서 처리량을 끌어올린 핵심 성과.</div>
           <span class="est">집계: 직접 측정치 (실적 기준)</span>
         </div>
       </div>
@@ -497,7 +497,7 @@ const TASKS = [
     start:ym(2022,11), end:ym(2023,9), pct:100, crit:true, deps:['eun'], slack:0,
     desc:'생산라인 PM으로 용착 공정 불량을 DOE 기반으로 근본 개선. Jig를 직접 개발해 사이클타임을 단축하고 LOB 분석으로 라인 생산성을 끌어올림.',
     metrics:[
-      {k:'용착불량', v:'15%→0%', cls:'g', c:'DOE 인자 최적화'},
+      {k:'용착 공정', v:'DOE 개선', cls:'', c:'인자 최적화'},
       {k:'C/T', v:'−49%', cls:'g', c:'Jig 개발·공정 재배치'},
       {k:'생산성(LOB)', v:'+24%', cls:'g', c:'라인밸런싱 개선'},
       {k:'설비', v:'Jig 개발', cls:'', c:'기구설계·로봇티칭'}
@@ -549,9 +549,9 @@ const TASKS = [
 
   { id:'doe', co:'이랜텍', color:COLORS.elen, role:'DOE 용착 최적화',
     start:ym(2022,12), end:ym(2023,5), pct:100, crit:false, deps:['eun'], slack:5,
-    desc:'용착 공정 인자를 DOE로 설계·검증해 불량률을 15%에서 0%로 제거한 병렬 품질 프로젝트.',
+    desc:'용착 공정 인자를 DOE로 설계·검증해 불량률을 근본 개선한 병렬 품질 프로젝트.',
     metrics:[
-      {k:'불량', v:'15%→0%', cls:'g', c:'용착 공정'},
+      {k:'품질', v:'DOE 개선', cls:'g', c:'용착 공정'},
       {k:'방법', v:'DOE', cls:'', c:'실험계획법'}
     ],
     stack:['DOE','산업용접','SOP'] },
@@ -569,30 +569,30 @@ const TASKS = [
 // MILESTONES (diamonds)
 const MILES = [
   { at:ym(2022,11), label:'IATF16949 운영 · 0불량', row:'eun' },
-  { at:ym(2023,9),  label:'C/T −49% · LOB +24%', row:'elen' },
+  { at:ym(2023,9),  label:'라인 생산성 LOB +24%', row:'elen' },
   { at:ym(2024,12), label:'데이터/MES 전환', row:'sol' },
   { at:ym(2025,8),  label:'제조→SW/AI 브리지 완료', row:'bridge' },
 ];
 
-// Scorecard KPIs (selected & framed)
+// Scorecard KPIs — 이 보드가 소유하는 대표 수치는 라인 생산성 +24% 하나.
+// 나머지 성과(원가·품질·셋업·자동화·재고 등)는 각 전용 씬이 소유하므로
+// 여기서는 정량 수치 없이 역량/적용범위만 중립적으로 표기한다.
 const KPIS = [
-  { cat:'원가', cls:'dn', n:'−85', u:'%', nm:'운영경비 OPEX', delta:'라인 재설계', spark:[80,72,60,48,34,22,15], color:COLORS.eun, bar:85 },
-  { cat:'마진', cls:'up', n:'+30', u:'%', nm:'조달단가 재협상', delta:'공급 협상력', spark:[100,108,116,124,130], color:COLORS.eun, bar:30 },
-  { cat:'품질', cls:'dn', n:'0', u:'건', nm:'필드/출하 불량', delta:'PPM→0', spark:[14,9,5,2,0.6,0], color:'#1f9d6b', bar:100 },
-  { cat:'품질', cls:'dn', n:'15→0', u:'%', nm:'용착 불량(DOE)', delta:'근본 제거', spark:[15,11,7,3,1,0], color:'#1f9d6b', bar:100 },
-  { cat:'생산성', cls:'dn', n:'−49', u:'%', nm:'공정 사이클타임', delta:'Jig·재배치', spark:[100,86,70,58,51], color:COLORS.elen, bar:49 },
-  { cat:'생산성', cls:'up', n:'+24', u:'%', nm:'라인 생산성 LOB', delta:'밸런싱', spark:[100,108,115,121,124], color:COLORS.elen, bar:24 },
-  { cat:'생산성', cls:'dn', n:'−50', u:'%', nm:'셋업타임 ST', delta:'표준·자동', spark:[100,84,70,60,50], color:COLORS.sol, bar:50 },
-  { cat:'자동화', cls:'dn', n:'−451', u:'분/일', nm:'사무공수', delta:'성적서 자동발행', spark:[451,360,260,150,60,0], color:COLORS.mir, bar:90 },
+  { cat:'생산성', cls:'up', n:'+24', u:'%', nm:'라인 생산성 LOB', delta:'라인밸런싱', spark:[100,108,115,121,124], color:COLORS.elen, bar:24 },
+  { cat:'생산성', cls:'', n:'LOB', u:'', nm:'라인밸런싱 분석', delta:'병목 해소', spark:[3,2,2,1,1], color:COLORS.elen, bar:62 },
+  { cat:'원가', cls:'', n:'재협상', u:'', nm:'원가·조달 구조개선', delta:'협상력', spark:[1,2,2,3,3], color:COLORS.eun, bar:55 },
+  { cat:'품질', cls:'', n:'관리', u:'', nm:'품질체계 운영', delta:'IATF16949', spark:[2,2,3,3,3], color:'#1f9d6b', bar:70 },
+  { cat:'공정', cls:'', n:'개선', u:'', nm:'사이클·셋업 최적화', delta:'표준화', spark:[3,2,2,1,1], color:COLORS.sol, bar:58 },
+  { cat:'자동화', cls:'', n:'RPA', u:'', nm:'사무·검사 자동화', delta:'반복업무 제거', spark:[1,2,2,3,3], color:COLORS.mir, bar:66 },
 ];
 
 const DERIVED = [
-  { t:'노동생산성 연환산', v:'≈ 1,800h+', tag:'추정·환산',
-    d:'사무공수 −451분/일 × 240 근무일 ≈ 108,240분 ≈ 연 1,804시간 절감. 1인 연근무(약 1,900h)에 근접 — 인력 1명분의 반복업무 제거.', est:true },
-  { t:'비용·마진 동시개선', v:'양방향', tag:'',
-    d:'OPEX −85%(비용)와 조달단가 +30%(마진)을 같은 임기에 동시 달성 — 손익 양쪽 레버를 함께 움직인 보기 드문 사례.', est:false },
-  { t:'자동화 도입 ROI 등급', v:'A', tag:'정성평가',
-    d:'비전검사·MES·RPA·AI MCP를 단계적으로 도입해 품질·공수·운영을 동시 개선. 정량 환산 일부는 추정이나, 도입 폭과 지속성 기준 최상위 등급.', est:true },
+  { t:'생산성 향상의 의미', v:'+24%', tag:'',
+    d:'LOB 라인밸런싱으로 동일 설비·인원에서 처리량을 +24% — 추가 투자 없이 병목을 풀어 라인 캐파를 키운 구조적 개선.', est:false },
+  { t:'의존 체인 위치', v:'핵심', tag:'',
+    d:'제조 현장 → 데이터/AX 총괄로 이어지는 최장 의존 체인의 중간 단계. 이 시기의 생산성·공정 역량이 이후 데이터·자동화 전환의 토대가 됨.', est:false },
+  { t:'역량 전환 ROI 등급', v:'A', tag:'정성평가',
+    d:'현장 공정 최적화에서 출발해 데이터·자동화·AI까지 단계적으로 확장. 도입 폭과 지속성 기준 최상위 등급.', est:true },
 ];
 
 const SKILLS = [
@@ -921,17 +921,17 @@ function renderSkills(){
 }
 
 /* count-up hero */
-function countUp(elm,target,dur=1100){
-  elm.textContent='−'+target; // final value first → headless/PDF always shows correct number
+function countUp(elm,target,dur=1100,sign='+'){
+  elm.textContent=sign+target; // final value first → headless/PDF always shows correct number
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(reduce) return;
   const start=performance.now();
   function tick(now){
     const p=Math.min(1,(now-start)/dur);
     const ease=1-Math.pow(1-p,3);
-    elm.textContent='−'+Math.round(target*ease);
+    elm.textContent=sign+Math.round(target*ease);
     if(p<1)requestAnimationFrame(tick);
-    else elm.textContent='−'+target;
+    else elm.textContent=sign+target;
   }
   requestAnimationFrame(tick);
 }
@@ -1102,7 +1102,7 @@ function init(){
   renderKPIs();
   renderDerived();
   renderSkills();
-  countUp(document.getElementById('heroNum'),85);
+  countUp(document.getElementById('heroNum'),24,1100,'+');
   renderMomTop();
   buildMomChart();
   renderMomLog();

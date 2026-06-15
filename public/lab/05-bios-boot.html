@@ -272,10 +272,10 @@
               <b style="color:var(--amber)">현장에서 코드까지</b> 한 흐름으로 연결합니다.
             </p>
             <div class="metgrid">
-              <div class="met"><span class="reg">REG-OPEX</span><div class="num amber">−85%</div><div class="lab kr">라인 운영경비 절감</div></div>
-              <div class="met"><span class="reg">REG-DEF</span><div class="num">15%→0%</div><div class="lab kr">초음파 용착 불량률</div></div>
-              <div class="met"><span class="reg">REG-LOB</span><div class="num">+24%</div><div class="lab kr">생산성(LOB) 향상</div></div>
-              <div class="met"><span class="reg">REG-OFC</span><div class="num amber">−451분</div><div class="lab kr">일일 사무공수 절감</div></div>
+              <div class="met"><span class="reg">REG-MFG</span><div class="num amber">제조</div><div class="lab kr">공정·품질·원가 도메인</div></div>
+              <div class="met"><span class="reg">REG-DATA</span><div class="num">데이터</div><div class="lab kr">DB·대시보드·MES</div></div>
+              <div class="met"><span class="reg">REG-DEV</span><div class="num">개발</div><div class="lab kr">FastAPI·AWS·CI/CD</div></div>
+              <div class="met"><span class="reg">REG-AX</span><div class="num amber">AI</div><div class="lab kr">RPA·MCP 자동화 전환</div></div>
             </div>
             <p class="dim kr" style="margin-top:18px;font-size:12.5px">
               ▸ 좌측 메뉴에서 CAREER.LOG / DEVICES.MAP / SELFTEST.DAT 를 선택해 시스템을 탐색하세요.<span class="cur"></span>
@@ -341,16 +341,16 @@
           <!-- METRICS -->
           <div class="view" id="v-metrics">
             <h2>SELFTEST.DAT</h2>
-            <div class="sub kr">시스템 자가진단 결과 = 실측 성과 지표 / 전 항목 PASS</div>
+            <div class="sub kr">시스템 자가진단 결과 = 서브시스템 부팅 점검 / 전 항목 PASS</div>
             <div class="metgrid">
-              <div class="met"><span class="reg">0x01</span><div class="num amber">−85%</div><div class="lab kr">라인 운영경비</div></div>
-              <div class="met"><span class="reg">0x02</span><div class="num">−50%</div><div class="lab kr">공정 ST(표준시간)</div></div>
-              <div class="met"><span class="reg">0x03</span><div class="num">−49%</div><div class="lab kr">공정 C/T 단축</div></div>
-              <div class="met"><span class="reg">0x04</span><div class="num amber">15%→0%</div><div class="lab kr">초음파 용착 불량</div></div>
-              <div class="met"><span class="reg">0x05</span><div class="num">+24%</div><div class="lab kr">생산성 (LOB)</div></div>
-              <div class="met"><span class="reg">0x06</span><div class="num amber">+30%</div><div class="lab kr">단가 재협상</div></div>
-              <div class="met"><span class="reg">0x07</span><div class="num">−451분</div><div class="lab kr">일일 사무공수</div></div>
-              <div class="met"><span class="reg">0x08</span><div class="num amber">0건</div><div class="lab kr">고객·필드 불량</div></div>
+              <div class="met"><span class="reg">0x01</span><div class="num">[OK]</div><div class="lab kr">MFG_LINE · 제조 공정</div></div>
+              <div class="met"><span class="reg">0x02</span><div class="num">[OK]</div><div class="lab kr">DATA_BUS · DB·BI</div></div>
+              <div class="met"><span class="reg">0x03</span><div class="num">[OK]</div><div class="lab kr">DEV_STACK · FastAPI·AWS</div></div>
+              <div class="met"><span class="reg">0x04</span><div class="num amber">[OK]</div><div class="lab kr">AX_AI · MCP 서버</div></div>
+              <div class="met"><span class="reg">0x05</span><div class="num">[OK]</div><div class="lab kr">QUALITY · IATF16949</div></div>
+              <div class="met"><span class="reg">0x06</span><div class="num">[OK]</div><div class="lab kr">DEFECT_GUARD · DOE·비전</div></div>
+              <div class="met"><span class="reg">0x07</span><div class="num">[OK]</div><div class="lab kr">MES_DATABASE · 추적성</div></div>
+              <div class="met"><span class="reg">0x08</span><div class="num amber">[OK]</div><div class="lab kr">CI/CD · 파이프라인</div></div>
             </div>
           </div>
 
@@ -403,11 +403,11 @@ const POST = [
   {t:'PROBE  DEV_STACK.SYS [개발] .............. FastAPI/AWS/CI', s:'ok', tag:'OK', beep:1},
   {t:'PROBE  AX_AI.SYS     [AI] ................. MCP server up', s:'cy', tag:'OK', beep:1},
   {t:'PROBE  QUALITY.SYS   [품질] .............. IATF16949 hold', s:'ok', tag:'OK', beep:1},
-  {t:'Loading DEFECT_RATE.SYS ........ 15% detected', s:'warn'},
-  {t:'  ↳ applying DOE optimization ... 14 .. 9 .. 3 .. 0%', s:'warn', tag:'PATCH', tagtxt:'PATCHED', beep:1},
-  {t:'ACPI: OPEX power state ......... −85% (deep save)', s:'ok', tag:'OK'},
-  {t:'SATA0: MES_DATABASE ........... attached  (−451 min/day)', s:'ok', tag:'OK', beep:1},
-  {t:'IRQ:  vision-inspection ....... routed   (field defects = 0)', s:'ok', tag:'OK'},
+  {t:'Loading DEFECT_GUARD.SYS ...... anomaly detected', s:'warn'},
+  {t:'  ↳ applying DOE optimization ... 비전 검출 → 재용접 → clean', s:'warn', tag:'PATCH', tagtxt:'PATCHED', beep:1},
+  {t:'ACPI: PROCESS power state ...... optimized (deep save)', s:'ok', tag:'OK'},
+  {t:'SATA0: MES_DATABASE ........... attached  (real-time trace)', s:'ok', tag:'OK', beep:1},
+  {t:'IRQ:  vision-inspection ....... routed   (quality gate up)', s:'ok', tag:'OK'},
   {t:'Scanning DRAM device map ...... 29 devices detected', s:'cy', tag:'DET', tagtxt:'DETECTED'},
   {t:'Verifying boot signature ...... 박양하 / Park Yangha  OK', s:'ok'},
   {t:'', s:'dim'},
@@ -452,16 +452,16 @@ function typeLogo(done){
   })();
 }
 
-/* ============ MEMORY COUNT-UP (tied to a real metric: 451 min) ============ */
+/* ============ MEMORY COUNT-UP (boot subsystem check) ============ */
 function memCount(lineEl, done){
-  const TARGET=451; let v=0;
+  const TARGET=2048; let v=0;
   const step=()=>{
     if(booted)return;
     v += Math.max(1, Math.round((TARGET-v)/6));
     if(v>=TARGET)v=TARGET;
     lineEl.innerHTML='<span class="membar">Memory Test : <span class="fill">'
       + String(v).padStart(4,' ')+'</span> MB OK '
-      + '<span class="dim">// office-load reclaimed = '+v+' min/day</span></span>';
+      + '<span class="dim">// process working-set mapped</span></span>';
     if(v<TARGET){ timers.push(setTimeout(step, 26)); }
     else { beep(); timers.push(setTimeout(done,260)); }
   };

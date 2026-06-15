@@ -285,12 +285,12 @@
     </div>
   </div>
 
-  <!-- ================= METRICS ================= -->
+  <!-- ================= METRICS (CFD / THERMAL READINGS) ================= -->
   <div class="metrics">
-    <div class="metric"><div class="mk">운영경비</div><div class="mv ok">−85%</div><div class="md">공정 자동화·재설계 후</div></div>
-    <div class="metric"><div class="mk">사이클타임 C/T</div><div class="mv ok">−49%</div><div class="md">조립 흐름 최적화</div></div>
-    <div class="metric"><div class="mk">용착 불량</div><div class="mv">15% → 0%</div><div class="md">판금 설계 개선</div></div>
-    <div class="metric"><div class="mk">현장 불량</div><div class="mv ok">0건</div><div class="md">비전검사 도입 후</div></div>
+    <div class="metric"><div class="mk">Reynolds 수</div><div class="mv" id="mt-re">—</div><div class="md">U∞·L/ν · 난류 영역</div></div>
+    <div class="metric"><div class="mk">ΔP 압력강하</div><div class="mv" id="mt-dp">—</div><div class="md">루버 gap 1.0mm 기준</div></div>
+    <div class="metric"><div class="mk">유량 CFM</div><div class="mv ok" id="mt-cfm">—</div><div class="md">80mm 흡배기 팬</div></div>
+    <div class="metric"><div class="mk">GPU 표면온도</div><div class="mv warn" id="mt-gpu">—</div><div class="md">냉각 적용 후 하강</div></div>
   </div>
 
   <!-- ================= BOTTOM INFO ================= -->
@@ -758,6 +758,12 @@
     var rg=document.getElementById('ro-gpu');
     rg.textContent = gpu.toFixed(0)+' °C';
     rg.className='v '+(gpu>72?'warn':'cool');
+
+    // bottom CFD/thermal metrics strip
+    var mre=document.getElementById('mt-re'); if(mre) mre.textContent=(Re/1000).toFixed(1)+'k';
+    var mdp=document.getElementById('mt-dp'); if(mdp) mdp.textContent=dP.toFixed(1)+' Pa';
+    var mcfm=document.getElementById('mt-cfm'); if(mcfm) mcfm.textContent=cfm.toFixed(0)+' CFM';
+    var mgpu=document.getElementById('mt-gpu'); if(mgpu){ mgpu.textContent=gpu.toFixed(0)+' °C'; mgpu.className='mv '+(gpu>72?'warn':'ok'); }
 
     document.getElementById('ov-vel').textContent = 'U∞ = '+U.toFixed(1)+' m/s';
     document.getElementById('ov-iter').textContent = 'ITER '+S.iter+' · res '+S.res.toExponential(1);

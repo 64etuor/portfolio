@@ -386,15 +386,15 @@ const STATIONS = [
     role:"생산라인 PM / 파트장", period:"2022.11 – 2023.09",
     kind:"weld", // 용착 셀 — 딜라이트
     metrics:[
-      {v:"15%→0%", l:"용착 불량 (DOE)"},
-      {v:"−49%", l:"C/T 단축"},
-      {v:"+24%", l:"생산성"},
+      {v:"DOE", l:"용착 공정 최적화"},
+      {v:"PASS", l:"용착 품질 안정"},
       {v:"Jig", l:"전용 치공구 개발"},
+      {v:"SOP", l:"표준작업 정립"},
     ],
     log:[
-      "<b>DOE</b>로 용착 불량 <b>15% → 0%</b> 근본 원인 제거",
-      "사이클타임 <b>49% 단축</b>, 라인 생산성 <b>24% 향상</b>",
+      "<b>DOE</b> 실험계획으로 용착 공정 파라미터 근본 원인 제거",
       "<b>Jig·치공구 개발</b>로 작업 편차·재현성 개선",
+      "라인 사이클·생산성 안정화 및 표준작업(SOP) 정립",
       "PM/파트장으로 라인 안정화 및 인원 운영 주도",
     ],
     chips:["DOE","Jig개발","기구설계","산업용접","C/T 최적화","SOP"],
@@ -437,15 +437,17 @@ const STATIONS = [
   },
 ];
 
+// SCADA HUD strip = live plant process variables (PVs), not career KPIs.
+// (career numbers live in each station's detail panel; this strip mirrors the twin.)
 const PLANT_KPIS = [
-  {k:"운영경비",v:"−85%",c:""},
-  {k:"ST 표준시간",v:"−50%",c:"data"},
-  {k:"C/T",v:"−49%",c:""},
-  {k:"용착불량",v:"15%→0%",c:"amber"},
-  {k:"생산성",v:"+24%",c:""},
-  {k:"단가",v:"+30%",c:"data"},
-  {k:"사무공수",v:"−451분",c:"amber"},
-  {k:"불량",v:"0건",c:""},
+  {k:"OEE",v:"92.4%",c:""},
+  {k:"가동률",v:"98.1%",c:"data"},
+  {k:"Takt",v:"42s",c:""},
+  {k:"WIP",v:"14ea",c:"amber"},
+  {k:"처리량",v:"180/h",c:""},
+  {k:"라인밸런스",v:"96%",c:"data"},
+  {k:"동기화 지연",v:"<40ms",c:"amber"},
+  {k:"안돈",v:"GREEN",c:""},
 ];
 
 /* ───────────────────── boot HUD: KPI strip + legend ───────────────────── */
@@ -815,7 +817,7 @@ scene.add(sparks);
 let sparkT = 0, sparkOrigin = new THREE.Vector3();
 
 function triggerWeldDelight(){
-  // weld defect HUD ticks 15% -> 0%
+  // weld delight: spark burst + HUD weld-quality readout pulses to PASS
   const cell = weldCells[0];
   if(cell){
     cell.anchor.getWorldPosition(sparkOrigin);
@@ -825,14 +827,17 @@ function triggerWeldDelight(){
       sparkPos[i*3]=sparkOrigin.x; sparkPos[i*3+1]=sparkOrigin.y; sparkPos[i*3+2]=sparkOrigin.z;
     }
     sparkGeo.attributes.position.needsUpdate=true;
-    // animate the metric text 15% -> 0%
+    // pulse the weld-quality readout: DOE → … → PASS (no career number duplicated)
     const hud = machineGroups[1].userData.hud;
     const m0 = hud.querySelector("[data-m0]");
-    let val = 15;
-    const iv = setInterval(()=>{
-      val -= 1; if(val<=0){val=0; clearInterval(iv); setTimeout(()=>{m0.textContent="15%→0%";},700);}
-      m0.textContent = val+"%";
-    }, 55);
+    if(m0){
+      const frames = ["DOE","···","OPT","PASS"];
+      let k = 0;
+      const iv = setInterval(()=>{
+        m0.textContent = frames[k++];
+        if(k>=frames.length){ clearInterval(iv); setTimeout(()=>{m0.textContent="DOE";},700); }
+      }, 180);
+    }
   }
 }
 

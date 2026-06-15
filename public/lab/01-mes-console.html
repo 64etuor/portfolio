@@ -384,13 +384,13 @@ svg text{fill:var(--txt-dim);font-family:'JetBrains Mono';font-size:9px}
   <!-- ROW 3: trend chart + equipment/system status + capability -->
   <div class="grid row-3" style="margin-top:12px">
     <div class="panel" style="grid-column:span 1">
-      <div class="p-head"><span class="dot"></span><span class="h-title">용착 불량률 추이 · DOE 개입</span><span class="h-id">PNL-07 / DEFECT.TREND</span></div>
+      <div class="p-head"><span class="dot"></span><span class="h-title">공정 불량률 추이 · 개선 개입</span><span class="h-id">PNL-07 / DEFECT.TREND</span></div>
       <div class="p-body">
         <svg id="trend" class="chart-box"></svg>
-        <div class="legend"><span><i style="background:var(--red)"></i>DOE 적용 전</span><span><i style="background:var(--green)"></i>DOE 적용 후</span><span style="color:var(--amber)">▲ 알람 해제: 15% → 0%대</span></div>
+        <div class="legend"><span><i style="background:var(--red)"></i>개선 전</span><span><i style="background:var(--green)"></i>개선 후</span><span style="color:var(--amber)">▲ 알람 해제: 목표대 진입</span></div>
         <div style="margin-top:8px;font-family:'JetBrains Mono';font-size:9.5px;line-height:1.6;color:var(--txt-dim);border-top:1px solid var(--line);padding-top:7px">
-          <span style="color:var(--amber)">⚠ 일탈 정상화 경고</span> · 15%를 '원래 그런 것'으로 받아들이는 순간 표면화 실패.<br>
-          <b style="color:var(--txt);font-weight:500">이상을 이상으로 보는 감각</b> → 즉시 표면화 → <b style="color:var(--red);font-weight:500">라인 정지</b> → DOE 개선.
+          <span style="color:var(--amber)">⚠ 일탈 정상화 경고</span> · 높은 불량률을 '원래 그런 것'으로 받아들이는 순간 표면화 실패.<br>
+          <b style="color:var(--txt);font-weight:500">이상을 이상으로 보는 감각</b> → 즉시 표면화 → <b style="color:var(--red);font-weight:500">라인 정지</b> → 개선 개입.
         </div>
       </div>
     </div>
@@ -579,16 +579,16 @@ function drawBell(cpk){
 }
 drawBell(1.67);
 
-/* ============ KPI count-up tiles ============ */
+/* ============ KPI count-up tiles — MES live PVs (실시간 운영 지표) ============ */
 const kpis=[
-  {l:'운영 경비 절감',pre:'−',v:85,suf:'%',c:'g',d:'은성 / 라인 운영경비',spark:()=>rnd(80,88)},
-  {l:'공정 ST 절감',pre:'−',v:50,suf:'%',c:'',d:'솔라엣지 / 표준작업시간',spark:()=>rnd(46,53)},
-  {l:'공정 C/T 단축',pre:'−',v:49,suf:'%',c:'c',d:'이랜텍 / 사이클타임 최대',spark:()=>rnd(44,50)},
-  {l:'용착 불량률',pre:'',v:0,suf:'%대',c:'g',d:'이랜텍 / DOE · 15%→0%',spark:()=>rnd(0,0.4),fixed:1},
-  {l:'생산성 향상 LOB',pre:'+',v:24,suf:'%',c:'',d:'이랜텍 / 라인밸런스',spark:()=>rnd(20,27)},
-  {l:'단가 재협상',pre:'+',v:30,suf:'%',c:'c',d:'은성 / 원가분석 절감폭',spark:()=>rnd(28,34)},
-  {l:'사무 공수 절감',pre:'−',v:451,suf:'분/일',c:'g',d:'솔라엣지 / 중복공수 제거',spark:()=>rnd(430,460)},
-  {l:'필드 불량',pre:'',v:0,suf:'건',c:'',d:'은성 / 고객·필드 품질',spark:()=>rnd(0,0)},
+  {l:'설비 종합효율 OEE',pre:'',v:91.4,suf:'%',c:'g',d:'신제품 라인 / 실시간 PV',spark:()=>rnd(89,93),fixed:1},
+  {l:'시간당 생산량 UPH',pre:'',v:872,suf:'EA',c:'c',d:'금일 누적 / DAQ@1Hz',spark:()=>rnd(820,910)},
+  {l:'공정 수율 YIELD',pre:'',v:99.7,suf:'%',c:'g',d:'Cpk 1.67 기준 / SPC',spark:()=>rnd(99.2,99.9),fixed:1},
+  {l:'택트타임 C/T',pre:'',v:12.4,suf:'s',c:'',d:'라인 평균 / 실측',spark:()=>rnd(11.5,13.2),fixed:1},
+  {l:'라인 밸런스 LOB',pre:'',v:90,suf:'%',c:'c',d:'병목 가시화 / 실시간',spark:()=>rnd(86,94)},
+  {l:'가동률 AVAIL',pre:'',v:96.2,suf:'%',c:'g',d:'설비 가동 신호 / DAQ',spark:()=>rnd(94,97),fixed:1},
+  {l:'공정 불량 PPM',pre:'',v:300,suf:'ppm',c:'',d:'금일 / SPC 산출',spark:()=>rnd(180,420)},
+  {l:'안돈 알람',pre:'',v:0,suf:'건',c:'g',d:'지도카 / 라인 정지 0',spark:()=>rnd(0,0)},
 ];
 function buildKpis(){
   const r1=$('#kpi-row'),r2=$('#kpi-row2');
@@ -627,7 +627,7 @@ const jobs=[
   {wo:'WO-2023-0901',name:'솔라엣지테크놀로지스',role:'공정기술 엔지니어',s:new Date(2023,8,1),e:new Date(2024,11,31),status:'done',
    desc:'생산/불량/KPI/BOM/ST DB·대시보드 · MES 구축 · ST −50% · 검사성적서 자동발행'},
   {wo:'WO-2022-1101',name:'이랜텍',role:'생산라인 PM / 파트장',s:new Date(2022,10,1),e:new Date(2023,8,30),status:'done',
-   desc:'DOE 초음파 용착 불량 15%→0%대 · C/T −49% · 생산성 +24%'},
+   desc:'DOE 초음파 용착 공정 개선 · 사이클타임 단축 · 생산성 향상'},
   {wo:'WO-2020-0801',name:'은성에스아이티',role:'생산관리 과장 · 2차전지팩 총괄',s:new Date(2020,7,1),e:new Date(2022,10,1),status:'done',
    desc:'원가분석 단가 +30% 재협상 · 운영경비 −85% · 비전검사 · 필드불량 0 · ERP·IATF16949'},
 ];
@@ -712,9 +712,9 @@ function drawTrend(){
   const y=d3.scaleLinear().domain([0,17]).range([H-m.b,m.t]);
   y.ticks(4).forEach(t=>{svg.append('line').attr('x1',m.l).attr('x2',W-m.r).attr('y1',y(t)).attr('y2',y(t)).attr('stroke','#1f2c27');
     svg.append('text').attr('x',m.l-4).attr('y',y(t)+3).attr('text-anchor','end').text(t+'%');});
-  // DOE intervention line
+  // improvement intervention line
   svg.append('line').attr('x1',x(11)).attr('x2',x(11)).attr('y1',m.t).attr('y2',H-m.b).attr('stroke','#ffb627').attr('stroke-dasharray','3 3').attr('opacity',.7);
-  svg.append('text').attr('x',x(11)).attr('y',m.t+0).attr('text-anchor','middle').attr('fill','#ffb627').style('font-size','8px').text('◀ DOE 개입');
+  svg.append('text').attr('x',x(11)).attr('y',m.t+0).attr('text-anchor','middle').attr('fill','#ffb627').style('font-size','8px').text('◀ 개선 개입');
   const pre=data.filter(d=>d.w<=11),post=data.filter(d=>d.w>=11);
   const ln=d3.line().x(d=>x(d.w)).y(d=>y(d.v)).curve(d3.curveMonotoneX);
   function animLine(seg,col,delay){
@@ -779,9 +779,9 @@ function triggerAndon(sev){
 const feed=$('#feed');
 let alarmTotal=0;
 const seedEvents=[
-  {sev:'ok',msg:'ALARM CLEARED · 용착 불량률 15% → 0%대 (DOE 검증완료) · 라인 재가동'},
-  {sev:'crit',msg:'STOP-THE-LINE · 초음파 용착 15% — 이상을 이상으로 인지 → 라인 정지'},
-  {sev:'info',msg:'BLAMELESS POSTMORTEM · 4M 원인분석 → DOE 인자 설계'},
+  {sev:'ok',msg:'ALARM CLEARED · 공정 불량률 목표대 진입 (개선 검증완료) · 라인 재가동'},
+  {sev:'crit',msg:'STOP-THE-LINE · 공정 불량률 상한 초과 — 이상을 이상으로 인지 → 라인 정지'},
+  {sev:'info',msg:'BLAMELESS POSTMORTEM · 4M 원인분석 → 개선 인자 설계'},
   {sev:'info',msg:'MES 워크오더 WO-2025-0801 RUNNING · 미러리스 AX'},
   {sev:'ok',msg:'필드/고객 불량 0건 유지 · IATF16949 적합'},
 ];
@@ -792,10 +792,10 @@ const liveEvents=[
   {sev:'ok',msg:'Cpk 1.67 유지 · 공정능력 양호'},
   {sev:'info',msg:'BI 대시보드 KPI 새로고침 @1Hz'},
   {sev:'crit',msg:'설비 가동률 일시 하락 → 자동 복구'},
-  {sev:'ok',msg:'운영경비 절감 추적 −85% 반영'},
+  {sev:'ok',msg:'OEE 91.4% 목표 상회 · 실시간 반영'},
   {sev:'info',msg:'CI/CD 파이프라인 GREEN · 배포 대기 0'},
   {sev:'warn',msg:'BOM 변경 감지 · 원가 재산출 트리거'},
-  {sev:'ok',msg:'비전검사 PASS · 단가 협상폭 +30% 유지'},
+  {sev:'ok',msg:'비전검사 PASS · 수율 99.7% 유지'},
 ];
 function pushEvent(ev,initial=false){
   const t=new Date();

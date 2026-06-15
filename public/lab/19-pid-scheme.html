@@ -179,13 +179,13 @@
     </header>
 
     <div class="readouts" id="readouts">
-      <div class="ro"><div class="lab">운영경비</div><div class="val">−85%</div></div>
-      <div class="ro"><div class="lab">S/T</div><div class="val">−50%</div></div>
-      <div class="ro"><div class="lab">C/T</div><div class="val">−49%</div></div>
-      <div class="ro"><div class="lab">용착불량</div><div class="val good" id="weldRO">15%→0%</div></div>
-      <div class="ro"><div class="lab">생산성</div><div class="val good">+24%</div></div>
-      <div class="ro"><div class="lab">사무공수</div><div class="val">−451분/일</div></div>
-      <div class="ro"><div class="lab">불량</div><div class="val good">0건</div></div>
+      <div class="ro"><div class="lab">TRAINS</div><div class="val">3 계열</div></div>
+      <div class="ro"><div class="lab">VESSELS</div><div class="val">6 베셀</div></div>
+      <div class="ro"><div class="lab">제어루프</div><div class="val">2 LOOP</div></div>
+      <div class="ro"><div class="lab">품질 인터록</div><div class="val good" id="weldRO">TRIP→CLEAR</div></div>
+      <div class="ro"><div class="lab">계측기</div><div class="val good">14 INSTR</div></div>
+      <div class="ro"><div class="lab">heartbeat</div><div class="val">1.0 Hz</div></div>
+      <div class="ro"><div class="lab">autonomy</div><div class="val good">fail-closed</div></div>
     </div>
 
     <!-- ===================== MAIN SCHEME SVG ===================== -->
@@ -556,21 +556,21 @@
       </g>
 
       <!-- ============================================================ -->
-      <!-- CROSS-TRAIN INTERLOCK: 용착 불량 (weld defect) trips then clears -->
+      <!-- CROSS-TRAIN INTERLOCK: 품질 이상 (quality anomaly) trips then clears -->
       <!-- ============================================================ -->
       <g id="interlockBadge">
         <rect id="ilBox" class="sym-fill" x="1230" y="120" width="270" height="150" rx="4" stroke="var(--trip)" stroke-width="2.4"/>
-        <text class="tag" x="1365" y="146" style="font-size:12px;fill:var(--trip)">⚠ 용착 불량 INTERLOCK</text>
-        <text class="tagnum" x="1365" y="162">ISL-901 · DOE 개선루프</text>
+        <text class="tag" x="1365" y="146" style="font-size:12px;fill:var(--trip)">⚠ 품질 INTERLOCK</text>
+        <text class="tagnum" x="1365" y="162">ISL-901 · 개선 루프</text>
         <!-- gauge -->
         <circle id="ilGaugeBg" cx="1300" cy="210" r="40" fill="none" stroke="var(--grid)" stroke-width="8"/>
         <circle id="ilGauge" cx="1300" cy="210" r="40" fill="none" stroke="var(--trip)" stroke-width="8"
                 stroke-dasharray="251" stroke-dashoffset="213" transform="rotate(-90 1300 210)" stroke-linecap="round"/>
-        <text id="ilPct" x="1300" y="207" text-anchor="middle" style="font-size:20px;font-weight:800;fill:var(--trip)">15%</text>
-        <text class="tagnum" x="1300" y="223" text-anchor="middle">용착불량</text>
+        <text id="ilPct" x="1300" y="207" text-anchor="middle" style="font-size:20px;font-weight:800;fill:var(--trip)">HIGH</text>
+        <text class="tagnum" x="1300" y="223" text-anchor="middle">이상지표</text>
         <text id="ilStatus" x="1430" y="205" text-anchor="middle" style="font-size:13px;font-weight:800;fill:var(--trip)">TRIPPED</text>
         <text class="tagnum" x="1430" y="225" text-anchor="middle">클릭=리셋</text>
-        <text class="lbl-sm" x="1365" y="258" text-anchor="middle">DOE 후 자동 클리어 15%→0%</text>
+        <text class="lbl-sm" x="1365" y="258" text-anchor="middle">개선 루프 후 자동 클리어 (정상 수렴)</text>
       </g>
 
     </svg>
@@ -603,7 +603,7 @@
         </div>
       </div>
     </div>
-    <p class="hint">▷ 계측기(bubble)·베셀·펌프를 클릭하면 실제 프로젝트/스택 상세가 열립니다. · ⚠ 용착 불량 인터록을 클릭하면 DOE 개선 시퀀스(15%→0%)가 작동합니다.</p>
+    <p class="hint">▷ 계측기(bubble)·베셀·펌프를 클릭하면 실제 프로젝트/스택 상세가 열립니다. · ⚠ 품질 인터록을 클릭하면 개선 시퀀스(이상 → 정상 수렴)가 작동합니다.</p>
     <p class="footer-contact">박양하 · <b>64etuor@gmail.com</b> · <b>github.com/64etuor</b> · <b>010-0000-0000</b></p>
   </div>
 </div>
@@ -645,7 +645,7 @@ const DATA = {
     <div class="sec"><h4>스택</h4><span class="chip">PostgreSQL 17</span><span class="chip">React 18</span><span class="chip">Django 4.2 DRF</span></div>`},
   report:{tag:"RPT-A06 · 발행",title:"검사성적서 자동발행",type:"Train A · 출력 / 추적성",
     body:`<div class="sec"><h4>역할</h4><p>적재된 검사 데이터로 검사성적서를 자동 발행하고 S/N 단위 추적성을 보장.</p></div>
-    <div class="sec"><h4>성과</h4><ul><li>사무공수 −451분/일</li><li>S/N 추적성 100%</li><li>성적서 수기 작성 제거</li></ul></div>
+    <div class="sec"><h4>성과</h4><ul><li>사무공수 자동화 절감</li><li>S/N 추적성 확보</li><li>성적서 수기 작성 제거</li></ul></div>
     <div class="sec"><h4>스택</h4><span class="chip">자동발행</span><span class="chip">S/N 추적성</span></div>`},
   valveA:{tag:"HV-A1 · 수동밸브",title:"적재 라인 차단 밸브",type:"Train A · 밸브",
     body:`<div class="sec"><h4>역할</h4><p>ETL 펌프 → PostgreSQL 적재 라인의 수동 차단 밸브. 마이그레이션·점검 시 흐름 격리.</p></div>`},
@@ -791,21 +791,21 @@ document.querySelectorAll('.clickable').forEach(el=>{
   const weldRO=document.getElementById('weldRO');
   const C=251; // circumference
   let busy=false;
-  function setGauge(p){ // p 0..15
+  function setGauge(p){ // p 0..15 (internal anomaly index, drives sweep only)
     const frac=p/15;
     gauge.setAttribute('stroke-dashoffset', C-(C*frac));
-    pct.textContent=Math.round(p*10)/10+"%";
+    pct.textContent = p>=10?"HIGH":(p>0?"FALL":"OK");
   }
   function tripped(){
     setGauge(15);
     gauge.setAttribute('stroke','var(--trip)'); pct.setAttribute('fill','var(--trip)');
     box.setAttribute('stroke','var(--trip)');
     status.textContent="TRIPPED"; status.setAttribute('fill','var(--trip)');
-    weldRO.textContent="15% (TRIP)"; weldRO.classList.remove('good'); weldRO.style.color="var(--trip)";
+    weldRO.textContent="TRIP"; weldRO.classList.remove('good'); weldRO.style.color="var(--trip)";
   }
   function runDOE(){
     if(busy) return; busy=true;
-    status.textContent="DOE 진행…"; status.setAttribute('fill','var(--amber)');
+    status.textContent="개선 진행…"; status.setAttribute('fill','var(--amber)');
     gauge.setAttribute('stroke','var(--amber)'); pct.setAttribute('fill','var(--amber)');
     box.setAttribute('stroke','var(--amber)');
     let p=15;
@@ -816,7 +816,7 @@ document.querySelectorAll('.clickable').forEach(el=>{
         gauge.setAttribute('stroke','var(--accent3)'); pct.setAttribute('fill','var(--accent3)');
         box.setAttribute('stroke','var(--accent3)');
         status.textContent="CLEARED ✓"; status.setAttribute('fill','var(--accent3)');
-        weldRO.textContent="15%→0%"; weldRO.style.color="var(--accent3)"; weldRO.classList.add('good');
+        weldRO.textContent="CLEARED"; weldRO.style.color="var(--accent3)"; weldRO.classList.add('good');
         busy=false;
         return;
       }

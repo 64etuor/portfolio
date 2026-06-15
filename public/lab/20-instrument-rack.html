@@ -465,27 +465,27 @@
           <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
           <div class="modtitle">
             <span class="uno">1U · CAL</span>
-            <h3>캘리브레이션 유닛 — 용착불량 보정 루틴</h3>
-            <span class="sub mono">이랜텍 라인 · DOE 기반</span>
+            <h3>캘리브레이션 유닛 — 측정기 자가 보정 루틴</h3>
+            <span class="sub mono">NIST-traceable · 기준기 대조</span>
           </div>
           <div class="calbody">
             <div class="caltop">
               <div class="lamp" id="calLamp" aria-hidden="true"><div class="glass"></div></div>
               <div style="display:flex;flex-direction:column;align-items:center"><div class="lamplbl">PASS</div></div>
               <div class="calreadbox" id="calBox">
-                <div class="calread-lbl">용착 불량률 · MEASURED</div>
-                <div class="calread" id="calRead">15.0<span style="font-size:.6em"> %</span></div>
+                <div class="calread-lbl">기준기 대비 편차 · MEASURED</div>
+                <div class="calread" id="calRead">15.0<span style="font-size:.6em"> ppm</span></div>
                 <div class="specrow">
                   <span class="verdict" id="calVerdict">OUT-OF-SPEC</span>
-                  <span class="mono">공차 USL ≤ 0.5% · ε ±0.1%</span>
+                  <span class="mono">공차 USL ≤ 1.0ppm · ε ±0.1ppm</span>
                 </div>
               </div>
             </div>
-            <button class="calbtn" id="calBtn"><span class="ico"></span> CAL 루틴 실행 — DOE 보정</button>
+            <button class="calbtn" id="calBtn"><span class="ico"></span> CAL 루틴 실행 — 기준기 대조 보정</button>
             <div class="calsteps" id="calSteps">
               <div class="step" data-s="0"><span class="sd"></span> 기준 게이지 영점 · <b>device_inventory</b> 조회</div>
-              <div class="step" data-s="1"><span class="sd"></span> 용착 압력/시간 인자 DOE 설계 (3³ 직교배열)</div>
-              <div class="step" data-s="2"><span class="sd"></span> 광학축 정렬 검증 · 비전 판정 재측정</div>
+              <div class="step" data-s="1"><span class="sd"></span> 다점 기준값 측정 · 선형성 편차 산출</div>
+              <div class="step" data-s="2"><span class="sd"></span> 게인/오프셋 보정 계수 적용 · 재측정</div>
               <div class="step" data-s="3"><span class="sd"></span> 캘리브레이션 인증 · 릴레이 래치 · PASS</div>
             </div>
           </div>
@@ -528,10 +528,10 @@
           <span class="sub mono">python-opcua · 5분 간격</span>
         </div>
         <div class="daqgrid" id="daqGrid">
-          <div class="tcell g"><div class="tk">생산성</div><div class="tv">+24<span class="tu">%</span></div></div>
-          <div class="tcell g"><div class="tk">ST 단축</div><div class="tv">−50<span class="tu">%</span></div></div>
-          <div class="tcell a"><div class="tk">C/T 단축</div><div class="tv">−49<span class="tu">%</span></div></div>
-          <div class="tcell"><div class="tk">사무공수</div><div class="tv" id="tManhr">−451<span class="tu">분/일</span></div></div>
+          <div class="tcell g"><div class="tk">샘플레이트</div><div class="tv">1.0<span class="tu">kS/s</span></div></div>
+          <div class="tcell g"><div class="tk">SNR</div><div class="tv">+72<span class="tu">dB</span></div></div>
+          <div class="tcell a"><div class="tk">드리프트</div><div class="tv">0.4<span class="tu">ppm/h</span></div></div>
+          <div class="tcell"><div class="tk">관찰성 노드</div><div class="tv" id="tManhr">12<span class="tu">ch</span></div></div>
         </div>
         <div class="opcrow">
           <span class="tag">opc.tcp://bench.dut:4840</span>
@@ -674,12 +674,12 @@
   /* ---------- DMM function selector ---------- */
   var METRICS = [
     {fn:"DC %",   nm:"운영경비 절감", val:-85.00, unit:"%",     pct:0.85, ann:["PCT"]},
-    {fn:"ST",     nm:"표준시간(ST) 단축", val:-50.00, unit:"%", pct:0.50, ann:["PCT"]},
-    {fn:"C/T",    nm:"사이클타임(C/T) 단축", val:-49.00, unit:"%", pct:0.49, ann:["PCT"]},
-    {fn:"PROD",   nm:"생산성 향상", val:+24.00, unit:"%", pct:0.24, ann:["PCT"]},
-    {fn:"UNIT",   nm:"단가 개선", val:+30.00, unit:"%", pct:0.30, ann:["PCT"]},
-    {fn:"OFFICE", nm:"사무공수 절감", val:-451, unit:"분", pct:0.78, ann:["MV"]},
-    {fn:"DEFECT", nm:"불량", val:0, unit:"건", pct:0.0, ann:["OHM"]}
+    {fn:"DCV",    nm:"기준 전압 (DC)", val:+3.642, unit:"V", pct:0.73, ann:["DCV"]},
+    {fn:"OHM",    nm:"절연 저항 (IR)", val:+500.00, unit:"MΩ", pct:0.92, ann:["OHM"]},
+    {fn:"mV",     nm:"오프셋 (REL)", val:-12.50, unit:"mV", pct:0.18, ann:["MV"]},
+    {fn:"FREQ",   nm:"샘플링 주기", val:+5.00, unit:"min", pct:0.42, ann:["PCT"]},
+    {fn:"TEMP",   nm:"센서 온도", val:+24.00, unit:"℃", pct:0.48, ann:["MV"]},
+    {fn:"CAL",    nm:"in-spec 편차", val:0, unit:"ppm", pct:0.0, ann:["OHM"]}
   ];
   var selBtns = document.getElementById("selbtns");
   var dmmDigits = document.getElementById("dmmDigits");
@@ -808,18 +808,18 @@
     calState="fail";
     calBox.classList.remove("pass"); calLamp.classList.remove("pass");
     calVerdict.classList.remove("pass"); calVerdict.textContent="OUT-OF-SPEC";
-    calRead.innerHTML='15.0<span style="font-size:.6em"> %</span>';
+    calRead.innerHTML='15.0<span style="font-size:.6em"> ppm</span>';
     calSteps.forEach(function(s){s.classList.remove("done");});
     var i=0;
     function step(){
       if(i<calSteps.length){
         calSteps[i].classList.add("done");
         beep(660+i*120,0.05);
-        // measured value descends through steps
+        // measured deviation descends through steps
         var seq=[15.0,8.2,2.4,0.0];
         var v=seq[i];
-        calRead.innerHTML=(v.toFixed(1))+'<span style="font-size:.6em"> %</span>';
-        if(v<=0.5){ calRead.style.color="var(--vfd)"; }
+        calRead.innerHTML=(v.toFixed(1))+'<span style="font-size:.6em"> ppm</span>';
+        if(v<=1.0){ calRead.style.color="var(--vfd)"; }
         i++; setTimeout(step,520);
       } else {
         // relay latch + PASS
@@ -827,7 +827,7 @@
         calBox.classList.add("pass"); calLamp.classList.add("pass");
         calVerdict.classList.add("pass"); calVerdict.textContent="IN-SPEC ✓";
         calRead.style.color="";
-        calRead.innerHTML='0.0<span style="font-size:.6em"> %</span>';
+        calRead.innerHTML='0.0<span style="font-size:.6em"> ppm</span>';
         calState="pass";
         calBusy=false; calBtn.disabled=false;
       }

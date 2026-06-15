@@ -375,15 +375,18 @@ canvas#stage{display:block;width:100%;height:100%}
 
 /* ---------- data: 측정 피처 = 경력/지표 ---------- */
 // 각 피처: 규격(nominal)·공차·실측·판정. 한 곳(용착불량)은 OUT→DOE 재측정→IN.
+// 검사성적서 = 실제 치수·기하공차 측정값. 이 신은 '불량·추적성 0건 + Cpk'만 OWN.
+// 다른 신이 OWN하는 경력 지표(운영경비/ST/C-T/생산성/단가/사무공수)는 여기서 제거하고
+// 품질·추적성 관점의 실측 치수 피처로 대체. 용착 행은 일반 품질 피처로 일반화(DOE 비트는 #11 전용).
 const FEATURES = [
-  {key:"opex",  feat:"운영경비 절감",   sub:"⏥ DATUM A · 은성에스아이티",  unit:"%",  nom:-80, tol:5,  meas:-85, dir:"down", color:"--c-eun"},
-  {key:"st",    feat:"설비 ST 단축",    sub:"⌖ 위치도 · 솔라엣지",        unit:"%",  nom:-45, tol:5,  meas:-50, dir:"down", color:"--c-sol"},
-  {key:"ct",    feat:"라인 C/T 단축",   sub:"∥ 평행도 B · 이랜텍",        unit:"%",  nom:-45, tol:5,  meas:-49, dir:"down", color:"--c-elen"},
-  {key:"weld",  feat:"용착불량률",       sub:"⌭ 원통도 · 이랜텍 DOE",      unit:"%",  nom:0,   tol:2,  meas:15,  remeas:0, dir:"zero", color:"--c-elen", special:true},
-  {key:"prod",  feat:"생산성 향상",      sub:"◎ 동심도 · 이랜텍",          unit:"%",  nom:20,  tol:5,  meas:24,  dir:"up",   color:"--c-elen"},
-  {key:"price", feat:"제품 단가 상승",   sub:"⌖ 위치도 C · 은성",          unit:"%",  nom:25,  tol:6,  meas:30,  dir:"up",   color:"--c-eun"},
-  {key:"office",feat:"사무공수 절감",    sub:"⏥ 평면도 · 솔라엣지 RPA",    unit:"min",nom:-420,tol:60, meas:-451,dir:"down", color:"--c-sol"},
-  {key:"defect",feat:"출하 불량",        sub:"⌖ 전수검사 · 은성 비전",     unit:"건", nom:0,   tol:0,  meas:0,   dir:"zero", color:"--c-eun"}
+  {key:"opex",  feat:"평면도 (DATUM A)",  sub:"⏥ Flatness · 기준 평면",     unit:"mm", nom:0,   tol:0.02, meas:0.011, dir:"zero", color:"--c-sol"},
+  {key:"st",    feat:"위치도 보어 ⌀12",  sub:"⌖ Position Ⓜ A",            unit:"mm", nom:0,   tol:0.05, meas:0.022, dir:"zero", color:"--c-sol"},
+  {key:"ct",    feat:"평행도 측면 B",     sub:"∥ Parallelism · A",         unit:"mm", nom:0,   tol:0.02, meas:0.013, dir:"zero", color:"--c-sol"},
+  {key:"weld",  feat:"이음부 원통도",      sub:"⌭ Cylindricity · 재측정",    unit:"mm", nom:0,   tol:0.04, meas:0.072, remeas:0.018, dir:"zero", color:"--c-elen", special:true},
+  {key:"prod",  feat:"동심도 ⌀30",        sub:"◎ Concentricity",           unit:"mm", nom:0,   tol:0.03, meas:0.015, dir:"zero", color:"--c-sol"},
+  {key:"price", feat:"위치도 보어 C",     sub:"⌖ Position · C",            unit:"mm", nom:0,   tol:0.05, meas:0.028, dir:"zero", color:"--c-sol"},
+  {key:"office",feat:"진직도 슬롯",        sub:"⏥ Straightness",            unit:"mm", nom:0,   tol:0.02, meas:0.009, dir:"zero", color:"--c-sol"},
+  {key:"defect",feat:"출하 불량 (추적성)", sub:"⌖ 전수검사 · 비전 · S/N 추적", unit:"건", nom:0,   tol:0,  meas:0,   dir:"zero", color:"--c-eun"}
 ];
 const SKILLS = ["Python","SQL","FastAPI","React","TypeScript","Electron","Rust","MySQL/RDS","AWS","GCP","BI","ML","RPA","CI/CD","PFMEA/CP","산업용접","LOB","Jig개발","기구설계","비전검사","로봇티칭","Draftsight","ERP/MES","IATF16949"];
 
@@ -873,8 +876,8 @@ function genTimeline(){
     // for special weld feature: show OUT, toast, then DOE re-measure to IN
     if(f.special){
       timeline.push({t:t+2300,fn:()=>{
-        showToast("⌭ <b>용착불량률</b> 15% — 규격 0±2% <b>초과(OUT-OF-TOL)</b> · DOE 실험계획 재측정 요청","warn");
-        statText.textContent="OUT OF TOL — DOE 재측정";
+        showToast("⌭ <b>이음부 원통도</b> 0.072mm — 규격 0±0.04mm <b>초과(OUT-OF-TOL)</b> · 재측정 요청","warn");
+        statText.textContent="OUT OF TOL — 재측정";
       }});
       timeline.push({t:t+3600,fn:()=>{
         // re-probe: descend again
@@ -885,7 +888,7 @@ function genTimeline(){
         // recolor cloud green
         CLOUD.forEach(p=>{ if(Math.abs(p.x-tg.x)<14&&Math.abs(p.y-tg.y)<14) p.col="rgba(60,230,164,.85)"; });
         remeasureWeld(f);
-        showToast("✓ DOE 적용 후 재측정 <b>0% IN-TOL</b> — 용착불량 15%→0% 완전 해소 · PASS","pass");
+        showToast("✓ 공정 보정 후 재측정 <b>0.018mm IN-TOL</b> — 규격 내 재현 · PASS","pass");
       }});
       t+=4900;
     }else{
@@ -937,7 +940,7 @@ function remeasureWeld(f){
   r.querySelector(".meas").textContent = fmtVal(f.remeas,f.unit);
   r.querySelector(".jud").innerHTML='<span class="tag pass">PASS</span>';
   passCount++; bumpCpk(); updatePassN();
-  statText.textContent="용착 PASS — 측정 계속";
+  statText.textContent="이음부 PASS — 측정 계속";
 }
 function updatePassN(){ passNEl.textContent=passCount+"/8"; }
 function bumpCpk(){

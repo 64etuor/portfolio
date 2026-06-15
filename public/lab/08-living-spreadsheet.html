@@ -359,7 +359,7 @@ const CAREER = [
    work:"데이터 DB·대시보드 구축 · ST −50% · 검사성적서 자동발행 · MES · 사무공수 −451분/일",
    impact:97},
   {co:"이랜텍",   from:"2022.11", to:"2023.09",  mo:11,  role:"생산라인 PM / 파트장",
-   work:"DOE로 용착불량 15%→0% · C/T −49% · 생산성 +24% · 전용 Jig 개발",
+   work:"DOE로 용착 공정 개선 · 사이클타임 단축 · 생산성 향상 · 전용 Jig 개발",
    impact:88},
   {co:"은성에스아이티", from:"2020.08", to:"2022.11", mo:27, role:"생산관리과장 (배터리팩 총괄)",
    work:"부품 단가 +30% 재협상 · 운영경비 −85% · 비전검사 도입 · 불량 0건 · IATF16949",
@@ -377,7 +377,7 @@ const METRICS = [
   {k:"운영경비",  raw:"−85%",      mag:85, dir:-1, src:"은성에스아이티", cat:"비용"},
   {k:"ST 단축",   raw:"−50%",      mag:50, dir:-1, src:"솔라엣지",       cat:"속도"},
   {k:"C/T 단축",  raw:"−49%",      mag:49, dir:-1, src:"이랜텍",         cat:"속도"},
-  {k:"용착불량",  raw:"15%→0%",    mag:100,dir:-1, src:"이랜텍",         cat:"품질"},
+  {k:"용착 공정",  raw:"DOE 개선",    mag:60,dir:-1, src:"이랜텍",         cat:"품질"},
   {k:"생산성",    raw:"+24%",      mag:24, dir:1,  src:"이랜텍",         cat:"생산성"},
   {k:"부품단가",  raw:"+30%",      mag:30, dir:1,  src:"은성에스아이티", cat:"협상"},
   {k:"사무공수",  raw:"−451분/일", mag:94, dir:-1, src:"솔라엣지",       cat:"자동화"},
@@ -554,7 +554,7 @@ function buildMetrics(){
   const sr=addRow(tb, METRICS.length+2);
   regCell(cell(sr,"<b>=YIELD()</b>","title formula"),`A${METRICS.length+2}`);
   const cY=cell(sr,"계산중…","formula heat");
-  regCell(cY,`B${METRICS.length+2}`,{formula:`=YIELD(품질지표)`, explain:`품질 수율 = (불량 0건 & 용착 0%) ⇒ 100.0%`,
+  regCell(cY,`B${METRICS.length+2}`,{formula:`=YIELD(품질지표)`, explain:`품질 수율 = (공정 안정 & 규격 적합) ⇒ 100.0%`,
     precedents:["C5","C9"], isFormula:true, recalc:()=>{cY.textContent="수율 100.0%"; return 100;}});
   cell(sr,"=ROI","formula");
   const cR=cell(sr,"계산중…","formula heat");

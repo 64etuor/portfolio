@@ -366,7 +366,7 @@
         <div class="ro"><div class="k">SYS PRESS</div><div class="v bar" id="roP">172 bar</div></div>
         <div class="ro"><div class="k">FLOW Q</div><div class="v" id="roQ">38 L/min</div></div>
         <div class="ro"><div class="k">CYCLE T</div><div class="v" id="roCT">1.8 s</div></div>
-        <div class="ro"><div class="k">DEFECT</div><div class="v" id="roDef">0 ppm</div></div>
+        <div class="ro"><div class="k">RETRY</div><div class="v" id="roDef">IDEMPOTENT</div></div>
       </div>
 
       <div class="sol-bank">
@@ -463,17 +463,17 @@ const CYL = [
   { id:"CYL-1", co:"은성에스아이티", role:"생산관리과장 · 배터리팩 총괄", yr:"2020.08–2022.11",
     desc:"배터리팩 생산관리 전반을 총괄. 단가·운영경비 구조를 재설계하고 비전검사를 도입해 무결점 라인을 구축, IATF16949 체계를 안착시켰다.",
     list:["배터리팩 생산 전 공정 관리·총괄","비전검사 시스템 도입 / 라인 표준화","원가 구조 재설계 및 운영경비 절감","IATF16949 품질경영 체계 운영"],
-    metrics:[["+30%","단가 개선","up"],["−85%","운영경비","down"],["0건","불량","down"],["IATF","16949 인증","up"]],
+    metrics:[["PACK","배터리팩 총괄","up"],["OPEX","원가 재설계","down"],["비전","검사 도입","down"],["IATF","16949 인증","up"]],
     bore:1.0 },
   { id:"CYL-2", co:"이랜텍", role:"생산라인 PM / 파트장", yr:"2022.11–2023.09",
-    desc:"DOE(실험계획법)로 용착 공정의 핵심 인자를 규명해 용착불량을 0%로 수렴. 자체 Jig개발로 사이클타임을 단축하고 생산성을 끌어올렸다.",
-    list:["DOE 기반 용착 공정 파라미터 최적화","Jig개발 · 기구설계로 공정 안정화","C/T 단축 라인 밸런싱","생산성 향상 / 표준작업 정착"],
-    metrics:[["15%→0%","용착불량","down"],["−49%","C/T 단축","down"],["+24%","생산성","up"],["DOE","공정 최적화","up"]],
+    desc:"DOE(실험계획법)로 공정의 핵심 인자를 규명해 불량을 수렴. 자체 Jig개발로 사이클타임을 단축하고 생산성을 끌어올렸다.",
+    list:["DOE 기반 공정 파라미터 최적화","Jig개발 · 기구설계로 공정 안정화","C/T 단축 라인 밸런싱","생산성 향상 / 표준작업 정착"],
+    metrics:[["DOE","공정 최적화","up"],["Jig","기구설계","up"],["라인","밸런싱","up"],["SOP","표준작업","up"]],
     bore:1.0 },
   { id:"CYL-3", co:"솔라엣지", role:"공정기술 엔지니어", yr:"2023.09–2024.12",
     desc:"데이터 DB·대시보드를 구축하고 검사성적서 자동발행·MES를 연동. 표준시간을 절반으로 줄이고 사무공수를 하루 451분 절감했다.",
     list:["데이터 DB·BI 대시보드 구축","검사성적서 자동발행 시스템","MES 연동 / 공정 데이터 통합","표준시간(ST) 재정의 및 단축"],
-    metrics:[["−50%","ST 단축","down"],["−451분/일","사무공수","down"],["MES","시스템 연동","up"],["DB","데이터 기반","up"]],
+    metrics:[["ST","표준시간 단축","down"],["성적서","자동발행","down"],["MES","시스템 연동","up"],["DB","데이터 기반","up"]],
     bore:1.0 },
   { id:"CYL-4", co:"미러리스", role:"총괄본부장", yr:"2025.08–현재",
     desc:"CRM·키오스크·앱을 직접 설계·개발하고 FastAPI·AWS/GCP·CI/CD 인프라를 운영. RPA와 AI MCP 기반 AX로 조직 전반의 자동화를 추진한다.",
@@ -667,7 +667,7 @@ function updateReadouts(){
   document.getElementById("roQ").textContent  = Q+" L/min";
   document.getElementById("roCT").textContent = CT+" s";
   document.getElementById("roCT").className = "v" + (doeFixed?" bar":"");
-  document.getElementById("roDef").textContent = doeFixed ? "0 ppm" : (activeN?"≈amber":"0 ppm");
+  document.getElementById("roDef").textContent = doeFixed ? "STABLE" : (activeN?"RETRYING":"IDEMPOTENT");
   document.getElementById("roDef").className = "v" + (doeFixed?"":(activeN?" warn":""));
   document.getElementById("pumpState").textContent = activeN? "LOADED":"RUNNING";
   const act = state.map((s,i)=>s.on?("CYL-"+(i+1)):null).filter(Boolean);

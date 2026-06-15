@@ -234,8 +234,8 @@ const DATA = {
      tags:["배터리팩 양산","비전검사 도입","IATF16949","공정 표준화","원가절감"]},
     {ref:"U2",name:"이랜텍",x:760,y:185,w:210,h:135,pins:14,pkg:"QFP-56 · 2022.11–2023.09",
      role:"생산라인 PM · 파트장",
-     desc:"DOE(실험계획법)로 용착 공정의 근본 원인을 규명하여 용착 불량을 15%→0%로 제거. 전용 Jig를 개발하고 라인 밸런싱으로 사이클타임을 단축, 생산성을 끌어올렸습니다.",
-     metrics:[["용착 불량","15%→0%"],["사이클타임","−49%"],["생산성","+24%"]],
+     desc:"DOE(실험계획법)로 용착 공정의 근본 원인을 규명하여 불량을 근절. 전용 Jig를 개발하고 라인 밸런싱으로 사이클타임을 단축, 생산성을 끌어올렸습니다.",
+     metrics:[["공정 불량","근절"],["사이클타임","−49%"],["생산성","+24%"]],
      tags:["DOE 분석","Jig 개발","용착 공정","라인 밸런싱","불량 근절"]},
     {ref:"U3",name:"솔라엣지",x:1085,y:260,w:215,h:140,pins:15,pkg:"QFP-64 · 2023.09–2024.12",
      role:"공정기술 엔지니어",
@@ -257,11 +257,7 @@ const DATA = {
     {ref:"D3",t:"비전검사"},{ref:"D4",t:"로봇티칭"},{ref:"D5",t:"Draftsight"},
     {ref:"Q1",t:"ERP"},{ref:"Q2",t:"MES"},{ref:"Q3",t:"IATF16949"},
   ],
-  TP:[ // test points (metrics)
-    {ref:"TP1",t:"운영경비",v:"−85%"},{ref:"TP2",t:"ST",v:"−50%"},{ref:"TP3",t:"C/T",v:"−49%"},
-    {ref:"TP4",t:"용착",v:"15→0%"},{ref:"TP5",t:"생산성",v:"+24%"},{ref:"TP6",t:"단가",v:"+30%"},
-    {ref:"TP7",t:"사무공수",v:"−451분"},{ref:"TP8",t:"불량",v:"0건"},
-  ],
+  TP:[], // test points removed — career metrics live on the IC datasheets, not duplicated here
   CONTACT:["64etuor@gmail.com","github.com/64etuor","010-0000-0000"],
   ENG_NOTES:[ // 자원제약 → 최적해 · 크로스도메인 + 실행력 (silicon/DB-level reasoning)
     {ref:"N1",kind:"IC",label:"BITMASK",title:"Bitwise 다중선택 저장",
@@ -502,6 +498,7 @@ function drawBOM(){
 /* TEST POINTS (gold rings) for metrics */
 function drawTP(){
   const g=$("#comps");
+  if(!DATA.TP.length) return;   // no duplicated career-metric test points
   DATA.TP.forEach((tp,i)=>{
     const x=1340, y=180+i*78;
     const grp=el("g",{class:"comp"});
@@ -619,9 +616,9 @@ function weldRepair(){
   g.appendChild(bad);g.appendChild(fix);
   // X mark on defect
   const xm=el("text",{x:bx+60,y:by-8,fill:"#ff5a52","font-size":12,"text-anchor":"middle","font-weight":700});
-  xm.textContent="✕ 용착불량 15%";g.appendChild(xm);
+  xm.textContent="✕ 공정 불량 검출";g.appendChild(xm);
   const ok=el("text",{x:bx+90,y:by-40,fill:"#5fffa8","font-size":10,"text-anchor":"middle","font-weight":700,opacity:0});
-  ok.textContent="✓ DOE 보정 → 0%";g.appendChild(ok);
+  ok.textContent="✓ DOE 보정 → 무결점";g.appendChild(ok);
   const lab=el("text",{x:bx,y:by+22,fill:"#6fae97","font-size":8});lab.textContent="U2 REWORK · DOE 트레이스 보정";g.appendChild(lab);
   $("#labels").appendChild(g);
 

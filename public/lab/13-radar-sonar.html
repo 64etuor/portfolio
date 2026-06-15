@@ -418,7 +418,7 @@
 
     {type:"career", id:"이랜텍 생산라인 PM / 파트장", sub:"2022.11 – 2023.09", brg:168, ring:0.60, conf:96,
      desc:"DOE 기반으로 용착불량을 근절하고 사이클타임을 단축. Jig 개발로 생산성을 끌어올린 라인 운영 PM.",
-     ach:[["DOE","용착불량 15% → 0%"],["C/T","사이클타임(C/T) −49%"],["PROD","생산성 +24%"],["JIG","전용 Jig 개발 · 라인 개선"]],
+     ach:[["DOE","DOE 기반 용착 공정 최적화"],["JIG","전용 Jig 개발 · 라인 개선"],["SOP","표준작업 정립 · 재현성 확보"],["PM","라인 운영 · 인원 운영 주도"]],
      tags:["DOE","Jig개발","C/T단축","생산성","PM"]},
 
     {type:"career", id:"은성에스아이티 생산관리과장", sub:"2020.08 – 2022.11 · 배터리팩 총괄", brg:242, ring:0.74, conf:95,
@@ -426,19 +426,20 @@
      ach:[["단가","단가 +30% 재협상"],["OPEX","운영경비 −85%"],["VISION","비전검사 도입 · 불량 0건"],["QMS","IATF16949 품질경영 운영"]],
      tags:["배터리팩","비전검사","IATF16949","원가절감","생산관리"]},
 
-    // ---- 지표 METRIC (priority targets) ----
-    {type:"metric", id:"운영경비 −85%", sub:"OPEX REDUCTION", brg:300, ring:0.40, conf:99,
-     desc:"은성에스아이티 배터리팩 운영에서 단가 재협상·공정 효율화로 운영경비를 85% 절감.", ach:[["OPEX","운영경비 −85%"]], tags:["원가","OPEX"], priority:true},
-    {type:"metric", id:"ST −50%", sub:"SETUP TIME", brg:78, ring:0.55, conf:98,
-     desc:"솔라엣지에서 셋업타임 절차 표준화·자동화로 ST 50% 단축.", ach:[["ST","셋업타임 −50%"]], tags:["ST","공정"], priority:true},
-    {type:"metric", id:"C/T −49%", sub:"CYCLE TIME", brg:150, ring:0.50, conf:98,
-     desc:"이랜텍 라인에서 공정 재배치·Jig 개선으로 사이클타임 49% 단축.", ach:[["C/T","사이클타임 −49%"]], tags:["C/T","생산성"], priority:true},
-    {type:"metric", id:"생산성 +24%", sub:"PRODUCTIVITY", brg:200, ring:0.44, conf:97,
-     desc:"DOE·LOB 분석 기반 라인 밸런싱으로 생산성 24% 향상.", ach:[["PROD","생산성 +24%"]], tags:["생산성","LOB"], priority:true},
-    {type:"metric", id:"단가 +30%", sub:"PRICE RENEGOTIATION", brg:330, ring:0.62, conf:96,
-     desc:"공급가 구조 분석을 통한 단가 30% 재협상.", ach:[["PRICE","단가 +30% 재협상"]], tags:["원가","협상"], priority:true},
-    {type:"metric", id:"사무공수 −451분/일", sub:"OFFICE LABOR", brg:120, ring:0.66, conf:96,
-     desc:"검사성적서 자동발행·대시보드로 일일 사무 공수 451분 절감.", ach:[["LABOR","사무공수 일일 −451분"]], tags:["자동화","RPA"], priority:true},
+    // ---- 지표 METRIC = KH 시장/세그먼트 인텔 (priority targets) ----
+    // (경력 KPI 중복 제거: 운영경비/ST/C-T/생산성/단가/사무공수는 각 신의 소유 지표로 이관)
+    {type:"metric", id:"KH 핵심 세그먼트", sub:"TARGET SEGMENT", brg:300, ring:0.40, conf:99,
+     desc:"KH 프로젝트의 핵심 고객 세그먼트를 우선 표적으로 식별. 도메인·니즈 기반 우선순위화.", ach:[["SEG","핵심 세그먼트 우선 락온"]], tags:["KH","세그먼트","시장"], priority:true},
+    {type:"metric", id:"시장 진입 경로", sub:"GO-TO-MARKET", brg:78, ring:0.55, conf:98,
+     desc:"KH 시장 진입 경로 탐색 — 채널·파트너 후보를 컨택트로 추적.", ach:[["GTM","진입 채널·파트너 후보"]], tags:["KH","GTM","채널"], priority:true},
+    {type:"metric", id:"경쟁 포지션", sub:"COMPETITIVE INTEL", brg:150, ring:0.50, conf:98,
+     desc:"KH 경쟁 포지션 정찰 — 인접 플레이어 신호를 분류·판정.", ach:[["COMP","경쟁 포지션 정찰"]], tags:["KH","경쟁","정찰"], priority:true},
+    {type:"metric", id:"수요 신호", sub:"DEMAND SIGNAL", brg:200, ring:0.44, conf:97,
+     desc:"KH 수요 신호 수집 — 공개 피드에서 관심·니즈 신호를 검출.", ach:[["DEM","수요 신호 검출"]], tags:["KH","수요","신호"], priority:true},
+    {type:"metric", id:"가격대 밴드", sub:"PRICE BAND", brg:330, ring:0.62, conf:96,
+     desc:"KH 시장 가격대 밴드 추정 — 세그먼트별 지불의향 범위 추적.", ach:[["PRC","가격대 밴드 추정"]], tags:["KH","가격","밴드"], priority:true},
+    {type:"metric", id:"파트너 후보", sub:"PARTNER LEADS", brg:120, ring:0.66, conf:96,
+     desc:"KH 파트너·리드 후보를 컨택트로 획득해 검증 큐에 적재.", ach:[["PTN","파트너·리드 후보 큐"]], tags:["KH","파트너","리드"], priority:true},
 
     // ---- CLEAR / NO-THREAT (delight) ----
     {type:"clear", id:"불량 0건", sub:"ZERO DEFECT · CLEAR", brg:270, ring:0.36, conf:100,

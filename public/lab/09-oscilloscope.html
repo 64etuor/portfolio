@@ -274,14 +274,12 @@
             <div class="hd"><span>MEASURE · 성과 측정</span><span class="k">auto</span></div>
             <div class="bd" style="padding:8px 11px">
               <table class="meas">
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch1)"></span>운영경비</td><td class="num delta">−85%</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>ST 단축</td><td class="num delta">−50%</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch2)"></span>C/T</td><td class="num delta">−49%</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch2)"></span>용착불량</td><td class="num"><span id="mDefect">15.0</span>% → 0%</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch2)"></span>생산성</td><td class="num delta">+24%</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch1)"></span>단가 재협상</td><td class="num delta">+30%</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>사무공수</td><td class="num delta">−451분/일</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch1)"></span>불량</td><td class="num">0건</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>제품 ST 단축</td><td class="num delta">−50%</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>ST Vpp (개선 전)</td><td class="num">100.0%</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>ST Vpp (개선 후)</td><td class="num"><span id="mDefect">50.0</span>%</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>제어 오차 err</td><td class="num">≈0</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>정착시간 settle</td><td class="num delta">−62%</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch1)"></span>공정 정상도</td><td class="num">IN-CTRL</td></tr>
               </table>
             </div>
           </div>
@@ -352,14 +350,14 @@
           <h3>ACQUIRE · 제어</h3>
           <div class="btns">
             <button class="ab run" id="runBtn" data-state="run">RUN / STOP<small id="runSub">획득 중</small></button>
-            <button class="ab hot" id="doeBtn" data-on="0">DOE 적용<small>불량 → 0% 튜닝</small></button>
+            <button class="ab hot" id="doeBtn" data-on="0">DOE 적용<small>ST −50% 튜닝</small></button>
           </div>
         </div>
       </div>
     </div>
 
     <div class="hint">
-      <b>DOE 적용</b> 버튼 = 그가 한 일. 노이즈투성이 불량 파형이 평탄한 0% 라인으로 붕괴하고, 제어 루프 오차가 사라지며, 리사주가 완벽한 원으로 잠긴다 ·
+      <b>DOE 적용</b> 버튼 = 그가 한 일. 노이즈투성이 파형이 평탄해지고 제품 표준작업시간(ST)이 절반으로 붕괴하며, 제어 루프 오차가 사라지고 리사주가 완벽한 원으로 잠긴다 ·
       노브를 위/아래로 드래그하면 TIME/VOLTS·DIV 변경 · 채널 1–4 토글
     </div>
 
@@ -591,11 +589,11 @@
     sx.fillText(state.running?'● RUN':'■ STOP', 430, SH-7);
     sx.fillStyle = state.doe>0.5?COL.phos:'#5a6a64';
     sx.fillText(`DOE ${(state.doe*100|0)}%`, 520, SH-7);
-    // top-right vpp readout that responds to DOE
+    // top-right Vpp readout that responds to DOE — 제품 ST 변동폭
     sx.textAlign='right';
-    sx.fillStyle=COL.ch2;
-    const defectNow = (1-state.doe)*15;
-    sx.fillText(`불량 ${defectNow.toFixed(1)}%`, SW-10, 18);
+    sx.fillStyle=COL.ch3;
+    const stNow = 100 - state.doe*50;
+    sx.fillText(`ST ${stNow.toFixed(1)}%`, SW-10, 18);
     sx.textAlign='left';
     sx.restore();
   }
@@ -679,7 +677,7 @@
 
     // --- block diagram (top) ---
     const by=18, bh=42;
-    box(14, by, 86, bh, 'Setpoint', '목표 0%', false);
+    box(14, by, 86, bh, 'Setpoint', '목표 ST', false);
     box(132, by, 96, bh, 'Controller', 'PID (그)', state.doe>0.05);
     box(262, by, 96, bh, 'Plant', '공정', true);
     box(392, by, 96, bh, 'Sensor', '검사', true);
@@ -715,7 +713,7 @@
     lx.beginPath(); lx.moveTo(px0,ysp); lx.lineTo(px0+pw,ysp); lx.stroke();
     lx.setLineDash([]); lx.globalAlpha=1;
     lx.fillStyle=COL.amber; lx.font='9px ui-monospace,monospace'; lx.textAlign='left';
-    lx.fillText('Setpoint (목표: 불량 0)', px0+4, ysp-4);
+    lx.fillText('Setpoint (목표: ST 최소)', px0+4, ysp-4);
 
     // response curve — error = (1-resp) maps to defect height
     const win=2.6; // seconds shown
@@ -836,8 +834,8 @@
     }
     // ease DOE
     state.doe += (state.doeTarget - state.doe) * Math.min(dt*3.2,1);
-    // defect readout
-    document.getElementById('mDefect').textContent = ((1-state.doe)*15).toFixed(1);
+    // ST Vpp readout: 100% (개선 전) → 50% (제품 ST −50%)
+    document.getElementById('mDefect').textContent = (100 - state.doe*50).toFixed(1);
 
     renderScope();
     renderLoop();
@@ -921,7 +919,7 @@
     const on=doeBtn.dataset.on==='1';
     doeBtn.dataset.on=on?'0':'1';
     state.doeTarget=on?0:1;
-    doeBtn.querySelector('small').textContent= on?'불량 → 0% 튜닝':'튜닝 완료 · err=0';
+    doeBtn.querySelector('small').textContent= on?'ST −50% 튜닝':'튜닝 완료 · err=0';
     if(!on) loopT=0;  // restart step response to show the improved settle
   });
 

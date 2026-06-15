@@ -529,6 +529,7 @@
   let hoverContact = null;
   let mouse = {x:-9999,y:-9999,in:false};
   const pings = []; // sonar ripples
+  let lockPhaseTime = 0; // dt-based lock box animation
 
   // ---- SURFACE PHASE (Work Radar operating surfaces) ----
   // S0 CAPTURE BOARD -> S1 TODAY TIMELINE -> S2 PR RADAR -> S3 CONTROL ROOM
@@ -537,7 +538,7 @@
   const PHASE_KO = ['Capture Board(Eisenhower matrix)','Today Timeline(drag 배치)','PR Radar(CI 버킷 triage)','Control Room(Boule Governance gate)'];
   let maxPhase = 0;
 
-  // each contact gets a glow value [0..1], detection flag
+  // each contact gets a glow value [0..1], detection flag, drift
   CONTACTS.forEach((c,i)=>{
     c._glow = 0;
     c._detected = false;
@@ -545,7 +546,14 @@
     c._phase = (typeof c.phase==='number') ? c.phase : PHASE_BY_TYPE[c.type];
     c._trk = i+1;
     // bearing in radians, 0 deg = north(up)
-    c._a = (c.brg-90) * Math.PI/180;
+    c._baseA = (c.brg-90) * Math.PI/180;
+    c._a = c._baseA;
+    c._baseRing = c.ring;
+    // drift state: slow sinusoidal wander
+    c._driftT = Math.random()*Math.PI*2; // phase offset per contact
+    c._driftSpeed = 0.18 + Math.random()*0.14; // rad/s
+    c._driftAmp = 0.004 + Math.random()*0.006; // angular amplitude (radians)
+    c._driftRingAmp = 0.006 + Math.random()*0.006; // ring amplitude
   });
 
   function resize(){
@@ -674,10 +682,22 @@
     const dt = Math.min((now-last)/1000, 0.05);
     last = now;
     sweepAngle += SWEEP_SPEED*dt;
+    lockPhaseTime += dt;
     updateDetection();
 
-    // decay glows
-    CONTACTS.forEach(c=>{ c._glow = Math.max(0, c._glow - dt/4.5); });
+    // update drift + decay glows
+    CONTACTS.forEach(c=>{
+      // eased afterglow decay: quadratic-out so it lingers bright then fades
+      if(c._glow > 0){
+        c._glow = Math.max(0, c._glow - dt/4.5);
+      }
+      // sinusoidal micro-drift (always active once detected)
+      if(c._detected){
+        c._driftT += c._driftSpeed * dt;
+        c._a = c._baseA + Math.sin(c._driftT) * c._driftAmp;
+        c.ring = c._baseRing + Math.sin(c._driftT * 0.7 + 1.3) * c._driftRingAmp;
+      }
+    });
 
     // sweep bearing readout
     let brgDeg = ((sweepAngle*180/Math.PI)+90)%360;
@@ -882,10 +902,8 @@
     ctx.restore();
   }
 
-  let lockPhase=0;
   function drawLockBox(x,y,c,col){
-    lockPhase += 0.05;
-    const bs = 22 + Math.sin(lockPhase)*2;
+    const bs = 22 + Math.sin(lockPhaseTime * 3.2)*2;
     ctx.save();
     ctx.strokeStyle='rgba(255,176,49,0.95)';
     ctx.lineWidth=1.8;
@@ -1082,6 +1100,124 @@
     document.getElementById('clock').textContent=d.toISOString().substr(11,8);
   }
   setInterval(tick,1000);tick();
+
+  // ====== LIVE TABLE STREAMING ======
+  // BRG/RNG 미세 변동 + STATUS 롤링 + 가짜 새 신호 등장
+  const FAKE_SIGNALS = [
+    {id:'NOTION-WEBHOOK', sub:'API SIGNAL', type:'signal', brg:188, ring:0.92},
+    {id:'SLACK-EVENT', sub:'NOTIFICATION', type:'agent', brg:47, ring:0.94},
+    {id:'CRON-JOB-01', sub:'SCHEDULED TASK', type:'agent', brg:225, ring:0.88},
+    {id:'WEBHOOK-GH', sub:'GITHUB EVENT', type:'signal', brg:310, ring:0.96},
+    {id:'TAURI-IPC', sub:'SYSTEM EVENT', type:'signal', brg:72, ring:0.90},
+  ];
+  let fakeIdx = 0;
+  let fakeRows = []; // {el, brgBase, rngBase, brgDrift, rngDrift, driftT, status}
+
+  function liveTableTick(){
+    const detected = CONTACTS.filter(c=>c._detected);
+    // 1) update existing rows: BRG/RNG 미세 변동, status chip
+    const rows = document.querySelectorAll('.track-row');
+    rows.forEach(function(row){
+      const idx = +row.dataset.idx;
+      if(isNaN(idx)) return;
+      const c = CONTACTS[idx];
+      if(!c || !c._detected) return;
+      // BRG: base +/- 1-2 deg drift
+      if(!c._liveDriftT) c._liveDriftT = Math.random()*Math.PI*2;
+      c._liveDriftT += 0.035 + Math.random()*0.015;
+      const brgDrift = Math.sin(c._liveDriftT) * 1.8;
+      const rngDrift = Math.sin(c._liveDriftT * 0.7 + 0.5) * 0.4;
+      const liveBrg = ((c.brg + brgDrift + 360) % 360) | 0;
+      const liveRng = Math.max(0, (c.ring * 40) + rngDrift);
+      const cells = row.querySelectorAll('span');
+      // cells: trk, brg, rng, surf, id
+      if(cells[1]) cells[1].textContent = pad3(liveBrg) + 'deg';
+      if(cells[2]) cells[2].textContent = liveRng.toFixed(0) + 'N';
+      // status chip flicker on SCANNING contacts
+      if(!c._verified && cells[4]){
+        const chip = cells[4].querySelector('.vchip');
+        if(chip && chip.className.indexOf('pending') !== -1){
+          const labels = ['SCANNING', 'TRACKING', 'ACQUIRE'];
+          if(Math.random() < 0.08) chip.textContent = labels[(Math.random()*labels.length)|0];
+        }
+      }
+    });
+
+    // 2) fake row drift (phantom signals)
+    fakeRows.forEach(function(fr){
+      fr.driftT += 0.04;
+      const bLive = ((fr.brgBase + Math.sin(fr.driftT)*2.1 + 360) % 360) | 0;
+      const rLive = Math.max(1, fr.rngBase + Math.sin(fr.driftT * 0.6)*0.6);
+      if(fr.el){
+        const cells = fr.el.querySelectorAll('span');
+        if(cells[1]) cells[1].textContent = pad3(bLive) + 'deg';
+        if(cells[2]) cells[2].textContent = rLive.toFixed(0) + 'N';
+        // status cycling
+        fr.statusT = (fr.statusT||0) + 1;
+        if(fr.statusT % 18 === 0){
+          const chip = fr.el.querySelector('.vchip');
+          if(chip){
+            const cycle = ['SCANNING','TRACKING','LOCKED'];
+            fr.statusIdx = ((fr.statusIdx||0) + 1) % cycle.length;
+            chip.textContent = cycle[fr.statusIdx];
+            chip.className = fr.statusIdx === 2 ? 'vchip verified' : 'vchip pending';
+          }
+        }
+      }
+    });
+
+    // 3) occasionally spawn a new fake phantom row (if < 3 fakes exist)
+    if(fakeRows.length < 3 && detected.length >= 4 && Math.random() < 0.18){
+      const sig = FAKE_SIGNALS[fakeIdx % FAKE_SIGNALS.length];
+      fakeIdx++;
+      const row = document.createElement('div');
+      row.className = 'track-row';
+      row.dataset.idx = 'fake';
+      const trkNo = 'F' + String(fakeIdx).padStart(2,'0');
+      const rngBase = (sig.ring * 40);
+      row.innerHTML =
+        '<span class="trk" style="color:var(--txt-dim)">' + trkNo + '</span>' +
+        '<span>' + pad3(sig.brg) + 'deg</span>' +
+        '<span>' + rngBase.toFixed(0) + 'N</span>' +
+        '<span class="typ ' + sig.type + '">EXT</span>' +
+        '<span class="id">' + sig.id + '<span class="vchip pending">SCANNING</span></span>';
+      trackBody.appendChild(row);
+      requestAnimationFrame(function(){ row.classList.add('in'); });
+      trackBody.scrollTop = trackBody.scrollHeight;
+      const fr = {el:row, brgBase:sig.brg, rngBase:rngBase, driftT:Math.random()*Math.PI*2, statusIdx:0, statusT:0};
+      fakeRows.push(fr);
+      // auto-remove after 18-28 seconds
+      const ttl = 18000 + Math.random()*10000;
+      setTimeout(function(){
+        row.style.transition = 'opacity 0.8s';
+        row.style.opacity = '0';
+        setTimeout(function(){
+          if(row.parentNode) row.parentNode.removeChild(row);
+          fakeRows = fakeRows.filter(function(f){ return f !== fr; });
+        }, 800);
+      }, ttl);
+    }
+  }
+
+  // Sensor status HUD 미세 변동
+  function hudNoiseTick(){
+    const detEl = document.getElementById('liveDet');
+    const priEl = document.getElementById('livePri');
+    // occasional +/- 1 flicker on detected count
+    const det = CONTACTS.filter(c=>c._detected).length;
+    if(det > 0 && detEl){
+      const noise = Math.random() < 0.15 ? (Math.random() < 0.5 ? 1 : -1) : 0;
+      detEl.textContent = Math.max(0, det + noise);
+    }
+    // priority count flicker
+    const pri = CONTACTS.filter(c=>c._detected && (c.priority||c.type==='gate')).length;
+    if(pri > 0 && priEl && Math.random() < 0.1){
+      priEl.textContent = Math.max(0, pri + (Math.random()<0.5?1:0));
+    }
+  }
+
+  setInterval(liveTableTick, 420);
+  setInterval(hudNoiseTick, 1100);
 
   // ====== BOOT -- rAF loop auto-starts, no scroll/click dependency ======
   var _booted = false;

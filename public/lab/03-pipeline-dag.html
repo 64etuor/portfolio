@@ -604,11 +604,11 @@ EDGES.forEach(function(e,i){
   tok.style.filter='drop-shadow(0 0 4px #5ee3a1)';
   edgesSvg.appendChild(tok);
 
-  edgeEls.push({a:e[0],b:e[1],path:p,len:p.getTotalLength(),tok:tok,phase:Math.random(),speed:0.10+Math.random()*0.13,active:true});
+  edgeEls.push({a:e[0],b:e[1],path:p,len:p.getTotalLength(),tok:tok,phase:Math.random(),speed:0.10+Math.random()*0.13,targetSpeed:0.10+Math.random()*0.13,active:true});
 });
 
 //==================================================================
-//  TOKEN ANIMATION (60fps) — 자동 시작, 루프 무한 반복
+//  TOKEN ANIMATION (60fps rAF + dt) — 자동 시작, 루프 무한 반복
 //==================================================================
 var lastT=performance.now();
 function animate(t){
@@ -616,6 +616,8 @@ function animate(t){
   for(var i=0;i<edgeEls.length;i++){
     var e=edgeEls[i];
     if(!e.active){ e.tok.style.opacity=0; continue; }
+    // 목표 속도로 부드럽게 보간 (speed 점프 제거)
+    e.speed += (e.targetSpeed - e.speed) * Math.min(1, dt * 4);
     e.phase += e.speed*dt;
     if(e.phase>1) e.phase-=1;
     var pt=e.path.getPointAtLength(e.phase*e.len);
@@ -624,14 +626,31 @@ function animate(t){
     e.tok.style.opacity = Math.min(1, edge*8)*0.95;
   }
   drawAI(t);
+  tickRunSweep(dt);
+  tickMetrics(t);
+  tickEventLog(t);
   requestAnimationFrame(animate);
 }
 requestAnimationFrame(animate);
 
 //==================================================================
-//  AI mini live trend chart (AI Reconciliation Layer delight)
+//  AI mini live trend chart (AI Reconciliation Layer) — 지속 스크롤링
 //==================================================================
-var aiCanvas=null, aiCtx=null, aiData=[], aiReveal=0;
+var aiCanvas=null, aiCtx=null, aiData=[], aiNextSampleAt=0;
+var AI_MAX=80; // 화면에 보이는 샘플 수
+
+function aiSample(t){
+  // 세 파이프라인 진동을 시간 기반으로 생성
+  var s = t * 0.001;
+  var v = 0.38 + 0.48*(
+    Math.sin(s*2.1)*0.38 +
+    Math.cos(s*3.7+1.2)*0.28 +
+    Math.sin(s*5.9+2.5)*0.18 +
+    (Math.random()-0.5)*0.08
+  );
+  return Math.max(0.04, Math.min(0.96, v));
+}
+
 function initAI(){
   aiCanvas=document.getElementById('aicanvas');
   if(!aiCanvas) return;
@@ -639,64 +658,262 @@ function initAI(){
   aiCanvas.width=206*dpr; aiCanvas.height=54*dpr;
   aiCtx=aiCanvas.getContext('2d'); aiCtx.scale(dpr,dpr);
   aiData=[];
-  // three pipeline pulses overlaid as a multi-wave trend
-  for(var i=0;i<60;i++){
-    var x=i/59;
-    var v = 0.3+0.5*(Math.sin(x*Math.PI*3)*0.4 + Math.cos(x*Math.PI*5+1)*0.3 + Math.sin(x*Math.PI*7+2)*0.2);
-    aiData.push(Math.max(0,Math.min(1,v)));
-  }
-  aiReveal=0;
+  var now=performance.now();
+  for(var i=0;i<AI_MAX;i++) aiData.push(aiSample(now - (AI_MAX-i)*83));
+  aiNextSampleAt=now;
 }
+
 function drawAI(t){
   if(!aiCtx) return;
+  // 절대 시간 기준 ~12fps 샘플 추가
+  if(t >= aiNextSampleAt){
+    aiData.push(aiSample(t));
+    if(aiData.length > AI_MAX) aiData.shift();
+    aiNextSampleAt = t + 83;
+  }
   var W=206,H=54,pad=4;
   aiCtx.clearRect(0,0,W,H);
   aiCtx.strokeStyle='rgba(255,255,255,.04)'; aiCtx.lineWidth=1;
   for(var g=1;g<4;g++){
-    var y=pad+(H-2*pad)*g/4;
-    aiCtx.beginPath(); aiCtx.moveTo(pad,y); aiCtx.lineTo(W-pad,y); aiCtx.stroke();
+    var gy=pad+(H-2*pad)*g/4;
+    aiCtx.beginPath(); aiCtx.moveTo(pad,gy); aiCtx.lineTo(W-pad,gy); aiCtx.stroke();
   }
-  aiReveal=Math.min(aiData.length, aiReveal + 0.4);
-  var n=Math.floor(aiReveal);
-  // area
+  var n=aiData.length;
+  if(n<2) return;
+  // area fill
   aiCtx.beginPath();
   for(var i=0;i<n;i++){
-    var x=pad+(W-2*pad)*i/(aiData.length-1);
+    var x=pad+(W-2*pad)*i/(AI_MAX-1);
     var yv=pad+(H-2*pad)*(1-aiData[i]);
     if(i===0){ aiCtx.moveTo(x,yv); } else { aiCtx.lineTo(x,yv); }
   }
-  if(n>0){
-    var lastX=pad+(W-2*pad)*(n-1)/(aiData.length-1);
-    aiCtx.lineTo(lastX,H-pad); aiCtx.lineTo(pad,H-pad); aiCtx.closePath();
-    var grad=aiCtx.createLinearGradient(0,0,0,H);
-    grad.addColorStop(0,'rgba(240,180,41,.30)'); grad.addColorStop(1,'rgba(240,180,41,0)');
-    aiCtx.fillStyle=grad; aiCtx.fill();
-  }
+  var lxA=pad+(W-2*pad)*(n-1)/(AI_MAX-1);
+  aiCtx.lineTo(lxA,H-pad); aiCtx.lineTo(pad,H-pad); aiCtx.closePath();
+  var grad=aiCtx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,'rgba(240,180,41,.28)'); grad.addColorStop(1,'rgba(240,180,41,0)');
+  aiCtx.fillStyle=grad; aiCtx.fill();
   // line
   aiCtx.beginPath();
   for(var j=0;j<n;j++){
-    var xj=pad+(W-2*pad)*j/(aiData.length-1);
+    var xj=pad+(W-2*pad)*j/(AI_MAX-1);
     var yj=pad+(H-2*pad)*(1-aiData[j]);
     if(j===0){ aiCtx.moveTo(xj,yj); } else { aiCtx.lineTo(xj,yj); }
   }
   aiCtx.strokeStyle='#f0b429'; aiCtx.lineWidth=1.6; aiCtx.lineJoin='round'; aiCtx.stroke();
-  // moving head dot
-  if(n>0){
-    var ii=n-1;
-    var xi=pad+(W-2*pad)*ii/(aiData.length-1);
-    var yi=pad+(H-2*pad)*(1-aiData[ii]);
-    aiCtx.beginPath(); aiCtx.arc(xi,yi,2.4,0,7); aiCtx.fillStyle='#5ee3a1'; aiCtx.fill();
-  }
+  // head dot
+  var hx=pad+(W-2*pad)*(n-1)/(AI_MAX-1);
+  var hy=pad+(H-2*pad)*(1-aiData[n-1]);
+  aiCtx.beginPath(); aiCtx.arc(hx,hy,2.4,0,7); aiCtx.fillStyle='#5ee3a1'; aiCtx.fill();
   aiCtx.fillStyle='rgba(201,212,227,.5)'; aiCtx.font='8px monospace';
   aiCtx.fillText('ai.pipelines · throughput', 6, 11);
   aiCtx.fillStyle='#5ee3a1';
   aiCtx.fillText('AUTO', W-34, 11);
-  if(aiReveal>=aiData.length){
-    // loop the reveal
-    aiReveal=0;
-  }
 }
 initAI();
+
+//==================================================================
+//  LIVE EVENT LOG STREAMING — AI Reconciliation 패널
+//  (AI 노드 바디에 삽입, 결정 후보·PR 갱신·뉴스 한 줄씩 롤링)
+//==================================================================
+var LOG_TEMPLATES = [
+  {cls:'ok', pipe:'[meeting→dec]', msgs:[
+    '결정 후보 추출: "Q3 디자인 시스템 통합" — 신뢰도 0.91',
+    '결정 후보 추출: "온보딩 Runbook 분기 갱신" — 신뢰도 0.87',
+    '결정 후보 추출: "Backlog MoSCoW 재우선순위" — 신뢰도 0.83',
+    '결정 후보 추출: "AI 파이프라인 3개 → 5개 확장" — 신뢰도 0.95',
+    '결정 후보 추출: "스프린트 주기 2주 → 1주 실험" — 신뢰도 0.78',
+    '결정 후보 추출: "SSOT: Drive 민감문서 정책 갱신" — 신뢰도 0.89',
+  ]},
+  {cls:'w', pipe:'[pr→prd]', msgs:[
+    'PR #214 머지 → PRD 변경로그 자동 갱신 (auth-flow v2)',
+    'PR #217 머지 → PRD 변경로그 자동 갱신 (design-token sync)',
+    'PR #221 머지 → PRD 변경로그 자동 갱신 (backlog-api)',
+    'PR #229 머지 → PRD 변경로그 자동 갱신 (OKR-widget)',
+    'PR #233 머지 → PRD 변경로그 자동 갱신 (runbook-v3)',
+  ]},
+  {cls:'w', pipe:'[github→news]', msgs:[
+    '개발뉴스 요약: "이번 주 17 커밋 · 버그 2건 해결 · 신규 Epic 1건"',
+    '개발뉴스 요약: "PR 12건 리뷰 완료 · Backlog 감소 8% · 배포 성공"',
+    '개발뉴스 요약: "스프린트 속도 +11% · 이슈 close율 94%"',
+    '개발뉴스 요약: "Auth 모듈 리팩토링 완료 · 테스트 커버리지 87%"',
+  ]},
+];
+
+var logEntries = []; // {ts, cls, pipe, msg, age(0..1)}
+var logNextTime = 0;
+var logIntervalBase = 2800; // ms 간격 기반
+var logEl = null; // 주입될 DOM
+
+function buildLogEl(){
+  // AI 노드 body에 이벤트 로그 박스 동적 삽입
+  var aiNode = nodeById['ai_layer'];
+  if(!aiNode || !aiNode.el) return;
+  var body = aiNode.el.querySelector('.body');
+  if(!body) return;
+  var box = document.createElement('div');
+  box.id = 'ai-log-box';
+  box.style.cssText = 'margin-top:6px;background:#050810;border:1px solid #1a2232;border-radius:5px;' +
+    'padding:5px 7px;font-size:9px;line-height:1.65;height:62px;overflow:hidden;position:relative;';
+  // fade 마스크
+  var fade = document.createElement('div');
+  fade.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:18px;' +
+    'background:linear-gradient(transparent,#050810);pointer-events:none;z-index:1;';
+  box.appendChild(fade);
+  var lines = document.createElement('div');
+  lines.id = 'ai-log-lines';
+  lines.style.cssText = 'position:relative;z-index:0;';
+  box.appendChild(lines);
+  body.appendChild(box);
+  logEl = lines;
+}
+
+function padTs(){
+  var d=new Date();
+  var hh=String(d.getHours()).padStart(2,'0');
+  var mm=String(d.getMinutes()).padStart(2,'0');
+  var ss=String(d.getSeconds()).padStart(2,'0');
+  return hh+':'+mm+':'+ss;
+}
+
+function pushLogEntry(t){
+  if(!logEl) return;
+  var tpl = LOG_TEMPLATES[Math.floor(Math.random()*LOG_TEMPLATES.length)];
+  var msg = tpl.msgs[Math.floor(Math.random()*tpl.msgs.length)];
+  var line = document.createElement('div');
+  line.style.cssText = 'opacity:0;transition:opacity .4s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+  var tsSpan = '<span style="color:#3a4a5c">'+padTs()+'</span> ';
+  var pipeSpan = '<span style="color:'+(tpl.cls==='ok'?'#5ee3a1':'#f0b429')+'">'+tpl.pipe+'</span> ';
+  var msgSpan = '<span style="color:#6b7787">'+msg+'</span>';
+  line.innerHTML = tsSpan + pipeSpan + msgSpan;
+  logEl.appendChild(line);
+  requestAnimationFrame(function(){ line.style.opacity='1'; });
+  // 5줄 초과 시 오래된 줄 페이드 제거
+  var children = logEl.children;
+  if(children.length > 5){
+    var old = children[0];
+    old.style.transition = 'opacity .6s';
+    old.style.opacity = '0';
+    setTimeout(function(){ if(old.parentNode) old.parentNode.removeChild(old); }, 650);
+  }
+  // 다음 간격: 1.8~4s 랜덤
+  logNextTime = t + logIntervalBase + Math.random()*1800;
+}
+
+function tickEventLog(t){
+  if(!logEl) return;
+  if(t >= logNextTime) pushLogEntry(t);
+}
+
+//==================================================================
+//  METRIC 미세 변동 — 결정 추적률·지연 수치 살아있게
+//==================================================================
+var metricDefs = {
+  m1: { base:'100%',  variants:['99.7%','100%','100%','99.8%','100%'] },
+  m2: { base:'<2h',   variants:['<1.8h','<2h','<2.1h','<1.9h','<2h'] },
+  m3: { base:'Q+1',   variants:['Q+1','Q+1','Q+1'] },
+  m4: { base:'3 src', variants:['3 src'] },
+  m5: { base:'0',     variants:['0','0','0','0'] },
+  m6: { base:'AUTO',  variants:['AUTO'] },
+};
+var metricNextTick = 0;
+var metricInterval = 4200;
+
+function tickMetrics(t){
+  if(t < metricNextTick) return;
+  metricNextTick = t + metricInterval + Math.random()*2000;
+  ['m1','m2'].forEach(function(id){
+    var n = nodeById[id]; if(!n || !n.el) return;
+    var def = metricDefs[id]; if(!def) return;
+    var v = def.variants[Math.floor(Math.random()*def.variants.length)];
+    var big = n.el.querySelector('.big');
+    if(big) big.textContent = v;
+  });
+}
+
+//==================================================================
+//  RUN SWEEP — rAF + dt 기반 위상정렬 스윕 (끊김 없는 진행)
+//==================================================================
+var sweepState = null; // { order, idx, accum, nodeDur, nodeRunDur, total }
+
+function tickRunSweep(dt){
+  if(!sweepState) return;
+  var sw = sweepState;
+  if(sw.idx >= sw.order.length){
+    // 완료 처리
+    runbar.style.width = '100%';
+    if(!sw.finishing){
+      sw.finishing = true;
+      sw.finishAccum = 0;
+    }
+    sw.finishAccum += dt;
+    if(sw.finishAccum > 0.45){
+      runbar.style.width = '0%';
+      edgeEls.forEach(function(e){
+        e.active = true;
+        e.targetSpeed = 0.10 + Math.random()*0.13;
+      });
+      runBtn.classList.remove('running');
+      runBtn.innerHTML = '<span class="tri">&#10003;</span> RUN AGAIN';
+      running = false;
+      sweepState = null;
+      // 자동 재시작: 2초 후
+      setTimeout(runPipeline, 2000);
+    }
+    return;
+  }
+  sw.accum += dt;
+  var n = nodeById[sw.order[sw.idx]];
+  // 아직 이 노드의 'running' 단계
+  if(sw.phase === 'run'){
+    if(sw.accum >= sw.nodeRunDur){
+      // 이 노드 완료
+      n.status = 'success'; n.el.dataset.status = 'success'; updatePill(n);
+      edgeEls.forEach(function(e){
+        if(e.b === n.id) e.targetSpeed = 0.12 + Math.random()*0.10;
+      });
+      sw.idx++;
+      sw.accum = 0;
+      sw.phase = 'run';
+      runbar.style.width = ((sw.idx / sw.total) * 100) + '%';
+      if(sw.idx < sw.order.length){
+        var next = nodeById[sw.order[sw.idx]];
+        next.status = 'running'; next.el.dataset.status = 'running'; updatePill(next);
+        sw.nodeRunDur = next.metric ? 0.17 : 0.28 + Math.random()*0.12;
+        edgeEls.forEach(function(e){
+          if(e.b === next.id){ e.active = true; e.phase = 0; e.targetSpeed = 0.55 + Math.random()*0.3; }
+        });
+      }
+    }
+  }
+}
+
+function runPipeline(){
+  if(running) return;
+  running = true;
+  runBtn.classList.add('running');
+  runBtn.innerHTML = '<span class="tri">&#9632;</span> RUNNING&#8230;';
+  NODES.forEach(function(n){ n.status='queued'; n.el.dataset.status='queued'; updatePill(n); });
+  edgeEls.forEach(function(e){ e.active=false; e.targetSpeed=e.speed; });
+  var order = topoOrder();
+  var total = order.length;
+  runbar.style.width = '0%';
+  // 첫 노드 시작
+  var first = nodeById[order[0]];
+  first.status = 'running'; first.el.dataset.status = 'running'; updatePill(first);
+  edgeEls.forEach(function(e){
+    if(e.b === first.id){ e.active=true; e.phase=0; e.targetSpeed=0.55+Math.random()*0.3; }
+  });
+  sweepState = {
+    order: order,
+    total: total,
+    idx: 0,
+    accum: 0,
+    phase: 'run',
+    nodeRunDur: first.metric ? 0.17 : 0.28 + Math.random()*0.12,
+    finishing: false,
+    finishAccum: 0,
+  };
+}
 
 //==================================================================
 //  PAN / ZOOM
@@ -912,7 +1129,7 @@ document.getElementById('pclose').onclick=closePanel;
 stage.addEventListener('click',function(e){ if(!moved && !e.target.closest('.node')) closePanel(); });
 
 //==================================================================
-//  RUN PIPELINE — 위상정렬 실행 스윕 (Meeting → Retro)
+//  topoOrder / 공통 선언 — sweep에서 참조
 //==================================================================
 function topoOrder(){
   var indeg={}, adj={};
@@ -931,45 +1148,6 @@ var runBtn=document.getElementById('runBtn');
 var runbar=document.getElementById('runbar');
 runBtn.onclick=runPipeline;
 
-function runPipeline(){
-  if(running) return;
-  running=true;
-  runBtn.classList.add('running');
-  runBtn.innerHTML='<span class="tri">&#9632;</span> RUNNING&#8230;';
-  NODES.forEach(function(n){ n.status='queued'; n.el.dataset.status='queued'; updatePill(n); });
-  edgeEls.forEach(function(e){ e.active=false; });
-  var order=topoOrder();
-  var total=order.length;
-  var i=0;
-  function step(){
-    if(i>=order.length){
-      runbar.style.width='100%';
-      setTimeout(function(){
-        runbar.style.width='0%';
-        edgeEls.forEach(function(e){ e.active=true; });
-        runBtn.classList.remove('running');
-        runBtn.innerHTML='<span class="tri">&#10003;</span> RUN AGAIN';
-        running=false;
-        // 자동 재실행: 완료 후 2초 뒤 다시 스윕
-        setTimeout(runPipeline, 2000);
-      }, 400);
-      return;
-    }
-    var n=nodeById[order[i]];
-    n.status='running'; n.el.dataset.status='running'; updatePill(n);
-    edgeEls.forEach(function(e){ if(e.b===n.id){ e.active=true; e.phase=0; e.speed=0.9; } });
-    runbar.style.width=((i+0.5)/total*100)+'%';
-    var delay=n.metric?170:300;
-    setTimeout(function(){
-      n.status='success'; n.el.dataset.status='success'; updatePill(n);
-      edgeEls.forEach(function(e){ if(e.b===n.id){ e.speed=0.12+Math.random()*0.1; } });
-      i++;
-      step();
-    }, delay);
-  }
-  step();
-}
-
 function updatePill(n){
   if(n.metric) return;
   var pill=n.el.querySelector('.pill');
@@ -979,7 +1157,6 @@ function updatePill(n){
   pill.className='pill '+ct[0];
   pill.innerHTML='<span class="d"></span>'+ct[1];
 }
-function sleep(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
 
 //==================================================================
 //  INIT — 자동재생 보장 (레이아웃 게이트 + setTimeout 재시도)
@@ -991,6 +1168,7 @@ function boot(){
   sizeGrid();
   buildMinimap();
   fit();
+  buildLogEl();
   // exec_runbook 은 현재 운영 중 상태
   var rb=nodeById['exec_runbook'];
   rb.status='running'; rb.el.dataset.status='running'; updatePill(rb);

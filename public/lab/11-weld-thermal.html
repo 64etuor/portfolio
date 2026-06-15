@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>박양하 · THERMAL-CAM / 용접 아크 열화상</title>
+<title>박양하 · THERMAL-CAM / 용접 공정 조건 설계</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -186,7 +186,7 @@
     <div class="row"><span class="k">EMIS</span><b id="emis">ε 0.95</b></div>
     <div class="row"><span class="k">RANGE</span><b>-20 / 1600°C</b></div>
     <div class="row"><span class="k">PALET</span><b id="palname">IRON</b></div>
-    <div class="row"><span class="k">FUSION</span><b id="modetxt">ARC · AUTO</b></div>
+    <div class="row"><span class="k">MODE</span><b id="modetxt">SPOT · AUTO</b></div>
   </div>
 
   <!-- top-right HUD -->
@@ -207,7 +207,7 @@
   <!-- bottom-right -->
   <div class="hud" id="br">
     <div id="clock"><b>--:--:--.--</b></div>
-    <div><span class="lbl">SITE</span> <b>LINE-7 / ULTRASONIC WELD</b></div>
+    <div><span class="lbl">SITE</span> <b>WELD-LINE / SPOT &amp; LASER</b></div>
     <div><span class="lbl">OP</span> <b>PARK Y.</b> &nbsp; <span class="lbl">CAM</span> <b>IR-07</b></div>
   </div>
 
@@ -219,32 +219,32 @@
   <!-- spot crosshair -->
   <div id="crosshair">
     <div class="h"></div><div class="v"></div><div class="ring"></div>
-    <div id="spotlbl"><span class="t" id="spottemp">1480°C</span><br><span class="lbl" id="spotname">ARC SPOT</span></div>
+    <div id="spotlbl"><span class="t" id="spottemp">1480°C</span><br><span class="lbl" id="spotname">WELD SPOT</span></div>
   </div>
 
-  <!-- DOE signature control -->
+  <!-- process condition control -->
   <div id="doe">
-    <div id="doebtn">▶ <span class="blink">DOE</span> 용착불량 재용접 시뮬레이션 &nbsp;15% → 0%</div>
+    <div id="doebtn">▶ <span class="blink">SIM</span> 공정 조건 전환 &nbsp;스팟 → 레이저</div>
     <div id="doestate"></div>
   </div>
 
   <!-- identity -->
   <div id="identity">
-    <div class="ey">INFRARED THERMOGRAPHY · 생산운영 &amp; 공정기술</div>
-    <h1>박양하<span class="sub">생산운영 PM · 공정기술 엔지니어 · 총괄본부장 — 산업용접(스팟·레이저·초음파)</span></h1>
+    <div class="ey">INFRARED THERMOGRAPHY · 용접 공정 조건 설계</div>
+    <h1>박양하<span class="sub">산업용접 기법 — 스팟·레이저·초음파 · 공정 파라미터 설계 &amp; 검증</span></h1>
     <div class="tags">
-      <span>PFMEA / CP / PFD</span><span>DOE</span><span>비전검사</span><span>Jig·기구설계</span>
-      <span>Python · FastAPI</span><span>MES · IATF16949</span><span>AWS · GCP · CI/CD</span>
+      <span>스팟 용접 · 너겟 형성</span><span>레이저 용접 · 키홀/전도</span><span>초음파 용착</span>
+      <span>공정 조건 검증</span><span>HAZ 제어</span><span>전극 마모 관리</span>
     </div>
   </div>
 
-  <!-- metric tickers — 용착/용접 서사 전용 (다른 KPI는 각 씬이 소유) -->
+  <!-- metric tickers — 용접 공정 파라미터 -->
   <div id="metrics">
-    <div class="m"><span class="lab">용착불량 &nbsp;</span><span class="num up" id="mt-weld">15→0%</span></div>
-    <div class="m"><span class="lab">결함유형 &nbsp;</span><span class="num dn">스패터·콜드랩</span></div>
-    <div class="m"><span class="lab">DOE 인자 &nbsp;</span><span class="num up">최적화</span></div>
-    <div class="m"><span class="lab">검사 &nbsp;</span><span class="num up">비전 박싱</span></div>
-    <div class="m"><span class="lab">비드 &nbsp;</span><span class="num up">균일</span></div>
+    <div class="m"><span class="lab">용접 전류 &nbsp;</span><span class="num up" id="mt-weld">8.5 kA</span></div>
+    <div class="m"><span class="lab">가압력 &nbsp;</span><span class="num dn">3.2 kN</span></div>
+    <div class="m"><span class="lab">통전 시간 &nbsp;</span><span class="num up">14 cycle</span></div>
+    <div class="m"><span class="lab">레이저 출력 &nbsp;</span><span class="num up">2400 W</span></div>
+    <div class="m"><span class="lab">용접 속도 &nbsp;</span><span class="num dn">45 mm/s</span></div>
   </div>
 
   <!-- active pass detail -->
@@ -361,18 +361,18 @@ function layoutScale(){
    ============================================================ */
 // normalized positions across the field (avoid HUD edges, weighted to center-band)
 const PASSES = [
-  { yr:'2020.08–2022.11', co:'은성에스아이티', ro:'생산관리과장 · 배터리팩 총괄',
+  { yr:'SPOT WELDING', co:'저항 용접 (스팟)', ro:'너겟 형성 · HAZ 제어',
     x:0.20, y:0.40, peak:980,
-    desc:'배터리팩 라인 총괄 · <b>비전검사 도입</b>으로 출하 품질 안정화 · <b>IATF16949</b> 자동차 품질체계 대응.' },
-  { yr:'2022.11–2023.09', co:'이랜텍', ro:'생산라인 PM · 파트장',
+    desc:'<b>스팟 용접 파라미터</b>: 용접 전류 <b>8.5 kA</b> · 가압력 <b>3.2 kN</b> · 통전 시간 <b>14 cycle</b>. 전극 마모 모니터링으로 <b>너겟 직경</b> 균일 유지 · <b>HAZ</b> 최소화 조건 설계.' },
+  { yr:'LASER WELDING', co:'레이저 용접', ro:'키홀/전도 모드 · 조건 설계',
     x:0.40, y:0.56, peak:1480, signature:true,
-    desc:'<b>DOE</b> 인자 최적화로 초음파 <span class="hot">용착불량 15% → 0%</span> · 스패터·콜드랩 결함 제거 · 전용 <b>Jig 개발</b>·로봇 티칭. — 핵심 용접 서사' },
-  { yr:'2023.09–2024.12', co:'솔라엣지', ro:'공정기술 엔지니어',
+    desc:'<b>레이저 용접 파라미터</b>: 출력 <b>2400 W</b> · 용접 속도 <b>45 mm/s</b> · 초점 위치 <b>-0.5 mm</b>. <span class="hot">키홀 모드</span> 전환 조건 설계 · 보호가스 Ar 15 L/min · 기공 억제 조건 검증.' },
+  { yr:'ULTRASONIC', co:'초음파 용착', ro:'진폭 · 가압 · 용착 시간',
     x:0.60, y:0.40, peak:1120,
-    desc:'데이터 <b>DB · 대시보드 · MES</b> 구축 · 검사성적서 <b>자동발행</b> — 현장 엔지니어링에서 데이터 엔지니어링으로의 전환.' },
-  { yr:'2025.08–현재', co:'미러리스', ro:'총괄본부장',
+    desc:'<b>초음파 용착 파라미터</b>: 진폭 <b>60 %</b> · 가압력 <b>1.8 kN</b> · 용착 시간 <b>0.8 s</b>. 공정 조건 범위 설정 · <b>CP 기준서</b> 작성 · PFMEA 관리 항목 등록.' },
+  { yr:'PROCESS VERIFY', co:'공정 조건 검증', ro:'PFMEA · CP · PFD 기반',
     x:0.80, y:0.56, peak:1320,
-    desc:'CRM · 키오스크 · 앱 · <b>FastAPI · AWS/GCP · CI/CD</b> · <b>RPA · AI MCP</b> 기반 전사 AX 총괄.' }
+    desc:'<b>공정 조건 검증</b>: PFMEA 위험 인자 식별 · 관리계획서(CP) 측정 항목 설정 · <b>열화상 모니터링</b>으로 용접부 온도 분포 실시간 추적 · 이상 조건 즉시 검출.' }
 ];
 let activePass = 1; // start on the welding signature pass
 
@@ -523,9 +523,9 @@ function arcUpdate(now, dt){
     const mgx=mouseX/SW*GW, mgy=mouseY/SH*GH;
     inject(mgx, mgy, 9, 70);
     if(Math.random()<0.6) emitSparks(mouseX,mouseY,2,0.8);
-    document.getElementById('modetxt').textContent='ARC · MANUAL';
+    document.getElementById('modetxt').textContent='SPOT · MANUAL';
   } else {
-    document.getElementById('modetxt').textContent='ARC · AUTO';
+    document.getElementById('modetxt').textContent='SPOT · AUTO';
   }
 
   // lay molten bead at arc
@@ -559,7 +559,7 @@ function startDOE(){
   if(doe.active) return;
   doe.active=true; doe.phase='defect'; doe.t=0; doe.defects=[];
   setActive(1); // ensure on the welding pass
-  document.getElementById('modetxt').textContent='DOE · OPTIMIZING';
+  document.getElementById('modetxt').textContent='SIM · SWITCHING';
   document.getElementById('doebtn').style.borderColor='var(--amber)';
 }
 function doeStep(now,dt){
@@ -584,12 +584,12 @@ function doeStep(now,dt){
     } else {
       inject(gx,gy, 6, 700);
     }
-    doeState.textContent='DEFECT WELD · 용착불량 검출 15% · 스패터/콜드랩 이상';
+    doeState.textContent='SPOT MODE · 스팟 용접 조건 주입 — 전류 8.5 kA / 가압력 3.2 kN';
     if(f>=1){ doe.phase='scan'; doe.t=0; }
   }
   else if(doe.phase==='scan'){
     // 비전검사 pass: box the hottest defect anomalies (drawn in renderDOE)
-    doeState.textContent='VISION INSPECT · 비전검사 — 온도 이상 ' + doe.defects.length + '개소 박싱';
+    doeState.textContent='THERMAL SCAN · 열화상 분석 — 온도 이상 ' + doe.defects.length + '개소 검출';
     arc.power=0; // arc off during inspection
     if(doe.t>1.8){ doe.phase='reweld'; doe.t=0; }
   }
@@ -605,11 +605,11 @@ function doeStep(now,dt){
       // pull defect spots toward ambient (re-fused)
       coolSpot(dfc.x, dfc.y, 8, 0.16);
     }
-    doeState.textContent='DOE RE-WELD · 최적 파라미터 균일 비드 형성 → 0%';
+    doeState.textContent='LASER MODE · 레이저 용접 전환 — 출력 2400 W / 속도 45 mm/s / 키홀 모드';
     if(f>=1){ doe.phase='done'; doe.t=0; }
   }
   else if(doe.phase==='done'){
-    doeState.textContent='✔ 용착불량 0% · 균일 비드 검증 완료 (DOE 인자 고정 · 비전 합격)';
+    doeState.textContent='VERIFIED · 레이저 균일 비드 검증 완료 — 조건 고정 / CP 기준서 등록';
     if(doe.t>2.2){
       doe.active=false; doe.phase='idle'; doe.defects=[];
       doeState.textContent='';
@@ -638,7 +638,7 @@ function renderDOE(){
       ctx.strokeRect(sx-s,sy-s,s*2,s*2);
       ctx.fillStyle='rgba(255,90,90,0.95)';
       ctx.font='10px ui-monospace,monospace';
-      ctx.fillText('DEFECT', sx-s, sy-s-4);
+      ctx.fillText('ANOMALY', sx-s, sy-s-4);
     }
     ctx.restore();
   }
@@ -669,7 +669,7 @@ function updateHUD(now){
   const gi=Math.max(0,Math.min(GW*GH-1, (Math.round(arc.gy)*GW+Math.round(arc.gx))));
   const spotT = mouseInside ? heat[Math.max(0,Math.min(GW*GH-1,(Math.round(mouseY/SH*GH)*GW+Math.round(mouseX/SW*GW))))] : heat[gi];
   elSpotT.textContent=Math.round(spotT)+'°C';
-  elSpotN.textContent= doe.active ? doe.phase.toUpperCase() : (mouseInside?'TORCH':'ARC SPOT');
+  elSpotN.textContent= doe.active ? doe.phase.toUpperCase() : (mouseInside?'TORCH':'WELD SPOT');
   if(mouseInside){ cross.style.left=mouseX+'px'; cross.style.top=mouseY+'px'; }
 }
 

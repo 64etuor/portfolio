@@ -960,11 +960,12 @@ const SYMS={opex:["⚠","불량 발생"],st:["📱","앱 구축"],ct:["📋","�
    MAIN LOOP
    ==================================================================== */
 let started=0, tlIndex=0;
-function tick(ts){
+function tick(ts,dt){
   // advance using real elapsed time so it works under both rAF (60fps)
   // and a setInterval fallback (headless virtual-time). ts may be undefined
   // when called from the interval pump.
   const t = (typeof ts==="number")?ts:performance.now();
+  if(dt===undefined)dt=1;
   if(!started)started=t;
   nowMs=t-started;
   updateBoot();
@@ -972,16 +973,21 @@ function tick(ts){
   while(tlIndex<timeline.length && nowMs>=timeline[tlIndex].t){
     timeline[tlIndex].fn(); tlIndex++;
   }
-  // smooth probe motion
-  const ease=0.12;
-  probe.px+=(probe.tpx-probe.px)*ease;
-  probe.py+=(probe.tpy-probe.py)*ease;
-  probe.pz+=(probe.tpz-probe.pz)*ease;
-  probe.touch*=0.92; if(probe.touch<0.01)probe.touch=0;
-  // mark pulses
-  FEATURES.forEach(f=>{ if(f._markPulse>0){f._markPulse-=0.02; if(f._markPulse<0)f._markPulse=0;} });
-  // cpk smooth
-  cpkShown+=(cpkTarget-cpkShown)*0.08;
+  // smooth probe motion — dt-scaled ease so speed is fps-independent
+  const easeBase=0.12;
+  const ef=1-Math.pow(1-easeBase,dt);
+  probe.px+=(probe.tpx-probe.px)*ef;
+  probe.py+=(probe.tpy-probe.py)*ef;
+  probe.pz+=(probe.tpz-probe.pz)*ef;
+  probe.touch*=Math.pow(0.92,dt); if(probe.touch<0.01)probe.touch=0;
+  // mark pulses — dt-scaled decay
+  FEATURES.forEach(f=>{ if(f._markPulse>0){f._markPulse-=0.02*dt; if(f._markPulse<0)f._markPulse=0;} });
+  // cpk smooth — dt-scaled lerp
+  cpkShown+=(cpkTarget-cpkShown)*(1-Math.pow(1-0.08,dt));
+  // live Cpk micro-jitter (only after boot done, only when near target)
+  if(bootDone && cpkTarget>0 && Math.abs(cpkTarget-cpkShown)<0.03){
+    cpkShown += (Math.random()-0.5)*0.004;
+  }
   cpkValEl.textContent=cpkShown.toFixed(2);
   cpkValEl.parentElement.parentElement.querySelector(".num").style.color =
     cpkShown>=1.33?cssVar("--pass"):cpkShown>=1?cssVar("--amber"):cssVar("--fail");
@@ -1015,15 +1021,17 @@ function tick(ts){
 /* ---------- driver: rAF for smooth 60fps + interval safety pump ----------
    Under headless --virtual-time-budget rAF can be starved, so a timer
    pump guarantees the scene keeps advancing and the boot overlay clears. */
-let rafLast=0;
+let rafLast=0, rafPrev=0;
 function rafLoop(ts){
-  tick(ts);
+  const dt=Math.min((ts-(rafPrev||ts))/16.667,3); // delta in frames, clamped 0..3
+  rafPrev=ts;
+  tick(ts,dt);
   rafLast=performance.now();
   requestAnimationFrame(rafLoop);
 }
 function pump(){
   // only step if rAF appears stalled (>120ms since last real frame)
-  if(performance.now()-rafLast>120){ tick(); rafLast=performance.now(); }
+  if(performance.now()-rafLast>120){ tick(undefined,1); rafLast=performance.now(); }
 }
 
 /* ---------- boot (driven by rAF clock so it's robust headless) ---------- */
@@ -1037,6 +1045,98 @@ function updateBoot(){
   bootFill.style.width=(p*100).toFixed(0)+"%";
   if(p>=1){ bootDone=true; bootEl.classList.add("hide"); setTimeout(function(){ bootEl.style.display="none"; }, 650); }
 }
+/* ====================================================================
+   LIVE STREAMING — 가짜 검사 이벤트·S/N 변동 (boot 종료 후 지속)
+   ==================================================================== */
+// 검사 이벤트 로그 DOM (report 패널 상단 삽입)
+let liveLog=null;
+const LOG_MAX=5; // 최대 표시 행
+const liveEvents=[
+  {sn:"PYH-{n}",msg:"S/N 검증 완료 — 조립 투입 허가",kind:"pass"},
+  {sn:"SLR-{n}",msg:"모바일 체크리스트 제출",kind:"pass"},
+  {sn:"MIR-{n}",msg:"부품 혼입 차단 — S/N 불일치 감지",kind:"warn"},
+  {sn:"PYH-{n}",msg:"Power Automate 검사성적서 자동발행",kind:"pass"},
+  {sn:"SLR-{n}",msg:"BI 대시보드 추적 갱신",kind:"pass"},
+  {sn:"MIR-{n}",msg:"미등록 S/N 감지 — 상위공정 차단",kind:"warn"},
+  {sn:"PYH-{n}",msg:"원자재 입고 S/N 등록 완료",kind:"pass"},
+  {sn:"SLR-{n}",msg:"공정별 점검 기록 업로드",kind:"pass"},
+  {sn:"MIR-{n}",msg:"리스크 범위 추적 — 이력 조회",kind:"pass"},
+  {sn:"PYH-{n}",msg:"이메일 성적서 자동 발송 완료",kind:"pass"},
+];
+let logQueue=[], logSnBase=7448, logTimer=null;
+
+function buildLiveLog(){
+  const rpTop=document.querySelector(".rp-top");
+  liveLog=document.createElement("div");
+  liveLog.style.cssText="padding:6px 16px 4px;border-bottom:1px solid var(--line-soft);min-height:0;overflow:hidden;";
+  const hdr=document.createElement("div");
+  hdr.style.cssText="font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px;";
+  hdr.textContent="LIVE EVENT LOG";
+  liveLog.appendChild(hdr);
+  rpTop.parentNode.insertBefore(liveLog,rpTop.nextSibling);
+}
+
+function pushLogEvent(){
+  if(!liveLog) return;
+  const ev=liveEvents[Math.floor(Math.random()*liveEvents.length)];
+  const sn=ev.sn.replace("{n}",logSnBase+(Math.floor(Math.random()*9)));
+  const now=new Date();
+  const ts=[now.getHours(),now.getMinutes(),now.getSeconds()].map(v=>String(v).padStart(2,"0")).join(":");
+  const row=document.createElement("div");
+  row.style.cssText="display:flex;gap:8px;align-items:baseline;font-family:var(--mono);font-size:9px;padding:2px 0;opacity:0;transition:opacity .35s ease;border-bottom:1px dashed var(--line-soft);";
+  const colPass="var(--pass)", colWarn="var(--amber)";
+  row.innerHTML=
+    "<span style='color:var(--ink-3);flex:0 0 auto;'>"+ts+"</span>"+
+    "<span style='color:"+(ev.kind==="pass"?colPass:colWarn)+";flex:0 0 auto;font-weight:700;'>"+sn+"</span>"+
+    "<span style='color:var(--ink-2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'>"+ev.msg+"</span>";
+  liveLog.appendChild(row);
+  logQueue.push(row);
+  // fade in
+  requestAnimationFrame(()=>{ row.style.opacity="1"; });
+  // trim old rows
+  while(logQueue.length>LOG_MAX){
+    const old=logQueue.shift();
+    old.style.opacity="0";
+    setTimeout(()=>{ if(old.parentNode) old.parentNode.removeChild(old); },400);
+  }
+}
+
+function startLiveStream(){
+  buildLiveLog();
+  // initial burst
+  pushLogEvent();
+  setTimeout(pushLogEvent,600);
+  setTimeout(pushLogEvent,1300);
+  // ongoing random cadence 1.8s ~ 3.2s
+  function schedule(){
+    const delay=1800+Math.random()*1400;
+    logTimer=setTimeout(()=>{ pushLogEvent(); schedule(); },delay);
+  }
+  schedule();
+}
+
+// 검사성적서 측정값 미세 변동 (pass된 행에만)
+let measJitterTimer=null;
+function startMeasJitter(){
+  function jitter(){
+    FEATURES.forEach(f=>{
+      if(!f._measured||f._showOut) return;
+      if(f.unit==="OK"||f.unit==="건") return; // 수치값만
+      const r=rows[f.key];
+      if(!r) return;
+      const el=r.querySelector(".meas");
+      if(!el) return;
+      const base=f.meas;
+      const noise=(Math.random()-0.5)*0.006;
+      const v=base+noise;
+      const s=(v>=0?"+":"")+v.toFixed(3)+f.unit;
+      el.textContent=s;
+    });
+    measJitterTimer=setTimeout(jitter,900+Math.random()*700);
+  }
+  setTimeout(jitter,1200);
+}
+
 function boot(){
   buildRows();
   buildXRows();
@@ -1045,6 +1145,11 @@ function boot(){
   rafLast=performance.now();
   requestAnimationFrame(rafLoop);
   setInterval(pump,40);   // safety pump (headless virtual-time)
+  // start live stream after boot overlay clears (~900ms)
+  setTimeout(()=>{
+    startLiveStream();
+    startMeasJitter();
+  },950);
 }
 
 // wait for fonts then boot

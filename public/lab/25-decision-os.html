@@ -948,8 +948,12 @@ function selectNode(id){
   const scaleV = Math.round((n.axes.dep*0.5 + n.axes.info*0.5)); // breadth of impact
   const revV = n.axes.irr;                                       // irreversibility magnitude
   const magnitude = Math.round((scaleV/100)*(revV/100)*100);
-  document.getElementById("magScale").style.width=scaleV+"%";
-  document.getElementById("magRev").style.width=revV+"%";
+  const magScaleEl = document.getElementById("magScale");
+  const magRevEl   = document.getElementById("magRev");
+  magScaleEl.style.width=scaleV+"%";
+  magScaleEl.dataset.base=scaleV;
+  magRevEl.style.width=revV+"%";
+  magRevEl.dataset.base=revV;
   document.getElementById("magScaleN").textContent=scaleV;
   document.getElementById("magRevN").textContent=revV;
   document.getElementById("magVal").textContent=magnitude;
@@ -968,7 +972,7 @@ function selectNode(id){
        <div class="at"><div class="afill" data-w="${n.axes[key]}"></div></div>
        <div class="av">${n.axes[key]}</div>
      </div>`).join("");
-  requestAnimationFrame(()=>{ axEl.querySelectorAll(".afill").forEach(f=> f.style.width=f.dataset.w+"%"); });
+  requestAnimationFrame(()=>{ axEl.querySelectorAll(".afill").forEach(f=>{ f.style.width=f.dataset.w+"%"; f.dataset.base=f.dataset.w; }); });
   // recommendation (context-driven)
   const reco = CTX[curCtx].reco(n);
   document.getElementById("recoCtx").textContent=CTX[curCtx].label;
@@ -1008,9 +1012,39 @@ function highlightRank(){
     r.classList.toggle("sel", r.dataset.id===selId));
 }
 
-/* RUN: animate the 4 stages, then switch DAG to rank-projection */
+/* RUN: animate the 4 stages with rAF+dt, then switch DAG to rank-projection */
 let running=false;
 let autoLoopTimer=null;   // handle for the auto-sweep loop
+
+/* rAF-based wait: resolves after `ms` milliseconds, dt-aware, max 300ms dt clamp */
+function waitRAF(ms){
+  return new Promise(resolve=>{
+    let elapsed=0, last=null;
+    function frame(ts){
+      if(last===null){ last=ts; requestAnimationFrame(frame); return; }
+      const dt=Math.min(ts-last, 300);
+      elapsed+=dt; last=ts;
+      if(elapsed>=ms) resolve();
+      else requestAnimationFrame(frame);
+    }
+    requestAnimationFrame(frame);
+  });
+}
+
+/* lerp score display: smoothly animate a numeric text element from `from` to `to` over `ms` */
+function lerpText(el, from, to, ms, fmt){
+  let start=null;
+  function frame(ts){
+    if(!start) start=ts;
+    const dt=Math.min(ts-start, ms);
+    const t=Math.min(dt/ms, 1);
+    const ease = t<0.5 ? 2*t*t : -1+(4-2*t)*t; // ease-in-out
+    const val=from+(to-from)*ease;
+    el.textContent=fmt?fmt(val):val.toFixed(1);
+    if(t<1) requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+}
 
 async function runScoring(){
   if(running) return; running=true;
@@ -1019,7 +1053,7 @@ async function runScoring(){
   for(let i=0;i<stages.length;i++){
     const el=document.getElementById(stages[i]);
     el.classList.add("fire");
-    await wait(360);
+    await waitRAF(360);
     if(i>0) document.getElementById(stages[i-1]).classList.remove("fire");
   }
   document.getElementById(stages[3]).classList.remove("fire");
@@ -1034,6 +1068,11 @@ async function runScoring(){
   renderDAG(true);
   document.getElementById("rankFlag").classList.add("show");
   document.getElementById("dagHud").innerHTML=`RANK projection · det_hash <b>${lastRanking.hash}</b><br>run twice = identical`;
+  // smooth-lerp score values in rank table
+  document.querySelectorAll("#rankBody .sc").forEach(sc=>{
+    const v=parseFloat(sc.textContent);
+    if(!isNaN(v)){ lerpText(sc, v*0.7, v, 500, x=>x.toFixed(1)); }
+  });
   // refresh selected node's rank pin
   const r=lastRanking.rows.find(x=>x.n.id===selId);
   if(r) document.getElementById("detRank").textContent=`rank #${r.rank}`;
@@ -1053,14 +1092,141 @@ function resetToTree(){
 }
 async function autoSweep(){
   await runScoring();           // Gate→Score→Cap→Tiebreaker animation
-  await wait(3500);             // hold rank projection so viewer can read it
+  await waitRAF(3500);          // hold rank projection so viewer can read it
   resetToTree();                // snap back to dependency tree
-  await wait(3000);             // pause on tree before next cycle
+  await waitRAF(3000);          // pause on tree before next cycle
   autoLoopTimer = setTimeout(autoSweep, 0);   // next iteration (rAF-friendly via setTimeout 0)
 }
 function startAutoLoop(){
   clearTimeout(autoLoopTimer);
   autoLoopTimer = setTimeout(autoSweep, 0);
+}
+
+/* ---------- LIVE LEDGER STREAMING ---------- */
+// Fake live log lines appended to ledger: append-only feel, shimmer fade-in
+const LIVE_TEMPLATES = [
+  ()=>{ const n=NODES[Math.floor(Math.random()*NODES.length)]; return {kind:"decided",   node:n.id, msg:`Gate PASS · ${n.id} scored ${rawScore(n).toFixed(1)} (cap=${n.axes.irr>=CAP_THRESHOLD?"YES":"NO"})`}; },
+  ()=>{ const n=NODES.filter(x=>x.state==="decided")[Math.floor(Math.random()*5)]; return {kind:"decided",   node:n.id, msg:`Score confirmed · ${n.id} eff=${capScore(n,rawScore(n)).value.toFixed(1)}`}; },
+  ()=>{ const n=NODES[Math.floor(Math.random()*NODES.length)]; return {kind:"proposed",  node:n.id, msg:`Tiebreaker resolved · topo-order enforced (${n.id})`}; },
+  ()=>{ const n=NODES.filter(x=>x.state==="decided")[Math.floor(Math.random()*5)]; return {kind:"decided",   node:n.id, msg:`Gate→Score→Cap pipeline: ${n.id} irr=${n.axes.irr} ev=${n.axes.ev}`}; },
+  ()=>({ kind:"proposed",  node:"D-08", msg:"Value displacement POSITIVE logged: 트레이드오프 명시 완료" }),
+  ()=>({ kind:"proposed",  node:"D-06", msg:"Deferred ≠ pruned — defer trigger set, assumptions preserved" }),
+  ()=>({ kind:"decided",   node:"D-03", msg:"Append-only state: Proposed→Decided (L-new) written to ledger" }),
+  ()=>({ kind:"decided",   node:"D-05", msg:"Pruning BLOCKED: evidence_readiness<85 — engine enforced" }),
+  ()=>({ kind:"proposed",  node:"D-07", msg:"Reconcile check: Last Edited At > Last Agent Sync At — PROTECT" }),
+  ()=>({ kind:"decided",   node:"D-04", msg:"Topo sort stable: dependency-first ordering confirmed" }),
+  ()=>({ kind:"decided",   node:"D-01", msg:"Context lock: COMPLICATED · Pre-mortem flagged as HOT" }),
+  ()=>({ kind:"proposed",  node:"D-08", msg:"Value displacement NEGATIVE logged: 변위 추정 편향 가능성 기록" }),
+  ()=>{ const n=NODES[Math.floor(Math.random()*NODES.length)];
+        const vd=n.pos[Math.floor(Math.random()*n.pos.length)];
+        return {kind:"decided", node:n.id, msg:`VD+ ${n.id}: ${vd.slice(0,42)}`}; },
+  ()=>{ const n=NODES[Math.floor(Math.random()*NODES.length)];
+        const vd=n.neg[Math.floor(Math.random()*n.neg.length)];
+        return {kind:"proposed", node:n.id, msg:`VD- ${n.id}: ${vd.slice(0,42)}`}; },
+];
+let _liveSeq = 7; // starts after initial L-001..L-006
+let _liveTimer = null;
+const MAX_LIVE_ENTRIES = 28;
+
+function appendLiveLedger(){
+  const tmpl = LIVE_TEMPLATES[Math.floor(Math.random()*LIVE_TEMPLATES.length)];
+  const entry = tmpl();
+  _liveSeq++;
+  const id = `L-${String(_liveSeq).padStart(3,"0")}`;
+  const now = new Date();
+  const ts = `${String(now.getHours()).padStart(2,"0")}:${String(now.getMinutes()).padStart(2,"0")}:${String(now.getSeconds()).padStart(2,"0")}`;
+
+  const list = document.getElementById("ledgerList");
+  const div = document.createElement("div");
+  div.className = `lentry ${entry.kind}`;
+  div.style.opacity="0";
+  div.style.transform="translateY(-6px)";
+  div.style.transition="opacity .5s ease, transform .5s ease";
+  div.innerHTML = `<div class="lr">
+      <span class="lid">${id}</span>
+      <span class="lstate ${entry.kind}">${entry.kind}</span>
+    </div>
+    <div class="ltxt">${entry.msg}</div>
+    <div class="lmeta"><span><b>node</b> ${entry.node}</span><span><b>at</b> ${ts}</span><span><b>by</b> engine</span></div>`;
+  // prepend (newest on top)
+  list.insertBefore(div, list.firstChild);
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    div.style.opacity="1";
+    div.style.transform="translateY(0)";
+  }));
+  // trim overflow (keep append-only feel but cap DOM size)
+  while(list.children.length > MAX_LIVE_ENTRIES){
+    list.removeChild(list.lastChild);
+  }
+  // update counter chip
+  document.getElementById("cLedger").textContent = LEDGER.length + _liveSeq - 6;
+
+  // schedule next entry: random 1.2..3.5 s interval
+  const delay = 1200 + Math.random()*2300;
+  _liveTimer = setTimeout(appendLiveLedger, delay);
+}
+
+/* ---------- NODE PULSE ANIMATION (rAF continuous) ---------- */
+// Pulses the state dot of each node in the SVG to keep canvas alive between sweeps
+let _pulseRAF = null;
+let _pulseT = 0;
+let _pulseLast = null;
+function pulseTick(ts){
+  if(_pulseLast===null){ _pulseLast=ts; }
+  const dt = Math.min(ts-_pulseLast, 100);
+  _pulseT += dt;
+  _pulseLast = ts;
+  // update node dot opacities in SVG for a gentle heartbeat
+  const circles = document.querySelectorAll("#dagSvg circle[cx]");
+  circles.forEach((c,i)=>{
+    const phase = (_pulseT/1000 + i*0.37) % (Math.PI*2);
+    const alpha = 0.55 + 0.45*Math.sin(phase);
+    c.style.opacity = alpha.toFixed(3);
+  });
+  _pulseRAF = requestAnimationFrame(pulseTick);
+}
+function startPulse(){
+  if(_pulseRAF) cancelAnimationFrame(_pulseRAF);
+  _pulseLast = null;
+  _pulseRAF = requestAnimationFrame(pulseTick);
+}
+
+/* ---------- VALUE DISPLACEMENT MICRO-DRIFT ---------- */
+// Gently nudge magnitude bars on the detail panel to simulate live data
+let _driftRAF = null;
+let _driftLast = null;
+let _driftT = 0;
+function driftTick(ts){
+  if(_driftLast===null){ _driftLast=ts; }
+  const dt = Math.min(ts-_driftLast, 100);
+  _driftT += dt;
+  _driftLast = ts;
+  // micro-oscillate the magnitude fills (+-3 from base)
+  const scaleFill = document.getElementById("magScale");
+  const revFill   = document.getElementById("magRev");
+  if(scaleFill && revFill){
+    const base1 = parseFloat(scaleFill.dataset.base||scaleFill.style.width)||0;
+    const base2 = parseFloat(revFill.dataset.base||revFill.style.width)||0;
+    if(!scaleFill.dataset.base) scaleFill.dataset.base=base1;
+    if(!revFill.dataset.base)   revFill.dataset.base=base2;
+    const drift1 = 2.5*Math.sin(_driftT/900 + 0.3);
+    const drift2 = 2.0*Math.sin(_driftT/1100 + 1.1);
+    scaleFill.style.width = Math.max(0, Math.min(100, parseFloat(scaleFill.dataset.base)+drift1)).toFixed(1)+"%";
+    revFill.style.width   = Math.max(0, Math.min(100, parseFloat(revFill.dataset.base)+drift2)).toFixed(1)+"%";
+  }
+  // also nudge axis fills
+  document.querySelectorAll(".afill").forEach((f,i)=>{
+    const bw = parseFloat(f.dataset.base||f.dataset.w||0);
+    if(!f.dataset.base) f.dataset.base=bw;
+    const d = 1.5*Math.sin(_driftT/800 + i*0.7);
+    f.style.width = Math.max(0, Math.min(100, parseFloat(f.dataset.base)+d)).toFixed(1)+"%";
+  });
+  _driftRAF = requestAnimationFrame(driftTick);
+}
+function startDrift(){
+  if(_driftRAF) cancelAnimationFrame(_driftRAF);
+  _driftLast = null;
+  _driftRAF = requestAnimationFrame(driftTick);
 }
 
 /* ---------- PRUNE (the blocked-action delight) ---------- */
@@ -1209,6 +1375,11 @@ function boot(){
   tick(); setInterval(tick,1000);
   // Start auto-sweep after layout is stable (font metrics settled)
   setTimeout(startAutoLoop, 1800);
+  // Start continuous live animations
+  startPulse();
+  startDrift();
+  // Start live ledger streaming after a short delay (stagger from sweep)
+  setTimeout(appendLiveLedger, 2400);
 }
 // Await fonts so SVG text metrics are stable before first paint
 if(document.fonts && document.fonts.ready){

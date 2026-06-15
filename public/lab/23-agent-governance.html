@@ -632,7 +632,7 @@
     events.push({seg:0, p:0, color:C.signal, born:performance.now()});
   }
 
-  function drawPipe(now){
+  function drawPipe(now,dt){
     const {ctx,w,h}=pipe;
     ctx.clearRect(0,0,w,h);
     // connecting rails
@@ -656,11 +656,13 @@
         ctx.fillText(open?'GATE↑':'GATE✕',mx,a.y-22);
       }
     }
-    // moving events along rails
-    const speed=state.tickerOn?0.018:0.0; // ticker drives progression
+    // moving events along rails — dt-based speed (pixels/sec normalized)
+    const speedPerSec=state.tickerOn?0.55:0.0;
     for(let k=events.length-1;k>=0;k--){
       const e=events[k];
-      e.p+=speed*(1+Math.sin(now/400)*0.05);
+      // dt in ms passed as `now`, but we have it from outer scope
+      // use outer `dt` (seconds) captured via closure — injected below
+      e.p+=speedPerSec*dt*(1+Math.sin(now/400)*0.04);
       // segment is current stage segment; if gate closed and at gate, hold
       const seg=Math.min(e.seg, nodes.length-2);
       const a=nodes[seg],b=nodes[seg+1];
@@ -724,7 +726,7 @@
     ctx.beginPath();ctx.moveTo(0,h/2);ctx.lineTo(w,h/2);ctx.stroke();
     // shift data, add ECG-like spike based on bpm
     if(state.tickerOn){
-      const beatPeriod=60000/state.bpm; // ms
+      const beatPeriod=60000/live.bpm; // ms — lerped, no jump
       hbPhase=(now % beatPeriod)/beatPeriod;
       let v=0;
       if(hbPhase<0.06) v=Math.sin(hbPhase/0.06*Math.PI)*0.9;
@@ -884,6 +886,15 @@
   //  EVENT LOG + TOOL STREAM
   // ===================================================================
   const evFeed=$('#evFeed'), toolFeed=$('#toolFeed');
+
+  // timestamp helper — HH:MM:SS.mmm
+  function nowTs(){
+    const d=new Date();
+    const p=n=>String(n).padStart(2,'0');
+    const ms=String(d.getMilliseconds()).padStart(3,'0');
+    return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())+'.'+ms;
+  }
+
   const EV_TYPES=[
     ['emit','spec.captured · §0 readiness eval'],
     ['emit','plan.proposed · executor draft'],
@@ -893,21 +904,37 @@
     ['tool','mcp.insane-search · adaptive fetch'],
     ['emit','ticker.tick · heartbeat observe'],
   ];
-  function pushEvent(type,msg,feed,counterKey){
+  // build an event object (no DOM touch yet)
+  function buildEvent(type,msg,counterKey){
     const id = counterKey==='ev' ? ('e'+String(++state.evId).padStart(4,'0'))
                                  : ('t'+String(++state.toolId).padStart(4,'0'));
+    return {id,type,msg,counterKey,ts:nowTs()};
+  }
+  // flush one pre-built event object into the DOM
+  function flushEvent(ev,feed,counterKey){
     const row=document.createElement('div');row.className='ev new';
-    row.innerHTML=`<span class="id">${id}</span><span class="ty ${type}">${type.toUpperCase()}</span><span class="msg">${msg}</span>`;
+    row.innerHTML=`<span class="id">${ev.id}</span>`+
+      `<span class="ts" style="color:var(--ink3);font-size:9px;flex:0 0 auto">${ev.ts}</span>`+
+      `<span class="ty ${ev.type}">${ev.type.toUpperCase()}</span>`+
+      `<span class="msg">${ev.msg}</span>`;
     feed.insertBefore(row,feed.firstChild);
+    // fade out oldest entries
+    const rows=feed.querySelectorAll('.ev');
+    rows.forEach((r,i)=>{ r.style.opacity=Math.max(0.25,1-i*0.072).toFixed(2); });
     while(feed.childNodes.length>22) feed.removeChild(feed.lastChild);
     if(counterKey==='ev'){ $('#evTotal').textContent='e'+String(state.evId).padStart(4,'0');
       $('#evHead').textContent='e'+String(state.evId).padStart(4,'0'); }
     else { $('#toolTotal').textContent=state.toolId; }
   }
-  function randEvent(){
+  // legacy direct push (used by click handlers / prepaint where instant display is fine)
+  function pushEvent(type,msg,feed,counterKey){
+    flushEvent(buildEvent(type,msg,counterKey),feed,counterKey);
+  }
+
+  function buildRandEvent(){
     const t=EV_TYPES[Math.floor(Math.random()*EV_TYPES.length)];
     let msg=t[1].replace('%s',state.stage).replace('%s',(state.evId%9)).replace('%s',(state.evId%9)+1);
-    pushEvent(t[0],msg,evFeed,'ev');
+    return buildEvent(t[0],msg,'ev');
   }
   const TOOLS=[
     ['tool','fs.read · src/store/migrations'],
@@ -921,11 +948,12 @@
     ['ok','instruction-review.md · append [llm]'],
     ['tool','mcp.server · neuro-symbolic eval'],
   ];
-  function randTool(){
+  function buildRandTool(){
     const t=TOOLS[Math.floor(Math.random()*TOOLS.length)];
-    // external write only "denied" when envelope closed
-    if(t[0]==='deny' && !state.autonomyClosed){ pushEvent('tool','external.write · ALLOWED (gate open)',toolFeed,'tool'); return; }
-    pushEvent(t[0],t[1],toolFeed,'tool');
+    if(t[0]==='deny' && !state.autonomyClosed){
+      return buildEvent('tool','external.write · ALLOWED (gate open)','tool');
+    }
+    return buildEvent(t[0],t[1],'tool');
   }
 
   // ===================================================================
@@ -947,9 +975,7 @@
     at.textContent=state.autonomyClosed?'FAIL-CLOSED':'OPENED';
     at.style.color=state.autonomyClosed?'var(--signal)':'var(--amber)';
 
-    $('#bpm').textContent=state.tickerOn?(state.bpm+' bpm'):'-- bpm';
-    $('#bpm').style.color=state.tickerOn?'var(--signal)':'var(--rust)';
-
+    // bpm display is handled by rAF loop (lerped); skip here to avoid jump
     // envelope rows reflect autonomy
     const ew=$('#envWrite'),ep=$('#envPrio');
     if(state.autonomyClosed){
@@ -1065,15 +1091,38 @@
   }
 
   // ===================================================================
-  //  JOB progress + counters drift
+  //  JOB progress + counters drift — dt-smooth
   // ===================================================================
   let jobP=0.30, turns=7;
-  function jobTick(){
+  // called from rAF loop; jobP updated here, smooth bar in loop()
+  function jobTickSmooth(){
     if(AGENTS[2].status==='done')return;
-    jobP=Math.min(0.95, jobP+0.03+Math.random()*0.02);
-    $('#jobProg').style.width=(jobP*100)+'%';
+    jobP=Math.min(0.95, jobP+0.018+Math.random()*0.012);
     if(Math.random()<0.4 && turns<24){turns++;$('#jobTurns').textContent=turns+' / 24';
       const cost=(turns*0.34).toFixed(2);$('#jobCost').textContent='$'+cost+' / $5.00';}
+  }
+
+  // ===================================================================
+  //  LINT CYCLE — called from rAF loop accumulator
+  // ===================================================================
+  let lintFailActive=false;
+  function lintCycleTick(){
+    if(lintFailActive || !state.tickerOn) return;
+    if(Math.random()<0.35){
+      lintFailActive=true;
+      lintState.pass=46+Math.floor(Math.random()*2);
+      const pin=$('#lintPin'); if(pin){pin.textContent='LINT FAIL';pin.classList.add('amber');}
+      const chip=$('#lintChip'); if(chip){chip.textContent=lintState.pass+'/48';chip.style.color='var(--amber)';}
+      drawLintGauge();
+      pushEvent('gate','vault-lint · '+(48-lintState.pass)+' check fail · turn blocked',evFeed,'ev');
+      setTimeout(()=>{
+        lintState.pass=48; lintFailActive=false;
+        const pin2=$('#lintPin'); if(pin2){pin2.textContent='GATE PASS';pin2.classList.remove('amber');}
+        const chip2=$('#lintChip'); if(chip2){chip2.textContent='48/48';chip2.style.color='';}
+        drawLintGauge();
+        pushEvent('ok','vault-lint · 48/48 pass · turn done',evFeed,'ev');
+      },1700);
+    }
   }
 
   // runline animation on running agents
@@ -1187,62 +1236,124 @@
   }
 
   // ===================================================================
-  //  MAIN LOOP
+  //  SMOOTH LIVE-DATA STATE — lerped values, dt-driven accumulators
+  // ===================================================================
+  const live={
+    bpm:72, bpmTarget:72,           // lerp toward target
+    lintPass:48, lintPassTarget:48, // lerp (display rounds)
+    capture:37, captureTarget:37,   // lerp fractional
+    jobPSmooth:0.30,                // lerp job progress
+    // per-stream accumulators (seconds)
+    evAcc:0, toolAcc:0, spawnAcc:0, jobAcc:0,
+    stageAcc:0, gateAcc:0, latchAcc:0, capAcc:0,
+    sigAcc:0, nzAcc:0, auditAcc:0, lintAcc:0,
+    clockAcc:0,
+    // event stagger — queue for drip-feed
+    evQueue:[], toolQueue:[],
+  };
+  // intervals in seconds
+  const IV={ev:0.9,tool:1.3,spawn:1.4,job:1.1,stage:4.2,gate:3.0,latch:5.2,cap:1.7,
+            sig:2.1,nz:4.8,audit:5.6,lint:6.4,clock:1.0};
+
+  // ===================================================================
+  //  MAIN LOOP — single rAF, dt-driven everything
   // ===================================================================
   let last=performance.now();
   function loop(now){
-    const dt=Math.min(50, now-last); last=now;
-    drawPipe(now);
+    const dt=Math.min(50, now-last)*0.001; // seconds, clamped
+    last=now;
+
+    // --- lerp smooth values ---
+    const k=1-Math.pow(0.01, dt*4); // ~smooth over 250ms
+    live.bpm += (live.bpmTarget - live.bpm)*k;
+    live.captureTarget += 0; // updated by accumulator below
+    live.capture += (live.captureTarget - live.capture)*k;
+    live.jobPSmooth += (jobP - live.jobPSmooth)*(1-Math.pow(0.01,dt*3));
+
+    // job progress bar — smooth
+    if(AGENTS[2].status!=='done'){
+      $('#jobProg').style.width=(live.jobPSmooth*100).toFixed(2)+'%';
+    }
+
+    // bpm display — lerped, no jump
+    const bpmRound=Math.round(live.bpm);
+    $('#bpm').textContent=state.tickerOn?(bpmRound+' bpm'):'-- bpm';
+    $('#bpm').style.color=state.tickerOn?'var(--signal)':'var(--rust)';
+
+    // capture display — lerped fractional
+    $('#capCt').textContent=Math.floor(live.capture);
+
+    // --- dt-driven accumulators replace setInterval ---
+    live.clockAcc+=dt;
+    if(live.clockAcc>=IV.clock){ live.clockAcc-=IV.clock; tickClock(); }
+
+    if(state.tickerOn){
+      live.evAcc+=dt;
+      if(live.evAcc>=IV.ev){ live.evAcc-=IV.ev;
+        // stagger: push to queue, drip one per frame
+        live.evQueue.push(buildRandEvent()); }
+
+      live.toolAcc+=dt;
+      if(live.toolAcc>=IV.tool){ live.toolAcc-=IV.tool;
+        live.toolQueue.push(buildRandTool()); }
+
+      live.spawnAcc+=dt;
+      if(live.spawnAcc>=IV.spawn){ live.spawnAcc-=IV.spawn; spawnEvent(); }
+
+      live.jobAcc+=dt;
+      if(live.jobAcc>=IV.job){ live.jobAcc-=IV.job; jobTickSmooth(); }
+
+      live.stageAcc+=dt;
+      if(live.stageAcc>=IV.stage){ live.stageAcc-=IV.stage;
+        if(state.gateRelease && Math.random()<0.5) advanceStage(); }
+
+      live.gateAcc+=dt;
+      if(live.gateAcc>=IV.gate){ live.gateAcc-=IV.gate;
+        state.gateRelease=Math.random()<0.7; syncLamps(); }
+
+      live.latchAcc+=dt;
+      if(live.latchAcc>=IV.latch){ live.latchAcc-=IV.latch;
+        if(Math.random()<0.6) fireLatch(); }
+
+      live.capAcc+=dt;
+      if(live.capAcc>=IV.cap){ live.capAcc-=IV.cap;
+        live.captureTarget+=Math.random()*3.5; }
+
+      live.lintAcc+=dt;
+      if(live.lintAcc>=IV.lint){ live.lintAcc-=IV.lint; lintCycleTick(); }
+
+      // bpm micro-variation (~every 2s)
+      live.bpm += (Math.random()-0.5)*0.08;
+      // clamp bpm wander
+      live.bpmTarget = 68 + Math.sin(now/9000)*6 + Math.random()*2;
+    }
+
+    live.sigAcc+=dt;
+    if(live.sigAcc>=IV.sig){ live.sigAcc-=IV.sig; driftSignals(); }
+    live.nzAcc+=dt;
+    if(live.nzAcc>=IV.nz){ live.nzAcc-=IV.nz; cycleNetZero(); }
+    live.auditAcc+=dt;
+    if(live.auditAcc>=IV.audit){ live.auditAcc-=IV.audit; cycleAudit(); }
+
+    // drip one queued event/tool per frame (stagger, no burst)
+    if(live.evQueue.length){ const e=live.evQueue.shift(); flushEvent(e,evFeed,'ev'); }
+    if(live.toolQueue.length){ const t=live.toolQueue.shift(); flushEvent(t,toolFeed,'tool'); }
+
+    // canvas draws
+    drawPipe(now,dt);
     drawHB(now);
-    drawGraph(now,dt);
+    drawGraph(now,dt*1000); // drawGraph expects ms
     runlines(now);
     wikiFlow(now);
+
     requestAnimationFrame(loop);
   }
 
   // ===================================================================
-  //  TIMERS (event-driven feel)
+  //  TIMERS (event-driven feel) — now empty; loop() handles everything
   // ===================================================================
   function startTimers(){
-    setInterval(tickClock,1000); tickClock();
-    setInterval(()=>{ if(state.tickerOn){ randEvent(); } },900);
-    setInterval(()=>{ randTool(); },1300);
-    setInterval(()=>{ if(state.tickerOn) spawnEvent(); },1400);
-    setInterval(()=>{ if(state.tickerOn) jobTick(); },1100);
-    // stage auto-advance occasionally (pipeline progression via ticker)
-    setInterval(()=>{ if(state.tickerOn && state.gateRelease && Math.random()<0.5) advanceStage(); },4200);
-    // gate hold/release oscillation (readiness)
-    setInterval(()=>{ if(state.tickerOn){ state.gateRelease=Math.random()<0.7; syncLamps(); } },3000);
-    // attention latch
-    setInterval(()=>{ if(state.tickerOn && Math.random()<0.6) fireLatch(); },5200);
-    // capture counter
-    setInterval(()=>{ state.capture+=Math.floor(Math.random()*4); $('#capCt').textContent=state.capture; },1700);
-
-    // --- VAULT GOVERNANCE timers ---
-    // telemetry signals drift (measured, automatic)
-    setInterval(driftSignals,2100);
-    // net-zero ledger cycles ([A]↔[R] balanced)
-    setInterval(cycleNetZero,4800);
-    // instruction-audit append-only feed
-    setInterval(cycleAudit,5600);
-    // vault-lint: a check momentarily fails on an edit turn, then is fixed to reach done
-    setInterval(()=>{
-      if(!state.tickerOn) return;
-      if(Math.random()<0.35){
-        lintState.pass=46+Math.floor(Math.random()*2); // 46 or 47
-        const pin=$('#lintPin'); if(pin){pin.textContent='LINT FAIL';pin.classList.add('amber');}
-        const chip=$('#lintChip'); if(chip){chip.textContent=lintState.pass+'/48';chip.style.color='var(--amber)';}
-        drawLintGauge();
-        pushEvent('gate','vault-lint · '+(48-lintState.pass)+' check fail · turn blocked',evFeed,'ev');
-        setTimeout(()=>{
-          lintState.pass=48;
-          const pin2=$('#lintPin'); if(pin2){pin2.textContent='GATE PASS';pin2.classList.remove('amber');}
-          const chip2=$('#lintChip'); if(chip2){chip2.textContent='48/48';chip2.style.color='';}
-          drawLintGauge();
-          pushEvent('ok','vault-lint · 48/48 pass · turn done',evFeed,'ev');
-        },1700);
-      }
-    },6400);
+    tickClock(); // initial paint
   }
 
   // ===================================================================

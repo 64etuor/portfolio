@@ -320,6 +320,52 @@
   ::-webkit-scrollbar-thumb{background:#1d2a3a;border-radius:5px}
   ::-webkit-scrollbar-track{background:transparent}
   ::selection{background:#00e0a455}
+
+  /* ===== CDC Live Log Panel ===== */
+  .cdc-log-wrap{
+    position:absolute;right:14px;top:14px;width:310px;z-index:4;
+    background:#0a101acc;border:1px solid var(--line);border-radius:11px;
+    overflow:hidden;backdrop-filter:blur(8px);
+  }
+  .cdc-log-head{
+    display:flex;align-items:center;gap:8px;
+    padding:8px 12px;border-bottom:1px solid var(--line);
+    background:#0d1520;
+    font-family:'JetBrains Mono';font-size:10px;color:var(--dim);
+  }
+  .cdc-log-head .dot{width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 6px var(--acc);flex-shrink:0}
+  .cdc-log-head b{color:var(--acc);margin-left:2px}
+  .cdc-log-head .qps{margin-left:auto;color:var(--acc2)}
+  .cdc-log-body{height:168px;overflow:hidden;padding:6px 0;position:relative}
+  .cdc-line{
+    display:flex;align-items:baseline;gap:7px;padding:2.5px 11px;
+    font-family:'JetBrains Mono';font-size:10px;line-height:1.45;
+    transition:opacity .6s;
+  }
+  .cdc-line.fade{opacity:0}
+  .cdc-ts{color:#33455c;flex-shrink:0;font-size:9px}
+  .cdc-tag{flex-shrink:0;font-size:8.5px;border-radius:3px;padding:1px 4px;font-weight:700}
+  .cdc-tag.ins{background:#0f2820;color:var(--acc);border:1px solid #1d5a48}
+  .cdc-tag.upd{background:#132033;color:var(--acc2);border:1px solid #1d4a63}
+  .cdc-tag.del{background:#1f0f0f;color:var(--red);border:1px solid #5a1f1f}
+  .cdc-tag.cdc{background:#1a1410;color:var(--gold);border:1px solid #3a2a1a}
+  .cdc-msg{color:var(--ink-dim);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .cdc-msg .tbl{color:var(--fn)}
+  .cdc-msg .val{color:var(--str)}
+
+  /* ===== ERD Live Stats Strip ===== */
+  .erd-stats{
+    position:absolute;left:0;bottom:0;right:0;height:28px;
+    display:flex;align-items:center;gap:0;
+    background:#090d13cc;border-top:1px solid var(--line);
+    font-family:'JetBrains Mono';font-size:10px;
+    backdrop-filter:blur(4px);z-index:4;pointer-events:none;
+  }
+  .erd-stat{padding:0 14px;height:100%;display:flex;align-items:center;gap:6px;border-right:1px solid var(--line)}
+  .erd-stat .lbl{color:var(--dim)}
+  .erd-stat .val{color:var(--acc)}
+  .erd-stat .val.blue{color:var(--acc2)}
+  .erd-stat .val.gold{color:var(--gold)}
 </style>
 </head>
 <body>
@@ -371,6 +417,12 @@
           </div>
           <div class="hint">drag <b>캔버스</b> 패닝 · scroll <b>줌</b> · click <b>테이블 -&gt; DDL</b></div>
           <div class="model-caption" id="modelCaption"></div>
+          <div class="erd-stats">
+            <div class="erd-stat"><span class="lbl">rows</span><span class="val" id="erdRows">--</span></div>
+            <div class="erd-stat"><span class="lbl">qps</span><span class="val blue" id="erdQps">--</span></div>
+            <div class="erd-stat"><span class="lbl">active tx</span><span class="val gold" id="erdTx">--</span></div>
+            <div class="erd-stat"><span class="lbl">repl lag</span><span class="val" id="erdLag">--</span></div>
+          </div>
         </div>
 
         <!-- DDL -->
@@ -425,6 +477,16 @@
           <div class="counter">
             <div class="big mono" id="evtCount">0</div>
             <div class="lbl">events committed &#8594; fanned out</div>
+          </div>
+
+          <div class="cdc-log-wrap" id="cdcLogWrap">
+            <div class="cdc-log-head">
+              <span class="dot live"></span>
+              CDC event stream
+              <b id="cdcLogTag">debezium</b>
+              <span class="qps mono" id="cdcQps">-- evt/s</span>
+            </div>
+            <div class="cdc-log-body" id="cdcLogBody"></div>
           </div>
 
           <div class="legend">
@@ -1091,7 +1153,7 @@ function loadModel(){
     const n=document.createElement('div');
     n.className='tnode';n.dataset.name=t.name;
     n.innerHTML='<span class="ic">&#9636;</span><span>'+t.name+'</span><span class="ncol">'+t.cols.length+'</span>';
-    n.onclick=()=>selectTable(t.name,true);
+    n.onclick=()=>{pauseAndResumeErdAuto();selectTable(t.name,true);};
     tl.appendChild(n);
   });
   tableLayer.innerHTML='';
@@ -1107,7 +1169,7 @@ function loadModel(){
       return '<div class="'+cls+'">'+key+'<span class="cn">'+c.n+'</span>'+nn+'<span class="ct">'+c.t+'</span></div>';
     }).join('');
     el.innerHTML='<div class="tbl-h"><span class="tk"></span><span class="nm">'+t.name+'</span><span class="badge">'+t.badge+'</span></div>'+cols;
-    el.onclick=(e)=>{e.stopPropagation();selectTable(t.name,false);};
+    el.onclick=(e)=>{e.stopPropagation();pauseAndResumeErdAuto();selectTable(t.name,false);};
     tableLayer.appendChild(el);
     tableEls[t.name]=el;
   });
@@ -1264,6 +1326,180 @@ document.getElementById('copyBtn').onclick=function(){
 };
 
 /* ============================================================
+   ERD LIVE STATS — row count / QPS / tx / lag 미세 변동
+   ============================================================ */
+let erdRowBase=2847391, erdQpsBase=1240, erdTxBase=14, erdLagBase=12;
+let erdStatsRAF=null;
+function fmtRows(n){if(n>=1e6) return (n/1e6).toFixed(2)+'M'; return n.toLocaleString();}
+function updateErdStats(){
+  erdRowBase += Math.floor(Math.random()*7);
+  erdQpsBase  = Math.max(900, erdQpsBase + Math.floor((Math.random()-0.48)*18));
+  erdTxBase   = Math.max(4,   erdTxBase  + Math.floor((Math.random()-0.5)*3));
+  erdLagBase  = Math.max(2,   erdLagBase + Math.floor((Math.random()-0.5)*4));
+  const rowEl=document.getElementById('erdRows');
+  const qpsEl=document.getElementById('erdQps');
+  const txEl =document.getElementById('erdTx');
+  const lagEl=document.getElementById('erdLag');
+  if(rowEl) rowEl.textContent=fmtRows(erdRowBase);
+  if(qpsEl) qpsEl.textContent=erdQpsBase.toLocaleString();
+  if(txEl)  txEl.textContent=erdTxBase;
+  if(lagEl) lagEl.textContent=erdLagBase+'ms';
+}
+function startErdStats(){
+  updateErdStats();
+  if(erdStatsRAF) clearInterval(erdStatsRAF);
+  erdStatsRAF=setInterval(updateErdStats,1400);
+}
+
+/* ============================================================
+   ERD AUTO HIGHLIGHT — 테이블 자동 순회 (rAF dt 기반)
+   ============================================================ */
+let erdAutoRAF=null, erdAutoLastTs=0, erdAutoIdx=0, erdAutoElapsed=0;
+const ERD_AUTO_INTERVAL=2800; // ms per table
+function erdAutoStep(ts){
+  if(!erdAutoLastTs){erdAutoLastTs=ts;}
+  const dt=Math.min(ts-erdAutoLastTs,100);
+  erdAutoLastTs=ts;
+  erdAutoElapsed+=dt;
+  if(erdAutoElapsed>=ERD_AUTO_INTERVAL){
+    erdAutoElapsed=0;
+    const m=MODELS[curModel];
+    erdAutoIdx=(erdAutoIdx+1)%m.tables.length;
+    selectTable(m.tables[erdAutoIdx].name,false,true);
+  }
+  erdAutoRAF=requestAnimationFrame(erdAutoStep);
+}
+function startErdAuto(){
+  if(erdAutoRAF) cancelAnimationFrame(erdAutoRAF);
+  erdAutoLastTs=0; erdAutoElapsed=0;
+  erdAutoRAF=requestAnimationFrame(erdAutoStep);
+}
+// 캔버스 클릭시 자동순회 일시 중단 후 재개
+function pauseAndResumeErdAuto(){
+  if(erdAutoRAF){cancelAnimationFrame(erdAutoRAF);erdAutoRAF=null;}
+  clearTimeout(erdAutoResumeTimer);
+  erdAutoResumeTimer=setTimeout(()=>{
+    erdAutoLastTs=0;erdAutoElapsed=0;
+    erdAutoRAF=requestAnimationFrame(erdAutoStep);
+  },5000);
+}
+let erdAutoResumeTimer=null;
+
+/* ============================================================
+   CDC FAKE LOG STREAMING
+   ============================================================ */
+const CDC_EVENTS_SOCIAL=[
+  ['ins','posts','INSERT posts SET id=uuid, author_id=u42, visibility=<val>public</val>'],
+  ['upd','users','UPDATE users SET status=<val>active</val> WHERE id=u91'],
+  ['ins','likes','INSERT likes SET user_id=u07, post_id=p33'],
+  ['ins','feed_outbox','INSERT feed_outbox event_type=<val>PostCreated</val> published=false'],
+  ['cdc','WAL','CDC: outbox row id=8847 -> Debezium capture -> topic domain.events'],
+  ['upd','posts','UPDATE posts SET like_count=like_count+1 WHERE id=p33'],
+  ['ins','notifications','INSERT notifications kind=<val>like</val> recipient_id=u91'],
+  ['ins','comments','INSERT comments post_id=p33, author_id=u14, body=...'],
+  ['cdc','Kafka','Kafka produce: domain.events partition=3 offset=19204'],
+  ['upd','feed_outbox','UPDATE feed_outbox SET published=true WHERE id=8847'],
+  ['ins','follows','INSERT follows follower_id=u55 followee_id=u91'],
+  ['cdc','Redis','-> Redis HSET feed:u91 projection update'],
+  ['cdc','ES','-> Elasticsearch index posts/_doc/p33 upsert'],
+  ['ins','hashtags','INSERT hashtags tag=<val>#데이터엔지니어링</val> ON CONFLICT UPDATE'],
+  ['upd','users','UPDATE users SET bio=... WHERE id=u55'],
+];
+const CDC_EVENTS_ECOMM=[
+  ['ins','orders','INSERT orders customer_id=c08, status=<val>PENDING</val>, total=89000'],
+  ['ins','order_items','INSERT order_items order_id=o91, product_id=p22, qty=2'],
+  ['ins','order_outbox','INSERT order_outbox event_type=<val>OrderPlaced</val> published=false'],
+  ['cdc','WAL','CDC: outbox row id=5521 -> Debezium -> topic order.events'],
+  ['upd','inventory','UPDATE inventory SET qty_reserved=qty_reserved+2 WHERE product_id=p22'],
+  ['upd','order_items','UPDATE order_items SET status=<val>RESERVED</val> WHERE id=oi44'],
+  ['upd','orders','UPDATE orders SET status=<val>CONFIRMED</val> WHERE id=o91'],
+  ['cdc','Kafka','Kafka produce: order.events partition=1 offset=7741'],
+  ['ins','payments','INSERT payments order_id=o91, method=<val>card</val>, status=<val>PENDING</val>'],
+  ['upd','payments','UPDATE payments SET status=<val>PAID</val>, paid_at=now() WHERE id=pay7'],
+  ['ins','shipments','INSERT shipments order_id=o91, warehouse_id=2, status=<val>PREPARING</val>'],
+  ['cdc','BigQuery','-> BigQuery stream insert: orders table'],
+  ['upd','inventory','UPDATE inventory SET qty_available=qty_available-2'],
+  ['upd','order_outbox','UPDATE order_outbox SET published=true WHERE id=5521'],
+  ['cdc','Redis','-> Redis DEL cart:c08 (invalidate)'],
+];
+
+let cdcLogInterval=null, cdcEvtIdx=0, cdcEvtCountLocal=0, cdcQpsSmooth=0;
+const CDC_MAX_LINES=8;
+
+function cdcNow(){
+  const d=new Date();
+  const hh=String(d.getHours()).padStart(2,'0');
+  const mm=String(d.getMinutes()).padStart(2,'0');
+  const ss=String(d.getSeconds()).padStart(2,'0');
+  const ms=String(d.getMilliseconds()).padStart(3,'0');
+  return hh+':'+mm+':'+ss+'.'+ms;
+}
+function cdcTagClass(type){
+  if(type==='ins') return 'ins';
+  if(type==='upd') return 'upd';
+  if(type==='del') return 'del';
+  return 'cdc';
+}
+function cdcTagLabel(type){
+  if(type==='ins') return 'INSERT';
+  if(type==='upd') return 'UPDATE';
+  if(type==='del') return 'DELETE';
+  return 'CDC';
+}
+function appendCdcLine(type,tbl,msg){
+  const body=document.getElementById('cdcLogBody');
+  if(!body) return;
+  const ts=cdcNow();
+  const line=document.createElement('div');
+  line.className='cdc-line';
+  const tagCls=cdcTagClass(type);
+  const tagLbl=cdcTagLabel(type);
+  const msgHtml=msg.replace(/<val>(.*?)<\/val>/g,'<span class="val">$1</span>')
+                    .replace(/\b(posts|users|likes|comments|follows|hashtags|post_hashtags|feed_outbox|orders|order_items|payments|shipments|inventory|warehouses|customers|products|categories|order_outbox)\b/g,'<span class="tbl">$1</span>');
+  line.innerHTML='<span class="cdc-ts">'+ts+'</span><span class="cdc-tag '+tagCls+'">'+tagLbl+'</span><span class="cdc-msg">'+msgHtml+'</span>';
+  body.appendChild(line);
+  // 최대 CDC_MAX_LINES 유지, 오래된 줄 페이드 후 제거
+  const lines=body.querySelectorAll('.cdc-line');
+  if(lines.length>CDC_MAX_LINES){
+    const old=lines[0];
+    old.classList.add('fade');
+    setTimeout(()=>old.remove(),620);
+  }
+  // 새 줄 페이드인
+  requestAnimationFrame(()=>line.style.opacity='1');
+  cdcEvtCountLocal++;
+}
+function getCdcEvents(){
+  return curModel==='social'?CDC_EVENTS_SOCIAL:CDC_EVENTS_ECOMM;
+}
+function fireCdcEvent(){
+  const evts=getCdcEvents();
+  const e=evts[cdcEvtIdx%evts.length];
+  cdcEvtIdx++;
+  appendCdcLine(e[0],e[1],e[2]);
+}
+let cdcQpsSampleCount=0, cdcQpsLastCheck=0;
+function startCdcLog(){
+  if(cdcLogInterval) clearInterval(cdcLogInterval);
+  cdcEvtIdx=0;cdcEvtCountLocal=0;cdcQpsSampleCount=0;cdcQpsLastCheck=Date.now();
+  // 초기 6줄 즉시 채우기
+  for(let i=0;i<6;i++) fireCdcEvent();
+  cdcLogInterval=setInterval(()=>{
+    fireCdcEvent();
+    cdcQpsSampleCount++;
+    const now=Date.now();
+    if(now-cdcQpsLastCheck>=1000){
+      const qpsEl=document.getElementById('cdcQps');
+      if(qpsEl) qpsEl.textContent=cdcQpsSampleCount+' evt/s';
+      cdcQpsSampleCount=0;cdcQpsLastCheck=now;
+    }
+  }, 480+Math.floor(Math.random()*120));
+}
+function stopCdcLog(){
+  if(cdcLogInterval){clearInterval(cdcLogInterval);cdcLogInterval=null;}
+}
+
+/* ============================================================
    VIEW 2: ARCHITECTURE — animated CDC flow (auto-start on load)
    ============================================================ */
 const flowSvg=document.getElementById('flowSvg');
@@ -1271,6 +1507,7 @@ const archStage=document.getElementById('archStage');
 let flowRunning=false, flowRAF=null, flowSpeed=1, evtCount=0;
 let packets=[];
 let flowLayoutDone=false;
+let flowPrevTs=0;
 
 const FLOW_NODES=[
   {id:'app',cls:'src',x:.07,y:.42,t:'App / TX',s:'단일 트랜잭션 BEGIN',ic:'&#9881;'},
@@ -1312,6 +1549,8 @@ function layoutFlow(){
   drawFlowEdges();
 }
 function drawFlowEdges(){
+  /* dots g 태그 보존 — 엣지만 재그리기 */
+  const dotsEl=flowSvg.querySelector('g.dots');
   let s='<defs><marker id="ah" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#2a3a50"/></marker></defs>';
   FLOW_EDGES.forEach(([a,b])=>{
     const na=nodePos[a], nb=nodePos[b];
@@ -1321,9 +1560,12 @@ function drawFlowEdges(){
     s+='<path id="edge-'+a+'-'+b+'" d="M'+x1+','+y1+' C'+mx+','+y1+' '+mx+','+y2+' '+x2+','+y2+'" fill="none" stroke="#22324a" stroke-width="1.6" marker-end="url(#ah)"/>';
   });
   flowSvg.innerHTML=s;
+  /* dots 레이어 재부착 */
+  if(dotsEl) flowSvg.appendChild(dotsEl);
 }
 function edgePath(a,b){
   const na=nodePos[a], nb=nodePos[b];
+  if(!na||!nb) return null;
   const x1=na.x+na.w/2, y1=na.y, x2=nb.x-nb.w/2, y2=nb.y;
   const mx=(x1+x2)/2;
   return {x1,y1,x2,y2,mx};
@@ -1341,36 +1583,57 @@ function spawnPacket(){
   packets.push({route,seg:0,t:0,counted:false});
 }
 let lastSpawn=0;
+/* dt 기반 패킷 이동: 세그먼트 당 1200ms 기준으로 정규화 */
+const PACKET_SEG_MS=1200;
 function flowTick(ts){
   if(!flowRunning) return;
-  if(ts-lastSpawn> (900/flowSpeed)){spawnPacket();lastSpawn=ts;}
+  if(!flowPrevTs) flowPrevTs=ts;
+  const dt=Math.min(ts-flowPrevTs, 64); // 최대 64ms 클램프 (탭 비활성 복귀 보호)
+  flowPrevTs=ts;
+  const dtNorm=dt/PACKET_SEG_MS * flowSpeed;
+
+  if(ts-lastSpawn > (900/flowSpeed)){spawnPacket();lastSpawn=ts;}
+
   let dots='';
   packets.forEach(p=>{
-    p.t += 0.018*flowSpeed;
-    if(p.t>=1){p.t=0;p.seg++;
-      if(p.seg>=p.route.length){p.dead=true;
+    p.t += dtNorm;
+    if(p.t>=1){
+      p.t=p.t-1; // 오버슈트 이월
+      p.seg++;
+      if(p.seg>=p.route.length){
+        p.dead=true;
         if(!p.counted){evtCount++;document.getElementById('evtCount').textContent=evtCount;p.counted=true;}
         return;
       }
     }
     const seg=p.route[p.seg]; if(!seg) return;
     const e=edgePath(seg[0],seg[1]);
-    const pos=bez(p.t,e);
+    if(!e) return;
+    const pos=bez(Math.max(0,Math.min(1,p.t)),e);
     const col=seg[2];
     dots+='<circle cx="'+pos.x+'" cy="'+pos.y+'" r="4.5" fill="'+col+'"><animate attributeName="opacity" values="1;.5;1" dur="0.6s" repeatCount="indefinite"/></circle>';
     dots+='<circle cx="'+pos.x+'" cy="'+pos.y+'" r="9" fill="'+col+'" opacity="0.18"/>';
   });
   packets=packets.filter(p=>!p.dead);
-  drawFlowEdges();
-  flowSvg.insertAdjacentHTML('beforeend',dots);
+  /* 엣지는 레이아웃 변경 시에만 재그리기 — 매 틱 재생성 제거 */
+  const dotsEl=flowSvg.querySelector('g.dots');
+  if(dotsEl){dotsEl.innerHTML=dots;}
+  else{
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.className.baseVal='dots';
+    g.innerHTML=dots;
+    flowSvg.appendChild(g);
+  }
   flowRAF=requestAnimationFrame(flowTick);
 }
 function startFlow(){
   layoutFlow();
   if(flowRunning) return;
   flowRunning=true;
+  flowPrevTs=0;
   document.getElementById('archToggle').textContent='&#9646;&#9646; pause flow';
   flowRAF=requestAnimationFrame(flowTick);
+  startCdcLog();
 }
 function ensureFlow(){
   if(!flowRunning) startFlow();
@@ -1379,10 +1642,19 @@ function ensureFlow(){
 function stopFlow(){
   flowRunning=false;
   if(flowRAF) cancelAnimationFrame(flowRAF);
+  stopCdcLog();
 }
 document.getElementById('archToggle').onclick=function(){
-  if(flowRunning){stopFlow();this.textContent='&#9654; resume flow';}
-  else{flowRunning=true;this.textContent='&#9646;&#9646; pause flow';flowRAF=requestAnimationFrame(flowTick);}
+  if(flowRunning){
+    stopFlow();
+    this.textContent='&#9654; resume flow';
+  } else {
+    flowRunning=true;
+    flowPrevTs=0;
+    this.textContent='&#9646;&#9646; pause flow';
+    flowRAF=requestAnimationFrame(flowTick);
+    startCdcLog();
+  }
 };
 document.getElementById('archSpeed').onclick=function(){
   flowSpeed = flowSpeed>=4?1:flowSpeed*2;
@@ -1539,6 +1811,10 @@ function init(){
   loadModel();
   drawSM();smUpdateInfo();
   recShown=3;drawRec();
+  /* ERD 라이브 스탯 시작 */
+  startErdStats();
+  /* ERD 자동 하이라이트 순회 시작 (loadModel 후 tableEls 준비 완료 타이밍) */
+  setTimeout(function(){startErdAuto();}, 400);
   /* CDC flow 자동 시작: 레이아웃 게이트 setTimeout, 스크롤 의존 없음 */
   setTimeout(function(){
     startFlow();

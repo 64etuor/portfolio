@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DB 모델링 & 데이터 아키텍처 · 박양하</title>
+<title>DB 모델링 &amp; 데이터 아키텍처 · 박양하</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap');
 
@@ -15,7 +15,7 @@
     --line:#1e2a3a;
     --line2:#2a3a50;
     --ink:#dfe8f2;
-    --ink-dim:#7d8 da6;
+    --ink-dim:#7d8da6;
     --dim:#6b7c93;
     --acc:#00e0a4;       /* mint */
     --acc2:#3fb6ff;      /* cyan/blue */
@@ -166,7 +166,6 @@
   .tbl.fkhi{border-color:var(--pink);box-shadow:0 0 0 1px var(--pink)}
   .tbl-h{
     display:flex;align-items:center;gap:8px;padding:8px 11px;
-    background:linear-gradient(180deg,#1b2trosubtle,#172230);
     background:linear-gradient(180deg,#1b2636,#141d29);
     border-bottom:1px solid var(--line2);
   }
@@ -341,7 +340,7 @@
       <button class="tab" data-view="sm"><span class="idx">03</span> 상태머신 · 재귀쿼리</button>
     </div>
     <div class="spacer"></div>
-    <div class="meta-pill"><span class="dot live"></span> <span id="engineLbl">SQLite engine</span></div>
+    <div class="meta-pill"><span class="dot live"></span> <span id="engineLbl">PostgreSQL engine</span></div>
     <div class="meta-pill">connected: <span style="color:var(--acc)">local.dev</span></div>
   </header>
 
@@ -367,10 +366,10 @@
           </div>
           <div class="zoombar">
             <button class="zb" id="zin">+</button>
-            <button class="zb" id="zout">−</button>
-            <button class="zb" id="zfit">⤢</button>
+            <button class="zb" id="zout">&#8722;</button>
+            <button class="zb" id="zfit">&#10626;</button>
           </div>
-          <div class="hint">drag <b>캔버스</b> 패닝 · scroll <b>줌</b> · click <b>테이블 → DDL</b></div>
+          <div class="hint">drag <b>캔버스</b> 패닝 · scroll <b>줌</b> · click <b>테이블 -&gt; DDL</b></div>
           <div class="model-caption" id="modelCaption"></div>
         </div>
 
@@ -378,7 +377,7 @@
         <aside class="ddl">
           <div class="ddl-h">
             <span class="tg">DDL</span>
-            <span class="ti mono" id="ddlTitle">—</span>
+            <span class="ti mono" id="ddlTitle">&#8212;</span>
             <button class="copy" id="copyBtn">copy</button>
           </div>
           <div class="ddl-body"><pre class="code" id="ddlCode"></pre></div>
@@ -395,12 +394,12 @@
       <div class="arch">
         <div class="arch-head">
           <div>
-            <h2>SSOT <span class="em">Outbox → CDC → Kafka</span> fan-out</h2>
+            <h2>SSOT <span class="em">Outbox -&gt; CDC -&gt; Kafka</span> fan-out</h2>
             <p>이중 쓰기(DB + cache + Kafka 비원자) 안티패턴을 제거. <b style="color:var(--acc)">단일 트랜잭션</b>에서 비즈니스 테이블과 <b style="color:var(--acc)">outbox</b>만 커밋하고, Debezium이 WAL/binlog를 읽어 Kafka로 흘려보낸다. 쓰기는 1곳, 읽기는 N개로 팬아웃 — eventual consistency.</p>
           </div>
           <div class="arch-ctrl">
-            <button class="btn" id="archSpeed">speed: 1×</button>
-            <button class="btn primary" id="archToggle">⏸ pause flow</button>
+            <button class="btn" id="archSpeed">speed: 1x</button>
+            <button class="btn primary" id="archToggle">&#9646;&#9646; pause flow</button>
           </div>
         </div>
 
@@ -409,7 +408,7 @@
 
           <aside class="arch-aside">
             <div class="card">
-              <h6>✕ anti-pattern</h6>
+              <h6>&#10007; anti-pattern</h6>
               <p><b style="color:var(--red)">Dual write</b>: 앱이 DB·캐시·Kafka에 각각 직접 쓰면 비원자적 — 한 쪽 실패 시 영구 불일치.</p>
             </div>
             <div class="card">
@@ -425,7 +424,7 @@
 
           <div class="counter">
             <div class="big mono" id="evtCount">0</div>
-            <div class="lbl">events committed → fanned out</div>
+            <div class="lbl">events committed &#8594; fanned out</div>
           </div>
 
           <div class="legend">
@@ -444,21 +443,21 @@
         <!-- LEFT: state machine -->
         <div class="pane left">
           <div class="pane-h">
-            <h3><span class="em">upload_queue</span> 상태머신</h3>
-            <p class="mono">PENDING → UPLOADING → VERIFYING → COMPLETED · retry/backoff</p>
+            <h3><span class="em">order_item</span> 상태머신</h3>
+            <p class="mono">PENDING &#8594; RESERVED &#8594; SHIPPED &#8594; DELIVERED · retry/backoff</p>
           </div>
           <div class="pane-body">
             <svg id="smSvg" viewBox="0 0 560 420" preserveAspectRatio="xMidYMid meet"></svg>
             <div class="sm-info">
-              <h6>current row · upload_queue</h6>
-              <div class="row">id <b class="mono">#a7f3</b></div>
+              <h6>current row · order_item</h6>
+              <div class="row">id <b class="mono">#f3a9</b></div>
               <div class="row">state <b class="cur mono" id="smState">PENDING</b></div>
               <div class="row">retry_count <b class="mono" id="smRetry">0</b></div>
-              <div class="row">next_retry_ts <b class="mono" id="smNext">—</b></div>
+              <div class="row">next_retry_ts <b class="mono" id="smNext">&#8212;</b></div>
             </div>
             <div class="sm-ctrl">
-              <button class="btn primary" id="smStep">▶ step transition</button>
-              <button class="btn" id="smFail">⚡ inject failure</button>
+              <button class="btn primary" id="smStep">&#9654; step transition</button>
+              <button class="btn" id="smFail">&#9889; inject failure</button>
               <button class="btn" id="smReset">reset</button>
             </div>
           </div>
@@ -467,8 +466,8 @@
         <!-- RIGHT: recursive query -->
         <div class="pane">
           <div class="pane-h">
-            <h3><span class="em">WITH RECURSIVE</span> · 조직 계층</h3>
-            <p class="mono">EMPLOYEE(EmployeeID PK, ManagerID FK→EmployeeID)</p>
+            <h3><span class="em">WITH RECURSIVE</span> · 카테고리 계층</h3>
+            <p class="mono">category(id PK, parent_id FK-&gt;id, name, depth)</p>
           </div>
           <div class="rec-top">
             <pre id="recSql"></pre>
@@ -477,13 +476,13 @@
             <svg id="recSvg" viewBox="0 0 560 300" preserveAspectRatio="xMidYMid meet"></svg>
             <div class="lvl-badge">recursion depth: <b id="recDepth">0</b></div>
             <div class="rec-ctrl">
-              <button class="btn primary" id="recRun">▶ run recursive CTE</button>
+              <button class="btn primary" id="recRun">&#9654; run recursive CTE</button>
               <button class="btn" id="recReset">reset</button>
             </div>
           </div>
           <div class="depth-strip">
-            <span class="chip">covering index <b>(ManagerID, EmployeeID)</b></span>
-            <span class="chip">partial index <b>WHERE ManagerID IS NULL</b></span>
+            <span class="chip">covering index <b>(parent_id, id)</b></span>
+            <span class="chip">partial index <b>WHERE parent_id IS NULL</b></span>
             <span class="chip">selectivity 우선 정렬</span>
             <span class="chip">anchor + UNION ALL</span>
           </div>
@@ -496,8 +495,8 @@
   <!-- ============ FOOTER ============ -->
   <footer>
     <div class="seg accent" id="footView">01 · ERD</div>
-    <div class="seg" id="footEngine">SQLite 3 · WAL</div>
-    <div class="seg" id="footTbl">tables: 7</div>
+    <div class="seg" id="footEngine">PostgreSQL 16 · JSONB</div>
+    <div class="seg" id="footTbl">tables: 10</div>
     <div class="seg">박양하 · senior data engineer</div>
     <div class="spacer" style="flex:1"></div>
     <div class="seg"><a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a></div>
@@ -508,505 +507,504 @@
 
 <script>
 /* ============================================================
-   DATA: three real schema models
+   DATA: two grand virtual schema models
    ============================================================ */
 const MODELS = {
-  kiosk: {
-    label:"Mirrorless 키오스크",
-    desc:"SQLite · WAL · 로컬 우선",
-    engine:"SQLite 3 · WAL",
-    enginePill:"SQLite engine",
+  social: {
+    label:"대규모 소셜 플랫폼",
+    desc:"PostgreSQL 16 · 11 엔티티 · 피드/팔로우",
+    engine:"PostgreSQL 16 · JSONB",
+    enginePill:"PostgreSQL engine",
     tables:[
-      { name:"device_inventory", x:40, y:60, badge:"7 cols",
+      { name:"users", x:380, y:40, badge:"7 cols",
         cols:[
-          {n:"device_id",t:"TEXT",pk:1,nn:1},
-          {n:"kind",t:"TEXT",nn:1},
+          {n:"id",t:"UUID",pk:1,nn:1},
+          {n:"username",t:"CITEXT",nn:1},
+          {n:"email",t:"CITEXT",nn:1},
+          {n:"bio",t:"TEXT"},
+          {n:"avatar_url",t:"TEXT"},
           {n:"status",t:"TEXT",nn:1},
-          {n:"last_seen_ts",t:"INTEGER"},
-          {n:"capabilities_json",t:"JSON"},
+          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
         ],
         ddl:[
-          ["com","-- 키오스크에 연결된 하드웨어(카메라/조명/턴테이블) 인벤토리"],
-          ["sql","CREATE TABLE device_inventory ("],
-          ["sql","  device_id        TEXT PRIMARY KEY,        -- 'cam.front', 'light.key'"],
-          ["sql","  kind             TEXT NOT NULL,           -- camera|light|turntable"],
-          ["sql","  status           TEXT NOT NULL DEFAULT 'idle',"],
-          ["sql","  last_seen_ts     INTEGER,                 -- epoch ms heartbeat"],
-          ["sql","  capabilities_json JSON                    -- 해상도/FPS/지원모드"],
-          ["sql",");"],
-          ["com","-- 하트비트 조회 인덱스"],
-          ["sql","CREATE INDEX idx_dev_seen ON device_inventory(last_seen_ts);"],
-        ]},
-      { name:"calibration_profile", x:330, y:40, badge:"6 cols",
-        cols:[
-          {n:"id",t:"INTEGER",pk:1,nn:1},
-          {n:"device_id",t:"TEXT",fk:"device_inventory",nn:1},
-          {n:"type",t:"TEXT",nn:1},
-          {n:"params_json",t:"JSON"},
-          {n:"mode",t:"TEXT"},
-        ],
-        ddl:[
-          ["com","-- 디바이스별 보정 프로파일 (WB/노출/크롭/컬러)"],
-          ["sql","CREATE TABLE calibration_profile ("],
-          ["sql","  id          INTEGER PRIMARY KEY AUTOINCREMENT,"],
-          ["sql","  device_id   TEXT NOT NULL"],
-          ["sql","              REFERENCES device_inventory(device_id) ON DELETE CASCADE,"],
-          ["sql","  type        TEXT NOT NULL"],
-          ["sql","              CHECK (type IN ('WB','EXPOSURE','CROP','COLOR')),"],
-          ["sql","  params_json JSON NOT NULL,"],
-          ["sql","  mode        TEXT DEFAULT 'hw' CHECK (mode IN ('hw','gpu'))"],
-          ["sql",");"],
-        ]},
-      { name:"layout_state", x:40, y:300, badge:"3 cols",
-        cols:[
-          {n:"id",t:"TEXT",pk:1,nn:1},
-          {n:"view_mode",t:"TEXT"},
-          {n:"compare_ref",t:"TEXT"},
-        ],
-        ddl:[
-          ["com","-- 단일 행 싱글톤: 현재 화면 레이아웃 (id='current')"],
-          ["sql","CREATE TABLE layout_state ("],
-          ["sql","  id          TEXT PRIMARY KEY DEFAULT 'current',"],
-          ["sql","  view_mode   TEXT,        -- single|grid|compare"],
-          ["sql","  compare_ref TEXT         -- 비교 기준 capture id"],
-          ["sql",");"],
-          ["com","-- upsert 패턴으로 항상 1행 유지"],
-        ]},
-      { name:"session_events", x:330, y:290, badge:"5 cols",
-        cols:[
-          {n:"id",t:"INTEGER",pk:1,nn:1},
-          {n:"session_id",t:"TEXT",nn:1},
-          {n:"event_type",t:"TEXT",nn:1},
-          {n:"payload_json",t:"JSON"},
-          {n:"ts",t:"INTEGER",nn:1},
-        ],
-        ddl:[
-          ["com","-- 세션 이벤트 (append-only, event-sourced)"],
-          ["sql","CREATE TABLE session_events ("],
-          ["sql","  id           INTEGER PRIMARY KEY AUTOINCREMENT,"],
-          ["sql","  session_id   TEXT NOT NULL,"],
-          ["sql","  event_type   TEXT NOT NULL,    -- shot|calib|export|error"],
-          ["sql","  payload_json JSON,"],
-          ["sql","  ts           INTEGER NOT NULL"],
-          ["sql",");"],
-          ["com","-- 시간순 조회 + 세션 필터 복합 인덱스"],
-          ["sql","CREATE INDEX idx_evt_session_ts ON session_events(session_id, ts);"],
-        ]},
-      { name:"upload_queue", x:630, y:60, badge:"6 cols",
-        cols:[
-          {n:"id",t:"INTEGER",pk:1,nn:1},
-          {n:"state",t:"TEXT",nn:1},
-          {n:"retry_count",t:"INTEGER"},
-          {n:"next_retry_ts",t:"INTEGER"},
-          {n:"meta_json",t:"JSON"},
-        ],
-        ddl:[
-          ["com","-- 업로드 큐 (상태머신: PENDING→UPLOADING→VERIFYING→COMPLETED)"],
-          ["sql","CREATE TABLE upload_queue ("],
-          ["sql","  id            INTEGER PRIMARY KEY AUTOINCREMENT,"],
-          ["sql","  state         TEXT NOT NULL DEFAULT 'PENDING'"],
-          ["sql","                CHECK (state IN ('PENDING','UPLOADING',"],
-          ["sql","                  'VERIFYING','COMPLETED','FAILED_NET','FAILED_HASH')),"],
-          ["sql","  retry_count   INTEGER NOT NULL DEFAULT 0,"],
-          ["sql","  next_retry_ts INTEGER,           -- 지수 백오프 스케줄"],
-          ["sql","  meta_json     JSON"],
-          ["sql",");"],
-          ["com","-- 워커 폴링: 재시도 예정 + 활성 상태만 partial index"],
-          ["sql","CREATE INDEX idx_uq_due ON upload_queue(next_retry_ts)"],
-          ["sql","  WHERE state LIKE 'FAILED%';"],
-        ]},
-      { name:"export_manifest", x:630, y:300, badge:"4 cols",
-        cols:[
-          {n:"id",t:"INTEGER",pk:1,nn:1},
-          {n:"session_id",t:"TEXT",fk:"session_events",nn:1},
-          {n:"files_json",t:"JSON"},
-          {n:"checksum",t:"TEXT"},
-        ],
-        ddl:[
-          ["com","-- 내보내기 매니페스트 (세션 단위 산출물 + 무결성)"],
-          ["sql","CREATE TABLE export_manifest ("],
-          ["sql","  id         INTEGER PRIMARY KEY AUTOINCREMENT,"],
-          ["sql","  session_id TEXT NOT NULL,        -- → session_events.session_id"],
-          ["sql","  files_json JSON NOT NULL,"],
-          ["sql","  checksum   TEXT                  -- sha256 manifest hash"],
-          ["sql",");"],
-        ]},
-      { name:"perf_metrics", x:920, y:60, badge:"5 cols",
-        cols:[
-          {n:"id",t:"INTEGER",pk:1,nn:1},
-          {n:"scope",t:"TEXT",nn:1},
-          {n:"metric",t:"TEXT",nn:1},
-          {n:"p95",t:"REAL"},
-          {n:"p99",t:"REAL"},
-        ],
-        ddl:[
-          ["com","-- 성능 메트릭 + error_logs(scope) 통합 관측"],
-          ["sql","CREATE TABLE perf_metrics ("],
-          ["sql","  id     INTEGER PRIMARY KEY AUTOINCREMENT,"],
-          ["sql","  scope  TEXT NOT NULL,    -- agent|main|renderer|python"],
-          ["sql","  metric TEXT NOT NULL,"],
-          ["sql","  p95    REAL,"],
-          ["sql","  p99    REAL"],
-          ["sql",");"],
-          ["com","-- error_logs(scope) 동일 스코프 차원으로 조인 분석"],
-        ]},
-    ],
-    rels:[
-      ["calibration_profile","device_id","device_inventory","device_id","N:1"],
-      ["export_manifest","session_id","session_events","session_id","N:1"],
-    ],
-    defaultTable:"upload_queue",
-  },
-
-  kh: {
-    label:"KH 글로벌 마켓플레이스",
-    desc:"16 엔티티 · 다국어 인덱스",
-    engine:"PostgreSQL 16 · i18n",
-    enginePill:"PostgreSQL engine",
-    tables:[
-      { name:"User", x:40, y:40, badge:"5 cols",
-        cols:[{n:"id",t:"UUID",pk:1,nn:1},{n:"email",t:"CITEXT",nn:1},{n:"locale",t:"TEXT",nn:1},{n:"status",t:"TEXT"},{n:"created_at",t:"TIMESTAMPTZ"}],
-        ddl:[
-          ["com","-- 글로벌 사용자 (locale → 다국어 분기의 루트)"],
-          ["sql","CREATE TABLE \"User\" ("],
+          ["com","-- 플랫폼 사용자 루트 엔티티 (CITEXT: 대소문자 무관 유니크)"],
+          ["sql","CREATE TABLE users ("],
           ["sql","  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  email      CITEXT UNIQUE NOT NULL,"],
-          ["sql","  locale     TEXT NOT NULL DEFAULT 'en',   -- ko|en|vi"],
-          ["sql","  status     TEXT DEFAULT 'active',"],
-          ["sql","  created_at TIMESTAMPTZ DEFAULT now()"],
+          ["sql","  username   CITEXT NOT NULL UNIQUE,"],
+          ["sql","  email      CITEXT NOT NULL UNIQUE,"],
+          ["sql","  bio        TEXT,"],
+          ["sql","  avatar_url TEXT,"],
+          ["sql","  status     TEXT NOT NULL DEFAULT 'active'"],
+          ["sql","             CHECK (status IN ('active','suspended','deactivated')),"],
+          ["sql","  created_at TIMESTAMPTZ NOT NULL DEFAULT now()"],
+          ["sql",");"],
+          ["com","-- 검색: username 패턴 매칭용 GIN 트라이그램 인덱스"],
+          ["sql","CREATE EXTENSION IF NOT EXISTS pg_trgm;"],
+          ["sql","CREATE INDEX idx_users_username_trgm"],
+          ["sql","  ON users USING GIN (username gin_trgm_ops);"],
+        ]},
+      { name:"follows", x:60, y:40, badge:"4 cols",
+        cols:[
+          {n:"follower_id",t:"UUID",fk:"users",nn:1},
+          {n:"followee_id",t:"UUID",fk:"users",nn:1},
+          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
+          {n:"notified",t:"BOOLEAN",nn:1},
+        ],
+        ddl:[
+          ["com","-- N:M 팔로우 정션 테이블 (자기참조 관계)"],
+          ["sql","CREATE TABLE follows ("],
+          ["sql","  follower_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,"],
+          ["sql","  followee_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,"],
+          ["sql","  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),"],
+          ["sql","  notified    BOOLEAN NOT NULL DEFAULT false,"],
+          ["sql","  PRIMARY KEY (follower_id, followee_id),"],
+          ["sql","  CHECK (follower_id <> followee_id)"],
+          ["sql",");"],
+          ["com","-- 역방향 조회: '누가 나를 팔로우?' 인덱스"],
+          ["sql","CREATE INDEX idx_follows_followee ON follows(followee_id);"],
+        ]},
+      { name:"posts", x:700, y:40, badge:"8 cols",
+        cols:[
+          {n:"id",t:"UUID",pk:1,nn:1},
+          {n:"author_id",t:"UUID",fk:"users",nn:1},
+          {n:"body",t:"TEXT",nn:1},
+          {n:"media_ids",t:"UUID[]"},
+          {n:"like_count",t:"BIGINT",nn:1},
+          {n:"reply_count",t:"BIGINT",nn:1},
+          {n:"visibility",t:"TEXT",nn:1},
+          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
+        ],
+        ddl:[
+          ["com","-- 게시물 (미디어 UUID 배열: 정규화 vs 쿼리 균형)"],
+          ["sql","CREATE TABLE posts ("],
+          ["sql","  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
+          ["sql","  author_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,"],
+          ["sql","  body        TEXT NOT NULL CHECK (char_length(body) <= 500),"],
+          ["sql","  media_ids   UUID[],                   -- 비정규화: 인서트 1회"],
+          ["sql","  like_count  BIGINT NOT NULL DEFAULT 0,"],
+          ["sql","  reply_count BIGINT NOT NULL DEFAULT 0,"],
+          ["sql","  visibility  TEXT NOT NULL DEFAULT 'public'"],
+          ["sql","              CHECK (visibility IN ('public','followers','private')),"],
+          ["sql","  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()"],
+          ["sql",");"],
+          ["com","-- 타임라인 조회: 최신순 파티션별 스캔"],
+          ["sql","CREATE INDEX idx_posts_author_ts ON posts(author_id, created_at DESC);"],
+          ["com","-- 전문 검색 벡터 (한국어: pg_bigm 또는 tsquery)"],
+          ["sql","ALTER TABLE posts ADD COLUMN search_vec TSVECTOR"],
+          ["sql","  GENERATED ALWAYS AS (to_tsvector('simple', body)) STORED;"],
+          ["sql","CREATE INDEX idx_posts_fts ON posts USING GIN(search_vec);"],
+        ]},
+      { name:"comments", x:700, y:320, badge:"6 cols",
+        cols:[
+          {n:"id",t:"UUID",pk:1,nn:1},
+          {n:"post_id",t:"UUID",fk:"posts",nn:1},
+          {n:"author_id",t:"UUID",fk:"users",nn:1},
+          {n:"parent_id",t:"UUID",fk:"comments"},
+          {n:"body",t:"TEXT",nn:1},
+          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
+        ],
+        ddl:[
+          ["com","-- 댓글 (자기참조: 대댓글 지원, parent_id NULL = 최상위)"],
+          ["sql","CREATE TABLE comments ("],
+          ["sql","  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
+          ["sql","  post_id    UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,"],
+          ["sql","  author_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,"],
+          ["sql","  parent_id  UUID REFERENCES comments(id) ON DELETE CASCADE,"],
+          ["sql","  body       TEXT NOT NULL CHECK (char_length(body) <= 300),"],
+          ["sql","  created_at TIMESTAMPTZ NOT NULL DEFAULT now()"],
+          ["sql",");"],
+          ["com","-- 게시물 댓글 목록: post_id + 시간순"],
+          ["sql","CREATE INDEX idx_comments_post ON comments(post_id, created_at);"],
+          ["com","-- 대댓글 조회: parent_id"],
+          ["sql","CREATE INDEX idx_comments_parent ON comments(parent_id)"],
+          ["sql","  WHERE parent_id IS NOT NULL;"],
+        ]},
+      { name:"likes", x:380, y:320, badge:"3 cols",
+        cols:[
+          {n:"user_id",t:"UUID",fk:"users",nn:1},
+          {n:"post_id",t:"UUID",fk:"posts",nn:1},
+          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
+        ],
+        ddl:[
+          ["com","-- 좋아요 N:M 정션 (중복 방지 PK 복합키)"],
+          ["sql","CREATE TABLE likes ("],
+          ["sql","  user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,"],
+          ["sql","  post_id    UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,"],
+          ["sql","  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),"],
+          ["sql","  PRIMARY KEY (user_id, post_id)"],
+          ["sql",");"],
+          ["com","-- 게시물별 좋아요 수 집계용 역방향"],
+          ["sql","CREATE INDEX idx_likes_post ON likes(post_id);"],
+          ["com","-- posts.like_count 비정규화 카운터는 Outbox CDC로 동기화"],
+        ]},
+      { name:"hashtags", x:60, y:320, badge:"3 cols",
+        cols:[
+          {n:"id",t:"BIGINT",pk:1,nn:1},
+          {n:"tag",t:"CITEXT",nn:1},
+          {n:"post_count",t:"BIGINT",nn:1},
+        ],
+        ddl:[
+          ["com","-- 해시태그 사전 (CITEXT: #Python == #python)"],
+          ["sql","CREATE TABLE hashtags ("],
+          ["sql","  id         BIGSERIAL PRIMARY KEY,"],
+          ["sql","  tag        CITEXT NOT NULL UNIQUE,"],
+          ["sql","  post_count BIGINT NOT NULL DEFAULT 0"],
+          ["sql",");"],
+          ["com","-- 트렌딩: post_count DESC"],
+          ["sql","CREATE INDEX idx_hashtags_count ON hashtags(post_count DESC);"],
+        ]},
+      { name:"post_hashtags", x:380, y:510, badge:"2 cols",
+        cols:[
+          {n:"post_id",t:"UUID",fk:"posts",nn:1},
+          {n:"hashtag_id",t:"BIGINT",fk:"hashtags",nn:1},
+        ],
+        ddl:[
+          ["com","-- 게시물-해시태그 N:M 정션"],
+          ["sql","CREATE TABLE post_hashtags ("],
+          ["sql","  post_id    UUID   NOT NULL REFERENCES posts(id) ON DELETE CASCADE,"],
+          ["sql","  hashtag_id BIGINT NOT NULL REFERENCES hashtags(id),"],
+          ["sql","  PRIMARY KEY (post_id, hashtag_id)"],
+          ["sql",");"],
+          ["com","-- 해시태그별 게시물 피드"],
+          ["sql","CREATE INDEX idx_ph_tag ON post_hashtags(hashtag_id, post_id);"],
+        ]},
+      { name:"media_assets", x:1000, y:40, badge:"6 cols",
+        cols:[
+          {n:"id",t:"UUID",pk:1,nn:1},
+          {n:"uploader_id",t:"UUID",fk:"users",nn:1},
+          {n:"kind",t:"TEXT",nn:1},
+          {n:"url",t:"TEXT",nn:1},
+          {n:"meta_json",t:"JSONB"},
+          {n:"uploaded_at",t:"TIMESTAMPTZ",nn:1},
+        ],
+        ddl:[
+          ["com","-- 미디어 에셋 (이미지/동영상 원본 + CDN URL)"],
+          ["sql","CREATE TABLE media_assets ("],
+          ["sql","  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
+          ["sql","  uploader_id UUID NOT NULL REFERENCES users(id),"],
+          ["sql","  kind        TEXT NOT NULL CHECK (kind IN ('image','video','gif')),"],
+          ["sql","  url         TEXT NOT NULL,"],
+          ["sql","  meta_json   JSONB,            -- width, height, duration, codec"],
+          ["sql","  uploaded_at TIMESTAMPTZ NOT NULL DEFAULT now()"],
           ["sql",");"],
         ]},
-      { name:"Profile", x:40, y:280, badge:"4 cols",
-        cols:[{n:"id",t:"UUID",pk:1,nn:1},{n:"user_id",t:"UUID",fk:"User",nn:1},{n:"display_name",t:"TEXT"},{n:"bio",t:"TEXT"}],
+      { name:"notifications", x:1000, y:280, badge:"7 cols",
+        cols:[
+          {n:"id",t:"UUID",pk:1,nn:1},
+          {n:"recipient_id",t:"UUID",fk:"users",nn:1},
+          {n:"actor_id",t:"UUID",fk:"users",nn:1},
+          {n:"kind",t:"TEXT",nn:1},
+          {n:"ref_id",t:"UUID"},
+          {n:"read",t:"BOOLEAN",nn:1},
+          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
+        ],
         ddl:[
-          ["com","-- 1:1 확장 프로필"],
-          ["sql","CREATE TABLE \"Profile\" ("],
+          ["com","-- 알림 (CDC Outbox 패턴으로 생성 — 직접 INSERT 아님)"],
+          ["sql","CREATE TABLE notifications ("],
           ["sql","  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  user_id      UUID NOT NULL UNIQUE REFERENCES \"User\"(id),"],
-          ["sql","  display_name TEXT,"],
-          ["sql","  bio          TEXT"],
+          ["sql","  recipient_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,"],
+          ["sql","  actor_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,"],
+          ["sql","  kind         TEXT NOT NULL"],
+          ["sql","               CHECK (kind IN ('like','comment','follow','mention')),"],
+          ["sql","  ref_id       UUID,             -- 관련 post_id 또는 comment_id"],
+          ["sql","  read         BOOLEAN NOT NULL DEFAULT false,"],
+          ["sql","  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()"],
           ["sql",");"],
+          ["com","-- 안읽은 알림 조회: partial index (read=false 만)"],
+          ["sql","CREATE INDEX idx_notif_unread ON notifications(recipient_id, created_at DESC)"],
+          ["sql","  WHERE read = false;"],
         ]},
-      { name:"Verification", x:330, y:280, badge:"4 cols",
-        cols:[{n:"id",t:"UUID",pk:1,nn:1},{n:"user_id",t:"UUID",fk:"User",nn:1},{n:"kind",t:"TEXT"},{n:"verified_at",t:"TIMESTAMPTZ"}],
+      { name:"feed_outbox", x:60, y:510, badge:"6 cols",
+        cols:[
+          {n:"id",t:"BIGINT",pk:1,nn:1},
+          {n:"aggregate_id",t:"UUID",nn:1},
+          {n:"event_type",t:"TEXT",nn:1},
+          {n:"payload",t:"JSONB",nn:1},
+          {n:"published",t:"BOOLEAN",nn:1},
+          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
+        ],
         ddl:[
-          ["com","-- KYC / 본인인증 (kind: phone|id|email)"],
-          ["sql","CREATE TABLE \"Verification\" ("],
-          ["sql","  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  user_id     UUID NOT NULL REFERENCES \"User\"(id),"],
-          ["sql","  kind        TEXT NOT NULL,"],
-          ["sql","  verified_at TIMESTAMPTZ"],
+          ["com","-- SSOT Outbox 테이블: 비즈니스 TX와 동일 커밋"],
+          ["com","-- Debezium이 WAL tail 후 Kafka로 팬아웃"],
+          ["sql","CREATE TABLE feed_outbox ("],
+          ["sql","  id           BIGSERIAL PRIMARY KEY,"],
+          ["sql","  aggregate_id UUID NOT NULL,   -- post_id | user_id | comment_id"],
+          ["sql","  event_type   TEXT NOT NULL,   -- PostCreated | LikeAdded | Followed"],
+          ["sql","  payload      JSONB NOT NULL,"],
+          ["sql","  published    BOOLEAN NOT NULL DEFAULT false,"],
+          ["sql","  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()"],
           ["sql",");"],
-        ]},
-      { name:"ListingCommon", x:360, y:40, badge:"6 cols",
-        cols:[{n:"id",t:"UUID",pk:1,nn:1},{n:"owner_id",t:"UUID",fk:"User",nn:1},{n:"category",t:"TEXT",nn:1},{n:"title",t:"TEXT"},{n:"status",t:"TEXT"},{n:"search_vec",t:"TSVECTOR"}],
-        ddl:[
-          ["com","-- 카테고리 공통 상위 테이블 (table-per-type 분리의 루트)"],
-          ["sql","CREATE TABLE \"ListingCommon\" ("],
-          ["sql","  id        UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  owner_id  UUID NOT NULL REFERENCES \"User\"(id),"],
-          ["sql","  category  TEXT NOT NULL,   -- used|housing|job"],
-          ["sql","  title     TEXT NOT NULL,"],
-          ["sql","  status    TEXT DEFAULT 'live',"],
-          ["sql","  search_vec TSVECTOR        -- 다국어 GIN 인덱스 대상"],
-          ["sql",");"],
-          ["com","-- 다국어 전문검색 인덱스"],
-          ["sql","CREATE INDEX idx_listing_fts ON \"ListingCommon\" USING GIN(search_vec);"],
-        ]},
-      { name:"UsedGoodsListing", x:660, y:40, badge:"4 cols",
-        cols:[{n:"id",t:"UUID",pk:1,nn:1},{n:"listing_id",t:"UUID",fk:"ListingCommon",nn:1},{n:"price",t:"NUMERIC"},{n:"condition",t:"TEXT"}],
-        ddl:[
-          ["com","-- 카테고리별 스키마 분리: 중고거래"],
-          ["sql","CREATE TABLE \"UsedGoodsListing\" ("],
-          ["sql","  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  listing_id UUID NOT NULL UNIQUE REFERENCES \"ListingCommon\"(id),"],
-          ["sql","  price      NUMERIC(12,2),"],
-          ["sql","  condition  TEXT          -- new|like_new|used"],
-          ["sql",");"],
-        ]},
-      { name:"HousingListing", x:660, y:240, badge:"4 cols",
-        cols:[{n:"id",t:"UUID",pk:1,nn:1},{n:"listing_id",t:"UUID",fk:"ListingCommon",nn:1},{n:"rent",t:"NUMERIC"},{n:"rooms",t:"INT"}],
-        ddl:[
-          ["com","-- 카테고리별 스키마 분리: 주거"],
-          ["sql","CREATE TABLE \"HousingListing\" ("],
-          ["sql","  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  listing_id UUID NOT NULL UNIQUE REFERENCES \"ListingCommon\"(id),"],
-          ["sql","  rent       NUMERIC(12,2),"],
-          ["sql","  rooms      INT"],
-          ["sql",");"],
-        ]},
-      { name:"JobListing", x:660, y:420, badge:"4 cols",
-        cols:[{n:"id",t:"UUID",pk:1,nn:1},{n:"listing_id",t:"UUID",fk:"ListingCommon",nn:1},{n:"employer_id",t:"UUID",fk:"EmployerProfile"},{n:"salary",t:"NUMERIC"}],
-        ddl:[
-          ["com","-- 카테고리별 스키마 분리: 구인"],
-          ["sql","CREATE TABLE \"JobListing\" ("],
-          ["sql","  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  listing_id  UUID NOT NULL UNIQUE REFERENCES \"ListingCommon\"(id),"],
-          ["sql","  employer_id UUID REFERENCES \"EmployerProfile\"(id),"],
-          ["sql","  salary      NUMERIC(12,2)"],
-          ["sql",");"],
-        ]},
-      { name:"ChatRoom", x:980, y:40, badge:"4 cols",
-        cols:[{n:"id",t:"UUID",pk:1,nn:1},{n:"listing_id",t:"UUID",fk:"ListingCommon"},{n:"buyer_id",t:"UUID",fk:"User"},{n:"seller_id",t:"UUID",fk:"User"}],
-        ddl:[
-          ["com","-- 1:1 채팅방 (거래 컨텍스트 연결)"],
-          ["sql","CREATE TABLE \"ChatRoom\" ("],
-          ["sql","  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  listing_id UUID REFERENCES \"ListingCommon\"(id),"],
-          ["sql","  buyer_id   UUID REFERENCES \"User\"(id),"],
-          ["sql","  seller_id  UUID REFERENCES \"User\"(id)"],
-          ["sql",");"],
-        ]},
-      { name:"MessageOriginal", x:980, y:240, badge:"4 cols",
-        cols:[{n:"id",t:"UUID",pk:1,nn:1},{n:"room_id",t:"UUID",fk:"ChatRoom",nn:1},{n:"src_lang",t:"TEXT"},{n:"body",t:"TEXT"}],
-        ddl:[
-          ["com","-- 원문 메시지 (작성 언어 그대로 보존)"],
-          ["sql","CREATE TABLE \"MessageOriginal\" ("],
-          ["sql","  id       UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  room_id  UUID NOT NULL REFERENCES \"ChatRoom\"(id),"],
-          ["sql","  src_lang TEXT NOT NULL,"],
-          ["sql","  body     TEXT NOT NULL"],
-          ["sql",");"],
-          ["com","-- 원문/번역 분리 → 재번역·감사·법적 원본 보존 가능"],
-        ]},
-      { name:"MessageTranslated", x:980, y:420, badge:"5 cols",
-        cols:[{n:"id",t:"UUID",pk:1,nn:1},{n:"original_id",t:"UUID",fk:"MessageOriginal",nn:1},{n:"tgt_lang",t:"TEXT",nn:1},{n:"body",t:"TEXT"},{n:"engine",t:"TEXT"}],
-        ddl:[
-          ["com","-- 번역 메시지 (원문 1 : 번역 N, 언어별)"],
-          ["sql","CREATE TABLE \"MessageTranslated\" ("],
-          ["sql","  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  original_id UUID NOT NULL REFERENCES \"MessageOriginal\"(id),"],
-          ["sql","  tgt_lang    TEXT NOT NULL,"],
-          ["sql","  body        TEXT NOT NULL,"],
-          ["sql","  engine      TEXT,        -- mt provider / version"],
-          ["sql","  UNIQUE(original_id, tgt_lang)"],
-          ["sql",");"],
-        ]},
-      { name:"EmployerProfile", x:360, y:480, badge:"3 cols",
-        cols:[{n:"id",t:"UUID",pk:1,nn:1},{n:"user_id",t:"UUID",fk:"User",nn:1},{n:"company",t:"TEXT"}],
-        ddl:[
-          ["com","-- 고용주 프로필 (JobListing 소유)"],
-          ["sql","CREATE TABLE \"EmployerProfile\" ("],
-          ["sql","  id      UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  user_id UUID NOT NULL REFERENCES \"User\"(id),"],
-          ["sql","  company TEXT"],
-          ["sql",");"],
-          ["com","-- 그 외: LandlordProfile, Report, ModerationAction,"],
-          ["com","--        SavedSearch, Notification (총 16 엔티티)"],
+          ["com","-- CDC 폴링: 미발행 이벤트만 partial index"],
+          ["sql","CREATE INDEX idx_outbox_unpub ON feed_outbox(created_at)"],
+          ["sql","  WHERE published = false;"],
         ]},
     ],
     rels:[
-      ["Profile","user_id","User","id","1:1"],
-      ["Verification","user_id","User","id","N:1"],
-      ["ListingCommon","owner_id","User","id","N:1"],
-      ["UsedGoodsListing","listing_id","ListingCommon","id","1:1"],
-      ["HousingListing","listing_id","ListingCommon","id","1:1"],
-      ["JobListing","listing_id","ListingCommon","id","1:1"],
-      ["JobListing","employer_id","EmployerProfile","id","N:1"],
-      ["EmployerProfile","user_id","User","id","N:1"],
-      ["MessageOriginal","room_id","ChatRoom","id","N:1"],
-      ["MessageTranslated","original_id","MessageOriginal","id","N:1"],
+      ["follows","follower_id","users","id","N:1"],
+      ["follows","followee_id","users","id","N:1"],
+      ["posts","author_id","users","id","N:1"],
+      ["comments","post_id","posts","id","N:1"],
+      ["comments","author_id","users","id","N:1"],
+      ["comments","parent_id","comments","id","N:1"],
+      ["likes","user_id","users","id","N:1"],
+      ["likes","post_id","posts","id","N:1"],
+      ["hashtags","id","post_hashtags","hashtag_id","1:N"],
+      ["post_hashtags","post_id","posts","id","N:1"],
+      ["media_assets","uploader_id","users","id","N:1"],
+      ["notifications","recipient_id","users","id","N:1"],
     ],
-    defaultTable:"MessageTranslated",
+    defaultTable:"posts",
   },
 
-  mes: {
-    label:"솔라엣지 MES",
-    desc:"PostgreSQL 17 · S/N 추적성",
-    engine:"PostgreSQL 17 · Django ORM",
+  ecomm: {
+    label:"대규모 전자상거래",
+    desc:"PostgreSQL 16 · 주문/결제/재고/배송",
+    engine:"PostgreSQL 16 · 파티셔닝",
     enginePill:"PostgreSQL engine",
     tables:[
-      { name:"product_unit", x:60, y:60, badge:"5 cols",
-        cols:[{n:"serial_no",t:"VARCHAR",pk:1,nn:1},{n:"model_id",t:"INT",fk:"product_model",nn:1},{n:"status",t:"TEXT",nn:1},{n:"born_at",t:"TIMESTAMPTZ"},{n:"line_id",t:"INT"}],
-        ddl:[
-          ["com","-- 제품 단위 추적: S/N 기반 완전 추적성"],
-          ["sql","CREATE TABLE product_unit ("],
-          ["sql","  serial_no  VARCHAR(32) PRIMARY KEY,   -- 고유 시리얼"],
-          ["sql","  model_id   INT NOT NULL REFERENCES product_model(id),"],
-          ["sql","  status     TEXT NOT NULL DEFAULT 'WIP',"],
-          ["sql","  born_at    TIMESTAMPTZ DEFAULT now(),"],
-          ["sql","  line_id    INT REFERENCES production_line(id)"],
-          ["sql",");"],
-        ]},
-      { name:"product_model", x:60, y:300, badge:"3 cols",
-        cols:[{n:"id",t:"INT",pk:1,nn:1},{n:"name",t:"TEXT"},{n:"spec_json",t:"JSONB"}],
-        ddl:[
-          ["com","-- 제품 모델 마스터"],
-          ["sql","CREATE TABLE product_model ("],
-          ["sql","  id        SERIAL PRIMARY KEY,"],
-          ["sql","  name      TEXT NOT NULL,"],
-          ["sql","  spec_json JSONB"],
-          ["sql",");"],
-        ]},
-      { name:"process_history", x:400, y:50, badge:"6 cols",
-        cols:[{n:"id",t:"BIGINT",pk:1,nn:1},{n:"serial_no",t:"VARCHAR",fk:"product_unit",nn:1},{n:"station",t:"TEXT",nn:1},{n:"operator",t:"TEXT"},{n:"result",t:"TEXT"},{n:"ts",t:"TIMESTAMPTZ"}],
-        ddl:[
-          ["com","-- 공정 이력 (append-only, 스테이션별 통과 기록)"],
-          ["sql","CREATE TABLE process_history ("],
-          ["sql","  id        BIGSERIAL PRIMARY KEY,"],
-          ["sql","  serial_no VARCHAR(32) NOT NULL REFERENCES product_unit(serial_no),"],
-          ["sql","  station   TEXT NOT NULL,    -- SMT|AOI|FUNC|PACK"],
-          ["sql","  operator  TEXT,"],
-          ["sql","  result    TEXT,             -- PASS|FAIL|REWORK"],
-          ["sql","  ts        TIMESTAMPTZ DEFAULT now()"],
-          ["sql",");"],
-          ["com","-- 추적성 조회: serial_no + 시간순"],
-          ["sql","CREATE INDEX idx_ph_sn_ts ON process_history(serial_no, ts);"],
-        ]},
-      { name:"inspection_report", x:400, y:310, badge:"6 cols",
-        cols:[{n:"id",t:"BIGINT",pk:1,nn:1},{n:"serial_no",t:"VARCHAR",fk:"product_unit",nn:1},{n:"test_type",t:"TEXT",nn:1},{n:"measured",t:"NUMERIC"},{n:"spec_min",t:"NUMERIC"},{n:"spec_max",t:"NUMERIC"}],
-        ddl:[
-          ["com","-- 검사성적서 (측정값 vs 규격 한계)"],
-          ["sql","CREATE TABLE inspection_report ("],
-          ["sql","  id        BIGSERIAL PRIMARY KEY,"],
-          ["sql","  serial_no VARCHAR(32) NOT NULL REFERENCES product_unit(serial_no),"],
-          ["sql","  test_type TEXT NOT NULL,"],
-          ["sql","  measured  NUMERIC(12,4),"],
-          ["sql","  spec_min  NUMERIC(12,4),"],
-          ["sql","  spec_max  NUMERIC(12,4),"],
-          ["sql","  CHECK (measured BETWEEN spec_min AND spec_max)  -- 합부 판정"],
-          ["sql",");"],
-        ]},
-      { name:"production_line", x:740, y:60, badge:"3 cols",
-        cols:[{n:"id",t:"INT",pk:1,nn:1},{n:"code",t:"TEXT"},{n:"capacity",t:"INT"}],
-        ddl:[
-          ["com","-- 생산 라인 마스터"],
-          ["sql","CREATE TABLE production_line ("],
-          ["sql","  id       SERIAL PRIMARY KEY,"],
-          ["sql","  code     TEXT NOT NULL,"],
-          ["sql","  capacity INT"],
-          ["sql",");"],
-          ["com","-- React 프론트 + Django ORM 백엔드로 노출"],
-        ]},
-    ],
-    rels:[
-      ["product_unit","model_id","product_model","id","N:1"],
-      ["process_history","serial_no","product_unit","serial_no","N:1"],
-      ["inspection_report","serial_no","product_unit","serial_no","N:1"],
-    ],
-    defaultTable:"process_history",
-  },
-
-  vault: {
-    label:"옵시디언 지식 볼트",
-    desc:"타입드 그래프 스키마 · vault-lint",
-    engine:"Typed Graph · frontmatter",
-    enginePill:"Obsidian vault",
-    tables:[
-      { name:"NOTE", x:380, y:60, badge:"7 cols",
+      { name:"customers", x:40, y:40, badge:"6 cols",
         cols:[
-          {n:"id",t:"TEXT",pk:1,nn:1},
-          {n:"title",t:"TEXT",nn:1},
-          {n:"type",t:"TEXT",nn:1},
-          {n:"created",t:"TIMESTAMPTZ",nn:1},
-          {n:"updated",t:"TIMESTAMPTZ",nn:1},
-          {n:"description",t:"TEXT",nn:1},
-          {n:"hub",t:"TEXT",fk:"HUB",nn:1},
+          {n:"id",t:"UUID",pk:1,nn:1},
+          {n:"email",t:"CITEXT",nn:1},
+          {n:"full_name",t:"TEXT",nn:1},
+          {n:"phone",t:"TEXT"},
+          {n:"tier",t:"TEXT",nn:1},
+          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
         ],
         ddl:[
-          ["com","-- 모든 노트 = 1행. frontmatter 7-필드 정형 스키마(컬럼)."],
-          ["com","-- vault-lint.py가 필수 필드/형식을 강제 (48 checks)."],
-          ["sql","CREATE TABLE NOTE ("],
-          ["sql","  id          TEXT PRIMARY KEY,             -- 노트 경로/슬러그"],
-          ["sql","  title       TEXT NOT NULL,               -- frontmatter: title"],
-          ["sql","  type        TEXT NOT NULL,               -- frontmatter: type"],
-          ["sql","  created     TIMESTAMPTZ NOT NULL,        -- ISO 8601 (lint 강제)"],
-          ["sql","  updated     TIMESTAMPTZ NOT NULL,        -- ISO 8601 (lint 강제)"],
-          ["sql","  description TEXT NOT NULL,               -- frontmatter: description"],
-          ["sql","  hub         TEXT NOT NULL REFERENCES HUB(id),  -- MOC 소속"],
-          ["sql","  CHECK (created <= updated)"],
+          ["com","-- 고객 마스터 (등급: bronze/silver/gold/platinum)"],
+          ["sql","CREATE TABLE customers ("],
+          ["sql","  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
+          ["sql","  email      CITEXT NOT NULL UNIQUE,"],
+          ["sql","  full_name  TEXT NOT NULL,"],
+          ["sql","  phone      TEXT,"],
+          ["sql","  tier       TEXT NOT NULL DEFAULT 'bronze'"],
+          ["sql","             CHECK (tier IN ('bronze','silver','gold','platinum')),"],
+          ["sql","  created_at TIMESTAMPTZ NOT NULL DEFAULT now()"],
           ["sql",");"],
-          ["com","-- frontmatter=컬럼: 7-필드가 모든 노트에 정형으로 존재"],
         ]},
-      { name:"HUB", x:60, y:60, badge:"2 cols",
+      { name:"products", x:400, y:40, badge:"7 cols",
         cols:[
-          {n:"id",t:"TEXT",pk:1,nn:1},
-          {n:"title",t:"TEXT",nn:1},
-        ],
-        ddl:[
-          ["com","-- 허브 테이블: hub(MOC, Map of Content) 노트"],
-          ["com","-- 닫힌 어휘로 운영되는 상위 정리 노트가 곧 허브."],
-          ["sql","CREATE TABLE HUB ("],
-          ["sql","  id    TEXT PRIMARY KEY,    -- 예: 'moc/epistemology'"],
-          ["sql","  title TEXT NOT NULL"],
-          ["sql",");"],
-          ["com","-- NOTE.hub → HUB.id : 노트는 정확히 한 허브에 소속"],
-        ]},
-      { name:"CLASS", x:380, y:380, badge:"2 cols",
-        cols:[
-          {n:"note_id",t:"TEXT",fk:"NOTE",nn:1},
-          {n:"class",t:"TEXT",nn:1},
-        ],
-        ddl:[
-          ["com","-- class 차원: 노트 분류 enum (콰인의 '존재론적 개입')"],
-          ["com","-- `Person` 클래스를 정의하는 것은 그 범주가 존재한다는"],
-          ["com","-- 형식적 약속이다. enum 자체가 온톨로지를 선언한다."],
-          ["sql","CREATE TABLE CLASS ("],
-          ["sql","  note_id TEXT NOT NULL REFERENCES NOTE(id),"],
-          ["sql","  class   TEXT NOT NULL"],
-          ["sql","          CHECK (class IN ('concept','framework',"],
-          ["sql","                           'synthesis','person')),"],
-          ["sql","  PRIMARY KEY (note_id)"],
-          ["sql",");"],
-          ["com","-- 🧠 concept · 📐 framework · 🧩 synthesis · 👤 person"],
-        ]},
-      { name:"TAG", x:60, y:300, badge:"2 cols",
-        cols:[
-          {n:"id",t:"INTEGER",pk:1,nn:1},
+          {n:"id",t:"UUID",pk:1,nn:1},
+          {n:"sku",t:"TEXT",nn:1},
           {n:"name",t:"TEXT",nn:1},
+          {n:"category_id",t:"BIGINT",fk:"categories",nn:1},
+          {n:"price",t:"NUMERIC",nn:1},
+          {n:"attrs",t:"JSONB"},
+          {n:"status",t:"TEXT",nn:1},
         ],
         ddl:[
-          ["com","-- tag taxonomy: 닫힌 어휘(controlled vocabulary)"],
-          ["sql","CREATE TABLE TAG ("],
-          ["sql","  id   INTEGER PRIMARY KEY,"],
-          ["sql","  name TEXT NOT NULL UNIQUE   -- 허용된 태그만 (lint 강제)"],
+          ["com","-- 상품 마스터 (가변 속성: JSONB attrs)"],
+          ["sql","CREATE TABLE products ("],
+          ["sql","  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
+          ["sql","  sku         TEXT NOT NULL UNIQUE,"],
+          ["sql","  name        TEXT NOT NULL,"],
+          ["sql","  category_id BIGINT NOT NULL REFERENCES categories(id),"],
+          ["sql","  price       NUMERIC(14,2) NOT NULL CHECK (price >= 0),"],
+          ["sql","  attrs       JSONB,           -- color, size, weight 등 가변 속성"],
+          ["sql","  status      TEXT NOT NULL DEFAULT 'active'"],
+          ["sql","              CHECK (status IN ('active','discontinued','draft'))"],
           ["sql",");"],
-          ["com","-- 자유 태깅 금지 → 정의된 taxonomy 내에서만 부여"],
+          ["com","-- 카테고리 + 가격 범위 조합 쿼리용 복합 인덱스"],
+          ["sql","CREATE INDEX idx_products_cat_price ON products(category_id, price);"],
+          ["com","-- JSONB attrs GIN 인덱스 (attrs->color 같은 필터)"],
+          ["sql","CREATE INDEX idx_products_attrs ON products USING GIN(attrs);"],
         ]},
-      { name:"NOTE_TAG", x:60, y:470, badge:"2 cols",
+      { name:"categories", x:400, y:300, badge:"4 cols",
         cols:[
-          {n:"note_id",t:"TEXT",fk:"NOTE",nn:1},
-          {n:"tag_id",t:"INTEGER",fk:"TAG",nn:1},
+          {n:"id",t:"BIGINT",pk:1,nn:1},
+          {n:"parent_id",t:"BIGINT",fk:"categories"},
+          {n:"name",t:"TEXT",nn:1},
+          {n:"depth",t:"SMALLINT",nn:1},
         ],
         ddl:[
-          ["com","-- tags[]: 노트 ↔ 태그 N:M 조인 (frontmatter tags 배열)"],
-          ["sql","CREATE TABLE NOTE_TAG ("],
-          ["sql","  note_id TEXT    NOT NULL REFERENCES NOTE(id),"],
-          ["sql","  tag_id  INTEGER NOT NULL REFERENCES TAG(id),"],
-          ["sql","  PRIMARY KEY (note_id, tag_id)"],
+          ["com","-- 카테고리 계층 (자기참조, WITH RECURSIVE 전개)"],
+          ["sql","CREATE TABLE categories ("],
+          ["sql","  id        BIGSERIAL PRIMARY KEY,"],
+          ["sql","  parent_id BIGINT REFERENCES categories(id),"],
+          ["sql","  name      TEXT NOT NULL,"],
+          ["sql","  depth     SMALLINT NOT NULL DEFAULT 0"],
+          ["sql",");"],
+          ["com","-- 루트 카테고리 조회 partial index"],
+          ["sql","CREATE INDEX idx_cat_root ON categories(id) WHERE parent_id IS NULL;"],
+          ["com","-- 자식 조회 covering index (WITH RECURSIVE JOIN 가속)"],
+          ["sql","CREATE INDEX idx_cat_parent ON categories(parent_id, id);"],
+        ]},
+      { name:"inventory", x:760, y:40, badge:"5 cols",
+        cols:[
+          {n:"product_id",t:"UUID",fk:"products",nn:1},
+          {n:"warehouse_id",t:"BIGINT",fk:"warehouses",nn:1},
+          {n:"qty_available",t:"INT",nn:1},
+          {n:"qty_reserved",t:"INT",nn:1},
+          {n:"updated_at",t:"TIMESTAMPTZ",nn:1},
+        ],
+        ddl:[
+          ["com","-- 재고 (창고별 가용/예약 수량 분리 관리)"],
+          ["sql","CREATE TABLE inventory ("],
+          ["sql","  product_id   UUID   NOT NULL REFERENCES products(id),"],
+          ["sql","  warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),"],
+          ["sql","  qty_available INT NOT NULL DEFAULT 0 CHECK (qty_available >= 0),"],
+          ["sql","  qty_reserved  INT NOT NULL DEFAULT 0 CHECK (qty_reserved >= 0),"],
+          ["sql","  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),"],
+          ["sql","  PRIMARY KEY (product_id, warehouse_id)"],
+          ["sql",");"],
+          ["com","-- 재고 예약: SELECT ... FOR UPDATE (비관적 잠금)"],
+          ["com","-- qty_available - qty_reserved = 실제 판매 가능 수량"],
+        ]},
+      { name:"warehouses", x:760, y:280, badge:"4 cols",
+        cols:[
+          {n:"id",t:"BIGINT",pk:1,nn:1},
+          {n:"code",t:"TEXT",nn:1},
+          {n:"region",t:"TEXT",nn:1},
+          {n:"active",t:"BOOLEAN",nn:1},
+        ],
+        ddl:[
+          ["com","-- 창고 마스터"],
+          ["sql","CREATE TABLE warehouses ("],
+          ["sql","  id     BIGSERIAL PRIMARY KEY,"],
+          ["sql","  code   TEXT NOT NULL UNIQUE,"],
+          ["sql","  region TEXT NOT NULL,"],
+          ["sql","  active BOOLEAN NOT NULL DEFAULT true"],
           ["sql",");"],
         ]},
-      { name:"RELATION", x:720, y:200, badge:"3 cols",
+      { name:"orders", x:40, y:300, badge:"7 cols",
         cols:[
-          {n:"src_note",t:"TEXT",fk:"NOTE",nn:1},
-          {n:"predicate",t:"TEXT",nn:1},
-          {n:"dst_note",t:"TEXT",fk:"NOTE",nn:1},
+          {n:"id",t:"UUID",pk:1,nn:1},
+          {n:"customer_id",t:"UUID",fk:"customers",nn:1},
+          {n:"status",t:"TEXT",nn:1},
+          {n:"total_amount",t:"NUMERIC",nn:1},
+          {n:"currency",t:"CHAR",nn:1},
+          {n:"placed_at",t:"TIMESTAMPTZ",nn:1},
+          {n:"outbox_seq",t:"BIGINT"},
         ],
         ddl:[
-          ["com","-- relations: 노트 간 관계 = 온톨로지(닫힌 술어 5개)"],
-          ["com","-- predicate가 곧 FK 술어 — 엔티티 관계선의 의미를 규정."],
-          ["sql","CREATE TABLE RELATION ("],
-          ["sql","  src_note  TEXT NOT NULL REFERENCES NOTE(id),"],
-          ["sql","  predicate TEXT NOT NULL"],
-          ["sql","            CHECK (predicate IN ('partOf','derivedFrom',"],
-          ["sql","                    'contradicts','refines','introducedBy')),"],
-          ["sql","  dst_note  TEXT NOT NULL REFERENCES NOTE(id),"],
-          ["sql","  PRIMARY KEY (src_note, predicate, dst_note),"],
-          ["sql","  CHECK (src_note <> dst_note)"],
+          ["com","-- 주문 헤더 (RANGE 파티셔닝: placed_at 월별)"],
+          ["sql","CREATE TABLE orders ("],
+          ["sql","  id           UUID NOT NULL DEFAULT gen_random_uuid(),"],
+          ["sql","  customer_id  UUID NOT NULL REFERENCES customers(id),"],
+          ["sql","  status       TEXT NOT NULL DEFAULT 'PENDING'"],
+          ["sql","               CHECK (status IN ('PENDING','CONFIRMED',"],
+          ["sql","                 'PACKED','SHIPPED','DELIVERED','CANCELLED')),"],
+          ["sql","  total_amount NUMERIC(14,2) NOT NULL CHECK (total_amount >= 0),"],
+          ["sql","  currency     CHAR(3) NOT NULL DEFAULT 'KRW',"],
+          ["sql","  placed_at    TIMESTAMPTZ NOT NULL DEFAULT now(),"],
+          ["sql","  outbox_seq   BIGINT,           -- Outbox 이벤트 참조"],
+          ["sql","  PRIMARY KEY (id, placed_at)    -- 파티션 키 포함 복합 PK"],
+          ["sql",") PARTITION BY RANGE (placed_at);"],
+          ["com","-- 월별 파티션 예시"],
+          ["sql","CREATE TABLE orders_2025_06"],
+          ["sql","  PARTITION OF orders"],
+          ["sql","  FOR VALUES FROM ('2025-06-01') TO ('2025-07-01');"],
+          ["com","-- 고객별 주문 이력 (파티션 pruning + 최신순)"],
+          ["sql","CREATE INDEX idx_orders_cust ON orders(customer_id, placed_at DESC);"],
+        ]},
+      { name:"order_items", x:40, y:560, badge:"6 cols",
+        cols:[
+          {n:"id",t:"UUID",pk:1,nn:1},
+          {n:"order_id",t:"UUID",fk:"orders",nn:1},
+          {n:"product_id",t:"UUID",fk:"products",nn:1},
+          {n:"qty",t:"INT",nn:1},
+          {n:"unit_price",t:"NUMERIC",nn:1},
+          {n:"status",t:"TEXT",nn:1},
+        ],
+        ddl:[
+          ["com","-- 주문 라인 아이템 (상태머신: PENDING->RESERVED->SHIPPED->DELIVERED)"],
+          ["sql","CREATE TABLE order_items ("],
+          ["sql","  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
+          ["sql","  order_id   UUID NOT NULL,        -- REFERENCES orders(id, placed_at)"],
+          ["sql","  product_id UUID NOT NULL REFERENCES products(id),"],
+          ["sql","  qty        INT NOT NULL CHECK (qty > 0),"],
+          ["sql","  unit_price NUMERIC(14,2) NOT NULL,"],
+          ["sql","  status     TEXT NOT NULL DEFAULT 'PENDING'"],
+          ["sql","             CHECK (status IN ('PENDING','RESERVED',"],
+          ["sql","               'PACKED','SHIPPED','DELIVERED','CANCELLED'))"],
           ["sql",");"],
-          ["com","-- 닫힌 술어만 허용 → 그래프 의미론을 lint가 보증"],
+          ["com","-- 주문별 라인 목록"],
+          ["sql","CREATE INDEX idx_oi_order ON order_items(order_id);"],
+        ]},
+      { name:"payments", x:400, y:560, badge:"6 cols",
+        cols:[
+          {n:"id",t:"UUID",pk:1,nn:1},
+          {n:"order_id",t:"UUID",fk:"orders",nn:1},
+          {n:"method",t:"TEXT",nn:1},
+          {n:"amount",t:"NUMERIC",nn:1},
+          {n:"status",t:"TEXT",nn:1},
+          {n:"paid_at",t:"TIMESTAMPTZ"},
+        ],
+        ddl:[
+          ["com","-- 결제 (1주문 1결제 원칙, 실패시 재시도 별행)"],
+          ["sql","CREATE TABLE payments ("],
+          ["sql","  id       UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
+          ["sql","  order_id UUID NOT NULL REFERENCES orders(id),"],
+          ["sql","  method   TEXT NOT NULL"],
+          ["sql","           CHECK (method IN ('card','bank','point','coupon')),"],
+          ["sql","  amount   NUMERIC(14,2) NOT NULL,"],
+          ["sql","  status   TEXT NOT NULL DEFAULT 'PENDING'"],
+          ["sql","           CHECK (status IN ('PENDING','PAID','FAILED','REFUNDED')),"],
+          ["sql","  paid_at  TIMESTAMPTZ"],
+          ["sql",");"],
+          ["com","-- 정산 배치: 날짜별 결제 집계"],
+          ["sql","CREATE INDEX idx_pay_paid_at ON payments(paid_at) WHERE status = 'PAID';"],
+        ]},
+      { name:"shipments", x:760, y:560, badge:"6 cols",
+        cols:[
+          {n:"id",t:"UUID",pk:1,nn:1},
+          {n:"order_id",t:"UUID",fk:"orders",nn:1},
+          {n:"warehouse_id",t:"BIGINT",fk:"warehouses",nn:1},
+          {n:"tracking_no",t:"TEXT"},
+          {n:"status",t:"TEXT",nn:1},
+          {n:"estimated_at",t:"TIMESTAMPTZ"},
+        ],
+        ddl:[
+          ["com","-- 배송 (창고 출발 -> 배송중 -> 완료)"],
+          ["sql","CREATE TABLE shipments ("],
+          ["sql","  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
+          ["sql","  order_id     UUID NOT NULL REFERENCES orders(id),"],
+          ["sql","  warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),"],
+          ["sql","  tracking_no  TEXT,"],
+          ["sql","  status       TEXT NOT NULL DEFAULT 'PREPARING'"],
+          ["sql","               CHECK (status IN ('PREPARING','IN_TRANSIT','DELIVERED','RETURNED')),"],
+          ["sql","  estimated_at TIMESTAMPTZ"],
+          ["sql",");"],
+        ]},
+      { name:"order_outbox", x:400, y:820, badge:"6 cols",
+        cols:[
+          {n:"id",t:"BIGINT",pk:1,nn:1},
+          {n:"aggregate_id",t:"UUID",nn:1},
+          {n:"event_type",t:"TEXT",nn:1},
+          {n:"payload",t:"JSONB",nn:1},
+          {n:"published",t:"BOOLEAN",nn:1},
+          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
+        ],
+        ddl:[
+          ["com","-- SSOT Outbox: 주문 TX와 동일 커밋 (이중 쓰기 0)"],
+          ["com","-- Debezium CDC -> Kafka -> 재고/검색/DW 팬아웃"],
+          ["sql","CREATE TABLE order_outbox ("],
+          ["sql","  id           BIGSERIAL PRIMARY KEY,"],
+          ["sql","  aggregate_id UUID NOT NULL,   -- order_id"],
+          ["sql","  event_type   TEXT NOT NULL,   -- OrderPlaced|OrderConfirmed|OrderCancelled"],
+          ["sql","  payload      JSONB NOT NULL,"],
+          ["sql","  published    BOOLEAN NOT NULL DEFAULT false,"],
+          ["sql","  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()"],
+          ["sql",");"],
+          ["com","-- Debezium CDC 폴링: 미발행 이벤트 전용 partial index"],
+          ["sql","CREATE INDEX idx_outbox_unpub ON order_outbox(created_at)"],
+          ["sql","  WHERE published = false;"],
         ]},
     ],
     rels:[
-      ["NOTE","hub","HUB","id","N:1"],
-      ["CLASS","note_id","NOTE","id","1:1"],
-      ["NOTE_TAG","note_id","NOTE","id","N:1"],
-      ["NOTE_TAG","tag_id","TAG","id","N:1"],
-      ["RELATION","src_note","NOTE","id","N:1"],
-      ["RELATION","dst_note","NOTE","id","N:1"],
+      ["orders","customer_id","customers","id","N:1"],
+      ["order_items","order_id","orders","id","N:1"],
+      ["order_items","product_id","products","id","N:1"],
+      ["products","category_id","categories","id","N:1"],
+      ["categories","parent_id","categories","id","N:1"],
+      ["inventory","product_id","products","id","N:1"],
+      ["inventory","warehouse_id","warehouses","id","N:1"],
+      ["payments","order_id","orders","id","N:1"],
+      ["shipments","order_id","orders","id","N:1"],
+      ["shipments","warehouse_id","warehouses","id","N:1"],
     ],
-    defaultTable:"NOTE",
-    caption:"지식 볼트를 타입드 그래프 스키마로 운영 — frontmatter=컬럼, class=enum, relations=FK 술어, vault-lint=제약(48 checks). 콰인 '존재론적 개입': `Person` 클래스를 정의하는 것은 그 범주가 존재한다는 형식적 약속.",
+    defaultTable:"orders",
   },
 };
 
@@ -1024,21 +1022,18 @@ document.querySelectorAll('.tab').forEach(t=>{
     Object.values(views).forEach(id=>document.getElementById(id).classList.remove('active'));
     document.getElementById(views[v]).classList.add('active');
     footView.textContent=footLabels[v];
-    if(v==='arch'){startFlow();} else {stopFlow();}
+    if(v==='arch'){ensureFlow();} else {stopFlow();}
   });
 });
 
 /* ============================================================
    SQL SYNTAX HIGHLIGHTER (lightweight)
    ============================================================ */
-const KEYWORDS = /\b(CREATE|TABLE|PRIMARY|KEY|FOREIGN|REFERENCES|NOT|NULL|DEFAULT|CHECK|IN|UNIQUE|INDEX|ON|CASCADE|DELETE|AUTOINCREMENT|WITH|RECURSIVE|SELECT|FROM|WHERE|UNION|ALL|JOIN|AS|AND|OR|IS|USING|BETWEEN|GIN|LIKE|SET|BEGIN|END|RETURN|CALL|SIGNAL|SQLSTATE)\b/g;
-const TYPES = /\b(TEXT|INTEGER|INT|BIGINT|BIGSERIAL|SERIAL|REAL|JSON|JSONB|UUID|CITEXT|NUMERIC|VARCHAR|TIMESTAMPTZ|TSVECTOR|BOOLEAN)\b/g;
+const KEYWORDS = /\b(CREATE|TABLE|PRIMARY|KEY|FOREIGN|REFERENCES|NOT|NULL|DEFAULT|CHECK|IN|UNIQUE|INDEX|ON|CASCADE|DELETE|AUTOINCREMENT|WITH|RECURSIVE|SELECT|FROM|WHERE|UNION|ALL|JOIN|AS|AND|OR|IS|USING|BETWEEN|GIN|LIKE|SET|BEGIN|END|RETURN|CALL|SIGNAL|SQLSTATE|PARTITION|BY|RANGE|VALUES|FOR|STORED|EXTENSION|IF|EXISTS|GENERATED|ALWAYS|ALTER|ADD|COLUMN)\b/g;
+const TYPES = /\b(TEXT|INTEGER|INT|BIGINT|BIGSERIAL|SERIAL|SMALLINT|REAL|JSON|JSONB|UUID|CITEXT|NUMERIC|VARCHAR|CHAR|TIMESTAMPTZ|TSVECTOR|BOOLEAN|BOOLEAN)\b/g;
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function hi(line){
-  // comment lines
   if(/^\s*--/.test(line)) return '<span class="com">'+esc(line)+'</span>';
-  let parts=[]; let rest=line; let m;
-  // split off trailing comment
   let comment='';
   const ci=line.indexOf('--');
   if(ci>=0){comment=line.slice(ci);line=line.slice(0,ci);}
@@ -1046,8 +1041,7 @@ function hi(line){
     .replace(/'([^']*)'/g,'<span class="str">\'$1\'</span>')
     .replace(KEYWORDS,'<span class="kw">$1</span>')
     .replace(TYPES,'<span class="typ">$1</span>')
-    .replace(/\b(\d+)\b/g,'<span class="num">$1</span>')
-    .replace(/\b(PRIMARY KEY|gen_random_uuid|now)\b/g,m=>m); // noop guard
+    .replace(/\b(\d+)\b/g,'<span class="num">$1</span>');
   if(comment) out+='<span class="com">'+esc(comment)+'</span>';
   return out;
 }
@@ -1063,7 +1057,7 @@ function renderDDL(ddl){
 /* ============================================================
    VIEW 1: ERD ENGINE
    ============================================================ */
-let curModel='kiosk';
+let curModel='social';
 let curTable=null;
 let pan={x:40,y:30,k:1};
 
@@ -1088,21 +1082,18 @@ function buildModelSwitch(){
 function loadModel(){
   const m=MODELS[curModel];
   buildModelSwitch();
-  // engine labels
   document.getElementById('engineLbl').textContent=m.enginePill;
   document.getElementById('footEngine').textContent=m.engine;
   document.getElementById('footTbl').textContent='tables: '+m.tables.length;
-  // tree
   const tl=document.getElementById('treeList');
   tl.innerHTML='';
   m.tables.forEach(t=>{
     const n=document.createElement('div');
     n.className='tnode';n.dataset.name=t.name;
-    n.innerHTML='<span class="ic">▤</span><span>'+t.name+'</span><span class="ncol">'+t.cols.length+'</span>';
+    n.innerHTML='<span class="ic">&#9636;</span><span>'+t.name+'</span><span class="ncol">'+t.cols.length+'</span>';
     n.onclick=()=>selectTable(t.name,true);
     tl.appendChild(n);
   });
-  // tables on canvas
   tableLayer.innerHTML='';
   for(const k in tableEls) delete tableEls[k];
   m.tables.forEach(t=>{
@@ -1111,7 +1102,7 @@ function loadModel(){
     el.dataset.name=t.name;
     let cols=t.cols.map(c=>{
       const cls='col'+(c.pk?' pk':'')+(c.fk?' fk':'');
-      const key=c.pk?'<span class="key pkk">🔑</span>':(c.fk?'<span class="key fkk">↘</span>':'<span class="key"></span>');
+      const key=c.pk?'<span class="key pkk">&#128273;</span>':(c.fk?'<span class="key fkk">&#8600;</span>':'<span class="key"></span>');
       const nn=c.nn?'<span class="nn">NN</span>':'';
       return '<div class="'+cls+'">'+key+'<span class="cn">'+c.n+'</span>'+nn+'<span class="ct">'+c.t+'</span></div>';
     }).join('');
@@ -1120,17 +1111,13 @@ function loadModel(){
     tableLayer.appendChild(el);
     tableEls[t.name]=el;
   });
-  // model caption (optional, e.g. typed-graph vault)
   const cap=document.getElementById('modelCaption');
   if(m.caption){
-    cap.innerHTML=m.caption
-      .replace(/`([^`]+)`/g,'<code>$1</code>')
-      .replace(/vault-lint=제약\(48 checks\)/,'<b>vault-lint=제약(48 checks)</b>');
+    cap.innerHTML=m.caption.replace(/`([^`]+)`/g,'<code>$1</code>');
     cap.classList.add('show');
   } else {
     cap.classList.remove('show');cap.innerHTML='';
   }
-  // fit & default
   setTimeout(()=>{fitView();selectTable(m.defaultTable,false,true);},0);
 }
 
@@ -1160,30 +1147,25 @@ function selectTable(name,fromTree,silent){
   const m=MODELS[curModel];
   const t=m.tables.find(x=>x.name===name);
   if(!t) return;
-  // highlight tree
   document.querySelectorAll('.tnode').forEach(n=>n.classList.toggle('active',n.dataset.name===name));
-  // related tables via rels
   const related=new Set([name]);
   const fkLines=[];
   m.rels.forEach(r=>{
     if(r[0]===name){related.add(r[2]);fkLines.push(r);}
     if(r[2]===name){related.add(r[0]);fkLines.push(r);}
   });
-  // table styling
   Object.entries(tableEls).forEach(([n,el])=>{
     el.classList.remove('sel','dim','fkhi');
     if(n===name) el.classList.add('sel');
     else if(related.has(n)) el.classList.add('fkhi');
     else el.classList.add('dim');
   });
-  // DDL
   document.getElementById('ddlTitle').textContent=name;
   document.getElementById('ddlCode').innerHTML=renderDDL(t.ddl);
-  // rel list
   const rl=document.getElementById('relList');
   if(fkLines.length){
     rl.innerHTML=fkLines.map(r=>{
-      return '<div class="rel-row"><span class="a">'+r[0]+'.'+r[1]+'</span><span class="car">─'+r[4]+'→</span><span class="b">'+r[2]+'.'+r[3]+'</span></div>';
+      return '<div class="rel-row"><span class="a">'+r[0]+'.'+r[1]+'</span><span class="car">&#8212;'+r[4]+'&#8594;</span><span class="b">'+r[2]+'.'+r[3]+'</span></div>';
     }).join('');
   } else {
     rl.innerHTML='<div class="rel-row" style="color:var(--dim)">no foreign keys (root / master)</div>';
@@ -1191,9 +1173,12 @@ function selectTable(name,fromTree,silent){
   drawRels(name,related);
 }
 
-/* crow's-foot relationship lines */
+/* crow-foot relationship lines */
 function center(el){
-  return {x:parseFloat(el.style.left), y:parseFloat(el.style.top), w:el.offsetWidth, h:el.offsetHeight};
+  /* offsetWidth/Height is 0 when the canvas is hidden (display:none).
+     Fall back to 230x120 so edgePoint never divides by zero. */
+  const w=el.offsetWidth||230, h=el.offsetHeight||120;
+  return {x:parseFloat(el.style.left), y:parseFloat(el.style.top), w:w, h:h};
 }
 function drawRels(selName,related){
   const m=MODELS[curModel];
@@ -1201,28 +1186,32 @@ function drawRels(selName,related){
   m.rels.forEach(r=>{
     const ea=tableEls[r[0]], eb=tableEls[r[2]];
     if(!ea||!eb) return;
+    /* skip self-referencing (same table on both sides) to avoid dx=dy=0->NaN */
+    if(r[0]===r[2]) return;
     const a=center(ea), b=center(eb);
     const ax=a.x+a.w/2, ay=a.y+a.h/2;
     const bx=b.x+b.w/2, by=b.y+b.h/2;
-    // edge points
     const p1=edgePoint(a,bx,by);
     const p2=edgePoint(b,ax,ay);
+    /* guard: skip if any coordinate is NaN (should not happen now) */
+    if(!isFinite(p1.x)||!isFinite(p1.y)||!isFinite(p2.x)||!isFinite(p2.y)) return;
     const isHi = selName && (r[0]===selName||r[2]===selName);
     const col = isHi?'#ff5d8f':'#2a3a50';
     const w = isHi?2.2:1.3;
     const mx=(p1.x+p2.x)/2;
-    const path=`M${p1.x},${p1.y} C${mx},${p1.y} ${mx},${p2.y} ${p2.x},${p2.y}`;
-    svg+=`<path d="${path}" fill="none" stroke="${col}" stroke-width="${w}" ${isHi?'':'stroke-dasharray="1 0"'} opacity="${isHi?1:.6}"/>`;
-    // crow's foot at the "many" side (child = r[0])
+    const path='M'+p1.x+','+p1.y+' C'+mx+','+p1.y+' '+mx+','+p2.y+' '+p2.x+','+p2.y;
+    svg+='<path d="'+path+'" fill="none" stroke="'+col+'" stroke-width="'+w+'" opacity="'+(isHi?1:.6)+'"/>';
     svg+=crowFoot(p1,p2,col,isHi);
-    // single bar at parent side
-    svg+=`<circle cx="${p2.x}" cy="${p2.y}" r="${isHi?4:3}" fill="${col}"/>`;
+    svg+='<circle cx="'+p2.x+'" cy="'+p2.y+'" r="'+(isHi?4:3)+'" fill="'+col+'"/>';
   });
   relSvg.innerHTML=svg;
 }
 function edgePoint(box,tx,ty){
   const cx=box.x+box.w/2, cy=box.y+box.h/2;
   const dx=tx-cx, dy=ty-cy;
+  /* if source and target centers are identical (should not happen after self-loop guard)
+     return the center itself — avoids 0*Infinity=NaN */
+  if(dx===0&&dy===0) return {x:cx, y:cy};
   const hw=box.w/2, hh=box.h/2;
   let sx=dx===0?Infinity:hw/Math.abs(dx);
   let sy=dy===0?Infinity:hh/Math.abs(dy);
@@ -1230,16 +1219,15 @@ function edgePoint(box,tx,ty){
   return {x:cx+dx*s, y:cy+dy*s};
 }
 function crowFoot(p1,p2,col,hi){
-  // crow's foot near p1 pointing back toward p2
   const ang=Math.atan2(p2.y-p1.y,p2.x-p1.x);
   const len=hi?13:10, spread=hi?7:5;
   const bx=p1.x+Math.cos(ang)*len, by=p1.y+Math.sin(ang)*len;
   const perp=ang+Math.PI/2;
   const o1x=bx+Math.cos(perp)*spread, o1y=by+Math.sin(perp)*spread;
   const o2x=bx-Math.cos(perp)*spread, o2y=by-Math.sin(perp)*spread;
-  return `<line x1="${p1.x}" y1="${p1.y}" x2="${o1x}" y2="${o1y}" stroke="${col}" stroke-width="${hi?2:1.3}"/>`+
-         `<line x1="${p1.x}" y1="${p1.y}" x2="${o2x}" y2="${o2y}" stroke="${col}" stroke-width="${hi?2:1.3}"/>`+
-         `<line x1="${p1.x}" y1="${p1.y}" x2="${bx}" y2="${by}" stroke="${col}" stroke-width="${hi?2:1.3}"/>`;
+  return '<line x1="'+p1.x+'" y1="'+p1.y+'" x2="'+o1x+'" y2="'+o1y+'" stroke="'+col+'" stroke-width="'+(hi?2:1.3)+'"/>'+
+         '<line x1="'+p1.x+'" y1="'+p1.y+'" x2="'+o2x+'" y2="'+o2y+'" stroke="'+col+'" stroke-width="'+(hi?2:1.3)+'"/>'+
+         '<line x1="'+p1.x+'" y1="'+p1.y+'" x2="'+bx+'" y2="'+by+'" stroke="'+col+'" stroke-width="'+(hi?2:1.3)+'"/>';
 }
 
 /* pan + zoom */
@@ -1260,7 +1248,6 @@ canvasWrap.addEventListener('wheel',e=>{
   const old=pan.k;
   const dir=e.deltaY<0?1.12:0.89;
   pan.k=Math.max(.3,Math.min(2.2,pan.k*dir));
-  // zoom toward cursor
   pan.x=mx-(mx-pan.x)*(pan.k/old);
   pan.y=my-(my-pan.y)*(pan.k/old);
   applyTransform();
@@ -1273,27 +1260,28 @@ document.getElementById('copyBtn').onclick=function(){
   if(!t) return;
   const txt=t.ddl.map(r=>r[1]).join('\n');
   navigator.clipboard&&navigator.clipboard.writeText(txt);
-  this.textContent='copied ✓';setTimeout(()=>this.textContent='copy',1200);
+  this.textContent='copied v';setTimeout(()=>this.textContent='copy',1200);
 };
 
 /* ============================================================
-   VIEW 2: ARCHITECTURE — animated CDC flow
+   VIEW 2: ARCHITECTURE — animated CDC flow (auto-start on load)
    ============================================================ */
 const flowSvg=document.getElementById('flowSvg');
 const archStage=document.getElementById('archStage');
 let flowRunning=false, flowRAF=null, flowSpeed=1, evtCount=0;
 let packets=[];
+let flowLayoutDone=false;
 
 const FLOW_NODES=[
-  {id:'app',cls:'src',x:.07,y:.42,t:'App / TX',s:'단일 트랜잭션 BEGIN',ic:'⚙'},
-  {id:'biz',cls:'src',x:.07,y:.14,t:'business table',s:'orders, listings …',ic:'▤',pill:'COMMIT'},
-  {id:'outbox',cls:'outbox',x:.28,y:.42,t:'outbox',s:'동일 TX에 이벤트 1행 append',ic:'⤴',pill:'same TX'},
-  {id:'cdc',cls:'cdc',x:.49,y:.42,t:'Debezium CDC',s:'WAL / binlog tail',ic:'⟲',pill:'log-based'},
-  {id:'kafka',cls:'kafka',x:.67,y:.42,t:'Kafka',s:'topic: domain.events',ic:'≋',pill:'partitioned'},
-  {id:'redis',cls:'proj',x:.88,y:.12,t:'Redis',s:'read cache projection',ic:'◆'},
-  {id:'es',cls:'proj',x:.88,y:.42,t:'Elasticsearch',s:'search index',ic:'◆'},
-  {id:'bq',cls:'proj',x:.88,y:.72,t:'BigQuery',s:'analytics warehouse',ic:'◆'},
-  {id:'bad',cls:'bad',x:.28,y:.80,t:'✕ dual write',s:'DB+cache+Kafka 직접쓰기 — 비원자',ic:'✕'},
+  {id:'app',cls:'src',x:.07,y:.42,t:'App / TX',s:'단일 트랜잭션 BEGIN',ic:'&#9881;'},
+  {id:'biz',cls:'src',x:.07,y:.14,t:'business table',s:'orders, posts ...',ic:'&#9636;',pill:'COMMIT'},
+  {id:'outbox',cls:'outbox',x:.28,y:.42,t:'outbox',s:'동일 TX에 이벤트 1행 append',ic:'&#10548;',pill:'same TX'},
+  {id:'cdc',cls:'cdc',x:.49,y:.42,t:'Debezium CDC',s:'WAL / binlog tail',ic:'&#10236;',pill:'log-based'},
+  {id:'kafka',cls:'kafka',x:.67,y:.42,t:'Kafka',s:'topic: domain.events',ic:'&#8803;',pill:'partitioned'},
+  {id:'redis',cls:'proj',x:.88,y:.12,t:'Redis',s:'read cache projection',ic:'&#9670;'},
+  {id:'es',cls:'proj',x:.88,y:.42,t:'Elasticsearch',s:'search index',ic:'&#9670;'},
+  {id:'bq',cls:'proj',x:.88,y:.72,t:'BigQuery',s:'analytics warehouse',ic:'&#9670;'},
+  {id:'bad',cls:'bad',x:.28,y:.80,t:'x dual write',s:'DB+cache+Kafka 직접쓰기 - 비원자',ic:'&#10007;'},
 ];
 const FLOW_EDGES=[
   ['app','outbox'],['biz','outbox'],['outbox','cdc'],['cdc','kafka'],
@@ -1303,7 +1291,6 @@ let nodePos={};
 
 function layoutFlow(){
   flowSvg.innerHTML='';
-  // remove old nodes
   archStage.querySelectorAll('.node').forEach(n=>n.remove());
   const W=archStage.clientWidth, H=archStage.clientHeight;
   FLOW_NODES.forEach(n=>{
@@ -1312,12 +1299,15 @@ function layoutFlow(){
     el.style.left=(n.x*W)+'px';el.style.top=(n.y*H)+'px';
     el.innerHTML='<div class="nh"><span class="ic">'+n.ic+'</span>'+n.t+'</div><div class="ns">'+n.s+'</div>'+(n.pill?'<span class="pill">'+n.pill+'</span>':'');
     archStage.appendChild(el);
-    // store center after layout
-    requestAnimationFrame(()=>{
-      nodePos[n.id]={x:n.x*W+el.offsetWidth/2, y:n.y*H+el.offsetHeight/2, w:el.offsetWidth, h:el.offsetHeight, el};
-      drawFlowEdges();
-    });
     nodePos[n.id]={x:n.x*W+84, y:n.y*H+30, w:168, h:60, el};
+  });
+  requestAnimationFrame(()=>{
+    FLOW_NODES.forEach(n=>{
+      const el=nodePos[n.id].el;
+      nodePos[n.id]={x:n.x*W+el.offsetWidth/2, y:n.y*H+el.offsetHeight/2, w:el.offsetWidth, h:el.offsetHeight, el};
+    });
+    drawFlowEdges();
+    flowLayoutDone=true;
   });
   drawFlowEdges();
 }
@@ -1328,7 +1318,7 @@ function drawFlowEdges(){
     if(!na||!nb) return;
     const x1=na.x+na.w/2, y1=na.y, x2=nb.x-nb.w/2, y2=nb.y;
     const mx=(x1+x2)/2;
-    s+=`<path id="edge-${a}-${b}" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}" fill="none" stroke="#22324a" stroke-width="1.6" marker-end="url(#ah)"/>`;
+    s+='<path id="edge-'+a+'-'+b+'" d="M'+x1+','+y1+' C'+mx+','+y1+' '+mx+','+y2+' '+x2+','+y2+'" fill="none" stroke="#22324a" stroke-width="1.6" marker-end="url(#ah)"/>';
   });
   flowSvg.innerHTML=s;
 }
@@ -1345,9 +1335,7 @@ function bez(t,e){
   const y=u*u*u*y1+3*u*u*t*y1+3*u*t*t*y2+t*t*t*y2;
   return {x,y};
 }
-const FLOW_COLORS={outbox:'#00e0a4',cdc:'#3fb6ff',kafka:'#ffcb47'};
 function spawnPacket(){
-  // a packet travels app->outbox->cdc->kafka->(one projection)
   const proj=['redis','es','bq'][Math.floor(Math.random()*3)];
   const route=[['app','outbox','#00e0a4'],['outbox','cdc','#00e0a4'],['cdc','kafka','#3fb6ff'],['kafka',proj,'#ffcb47']];
   packets.push({route,seg:0,t:0,counted:false});
@@ -1356,7 +1344,6 @@ let lastSpawn=0;
 function flowTick(ts){
   if(!flowRunning) return;
   if(ts-lastSpawn> (900/flowSpeed)){spawnPacket();lastSpawn=ts;}
-  // render packets layer
   let dots='';
   packets.forEach(p=>{
     p.t += 0.018*flowSpeed;
@@ -1370,11 +1357,10 @@ function flowTick(ts){
     const e=edgePath(seg[0],seg[1]);
     const pos=bez(p.t,e);
     const col=seg[2];
-    dots+=`<circle cx="${pos.x}" cy="${pos.y}" r="4.5" fill="${col}"><animate attributeName="opacity" values="1;.5;1" dur="0.6s" repeatCount="indefinite"/></circle>`;
-    dots+=`<circle cx="${pos.x}" cy="${pos.y}" r="9" fill="${col}" opacity="0.18"/>`;
+    dots+='<circle cx="'+pos.x+'" cy="'+pos.y+'" r="4.5" fill="'+col+'"><animate attributeName="opacity" values="1;.5;1" dur="0.6s" repeatCount="indefinite"/></circle>';
+    dots+='<circle cx="'+pos.x+'" cy="'+pos.y+'" r="9" fill="'+col+'" opacity="0.18"/>';
   });
   packets=packets.filter(p=>!p.dead);
-  // redraw edges + dots
   drawFlowEdges();
   flowSvg.insertAdjacentHTML('beforeend',dots);
   flowRAF=requestAnimationFrame(flowTick);
@@ -1383,52 +1369,55 @@ function startFlow(){
   layoutFlow();
   if(flowRunning) return;
   flowRunning=true;
-  document.getElementById('archToggle').textContent='⏸ pause flow';
+  document.getElementById('archToggle').textContent='&#9646;&#9646; pause flow';
   flowRAF=requestAnimationFrame(flowTick);
+}
+function ensureFlow(){
+  if(!flowRunning) startFlow();
+  else layoutFlow();
 }
 function stopFlow(){
   flowRunning=false;
   if(flowRAF) cancelAnimationFrame(flowRAF);
 }
 document.getElementById('archToggle').onclick=function(){
-  if(flowRunning){stopFlow();this.textContent='▶ resume flow';}
-  else{flowRunning=true;this.textContent='⏸ pause flow';flowRAF=requestAnimationFrame(flowTick);}
+  if(flowRunning){stopFlow();this.textContent='&#9654; resume flow';}
+  else{flowRunning=true;this.textContent='&#9646;&#9646; pause flow';flowRAF=requestAnimationFrame(flowTick);}
 };
 document.getElementById('archSpeed').onclick=function(){
   flowSpeed = flowSpeed>=4?1:flowSpeed*2;
-  this.textContent='speed: '+flowSpeed+'×';
+  this.textContent='speed: '+flowSpeed+'x';
 };
 window.addEventListener('resize',()=>{if(document.getElementById('view-arch').classList.contains('active'))layoutFlow();});
 
 /* ============================================================
-   VIEW 3a: STATE MACHINE
+   VIEW 3a: STATE MACHINE (order_item 주문 라인 상태머신)
    ============================================================ */
 const smSvg=document.getElementById('smSvg');
 const SM_STATES=[
   {id:'PENDING',x:60,y:30,c:'#3fb6ff'},
-  {id:'UPLOADING',x:230,y:30,c:'#a78bfa'},
-  {id:'VERIFYING',x:230,y:160,c:'#ffcb47'},
-  {id:'COMPLETED',x:60,y:290,c:'#00e0a4'},
-  {id:'FAILED_NET',x:420,y:30,c:'#ff5a4d'},
-  {id:'FAILED_HASH',x:420,y:160,c:'#ff5a4d'},
+  {id:'RESERVED',x:230,y:30,c:'#a78bfa'},
+  {id:'SHIPPED',x:230,y:160,c:'#ffcb47'},
+  {id:'DELIVERED',x:60,y:290,c:'#00e0a4'},
+  {id:'FAIL_STOCK',x:420,y:30,c:'#ff5a4d'},
+  {id:'CANCELLED',x:420,y:160,c:'#ff5a4d'},
 ];
 const SM_W=130, SM_H=46;
 const SM_EDGES=[
-  ['PENDING','UPLOADING','start'],
-  ['UPLOADING','VERIFYING','upload ok'],
-  ['VERIFYING','COMPLETED','hash ok'],
-  ['UPLOADING','FAILED_NET','net err'],
-  ['VERIFYING','FAILED_HASH','hash err'],
-  ['FAILED_NET','PENDING','backoff↺'],
-  ['FAILED_HASH','PENDING','backoff↺'],
+  ['PENDING','RESERVED','재고 확보'],
+  ['RESERVED','SHIPPED','출고 처리'],
+  ['SHIPPED','DELIVERED','배송 완료'],
+  ['PENDING','FAIL_STOCK','재고 부족'],
+  ['RESERVED','CANCELLED','취소 요청'],
+  ['FAIL_STOCK','PENDING','backoff&#8634;'],
+  ['CANCELLED','PENDING','재시도&#8634;'],
 ];
 let smCur='PENDING', smRetry=0;
-const smOrder=['PENDING','UPLOADING','VERIFYING','COMPLETED'];
+const smOrder=['PENDING','RESERVED','SHIPPED','DELIVERED'];
 
 function smPos(id){const s=SM_STATES.find(x=>x.id===id);return {cx:s.x+SM_W/2,cy:s.y+SM_H/2,...s};}
 function drawSM(){
   let s='<defs><marker id="sma" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L7,3.2 L0,6.4 Z" fill="#3a4d66"/></marker><marker id="sma-hot" markerWidth="9" markerHeight="9" refX="7" refY="3.2" orient="auto"><path d="M0,0 L7,3.2 L0,6.4 Z" fill="#00e0a4"/></marker></defs>';
-  // edges
   SM_EDGES.forEach(([a,b,lbl])=>{
     const pa=smPos(a), pb=smPos(b);
     const dx=pb.cx-pa.cx, dy=pb.cy-pa.cy;
@@ -1436,20 +1425,16 @@ function drawSM(){
     const hot = (a===smCur);
     const col=hot?'#00e0a4':'#34465e';
     const mx=(ea.x+eb.x)/2, my=(ea.y+eb.y)/2;
-    const ctrl = Math.abs(dx)>Math.abs(dy)? `${mx},${ea.y} ${mx},${eb.y}` : `${ea.x},${my} ${eb.x},${my}`;
-    s+=`<path d="M${ea.x},${ea.y} C${ctrl} ${eb.x},${eb.y}" fill="none" stroke="${col}" stroke-width="${hot?2.4:1.4}" marker-end="url(#${hot?'sma-hot':'sma'})" opacity="${hot?1:.7}"/>`;
-    s+=`<text x="${mx}" y="${my-4}" fill="${hot?'#00e0a4':'#5c708a'}" font-size="9.5" font-family="JetBrains Mono" text-anchor="middle">${lbl}</text>`;
+    const ctrl = Math.abs(dx)>Math.abs(dy)? mx+','+ea.y+' '+mx+','+eb.y : ea.x+','+my+' '+eb.x+','+my;
+    s+='<path d="M'+ea.x+','+ea.y+' C'+ctrl+' '+eb.x+','+eb.y+'" fill="none" stroke="'+col+'" stroke-width="'+(hot?2.4:1.4)+'" marker-end="url(#'+(hot?'sma-hot':'sma')+')" opacity="'+(hot?1:.7)+'"/>';
+    s+='<text x="'+mx+'" y="'+(my-4)+'" fill="'+(hot?'#00e0a4':'#5c708a')+'" font-size="9.5" font-family="JetBrains Mono" text-anchor="middle">'+lbl+'</text>';
   });
-  // nodes
   SM_STATES.forEach(st=>{
     const active=st.id===smCur;
     const fill=active?st.c:'#141d29';
     const stroke=st.c;
     const txt=active?'#06140f':st.c;
-    s+=`<g>
-      <rect class="st-rect" x="${st.x}" y="${st.y}" rx="9" width="${SM_W}" height="${SM_H}" fill="${fill}" stroke="${stroke}" stroke-width="${active?2.4:1.4}" ${active?'filter="url(#glow)"':''}/>
-      <text x="${st.x+SM_W/2}" y="${st.y+SM_H/2+4}" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="12" fill="${txt}">${st.id}</text>
-    </g>`;
+    s+='<g><rect class="st-rect" x="'+st.x+'" y="'+st.y+'" rx="9" width="'+SM_W+'" height="'+SM_H+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+(active?2.4:1.4)+'" '+(active?'filter="url(#glow)"':'')+'/><text x="'+(st.x+SM_W/2)+'" y="'+(st.y+SM_H/2+4)+'" text-anchor="middle" font-family="JetBrains Mono" font-weight="700" font-size="12" fill="'+txt+'">'+st.id+'</text></g>';
   });
   s+='<filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>';
   smSvg.innerHTML=s;
@@ -1457,73 +1442,70 @@ function drawSM(){
 function smEdge(box,tx,ty){
   const cx=box.cx, cy=box.cy, hw=SM_W/2, hh=SM_H/2;
   const dx=tx-cx, dy=ty-cy;
-  let sx=dx===0?1e9:hw/Math.abs(dx), sy=dy===0?1e9:hh/Math.abs(dy);
-  const sc=Math.min(sx,sy);
+  let ex=dx===0?1e9:hw/Math.abs(dx), ey=dy===0?1e9:hh/Math.abs(dy);
+  const sc=Math.min(ex,ey);
   return {x:cx+dx*sc, y:cy+dy*sc};
 }
 function smUpdateInfo(){
   document.getElementById('smState').textContent=smCur;
   document.getElementById('smRetry').textContent=smRetry;
-  const due = smCur.startsWith('FAILED')? '+'+Math.pow(2,smRetry)+'s' : '—';
-  document.getElementById('smNext').textContent=due;
+  const due = (smCur==='FAIL_STOCK'||smCur==='CANCELLED')? '+'+Math.pow(2,smRetry)+'s' : '&#8212;';
+  document.getElementById('smNext').innerHTML=due;
 }
 document.getElementById('smStep').onclick=()=>{
-  if(smCur.startsWith('FAILED')){smCur='PENDING';}
+  if(smCur==='FAIL_STOCK'||smCur==='CANCELLED'){smCur='PENDING';}
   else{
     const i=smOrder.indexOf(smCur);
     if(i>=0 && i<smOrder.length-1) smCur=smOrder[i+1];
-    else if(smCur==='COMPLETED'){/* terminal */}
   }
   drawSM();smUpdateInfo();
 };
 document.getElementById('smFail').onclick=()=>{
-  if(smCur==='UPLOADING'){smCur='FAILED_NET';smRetry++;}
-  else if(smCur==='VERIFYING'){smCur='FAILED_HASH';smRetry++;}
-  else if(smCur==='PENDING'){smCur='UPLOADING';setTimeout(()=>{smCur='FAILED_NET';smRetry++;drawSM();smUpdateInfo();},250);}
+  if(smCur==='PENDING'){smCur='FAIL_STOCK';smRetry++;}
+  else if(smCur==='RESERVED'){smCur='CANCELLED';smRetry++;}
   drawSM();smUpdateInfo();
 };
 document.getElementById('smReset').onclick=()=>{smCur='PENDING';smRetry=0;drawSM();smUpdateInfo();};
 
 /* ============================================================
-   VIEW 3b: RECURSIVE CTE TREE
+   VIEW 3b: RECURSIVE CTE TREE (카테고리 계층)
    ============================================================ */
 const RECSQL=[
-  ["com","-- 조직 계층 전개: anchor(최상위) + 재귀 멤버"],
-  ["sql","WITH RECURSIVE EmployeeHierarchy AS ("],
-  ["sql","  SELECT EmployeeID, Name, ManagerID, 0 AS depth"],
-  ["sql","  FROM   EMPLOYEE"],
-  ["sql","  WHERE  ManagerID IS NULL              -- anchor"],
+  ["com","-- 카테고리 계층 전개: anchor(루트) + 재귀 멤버"],
+  ["sql","WITH RECURSIVE CategoryTree AS ("],
+  ["sql","  SELECT id, name, parent_id, 0 AS depth"],
+  ["sql","  FROM   categories"],
+  ["sql","  WHERE  parent_id IS NULL              -- anchor"],
   ["sql","  UNION ALL"],
-  ["sql","  SELECT e.EmployeeID, e.Name, e.ManagerID, eh.depth + 1"],
-  ["sql","  FROM   EMPLOYEE e"],
-  ["sql","  JOIN   EmployeeHierarchy eh ON e.ManagerID = eh.EmployeeID"],
+  ["sql","  SELECT c.id, c.name, c.parent_id, ct.depth + 1"],
+  ["sql","  FROM   categories c"],
+  ["sql","  JOIN   CategoryTree ct ON c.parent_id = ct.id"],
   ["sql",")"],
-  ["sql","SELECT * FROM EmployeeHierarchy ORDER BY depth;"],
+  ["sql","SELECT * FROM CategoryTree ORDER BY depth, id;"],
 ];
 document.getElementById('recSql').innerHTML = RECSQL.map((r,i)=>'<span class="ln">'+(i+1)+'</span>'+hi(r[1])).join('\n');
 
 const recSvg=document.getElementById('recSvg');
 const REC_TREE=[
-  {id:1,name:'CEO',mgr:null,depth:0,x:280,y:34},
-  {id:2,name:'VP Eng',mgr:1,depth:1,x:140,y:110},
-  {id:3,name:'VP Ops',mgr:1,depth:1,x:420,y:110},
-  {id:4,name:'Lead BE',mgr:2,depth:2,x:70,y:190},
-  {id:5,name:'Lead FE',mgr:2,depth:2,x:210,y:190},
-  {id:6,name:'Mgr QA',mgr:3,depth:2,x:420,y:190},
-  {id:7,name:'Eng A',mgr:4,depth:3,x:70,y:262},
-  {id:8,name:'Eng B',mgr:5,depth:3,x:210,y:262},
-  {id:9,name:'QA C',mgr:6,depth:3,x:420,y:262},
+  {id:1,name:'전체',mgr:null,depth:0,x:280,y:34},
+  {id:2,name:'패션',mgr:1,depth:1,x:140,y:110},
+  {id:3,name:'가전',mgr:1,depth:1,x:420,y:110},
+  {id:4,name:'의류',mgr:2,depth:2,x:70,y:190},
+  {id:5,name:'신발',mgr:2,depth:2,x:210,y:190},
+  {id:6,name:'TV',mgr:3,depth:2,x:420,y:190},
+  {id:7,name:'티셔츠',mgr:4,depth:3,x:70,y:262},
+  {id:8,name:'운동화',mgr:5,depth:3,x:210,y:262},
+  {id:9,name:'OLED',mgr:6,depth:3,x:420,y:262},
 ];
-let recShown=0; // depth shown
+let recShown=0;
 function drawRec(){
   let s='';
-  // edges (only between shown nodes)
   REC_TREE.forEach(n=>{
     if(n.mgr==null) return;
     const p=REC_TREE.find(x=>x.id===n.mgr);
     const visible = n.depth<=recShown;
     const col = visible?'#a78bfa':'#1c2636';
-    s+=`<path d="M${p.x},${p.y+13} C${p.x},${(p.y+n.y)/2} ${n.x},${(p.y+n.y)/2} ${n.x},${n.y-13}" fill="none" stroke="${col}" stroke-width="${visible?1.8:1}" opacity="${visible?.85:.3}"/>`;
+    s+='<path d="M'+p.x+','+(p.y+13)+' C'+p.x+','+(p.y+n.y)/2+' '+n.x+','+(p.y+n.y)/2+' '+n.x+','+(n.y-13)+'" fill="none" stroke="'+col+'" stroke-width="'+(visible?1.8:1)+'" opacity="'+(visible?.85:.3)+'"/>';
   });
   REC_TREE.forEach(n=>{
     const visible=n.depth<=recShown;
@@ -1532,11 +1514,7 @@ function drawRec(){
     const fill = visible? (justIn?col:'#141d29') : '#0e1620';
     const stroke = visible?col:'#1c2636';
     const tcol = visible?(justIn?'#06140f':col):'#2a3a50';
-    s+=`<g opacity="${visible?1:.25}">
-      <rect x="${n.x-52}" y="${n.y-14}" rx="8" width="104" height="28" fill="${fill}" stroke="${stroke}" stroke-width="${justIn?2.2:1.4}"/>
-      <text x="${n.x}" y="${n.y+1}" text-anchor="middle" font-family="JetBrains Mono" font-size="11" font-weight="${justIn?700:500}" fill="${tcol}">${n.name}</text>
-      <text x="${n.x}" y="${n.y+11}" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="${visible?'#5c708a':'#1c2636'}">#${n.id} mgr:${n.mgr??'∅'}</text>
-    </g>`;
+    s+='<g opacity="'+(visible?1:.25)+'"><rect x="'+(n.x-52)+'" y="'+(n.y-14)+'" rx="8" width="104" height="28" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+(justIn?2.2:1.4)+'"/><text x="'+n.x+'" y="'+(n.y+1)+'" text-anchor="middle" font-family="JetBrains Mono" font-size="11" font-weight="'+(justIn?700:500)+'" fill="'+tcol+'">'+n.name+'</text><text x="'+n.x+'" y="'+(n.y+11)+'" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="'+(visible?'#5c708a':'#1c2636')+'">#'+n.id+' parent:'+(n.mgr===null?'null':n.mgr)+'</text></g>';
   });
   recSvg.innerHTML=s;
   document.getElementById('recDepth').textContent=recShown;
@@ -1554,22 +1532,25 @@ document.getElementById('recRun').onclick=()=>{
 document.getElementById('recReset').onclick=()=>{if(recTimer)clearInterval(recTimer);recShown=0;drawRec();};
 
 /* ============================================================
-   INIT (await fonts for headless PDF first paint)
+   INIT
    ============================================================ */
 function init(){
   buildModelSwitch();
   loadModel();
   drawSM();smUpdateInfo();
-  drawRec();
-  recShown=3;drawRec(); // first paint shows full tree for PDF
+  recShown=3;drawRec();
+  /* CDC flow 자동 시작: 레이아웃 게이트 setTimeout, 스크롤 의존 없음 */
+  setTimeout(function(){
+    startFlow();
+  }, 200);
 }
 if(document.fonts && document.fonts.ready){
-  document.fonts.ready.then(()=>{init();}).catch(()=>init());
-  init(); // also run immediately so first paint never blank
+  document.fonts.ready.then(function(){init();}).catch(function(){init();});
+  init();
 } else {
   init();
 }
-window.addEventListener('load',()=>{ if(!curTable) loadModel(); });
+window.addEventListener('load',function(){if(!curTable) loadModel();});
 </script>
 </body>
 </html>

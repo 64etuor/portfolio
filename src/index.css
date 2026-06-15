@@ -1,26 +1,30 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-/* Tailwind v4 — 디자인 토큰을 @theme 으로 선언하면 bg-ink, text-paper,
-   font-serif 같은 유틸리티가 자동 생성된다. */
+/* Tailwind v4 — 라이트 에디토리얼 + 플레이풀 액센트 팔레트. */
 @theme {
   --font-sans:
     'Pretendard', 'Apple SD Gothic Neo', system-ui, -apple-system, sans-serif;
   --font-serif: 'Cormorant Garamond Variable', 'Cormorant Garamond',
     'Noto Serif KR', serif;
 
-  --color-ink: #0b0b0d;
-  --color-ink-soft: #141417;
-  --color-paper: #f3f1ea;
-  --color-muted: #8c8c93;
-  --color-faint: #5a5a61;
-  --color-accent: #c9a24b; /* warm gold */
-  --color-line: rgba(243, 241, 234, 0.12);
+  --color-paper: #f1ede3; /* 따뜻한 종이 배경 */
+  --color-paper-2: #e7e2d5;
+  --color-ink: #1b1a16; /* 본문/제목 */
+  --color-muted: #6c675d;
+  --color-faint: #98938a;
+  --color-line: rgba(27, 26, 22, 0.14);
+
+  /* 플레이풀 오브젝트 팔레트 (3D + 액센트) */
+  --color-accent: #e07a5f; /* terracotta */
+  --color-sage: #81b29a;
+  --color-sun: #f2cc8f;
+  --color-navy: #3d405b;
 }
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
   }
   html {
     -webkit-font-smoothing: antialiased;
@@ -28,25 +32,25 @@
   }
   body {
     margin: 0;
-    background: var(--color-ink);
-    color: color-mix(in oklab, var(--color-paper) 82%, transparent);
+    background: var(--color-paper);
+    color: color-mix(in oklab, var(--color-ink) 86%, transparent);
     font-family: var(--font-sans);
     word-break: keep-all; /* 한글 어절 단위 줄바꿈 */
     overflow-wrap: break-word;
   }
   ::selection {
     background: var(--color-accent);
-    color: #000;
+    color: #fff;
   }
   h1,
   h2,
   h3 {
-    color: var(--color-paper);
+    color: var(--color-ink);
     margin: 0;
   }
 }
 
-/* Lenis 부드러운 스크롤 권장 스타일 */
+/* Lenis 부드러운 스크롤 */
 html.lenis,
 html.lenis body {
   height: auto;

@@ -1,47 +1,38 @@
 import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { Environment, Float, MeshDistortMaterial } from '@react-three/drei'
-import { Bloom, EffectComposer } from '@react-three/postprocessing'
-
-/** 천천히 떠다니며 일렁이는 금속 토러스 노트 — 히어로 배경 오브젝트. */
-function Artifact() {
-  return (
-    <Float speed={1.1} rotationIntensity={0.9} floatIntensity={1.4}>
-      <mesh>
-        <torusKnotGeometry args={[1, 0.32, 240, 32]} />
-        <MeshDistortMaterial
-          color="#c9a24b"
-          roughness={0.2}
-          metalness={0.85}
-          distort={0.26}
-          speed={1.4}
-        />
-      </mesh>
-    </Float>
-  )
-}
+import { Environment } from '@react-three/drei'
+import { Physics } from '@react-three/rapier'
+import { Scene } from './Scene'
 
 /**
- * 화면 전체를 덮는 고정 3D 배경.
- * Canvas 는 클라이언트 전용(WebGL)이므로 항상 브라우저에서만 마운트된다.
+ * 풀스크린 인터랙티브 3D 플레이그라운드.
+ * 무중력 물리 공간에 떠 있는 오브젝트들을 마우스로 끌고/부딪칠 수 있다.
  */
 export function Experience() {
   return (
     <Canvas
-      camera={{ position: [0, 0, 5], fov: 42 }}
+      shadows
       dpr={[1, 2]}
+      camera={{ position: [0, 0, 16], fov: 38 }}
       gl={{ antialias: true }}
     >
-      <color attach="background" args={['#0b0b0d']} />
-      <ambientLight intensity={0.35} />
-      <directionalLight position={[4, 6, 3]} intensity={2.2} />
-      <directionalLight position={[-6, -2, -4]} intensity={0.6} color="#6c7cff" />
+      <color attach="background" args={['#f1ede3']} />
+      <fog attach="fog" args={['#f1ede3', 22, 34]} />
+      <ambientLight intensity={0.8} />
+      <directionalLight
+        castShadow
+        position={[6, 9, 6]}
+        intensity={2}
+        shadow-mapSize={[2048, 2048]}
+      >
+        <orthographicCamera attach="shadow-camera" args={[-12, 12, 12, -12, 0.1, 40]} />
+      </directionalLight>
+      <directionalLight position={[-8, -4, -6]} intensity={0.4} color="#9aa7ff" />
       <Suspense fallback={null}>
-        <Artifact />
+        <Physics gravity={[0, 0, 0]}>
+          <Scene />
+        </Physics>
         <Environment preset="city" />
-        <EffectComposer>
-          <Bloom intensity={0.7} luminanceThreshold={0.55} mipmapBlur />
-        </EffectComposer>
       </Suspense>
     </Canvas>
   )

@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MES 실시간 운영 콘솔 · 박양하 OPS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e0d;
+  --panel:#0f1513;
+  --panel2:#121a17;
+  --line:#1f2c27;
+  --line2:#2a3a33;
+  --amber:#ffb627;
+  --amber-dim:#a8761a;
+  --green:#37f08e;
+  --green-dim:#1c9e5a;
+  --cyan:#3fd0e0;
+  --red:#ff4d4d;
+  --magenta:#d96aff;
+  --txt:#c7d6cf;
+  --txt-dim:#6f857c;
+  --txt-faint:#41534c;
+  --crt:#0c1210;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg);
+  color:var(--txt);
+  font-family:'IBM Plex Sans KR','JetBrains Mono',monospace;
+  word-break:keep-all;
+  overflow-x:hidden;
+  font-size:13px;
+  line-height:1.45;
+  -webkit-font-smoothing:antialiased;
+}
+/* CRT scanlines + vignette */
+body::before{
+  content:"";position:fixed;inset:0;z-index:9998;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0px,rgba(0,0,0,0) 2px,rgba(0,0,0,.18) 3px,rgba(0,0,0,0) 4px);
+  mix-blend-mode:multiply;opacity:.55;
+}
+body::after{
+  content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
+  background:radial-gradient(ellipse at center,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%);
+}
+.mono{font-family:'JetBrains Mono',monospace}
+.cond{font-family:'Oswald',sans-serif;letter-spacing:.02em}
+.num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+
+/* ===== top bar ===== */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:stretch;
+  background:linear-gradient(180deg,#101715,#0b110f);
+  border-bottom:1px solid var(--line2);
+  height:54px;
+}
+.tb-brand{
+  display:flex;align-items:center;gap:12px;padding:0 18px;
+  border-right:1px solid var(--line);
+}
+.logo-led{width:14px;height:14px;border-radius:50%;background:var(--green);
+  box-shadow:0 0 8px var(--green),0 0 16px var(--green-dim);animation:blink 1.6s infinite}
+@keyframes blink{0%,72%{opacity:1}73%,100%{opacity:.25}}
+.tb-brand .title{font-family:'Oswald';font-weight:700;font-size:16px;letter-spacing:.06em;color:#eaf3ef;text-transform:uppercase}
+.tb-brand .sub{font-size:10px;color:var(--amber);letter-spacing:.18em;text-transform:uppercase}
+.tb-meta{display:flex;align-items:center;flex:1;gap:0}
+.tb-cell{padding:0 16px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--line);height:100%}
+.tb-cell .k{font-size:9px;color:var(--txt-faint);letter-spacing:.16em;text-transform:uppercase}
+.tb-cell .v{font-size:13px;color:var(--txt);font-family:'JetBrains Mono'}
+.tb-cell .v.g{color:var(--green)}
+.tb-cell .v.a{color:var(--amber)}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:14px;padding:0 18px}
+.pill{font-size:10px;letter-spacing:.12em;padding:4px 9px;border:1px solid var(--green-dim);color:var(--green);border-radius:2px;text-transform:uppercase;background:rgba(55,240,142,.05)}
+.pill.live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--green);margin-right:6px;box-shadow:0 0 6px var(--green);animation:blink 1.2s infinite;vertical-align:middle}
+
+/* ===== layout ===== */
+.wrap{max-width:1880px;margin:0 auto;padding:14px}
+.grid{display:grid;gap:12px}
+.row-1{grid-template-columns:1.15fr 1fr 1fr 1.1fr}
+.row-kpi{grid-template-columns:repeat(4,1fr)}
+.row-2{grid-template-columns:1.35fr 1fr}
+.row-3{grid-template-columns:1fr 1fr 1fr}
+@media(max-width:1320px){
+  .row-1{grid-template-columns:1fr 1fr}
+  .row-kpi{grid-template-columns:1fr 1fr}
+  .row-2{grid-template-columns:1fr}
+  .row-3{grid-template-columns:1fr 1fr}
+}
+@media(max-width:760px){
+  .row-1,.row-kpi,.row-3{grid-template-columns:1fr}
+}
+
+/* ===== panel ===== */
+.panel{
+  background:linear-gradient(180deg,var(--panel),#0c1210);
+  border:1px solid var(--line2);
+  position:relative;
+  display:flex;flex-direction:column;
+  min-height:0;
+}
+.panel::before{content:"";position:absolute;top:0;left:0;width:18px;height:1px;background:var(--amber);box-shadow:0 0 6px var(--amber)}
+.p-head{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px;border-bottom:1px solid var(--line);
+  background:rgba(255,255,255,.012);
+}
+.p-head .dot{width:6px;height:6px;border-radius:50%;background:var(--amber);box-shadow:0 0 6px var(--amber)}
+.p-head .h-title{font-family:'Oswald';font-weight:600;font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:#dfeae5}
+.p-head .h-id{margin-left:auto;font-size:9px;color:var(--txt-faint);letter-spacing:.14em;font-family:'JetBrains Mono'}
+.p-body{padding:12px;flex:1;min-height:0}
+
+/* ===== gauges ===== */
+.gauge-wrap{display:flex;justify-content:space-around;align-items:flex-start;gap:6px;flex-wrap:wrap}
+.gauge{display:flex;flex-direction:column;align-items:center;flex:1;min-width:90px}
+.gauge svg{width:108px;height:78px;overflow:visible}
+.gauge .gv{font-family:'JetBrains Mono';font-weight:700;font-size:22px;margin-top:-10px}
+.gauge .gl{font-size:10px;color:var(--txt-dim);letter-spacing:.1em;text-transform:uppercase;margin-top:2px;text-align:center}
+.gauge .gt{font-size:9px;color:var(--txt-faint);letter-spacing:.06em}
+
+/* ===== KPI tiles ===== */
+.kpi{background:linear-gradient(160deg,#101816,#0b110f);border:1px solid var(--line2);position:relative;overflow:hidden;padding:14px 14px 12px}
+.kpi::after{content:"";position:absolute;right:-30px;top:-30px;width:90px;height:90px;border:1px solid var(--line);border-radius:50%;opacity:.4}
+.kpi .kl{font-size:10px;color:var(--txt-dim);letter-spacing:.12em;text-transform:uppercase}
+.kpi .kv{font-family:'JetBrains Mono';font-weight:800;font-size:34px;line-height:1;margin:8px 0 4px;color:var(--amber);text-shadow:0 0 12px rgba(255,182,39,.25)}
+.kpi .kv.g{color:var(--green);text-shadow:0 0 12px rgba(55,240,142,.25)}
+.kpi .kv.c{color:var(--cyan);text-shadow:0 0 12px rgba(63,208,224,.25)}
+.kpi .kd{font-size:10px;color:var(--txt-faint);letter-spacing:.04em}
+.kpi .kspark{position:absolute;bottom:0;left:0;right:0;height:26px;opacity:.55}
+.kpi .ktrend{display:inline-block;font-size:10px;padding:1px 5px;border-radius:2px;margin-left:6px;vertical-align:middle}
+.up{color:var(--green);border:1px solid var(--green-dim)}
+.down{color:var(--red);border:1px solid #6e2222}
+
+/* ===== gantt / schedule ===== */
+.gantt{width:100%}
+.gantt-axis{display:flex;font-size:9px;color:var(--txt-faint);border-bottom:1px solid var(--line);padding-bottom:4px;margin-bottom:6px;font-family:'JetBrains Mono'}
+.gantt-axis span{flex:1;text-align:left}
+.grow{display:grid;grid-template-columns:182px 1fr;gap:10px;align-items:center;padding:7px 0;border-bottom:1px dashed var(--line)}
+.grow:last-child{border-bottom:none}
+.grow .glabel .wo{font-size:9px;color:var(--cyan);letter-spacing:.1em;font-family:'JetBrains Mono'}
+.grow .glabel .gn{font-size:12px;color:var(--txt);font-weight:600}
+.grow .glabel .gc{font-size:9.5px;color:var(--txt-dim)}
+.gtrack{position:relative;height:24px;background:repeating-linear-gradient(90deg,rgba(255,255,255,.02) 0,rgba(255,255,255,.02) 1px,transparent 1px,transparent 9.09%)}
+.gbar{position:absolute;top:3px;height:18px;border-radius:2px;display:flex;align-items:center;padding:0 8px;font-size:9.5px;font-family:'JetBrains Mono';white-space:nowrap;overflow:hidden;cursor:default;transition:filter .2s}
+.gbar:hover{filter:brightness(1.3)}
+.gbar.done{background:linear-gradient(90deg,rgba(55,240,142,.22),rgba(55,240,142,.08));border:1px solid var(--green-dim);color:var(--green)}
+.gbar.run{background:linear-gradient(90deg,rgba(255,182,39,.28),rgba(255,182,39,.1));border:1px solid var(--amber-dim);color:var(--amber)}
+.gbar .prog{position:absolute;inset:0;background:linear-gradient(90deg,rgba(255,182,39,.18),transparent);width:0}
+.now-line{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--red);box-shadow:0 0 8px var(--red);z-index:5}
+.now-line::before{content:"NOW";position:absolute;top:-14px;left:-12px;font-size:8px;color:var(--red);letter-spacing:.1em;font-family:'JetBrains Mono'}
+
+/* ===== alarm feed ===== */
+.feed{display:flex;flex-direction:column;gap:0;font-family:'JetBrains Mono';font-size:11px;max-height:300px;overflow:hidden}
+.fr{display:grid;grid-template-columns:62px 54px 1fr;gap:8px;padding:5px 4px;border-bottom:1px solid rgba(255,255,255,.03);align-items:baseline}
+.fr .ft{color:var(--txt-faint);font-size:10px}
+.fr .fsev{font-size:9px;letter-spacing:.06em;padding:1px 4px;border-radius:2px;text-align:center;height:fit-content}
+.sev-info{color:var(--cyan);border:1px solid #235862}
+.sev-warn{color:var(--amber);border:1px solid var(--amber-dim)}
+.sev-crit{color:var(--red);border:1px solid #6e2222}
+.sev-ok{color:var(--green);border:1px solid var(--green-dim)}
+.fr .fmsg{color:var(--txt)}
+.fr.flash{animation:flashrow 1.6s ease-out}
+@keyframes flashrow{0%{background:rgba(55,240,142,.22)}100%{background:transparent}}
+.fr.flash-crit{animation:flashcrit 1.6s ease-out}
+@keyframes flashcrit{0%{background:rgba(255,77,77,.22)}100%{background:transparent}}
+
+/* ===== status panels (skills) ===== */
+.stat-grid{display:flex;flex-direction:column;gap:10px}
+.stat-cat{font-size:9px;color:var(--amber);letter-spacing:.16em;text-transform:uppercase;margin-bottom:5px;border-bottom:1px solid var(--line);padding-bottom:3px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-family:'JetBrains Mono';font-size:10px;padding:3px 7px;border:1px solid var(--line2);color:var(--txt);background:rgba(255,255,255,.015);display:flex;align-items:center;gap:5px}
+.chip .led{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 5px var(--green)}
+.chip .led.a{background:var(--amber);box-shadow:0 0 5px var(--amber)}
+.chip .led.c{background:var(--cyan);box-shadow:0 0 5px var(--cyan)}
+
+/* ===== chart canvas ===== */
+.chart-box{width:100%;height:200px;position:relative}
+svg .axis line,svg .axis path{stroke:var(--line);stroke-width:1}
+svg text{fill:var(--txt-dim);font-family:'JetBrains Mono';font-size:9px}
+.legend{display:flex;gap:14px;font-size:9.5px;color:var(--txt-dim);margin-top:6px;font-family:'JetBrains Mono'}
+.legend i{display:inline-block;width:10px;height:2px;margin-right:5px;vertical-align:middle}
+
+/* defect mini-table */
+.dtable{width:100%;border-collapse:collapse;font-family:'JetBrains Mono';font-size:10.5px}
+.dtable th{text-align:left;color:var(--txt-faint);font-weight:400;font-size:9px;letter-spacing:.08em;padding:4px 6px;border-bottom:1px solid var(--line);text-transform:uppercase}
+.dtable td{padding:5px 6px;border-bottom:1px solid rgba(255,255,255,.03)}
+.bar-cell{position:relative;background:rgba(255,255,255,.02);height:13px;border-radius:1px;overflow:hidden}
+.bar-cell .bf{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--amber),var(--red));opacity:.7}
+
+/* footer / contact */
+.footer{display:flex;flex-wrap:wrap;gap:0;border-top:1px solid var(--line2);margin-top:4px}
+.fcell{padding:12px 18px;border-right:1px solid var(--line);flex:1;min-width:180px}
+.fcell .fk{font-size:9px;color:var(--txt-faint);letter-spacing:.16em;text-transform:uppercase}
+.fcell .fv{font-size:13px;color:var(--txt);font-family:'JetBrains Mono';margin-top:3px}
+.fcell .fv a{color:var(--cyan);text-decoration:none}
+.fcell .fv a:hover{text-decoration:underline}
+
+.sparkline{display:block;width:100%;height:30px}
+.section-tag{font-family:'Oswald';font-size:10px;letter-spacing:.3em;color:var(--txt-faint);text-transform:uppercase;margin:6px 2px}
+
+/* bell curve panel */
+.cpk-readout{display:flex;gap:18px;margin-top:8px;font-family:'JetBrains Mono';font-size:11px}
+.cpk-readout div span{display:block;font-size:9px;color:var(--txt-faint);letter-spacing:.1em}
+.cpk-readout div b{font-size:18px;color:var(--green)}
+
+.tickflash{animation:tf .35s}
+@keyframes tf{0%{color:#fff;text-shadow:0 0 14px currentColor}100%{}}
+
+/* ===== ANDON board (지도카) ===== */
+.andon-bar{display:flex;align-items:center;gap:7px;padding:7px 12px;border-bottom:1px solid var(--line);background:rgba(255,255,255,.012)}
+.andon-lamps{display:flex;gap:6px;align-items:center}
+.alamp{width:13px;height:13px;border-radius:50%;border:1px solid rgba(255,255,255,.12);opacity:.22;transition:opacity .3s,box-shadow .3s;position:relative}
+.alamp.g{background:var(--green)}
+.alamp.y{background:var(--amber)}
+.alamp.r{background:var(--red)}
+.alamp.on{opacity:1}
+.alamp.g.on{box-shadow:0 0 9px var(--green),0 0 16px var(--green-dim)}
+.alamp.y.on{box-shadow:0 0 9px var(--amber),0 0 16px var(--amber-dim)}
+.alamp.r.on{box-shadow:0 0 9px var(--red),0 0 16px #6e2222;animation:andonpulse .9s infinite}
+@keyframes andonpulse{0%,100%{opacity:1}50%{opacity:.45}}
+.andon-state{font-family:'Oswald';font-weight:600;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.andon-state.g{color:var(--green)}
+.andon-state.y{color:var(--amber)}
+.andon-state.r{color:var(--red)}
+.andon-jidoka{margin-left:auto;font-family:'JetBrains Mono';font-size:9px;letter-spacing:.08em;color:var(--txt-faint);display:flex;align-items:center;gap:6px}
+.andon-jidoka b{color:var(--txt-dim);font-weight:500}
+.stop-flag{font-family:'JetBrains Mono';font-size:9px;letter-spacing:.1em;padding:2px 6px;border:1px solid var(--line2);border-radius:2px;color:var(--txt-faint);transition:all .3s}
+.stop-flag.armed{color:var(--red);border-color:#6e2222;background:rgba(255,77,77,.08);box-shadow:0 0 8px rgba(255,77,77,.25)}
+
+/* ===== 운영 철학 strip ===== */
+.philo{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--line2);border:1px solid var(--line2);margin-bottom:12px}
+@media(max-width:760px){.philo{grid-template-columns:1fr}}
+.philo-cell{background:linear-gradient(160deg,#101816,#0b110f);padding:11px 14px;position:relative;cursor:default;transition:background .25s}
+.philo-cell:hover{background:linear-gradient(160deg,#13201c,#0d1411)}
+.philo-cell .pname{font-family:'Oswald';font-weight:600;font-size:12px;letter-spacing:.06em;color:#dfeae5;display:flex;align-items:center;gap:7px}
+.philo-cell .pname .pj{font-family:'JetBrains Mono';font-size:11px}
+.philo-cell .ptag{font-size:9px;color:var(--amber);letter-spacing:.12em;text-transform:uppercase;margin:3px 0 6px}
+.philo-cell .pdesc{font-size:10.5px;color:var(--txt-dim);line-height:1.55}
+.philo-cell .pdesc em{color:var(--txt);font-style:normal;border-bottom:1px dotted var(--line2)}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tb-brand">
+    <div class="logo-led"></div>
+    <div>
+      <div class="title">PARK&nbsp;YANGHA&nbsp;//&nbsp;OPS</div>
+      <div class="sub">MES · BI Live Operations Console</div>
+    </div>
+  </div>
+  <div class="tb-meta">
+    <div class="tb-cell"><span class="k">Line</span><span class="v a">CAREER-L01</span></div>
+    <div class="tb-cell"><span class="k">Shift</span><span class="v">DAY / A조</span></div>
+    <div class="tb-cell"><span class="k">Role</span><span class="v">생산운영 PM · 공정기술 · 총괄본부장</span></div>
+    <div class="tb-cell"><span class="k">System Clock</span><span class="v g" id="clock">--:--:--</span></div>
+    <div class="tb-cell"><span class="k">Uptime (경력)</span><span class="v a" id="uptime">--</span></div>
+  </div>
+  <div class="tb-right">
+    <span class="pill live" id="conn">DAQ STREAM</span>
+    <span class="pill" id="alarmcount">ALARMS 0</span>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <!-- 운영 철학 — the WHY behind the console (제조 root → systems thinking) -->
+  <div class="section-tag">// OPERATING PHILOSOPHY — 표면화 시스템의 전제</div>
+  <div class="philo" title="이 콘솔은 '이상을 즉시 표면화한다'는 제조 원칙 위에 설계되었습니다.">
+    <div class="philo-cell">
+      <div class="pname"><span class="pj">自働化</span> 지도카 · JIDOKA</div>
+      <div class="ptag">STOP-THE-LINE</div>
+      <div class="pdesc">이상이 생기면 <em>라인을 멈춘다</em> — 자동화에 인간의 손길을. 결함을 즉시 표면화. → 알람 발생 시 <em>안돈(ANDON)</em> 점등 · 라인 정지.</div>
+    </div>
+    <div class="philo-cell">
+      <div class="pname"><span class="pj">⚠</span> 일탈의 정상화 · NORMALIZATION OF DEVIANCE</div>
+      <div class="ptag">VAUGHAN · CHALLENGER</div>
+      <div class="pdesc">표면화 시스템은 <em>'비정상'이라는 감각이 무뎌지면</em> 실패한다. 일탈이 정상으로 굳기 전에 강제로 escalate하는 채널을 설계.</div>
+    </div>
+    <div class="philo-cell">
+      <div class="pname"><span class="pj">↺</span> 비난 없는 회고 · BLAMELESS POSTMORTEM</div>
+      <div class="ptag">PSYCHOLOGICAL SAFETY · SRE</div>
+      <div class="pdesc">심리적 안전이 모든 표면화 시스템의 전제. <em>검토되지 않은 포스트모템은 애초에 존재하지 않은 것</em>이나 다름없다.</div>
+    </div>
+  </div>
+
+  <!-- ROW 1: gauges + sparkstrip + cpk + alarm summary -->
+  <div class="section-tag">// PLANT OVERVIEW — REAL-TIME</div>
+  <div class="grid row-1">
+
+    <div class="panel">
+      <div class="p-head"><span class="dot"></span><span class="h-title">설비 종합 효율 OEE</span><span class="h-id">PNL-01 / OEE.SUITE</span></div>
+      <div class="p-body">
+        <div class="gauge-wrap">
+          <div class="gauge" data-gauge="oee" data-target="91.4" data-color="green"></div>
+          <div class="gauge" data-gauge="avail" data-target="96.2" data-color="amber"></div>
+          <div class="gauge" data-gauge="perf" data-target="94.8" data-color="cyan"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="p-head"><span class="dot"></span><span class="h-title">처리량 · 가동 신호</span><span class="h-id">PNL-02 / THRPT</span></div>
+      <div class="p-body">
+        <div style="display:flex;flex-direction:column;gap:9px;font-family:'JetBrains Mono';font-size:11px">
+          <div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--txt-dim)">시간당 생산량 UPH</span><span class="num" id="uph" style="color:var(--green)">0</span></div>
+            <svg class="sparkline" id="spark-uph"></svg>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--txt-dim)">택트타임 C/T (s)</span><span class="num" id="ct" style="color:var(--amber)">0</span></div>
+            <svg class="sparkline" id="spark-ct"></svg>
+          </div>
+          <div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--txt-dim)">라인 밸런스 LOB (%)</span><span class="num" id="lob" style="color:var(--cyan)">0</span></div>
+            <svg class="sparkline" id="spark-lob"></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="p-head"><span class="dot"></span><span class="h-title">공정 능력 Cpk · 정규분포</span><span class="h-id">PNL-03 / SPC.BELL</span></div>
+      <div class="p-body">
+        <svg id="bell" style="width:100%;height:120px"></svg>
+        <div class="cpk-readout">
+          <div><span>Cpk</span><b id="cpkv">1.67</b></div>
+          <div><span>수율 YIELD</span><b id="yieldv" style="color:var(--amber)">—</b></div>
+          <div><span>불량 PPM</span><b id="ppmv" style="color:var(--cyan)">—</b></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="p-head"><span class="dot"></span><span class="h-title">안돈 보드 · 이상 표면화</span><span class="h-id">PNL-04 / ANDON.FEED</span></div>
+      <div class="andon-bar">
+        <div class="andon-lamps">
+          <span class="alamp r" id="lamp-r" title="🔴 정지 — 라인 STOP"></span>
+          <span class="alamp y" id="lamp-y" title="🟡 주의 — 일탈 감시"></span>
+          <span class="alamp g on" id="lamp-g" title="🟢 정상 — GO"></span>
+        </div>
+        <span class="andon-state g" id="andon-state">정상 · GO</span>
+        <div class="andon-jidoka">
+          <span class="stop-flag" id="stop-flag">STOP-THE-LINE</span>
+          <b>지도카 自働化</b>
+        </div>
+      </div>
+      <div class="p-body">
+        <div class="feed" id="feed"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW KPI: count-up achievement tiles -->
+  <div class="section-tag">// CUMULATIVE KPI — 누적 성과 지표 (워크오더 검증 완료)</div>
+  <div class="grid row-kpi" id="kpi-row"></div>
+  <div class="grid row-kpi" id="kpi-row2" style="margin-top:12px"></div>
+
+  <!-- ROW 2: Gantt(career) + defect pareto -->
+  <div class="section-tag">// PRODUCTION SCHEDULE — 워크오더 / 경력 타임라인 2020 → NOW</div>
+  <div class="grid row-2">
+    <div class="panel">
+      <div class="p-head"><span class="dot"></span><span class="h-title">생산 스케줄 GANTT</span><span class="h-id">PNL-05 / WO.PLAN</span></div>
+      <div class="p-body">
+        <div class="gantt" id="gantt"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="p-head"><span class="dot"></span><span class="h-title">불량 모드 파레토 · 4M</span><span class="h-id">PNL-06 / DEFECT.PARETO</span></div>
+      <div class="p-body">
+        <svg id="pareto" class="chart-box"></svg>
+        <div class="legend"><span><i style="background:var(--amber)"></i>불량 건수</span><span><i style="background:var(--green)"></i>누적 % (개선 후)</span></div>
+        <table class="dtable" style="margin-top:8px" id="dtable"></table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 3: trend chart + equipment/system status + capability -->
+  <div class="grid row-3" style="margin-top:12px">
+    <div class="panel" style="grid-column:span 1">
+      <div class="p-head"><span class="dot"></span><span class="h-title">용착 불량률 추이 · DOE 개입</span><span class="h-id">PNL-07 / DEFECT.TREND</span></div>
+      <div class="p-body">
+        <svg id="trend" class="chart-box"></svg>
+        <div class="legend"><span><i style="background:var(--red)"></i>DOE 적용 전</span><span><i style="background:var(--green)"></i>DOE 적용 후</span><span style="color:var(--amber)">▲ 알람 해제: 15% → 0%대</span></div>
+        <div style="margin-top:8px;font-family:'JetBrains Mono';font-size:9.5px;line-height:1.6;color:var(--txt-dim);border-top:1px solid var(--line);padding-top:7px">
+          <span style="color:var(--amber)">⚠ 일탈 정상화 경고</span> · 15%를 '원래 그런 것'으로 받아들이는 순간 표면화 실패.<br>
+          <b style="color:var(--txt);font-weight:500">이상을 이상으로 보는 감각</b> → 즉시 표면화 → <b style="color:var(--red);font-weight:500">라인 정지</b> → DOE 개선.
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="p-head"><span class="dot"></span><span class="h-title">설비 / 시스템 상태</span><span class="h-id">PNL-08 / ASSET.HEALTH</span></div>
+      <div class="p-body">
+        <div class="stat-grid" id="skills"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="p-head"><span class="dot"></span><span class="h-title">인증 · 표준 · 이력</span><span class="h-id">PNL-09 / CERT.LOG</span></div>
+      <div class="p-body" id="certbody">
+        <div class="stat-cat">품질 시스템 / 표준</div>
+        <div class="chips" style="margin-bottom:12px">
+          <span class="chip"><span class="led"></span>IATF16949</span>
+          <span class="chip"><span class="led"></span>ISO / SQ</span>
+          <span class="chip"><span class="led a"></span>PFMEA · CP · PFD · SOP</span>
+          <span class="chip"><span class="led c"></span>S/N 추적성</span>
+        </div>
+        <div class="stat-cat">학력 / 어학</div>
+        <table class="dtable">
+          <tr><td style="color:var(--txt-dim)">한국외대</td><td>이탈리아어 (중퇴)</td></tr>
+          <tr><td style="color:var(--txt-dim)">해외</td><td>Kirana College · CTIC</td></tr>
+          <tr><td style="color:var(--txt-dim)">TOEIC</td><td style="color:var(--green)">930 · 호주 4년</td></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- footer / contact -->
+  <div class="footer">
+    <div class="fcell"><div class="fk">Operator</div><div class="fv">박양하 (Park Yangha)</div></div>
+    <div class="fcell"><div class="fk">E-mail</div><div class="fv"><a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a></div></div>
+    <div class="fcell"><div class="fk">Repository</div><div class="fv"><a href="https://github.com/64etuor" target="_blank">github.com/64etuor</a></div></div>
+    <div class="fcell"><div class="fk">Direct Line</div><div class="fv">010-7448-1791</div></div>
+    <div class="fcell"><div class="fk">Console Build</div><div class="fv" style="color:var(--txt-faint)">MES-CONSOLE v1.0 · DAQ@1Hz</div></div>
+  </div>
+
+</div>
+
+<script type="module">
+import * as d3 from "https://cdn.jsdelivr.net/npm/d3@7/+esm";
+
+/* ============ tiny helpers ============ */
+const $ = (s,el=document)=>el.querySelector(s);
+const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ============ system clock + uptime ============ */
+const careerStart=new Date(2020,7,1); // 2020.08 은성에스아이티
+function tickClock(){
+  const now=new Date();
+  $("#clock").textContent=now.toLocaleTimeString('ko-KR',{hour12:false});
+  const yrs=(now-careerStart)/(1000*60*60*24*365.25);
+  $("#uptime").textContent=yrs.toFixed(2)+" yr";
+}
+tickClock(); setInterval(tickClock,1000);
+
+/* ============ GAUGES (sweep on load) ============ */
+function buildGauge(node){
+  const target=+node.dataset.target;
+  const colorKey=node.dataset.color;
+  const colors={green:'#37f08e',amber:'#ffb627',cyan:'#3fd0e0'};
+  const col=colors[colorKey];
+  const labels={oee:['OEE','종합효율'],avail:['가동률','AVAILABILITY'],perf:['성능','PERFORMANCE']};
+  const lab=labels[node.dataset.gauge]||['',''];
+  const w=108,h=78,cx=54,cy=66,r=44;
+  const svg=d3.select(node).append('svg').attr('viewBox',`0 0 ${w} ${h}`);
+  const a0=Math.PI, a1=0; // semicircle
+  const arc=d3.arc().innerRadius(r-9).outerRadius(r).startAngle(-Math.PI/2).endAngle(Math.PI/2);
+  const g=svg.append('g').attr('transform',`translate(${cx},${cy}) rotate(0)`);
+  // track
+  g.append('path').attr('d',arc({startAngle:-Math.PI/2,endAngle:Math.PI/2})).attr('fill','#16201c');
+  // ticks
+  for(let i=0;i<=10;i++){
+    const ang=-Math.PI/2 + (i/10)*Math.PI;
+    const x1=Math.cos(ang)*(r+1.5), y1=Math.sin(ang)*(r+1.5);
+    const x2=Math.cos(ang)*(r+5), y2=Math.sin(ang)*(r+5);
+    g.append('line').attr('x1',x1).attr('y1',y1).attr('x2',x2).attr('y2',y2).attr('stroke','#2a3a33').attr('stroke-width',1);
+  }
+  const fill=g.append('path').attr('fill',col).attr('filter','drop-shadow(0 0 4px '+col+')');
+  // needle
+  const needle=g.append('line').attr('x1',0).attr('y1',0).attr('x2',0).attr('y2',-r+4).attr('stroke','#fff').attr('stroke-width',1.4).attr('opacity',.85);
+  g.append('circle').attr('r',3).attr('fill','#0a0e0d').attr('stroke',col);
+  const txt=d3.select(node).append('div').attr('class','gv').style('color',col).text('0.0');
+  d3.select(node).append('div').attr('class','gl').text(lab[0]);
+  d3.select(node).append('div').attr('class','gt').text(lab[1]);
+
+  const iv=d3.interpolate(0,target);
+  d3.transition().duration(1600).ease(d3.easeCubicOut).tween('g',()=>t=>{
+    const v=iv(t);
+    const frac=v/100;
+    fill.attr('d',arc({startAngle:-Math.PI/2,endAngle:-Math.PI/2+frac*Math.PI}));
+    const ang=-Math.PI/2+frac*Math.PI;
+    needle.attr('transform',`rotate(${ang*180/Math.PI})`);
+    txt.text(v.toFixed(1));
+  });
+  // live jitter
+  node._target=target;node._fill=fill;node._needle=needle;node._txt=txt;node._arc=arc;
+}
+$$('[data-gauge]').forEach(buildGauge);
+function jitterGauges(){
+  $$('[data-gauge]').forEach(n=>{
+    if(!n._fill)return;
+    const v=clamp(n._target+rnd(-0.6,0.6),0,99.9);
+    const frac=v/100;
+    n._fill.attr('d',n._arc({startAngle:-Math.PI/2,endAngle:-Math.PI/2+frac*Math.PI}));
+    n._needle.attr('transform',`rotate(${(-90+frac*180).toFixed(2)})`);
+    n._txt.text(v.toFixed(1));
+  });
+}
+
+/* ============ sparklines (scrolling) ============ */
+function makeSpark(svgSel,seed,color,fmt){
+  const svg=d3.select(svgSel);
+  const W=svg.node().clientWidth||220,H=30,N=44;
+  svg.attr('viewBox',`0 0 ${W} ${H}`).attr('preserveAspectRatio','none');
+  let data=Array.from({length:N},()=>seed());
+  const x=d3.scaleLinear().domain([0,N-1]).range([0,W]);
+  const line=d3.line().x((d,i)=>x(i)).y(d=>0).curve(d3.curveMonotoneX);
+  const area=d3.area().x((d,i)=>x(i)).y0(H).curve(d3.curveMonotoneX);
+  const grad=svg.append('defs').append('linearGradient').attr('id','g'+Math.random().toString(36).slice(2)).attr('x1',0).attr('y1',0).attr('x2',0).attr('y2',1);
+  grad.append('stop').attr('offset','0%').attr('stop-color',color).attr('stop-opacity',.35);
+  grad.append('stop').attr('offset','100%').attr('stop-color',color).attr('stop-opacity',0);
+  const ap=svg.append('path').attr('fill',`url(#${grad.attr('id')})`);
+  const lp=svg.append('path').attr('fill','none').attr('stroke',color).attr('stroke-width',1.3).attr('filter','drop-shadow(0 0 3px '+color+')');
+  function draw(){
+    const y=d3.scaleLinear().domain([d3.min(data)*.96,d3.max(data)*1.04]).range([H-2,3]);
+    lp.attr('d',d3.line().x((d,i)=>x(i)).y(d=>y(d)).curve(d3.curveMonotoneX)(data));
+    ap.attr('d',d3.area().x((d,i)=>x(i)).y0(H).y1(d=>y(d)).curve(d3.curveMonotoneX)(data));
+  }
+  draw();
+  return {push(){data.push(seed());data.shift();draw();return data[data.length-1];},last(){return data[data.length-1]}};
+}
+const sUph=makeSpark('#spark-uph',()=>rnd(820,910),'#37f08e');
+const sCt =makeSpark('#spark-ct',()=>rnd(11.5,13.2),'#ffb627');
+const sLob=makeSpark('#spark-lob',()=>rnd(86,94),'#3fd0e0');
+function setNum(id,v,suffix=''){const el=$(id);el.textContent=v;el.classList.remove('tickflash');void el.offsetWidth;el.classList.add('tickflash');}
+
+/* ============ Cpk bell curve ============ */
+function drawBell(cpk){
+  const svg=d3.select('#bell');svg.selectAll('*').remove();
+  const W=svg.node().clientWidth||300,H=120,m={l:6,r:6,t:8,b:16};
+  svg.attr('viewBox',`0 0 ${W} ${H}`);
+  const mu=0,sigma=1;
+  const LSL=-3*cpk, USL=3*cpk;
+  const xr=d3.scaleLinear().domain([-4.2,4.2]).range([m.l,W-m.r]);
+  const pdf=x=>Math.exp(-0.5*x*x)/Math.sqrt(2*Math.PI);
+  const pts=d3.range(-4.2,4.21,0.1).map(x=>[x,pdf(x)]);
+  const yr=d3.scaleLinear().domain([0,d3.max(pts,d=>d[1])]).range([H-m.b,m.t]);
+  // spec limits shading (out of spec)
+  [[-4.2,LSL],[USL,4.2]].forEach(([a,b])=>{
+    const seg=pts.filter(p=>p[0]>=a&&p[0]<=b);
+    if(seg.length>1){
+      svg.append('path').attr('fill','rgba(255,77,77,.25)').attr('d',
+        d3.area().x(d=>xr(d[0])).y0(yr(0)).y1(d=>yr(d[1])).curve(d3.curveBasis)(seg));
+    }
+  });
+  // in-spec area
+  const inseg=pts.filter(p=>p[0]>=LSL&&p[0]<=USL);
+  svg.append('path').attr('fill','rgba(55,240,142,.14)').attr('d',
+    d3.area().x(d=>xr(d[0])).y0(yr(0)).y1(d=>yr(d[1])).curve(d3.curveBasis)(inseg));
+  // curve
+  const path=svg.append('path').attr('fill','none').attr('stroke','#3fd0e0').attr('stroke-width',1.6).attr('filter','drop-shadow(0 0 4px #3fd0e0)')
+    .attr('d',d3.line().x(d=>xr(d[0])).y(d=>yr(d[1])).curve(d3.curveBasis)(pts));
+  const L=path.node().getTotalLength();
+  path.attr('stroke-dasharray',L).attr('stroke-dashoffset',L).transition().duration(1400).ease(d3.easeCubicOut).attr('stroke-dashoffset',0);
+  // spec lines
+  [[LSL,'LSL'],[USL,'USL']].forEach(([v,lab])=>{
+    svg.append('line').attr('x1',xr(v)).attr('x2',xr(v)).attr('y1',m.t).attr('y2',H-m.b).attr('stroke','#ff4d4d').attr('stroke-width',1).attr('stroke-dasharray','2 2').attr('opacity',.7);
+    svg.append('text').attr('x',xr(v)).attr('y',H-4).attr('text-anchor','middle').attr('fill','#ff4d4d').text(lab);
+  });
+  svg.append('line').attr('x1',xr(0)).attr('x2',xr(0)).attr('y1',m.t).attr('y2',H-m.b).attr('stroke','#ffb627').attr('stroke-width',1).attr('opacity',.5);
+  // readouts: yield from cpk
+  const z=3*cpk;
+  const erf=x=>{const t=1/(1+0.3275911*Math.abs(x));const y=1-(((((1.061405429*t-1.453152027)*t)+1.421413741)*t-0.284496736)*t+0.254829592)*t*Math.exp(-x*x);return x>=0?y:-y;};
+  const cdf=z=>0.5*(1+erf(z/Math.SQRT2));
+  const yieldPct=(cdf(z)-cdf(-z))*100;
+  const ppm=Math.round((1-(cdf(z)-cdf(-z)))*1e6);
+  $('#yieldv').textContent=yieldPct.toFixed(3)+'%';
+  $('#ppmv').textContent=ppm.toLocaleString();
+  $('#cpkv').textContent=cpk.toFixed(2);
+}
+drawBell(1.67);
+
+/* ============ KPI count-up tiles ============ */
+const kpis=[
+  {l:'운영 경비 절감',pre:'−',v:85,suf:'%',c:'g',d:'은성 / 라인 운영경비',spark:()=>rnd(80,88)},
+  {l:'공정 ST 절감',pre:'−',v:50,suf:'%',c:'',d:'솔라엣지 / 표준작업시간',spark:()=>rnd(46,53)},
+  {l:'공정 C/T 단축',pre:'−',v:49,suf:'%',c:'c',d:'이랜텍 / 사이클타임 최대',spark:()=>rnd(44,50)},
+  {l:'용착 불량률',pre:'',v:0,suf:'%대',c:'g',d:'이랜텍 / DOE · 15%→0%',spark:()=>rnd(0,0.4),fixed:1},
+  {l:'생산성 향상 LOB',pre:'+',v:24,suf:'%',c:'',d:'이랜텍 / 라인밸런스',spark:()=>rnd(20,27)},
+  {l:'단가 재협상',pre:'+',v:30,suf:'%',c:'c',d:'은성 / 원가분석 절감폭',spark:()=>rnd(28,34)},
+  {l:'사무 공수 절감',pre:'−',v:451,suf:'분/일',c:'g',d:'솔라엣지 / 중복공수 제거',spark:()=>rnd(430,460)},
+  {l:'필드 불량',pre:'',v:0,suf:'건',c:'',d:'은성 / 고객·필드 품질',spark:()=>rnd(0,0)},
+];
+function buildKpis(){
+  const r1=$('#kpi-row'),r2=$('#kpi-row2');
+  kpis.forEach((k,i)=>{
+    const wrap=document.createElement('div');wrap.className='kpi';
+    wrap.innerHTML=`<div class="kl">${k.l}</div>
+      <div class="kv ${k.c}"><span class="pre">${k.pre}</span><span class="cv">0</span><span style="font-size:16px">${k.suf}</span></div>
+      <div class="kd">${k.d}</div>
+      <svg class="kspark"></svg>`;
+    (i<4?r1:r2).appendChild(wrap);
+    const cv=$('.cv',wrap);
+    // self-contained rAF count-up (robust in headless; no shared d3.transition collisions)
+    const dur=1500, delay=300+i*90, start=performance.now();
+    const ease=t=>1-Math.pow(1-t,3);
+    function step(now){
+      const e=clamp((now-start-delay)/dur,0,1);
+      const val=k.v*ease(e);
+      cv.textContent=k.fixed?val.toFixed(k.fixed):Math.round(val).toLocaleString();
+      if(e<1)requestAnimationFrame(step);
+      else cv.textContent=k.fixed?k.v.toFixed(k.fixed):k.v.toLocaleString();
+    }
+    requestAnimationFrame(step);
+    // mini spark
+    const sp=makeSpark($('.kspark',wrap),k.spark,k.c==='g'?'#37f08e':k.c==='c'?'#3fd0e0':'#ffb627');
+    k._sp=sp;
+  });
+}
+buildKpis();
+
+/* ============ GANTT — career as work orders ============ */
+const T0=new Date(2020,0,1), T1=new Date(2026,8,1);
+const span=T1-T0;
+const jobs=[
+  {wo:'WO-2025-0801',name:'미러리스',role:'총괄본부장',s:new Date(2025,7,1),e:T1,status:'run',
+   desc:'CRM·키오스크·앱 기획 / FastAPI · AWS·GCP · CI/CD · RPA·AI MCP 기반 AX'},
+  {wo:'WO-2023-0901',name:'솔라엣지테크놀로지스',role:'공정기술 엔지니어',s:new Date(2023,8,1),e:new Date(2024,11,31),status:'done',
+   desc:'생산/불량/KPI/BOM/ST DB·대시보드 · MES 구축 · ST −50% · 검사성적서 자동발행'},
+  {wo:'WO-2022-1101',name:'이랜텍',role:'생산라인 PM / 파트장',s:new Date(2022,10,1),e:new Date(2023,8,30),status:'done',
+   desc:'DOE 초음파 용착 불량 15%→0%대 · C/T −49% · 생산성 +24%'},
+  {wo:'WO-2020-0801',name:'은성에스아이티',role:'생산관리 과장 · 2차전지팩 총괄',s:new Date(2020,7,1),e:new Date(2022,10,1),status:'done',
+   desc:'원가분석 단가 +30% 재협상 · 운영경비 −85% · 비전검사 · 필드불량 0 · ERP·IATF16949'},
+];
+function buildGantt(){
+  const g=$('#gantt');
+  // axis
+  const ax=document.createElement('div');ax.className='gantt-axis';
+  ['2020','2021','2022','2023','2024','2025','NOW'].forEach(y=>{const s=document.createElement('span');s.textContent=y;ax.appendChild(s);});
+  // structure: empty label col then track
+  const axWrap=document.createElement('div');axWrap.style.display='grid';axWrap.style.gridTemplateColumns='182px 1fr';axWrap.style.gap='10px';
+  const sp=document.createElement('div');axWrap.appendChild(sp);axWrap.appendChild(ax);
+  g.appendChild(axWrap);
+
+  jobs.forEach((j,idx)=>{
+    const row=document.createElement('div');row.className='grow';
+    const left=((j.s-T0)/span)*100, width=((j.e-j.s)/span)*100;
+    row.innerHTML=`<div class="glabel"><div class="wo">${j.wo}</div><div class="gn">${j.name}</div><div class="gc">${j.role}</div></div>
+      <div class="gtrack"><div class="gbar ${j.status}" style="left:${left}%;width:0%" title="${j.desc}">${j.status==='run'?'● RUNNING':'■ COMPLETE'}</div></div>`;
+    g.appendChild(row);
+    const bar=$('.gbar',row);
+    setTimeout(()=>{bar.style.transition='width 1.1s cubic-bezier(.2,.8,.2,1)';bar.style.width=width+'%';},250+idx*160);
+  });
+  // NOW line
+  const nowFrac=((new Date()-T0)/span)*100;
+  $$('.gtrack',g).forEach(tr=>{const nl=document.createElement('div');nl.className='now-line';nl.style.left=nowFrac+'%';tr.appendChild(nl);});
+}
+buildGantt();
+
+/* ============ Defect Pareto ============ */
+const defects=[
+  {m:'초음파 용착(개선전)',n:142,cat:'Machine'},
+  {m:'스팟 용접 편차',n:67,cat:'Method'},
+  {m:'부품 치수 NG',n:38,cat:'Material'},
+  {m:'작업 셋업 오류',n:21,cat:'Man'},
+  {m:'환경/오염',n:9,cat:'Environment'},
+];
+function drawPareto(){
+  const svg=d3.select('#pareto');svg.selectAll('*').remove();
+  const W=svg.node().clientWidth||400,H=200,m={l:30,r:36,t:10,b:34};
+  svg.attr('viewBox',`0 0 ${W} ${H}`);
+  const x=d3.scaleBand().domain(defects.map(d=>d.m)).range([m.l,W-m.r]).padding(.32);
+  const y=d3.scaleLinear().domain([0,d3.max(defects,d=>d.n)*1.1]).range([H-m.b,m.t]);
+  const tot=d3.sum(defects,d=>d.n);let cum=0;
+  const cumPts=defects.map(d=>{cum+=d.n;return{m:d.m,c:cum/tot*100};});
+  const y2=d3.scaleLinear().domain([0,100]).range([H-m.b,m.t]);
+  // grid
+  y.ticks(4).forEach(t=>{svg.append('line').attr('x1',m.l).attr('x2',W-m.r).attr('y1',y(t)).attr('y2',y(t)).attr('stroke','#1f2c27');});
+  // bars
+  svg.selectAll('rect').data(defects).join('rect')
+    .attr('x',d=>x(d.m)).attr('width',x.bandwidth()).attr('y',H-m.b).attr('height',0)
+    .attr('fill','url(#barg)').attr('stroke','#a8761a').attr('stroke-width',.5)
+    .transition().delay((d,i)=>i*80).duration(900).attr('y',d=>y(d.n)).attr('height',d=>H-m.b-y(d.n));
+  const defs=svg.append('defs');const bg=defs.append('linearGradient').attr('id','barg').attr('x1',0).attr('y1',0).attr('x2',0).attr('y2',1);
+  bg.append('stop').attr('offset','0%').attr('stop-color','#ffb627');bg.append('stop').attr('offset','100%').attr('stop-color','#a8761a').attr('stop-opacity',.6);
+  // cum line
+  const line=d3.line().x(d=>x(d.m)+x.bandwidth()/2).y(d=>y2(d.c)).curve(d3.curveMonotoneX);
+  const lp=svg.append('path').attr('fill','none').attr('stroke','#37f08e').attr('stroke-width',1.6).attr('d',line(cumPts)).attr('filter','drop-shadow(0 0 3px #37f08e)');
+  const L=lp.node().getTotalLength();lp.attr('stroke-dasharray',L).attr('stroke-dashoffset',L).transition().delay(500).duration(900).attr('stroke-dashoffset',0);
+  svg.selectAll('circle').data(cumPts).join('circle').attr('cx',d=>x(d.m)+x.bandwidth()/2).attr('cy',d=>y2(d.c)).attr('r',2.5).attr('fill','#37f08e').attr('opacity',0).transition().delay(900).attr('opacity',1);
+  // x labels (4M)
+  svg.selectAll('.xl').data(defects).join('text').attr('class','xl').attr('x',d=>x(d.m)+x.bandwidth()/2).attr('y',H-m.b+11).attr('text-anchor','middle').style('font-size','7.5px').text(d=>d.cat);
+  svg.selectAll('.vl').data(defects).join('text').attr('x',d=>x(d.m)+x.bandwidth()/2).attr('y',H-m.b+21).attr('text-anchor','middle').style('font-size','8px').attr('fill','#6f857c').text(d=>d.n);
+  // build dtable
+  const tb=$('#dtable');
+  tb.innerHTML='<tr><th>불량 모드</th><th>4M</th><th>건수</th><th>비중</th></tr>'+
+    defects.map(d=>`<tr><td>${d.m}</td><td style="color:var(--cyan)">${d.cat}</td><td class="num">${d.n}</td>
+      <td><div class="bar-cell"><div class="bf" style="width:${(d.n/defects[0].n*100).toFixed(0)}%"></div></div></td></tr>`).join('');
+}
+drawPareto();
+
+/* ============ Defect TREND with DOE intervention ============ */
+function drawTrend(){
+  const svg=d3.select('#trend');svg.selectAll('*').remove();
+  const W=svg.node().clientWidth||400,H=200,m={l:30,r:14,t:12,b:24};
+  svg.attr('viewBox',`0 0 ${W} ${H}`);
+  // weeks 0..23, DOE at week 11
+  const data=d3.range(0,24).map(i=>{
+    let v; if(i<11){v=15-i*0.25+rnd(-1.2,1.2);} else {v=Math.max(0.1,5.5*Math.exp(-(i-11)*0.55)+rnd(-0.3,0.3));}
+    return{w:i,v:clamp(v,0,17)};
+  });
+  const x=d3.scaleLinear().domain([0,23]).range([m.l,W-m.r]);
+  const y=d3.scaleLinear().domain([0,17]).range([H-m.b,m.t]);
+  y.ticks(4).forEach(t=>{svg.append('line').attr('x1',m.l).attr('x2',W-m.r).attr('y1',y(t)).attr('y2',y(t)).attr('stroke','#1f2c27');
+    svg.append('text').attr('x',m.l-4).attr('y',y(t)+3).attr('text-anchor','end').text(t+'%');});
+  // DOE intervention line
+  svg.append('line').attr('x1',x(11)).attr('x2',x(11)).attr('y1',m.t).attr('y2',H-m.b).attr('stroke','#ffb627').attr('stroke-dasharray','3 3').attr('opacity',.7);
+  svg.append('text').attr('x',x(11)).attr('y',m.t+0).attr('text-anchor','middle').attr('fill','#ffb627').style('font-size','8px').text('◀ DOE 개입');
+  const pre=data.filter(d=>d.w<=11),post=data.filter(d=>d.w>=11);
+  const ln=d3.line().x(d=>x(d.w)).y(d=>y(d.v)).curve(d3.curveMonotoneX);
+  function animLine(seg,col,delay){
+    const p=svg.append('path').attr('fill','none').attr('stroke',col).attr('stroke-width',1.7).attr('d',ln(seg)).attr('filter','drop-shadow(0 0 3px '+col+')');
+    const L=p.node().getTotalLength();p.attr('stroke-dasharray',L).attr('stroke-dashoffset',L).transition().delay(delay).duration(1100).attr('stroke-dashoffset',0);
+  }
+  animLine(pre,'#ff4d4d',0);animLine(post,'#37f08e',1000);
+  // target zone
+  svg.append('rect').attr('x',m.l).attr('y',y(1)).attr('width',W-m.r-m.l).attr('height',(H-m.b)-y(1)).attr('fill','rgba(55,240,142,.06)');
+  // x labels
+  [0,6,12,18,23].forEach(w=>svg.append('text').attr('x',x(w)).attr('y',H-8).attr('text-anchor','middle').text('W'+w));
+}
+drawTrend();
+
+/* ============ Skills as asset health ============ */
+const skillGroups=[
+  {cat:'SW · 데이터 · 클라우드 스택',items:[['Python',''],['SQL',''],['FastAPI',''],['React','a'],['TypeScript','a'],['Electron','c'],['Rust','c'],['MySQL/RDS',''],['AWS',''],['GCP','a'],['BI',''],['ML','c'],['RPA',''],['CI/CD','']]},
+  {cat:'공정 · 품질 엔지니어링',items:[['PFMEA/CP/PFD/SOP',''],['산업용접 스팟·레이저·초음파',''],['LOB','a'],['Jig개발','a'],['기구설계','c'],['비전검사',''],['로봇티칭','a'],['Draftsight','c']]},
+];
+function buildSkills(){
+  const root=$('#skills');
+  skillGroups.forEach(g=>{
+    const sec=document.createElement('div');
+    sec.innerHTML=`<div class="stat-cat">${g.cat}</div><div class="chips">${
+      g.items.map(([n,c])=>`<span class="chip"><span class="led ${c}"></span>${n}</span>`).join('')}</div>`;
+    root.appendChild(sec);
+  });
+}
+buildSkills();
+
+/* ============ ANDON BOARD (지도카 / STOP-THE-LINE) ============ */
+const lampG=$('#lamp-g'),lampY=$('#lamp-y'),lampR=$('#lamp-r');
+const andonState=$('#andon-state'),stopFlag=$('#stop-flag');
+let andonTimer=null;
+function setAndon(level){
+  // level: 'g' 정상 / 'y' 주의(일탈 감시) / 'r' 정지(STOP-THE-LINE)
+  [lampG,lampY,lampR].forEach(l=>l.classList.remove('on'));
+  andonState.classList.remove('g','y','r');
+  if(level==='r'){
+    lampR.classList.add('on');andonState.classList.add('r');andonState.textContent='정지 · STOP';
+    stopFlag.classList.add('armed');stopFlag.textContent='LINE STOPPED';
+  }else if(level==='y'){
+    lampY.classList.add('on');andonState.classList.add('y');andonState.textContent='주의 · CAUTION';
+    stopFlag.classList.remove('armed');stopFlag.textContent='STOP-THE-LINE';
+  }else{
+    lampG.classList.add('on');andonState.classList.add('g');andonState.textContent='정상 · GO';
+    stopFlag.classList.remove('armed');stopFlag.textContent='STOP-THE-LINE';
+  }
+}
+function triggerAndon(sev){
+  // map event severity → andon: crit→정지, warn→주의, ok→정상 복귀
+  if(sev==='crit')setAndon('r');
+  else if(sev==='warn')setAndon('y');
+  else if(sev==='ok'){setAndon('g');return;}
+  else return; // 'info' leaves current state
+  // auto-recover to GO (지도카: 멈춤 → 개선 → 재가동)
+  clearTimeout(andonTimer);
+  andonTimer=setTimeout(()=>setAndon('g'), sev==='crit'?2600:1800);
+}
+
+/* ============ ALARM / EVENT FEED ============ */
+const feed=$('#feed');
+let alarmTotal=0;
+const seedEvents=[
+  {sev:'ok',msg:'ALARM CLEARED · 용착 불량률 15% → 0%대 (DOE 검증완료) · 라인 재가동'},
+  {sev:'crit',msg:'STOP-THE-LINE · 초음파 용착 15% — 이상을 이상으로 인지 → 라인 정지'},
+  {sev:'info',msg:'BLAMELESS POSTMORTEM · 4M 원인분석 → DOE 인자 설계'},
+  {sev:'info',msg:'MES 워크오더 WO-2025-0801 RUNNING · 미러리스 AX'},
+  {sev:'ok',msg:'필드/고객 불량 0건 유지 · IATF16949 적합'},
+];
+const liveEvents=[
+  {sev:'info',msg:'DAQ 폴링 정상 · OEE 91.4% 안정'},
+  {sev:'info',msg:'LOB 라인밸런스 재계산 완료'},
+  {sev:'warn',msg:'택트타임 상한 근접 · C/T 모니터링'},
+  {sev:'ok',msg:'Cpk 1.67 유지 · 공정능력 양호'},
+  {sev:'info',msg:'BI 대시보드 KPI 새로고침 @1Hz'},
+  {sev:'crit',msg:'설비 가동률 일시 하락 → 자동 복구'},
+  {sev:'ok',msg:'운영경비 절감 추적 −85% 반영'},
+  {sev:'info',msg:'CI/CD 파이프라인 GREEN · 배포 대기 0'},
+  {sev:'warn',msg:'BOM 변경 감지 · 원가 재산출 트리거'},
+  {sev:'ok',msg:'비전검사 PASS · 단가 협상폭 +30% 유지'},
+];
+function pushEvent(ev,initial=false){
+  const t=new Date();
+  const ts=`${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}:${String(t.getSeconds()).padStart(2,'0')}`;
+  const row=document.createElement('div');
+  row.className='fr'+(initial?'':(ev.sev==='crit'?' flash-crit':' flash'));
+  const sevLab={info:'INFO',warn:'WARN',crit:'CRIT',ok:'OK'}[ev.sev];
+  row.innerHTML=`<span class="ft">${ts}</span><span class="fsev sev-${ev.sev}">${sevLab}</span><span class="fmsg">${ev.msg}</span>`;
+  feed.prepend(row);
+  if(ev.sev==='crit'||ev.sev==='warn'){alarmTotal++;$('#alarmcount').textContent='ALARMS '+alarmTotal;}
+  if(!initial)triggerAndon(ev.sev); // 안돈: 이상 발생 시 점등 → 라인 정지/주의 → 복귀
+  while(feed.children.length>14)feed.removeChild(feed.lastChild);
+}
+seedEvents.forEach(e=>pushEvent(e,true));
+let evi=0;
+setInterval(()=>{pushEvent(liveEvents[evi%liveEvents.length]);evi++;},3400);
+
+/* ============ master tick loop (alive) ============ */
+setInterval(()=>{
+  setNum('#uph',Math.round(sUph.push()));
+  setNum('#ct',sCt.push().toFixed(1));
+  setNum('#lob',sLob.push().toFixed(1));
+  kpis.forEach(k=>k._sp&&k._sp.push());
+  jitterGauges();
+},1400);
+
+/* small connection blink toggle */
+setInterval(()=>{const c=$('#conn');c.style.opacity=c.style.opacity==='0.55'?'1':'0.55';},900);
+
+/* await fonts for headless render fidelity */
+if(document.fonts&&document.fonts.ready){document.fonts.ready.then(()=>{/* fonts settled */});}
+</script>
+</body>
+</html>

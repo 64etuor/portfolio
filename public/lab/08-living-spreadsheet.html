@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>박양하 · 살아있는 스프레드시트 — 스스로 계산하는 이력서</title>
+<style>
+/* ───────────────────────── tokens ───────────────────────── */
+:root{
+  --app-bg:#1f2a23;          /* desktop behind the app */
+  --chrome:#217346;          /* the unmistakable spreadsheet green */
+  --chrome-2:#185c37;
+  --chrome-3:#103d24;
+  --ribbon:#f3f4f2;
+  --ribbon-line:#dcdfd9;
+  --paper:#ffffff;
+  --grid:#d8dcd6;            /* gridlines */
+  --grid-strong:#b9bfb6;
+  --hdr:#f5f6f4;             /* column/row header fill */
+  --hdr-line:#c7ccc3;
+  --hdr-ink:#5b6b60;
+  --ink:#1d2620;
+  --ink-2:#5d6a61;
+  --ink-3:#94a097;
+  --sel:#217346;            /* active cell border */
+  --sel-fill:rgba(33,115,70,.10);
+  --sel-band:rgba(33,115,70,.07);
+  --precedent:#2f6fed;      /* trace precedents (blue, like Excel) */
+  --precedent-fill:rgba(47,111,237,.12);
+  --formula:#0a7b34;
+  --num:#1546b6;
+  --good:#1a8a4f;
+  --bad:#c0392b;
+  --warn:#b8860b;
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --sans:"Pretendard","Apple SD Gothic Neo","Helvetica Neue",-apple-system,system-ui,sans-serif;
+  --rowh:30px;
+  --hdrh:22px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:
+    radial-gradient(1400px 800px at 50% -8%, rgba(33,115,70,.18), transparent 60%),
+    var(--app-bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  word-break:keep-all;
+  -webkit-font-smoothing:antialiased;
+  overflow:hidden;
+  font-size:13px;
+}
+::selection{background:rgba(33,115,70,.25)}
+
+/* ───────────────────────── window shell ───────────────────────── */
+.app{
+  position:fixed;inset:14px;border-radius:9px;overflow:hidden;
+  display:grid;grid-template-rows:auto auto auto 1fr auto auto;
+  box-shadow:0 30px 80px -20px rgba(0,0,0,.55), 0 0 0 1px rgba(0,0,0,.25);
+  background:var(--paper);
+  min-width:980px;
+}
+
+/* title bar */
+.titlebar{
+  background:linear-gradient(180deg,var(--chrome),var(--chrome-2));
+  color:#eafff2;height:42px;display:flex;align-items:center;gap:12px;
+  padding:0 14px;font-weight:600;letter-spacing:-.01em;
+  border-bottom:1px solid var(--chrome-3);
+}
+.traffic{display:flex;gap:8px;margin-right:6px}
+.traffic i{width:12px;height:12px;border-radius:50%;display:block}
+.traffic .r{background:#ff5f57}.traffic .y{background:#febc2e}.traffic .g{background:#28c840}
+.titlebar .logo{
+  width:24px;height:24px;border-radius:5px;background:#fff;color:var(--chrome-2);
+  display:grid;place-items:center;font-weight:800;font-size:14px;
+  box-shadow:0 1px 2px rgba(0,0,0,.25);
+}
+.titlebar .doc{font-size:13.5px}
+.titlebar .doc small{opacity:.8;font-weight:400;margin-left:8px}
+.titlebar .who{margin-left:auto;display:flex;align-items:center;gap:10px;font-weight:400;font-size:12px;opacity:.92}
+.titlebar .who b{font-weight:700}
+.titlebar .avatar{
+  width:26px;height:26px;border-radius:50%;background:#eafff2;color:var(--chrome-2);
+  display:grid;place-items:center;font-weight:800;font-size:12px;
+}
+
+/* ribbon / toolbar */
+.ribbon{
+  background:var(--ribbon);border-bottom:1px solid var(--ribbon-line);
+  display:flex;align-items:center;gap:6px;padding:5px 10px;flex-wrap:wrap;
+  font-size:12px;color:var(--ink-2);
+}
+.rib-grp{display:flex;align-items:center;gap:4px;padding:0 8px;border-right:1px solid var(--ribbon-line)}
+.rib-grp:last-child{border-right:none}
+.rbtn{
+  display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:6px;
+  background:transparent;border:1px solid transparent;color:var(--ink);cursor:pointer;
+  font-family:var(--sans);font-size:12px;line-height:1;transition:.12s;white-space:nowrap;
+}
+.rbtn:hover{background:#e7eae5;border-color:var(--ribbon-line)}
+.rbtn.on{background:var(--chrome);color:#fff;border-color:var(--chrome-2)}
+.rbtn .ic{font-family:var(--mono);font-weight:700;font-size:12px}
+.rib-status{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--ink-3);font-family:var(--mono);font-size:11px}
+.recalc-led{width:8px;height:8px;border-radius:50%;background:#cfd6cd;transition:.2s}
+.recalc-led.busy{background:var(--warn);box-shadow:0 0 0 3px rgba(184,134,11,.18)}
+.recalc-led.done{background:var(--good);box-shadow:0 0 0 3px rgba(26,138,79,.18)}
+
+/* formula bar */
+.fxbar{
+  display:flex;align-items:stretch;background:#fff;border-bottom:1px solid var(--hdr-line);
+  height:30px;font-family:var(--mono);font-size:12.5px;
+}
+.namebox{
+  width:120px;border-right:1px solid var(--hdr-line);display:flex;align-items:center;
+  justify-content:space-between;padding:0 10px;color:var(--ink);font-weight:700;
+  background:#fafbf9;
+}
+.namebox .caret{color:var(--ink-3);font-size:9px}
+.fx-icon{
+  width:46px;display:grid;place-items:center;border-right:1px solid var(--hdr-line);
+  color:var(--ink-3);font-style:italic;font-weight:700;
+}
+.fx-input{
+  flex:1;display:flex;align-items:center;padding:0 12px;color:var(--ink);
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+}
+.fx-input .kw{color:var(--formula);font-weight:700}
+.fx-input .ref{color:var(--num);font-weight:700}
+.fx-input .str{color:#a3344b}
+.fx-input .cmt{color:var(--ink-3)}
+
+/* ───────────────────────── grid ───────────────────────── */
+.gridwrap{position:relative;overflow:auto;background:var(--paper);min-height:0;align-self:stretch}
+.sheetpane{display:none}
+.sheetpane.active{display:block}
+
+table.sheet{border-collapse:separate;border-spacing:0;table-layout:fixed;font-size:12.5px;width:max-content}
+table.sheet col.rowhdr{width:42px}
+.sheet th,.sheet td{
+  border-right:1px solid var(--grid);border-bottom:1px solid var(--grid);
+  height:var(--rowh);padding:0 9px;text-align:left;vertical-align:middle;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;position:relative;
+}
+/* column header row */
+.sheet thead th{
+  position:sticky;top:0;z-index:6;height:var(--hdrh);
+  background:var(--hdr);color:var(--hdr-ink);font-weight:600;text-align:center;
+  border-bottom:1px solid var(--hdr-line);font-family:var(--mono);font-size:11px;
+  user-select:none;
+}
+/* corner */
+.sheet thead th.corner{
+  position:sticky;left:0;top:0;z-index:8;background:var(--hdr);
+  border-right:1px solid var(--hdr-line);
+}
+.sheet thead th.corner::after{
+  content:"";position:absolute;right:3px;bottom:3px;width:0;height:0;
+  border-style:solid;border-width:0 0 8px 8px;border-color:transparent transparent var(--ink-3) transparent;
+}
+/* row headers */
+.sheet td.rowhdr,.sheet th.rowhdr{
+  position:sticky;left:0;z-index:5;background:var(--hdr);color:var(--hdr-ink);
+  text-align:center;font-family:var(--mono);font-size:11px;font-weight:600;
+  border-right:1px solid var(--hdr-line);user-select:none;
+}
+/* freeze header row (first data row used as labels) */
+tr.freeze th, tr.freeze td{
+  position:sticky;z-index:4;background:#eef4ef;font-weight:700;color:var(--ink);
+  border-bottom:1px solid var(--grid-strong);
+}
+tr.freeze td.rowhdr{z-index:7}
+
+.sheet td.num{font-family:var(--mono);text-align:right;color:var(--num)}
+.sheet td.formula{font-family:var(--mono);color:var(--formula)}
+.sheet td.zebra{background:#fbfcfb}
+.sheet td.title{font-weight:700;color:var(--ink)}
+.sheet td.muted{color:var(--ink-2)}
+.sheet td.wide{max-width:340px;white-space:normal;line-height:1.45;padding-top:5px;padding-bottom:5px;height:auto;word-break:keep-all}
+
+/* highlight states */
+.sheet td.hl-active{
+  outline:2px solid var(--sel);outline-offset:-2px;z-index:3;
+  background:var(--sel-fill);box-shadow:inset 0 0 0 1px rgba(33,115,70,.4);
+}
+.sheet td.hl-active .fillhandle{
+  position:absolute;right:-3px;bottom:-3px;width:7px;height:7px;background:var(--sel);
+  border:1px solid #fff;cursor:crosshair;z-index:4;
+}
+.sheet td.hl-precedent{
+  outline:1.5px dashed var(--precedent);outline-offset:-2px;
+  background:var(--precedent-fill) !important;animation:antsglow .9s ease;
+}
+.sheet td.col-band{background:var(--sel-band)}
+.sheet td.row-band{background:var(--sel-band)}
+@keyframes antsglow{from{box-shadow:inset 0 0 0 30px rgba(47,111,237,.20)}to{box-shadow:inset 0 0 0 0 rgba(47,111,237,0)}}
+
+/* recalc sweep flash */
+.sheet td.recalcing{animation:recalcflash .5s ease}
+@keyframes recalcflash{
+  0%{background:rgba(184,134,11,.35)}
+  60%{background:rgba(26,138,79,.20)}
+  100%{background:transparent}
+}
+.sheet td.justset{color:var(--good) !important}
+
+/* conditional-format heatmap cells */
+.heat{font-family:var(--mono);text-align:right;font-weight:700;color:#1c2a20;position:relative}
+.databar{position:absolute;left:0;top:3px;bottom:3px;border-radius:2px;opacity:.9;z-index:0}
+.heat .v{position:relative;z-index:1}
+
+/* metric arrow */
+.arrow-up{color:var(--good)} .arrow-dn{color:var(--bad)}
+
+/* ───────────────────────── pivot / chart panel (지표 sheet) ───────────────────────── */
+.metricwrap{display:grid;grid-template-columns:minmax(520px,1fr) minmax(360px,420px);gap:0;height:100%}
+.metricwrap .gridcol{overflow:auto;border-right:1px solid var(--hdr-line)}
+.pivot{padding:14px 16px;overflow:auto;background:#fafbf9}
+.pivot h4{font-size:12px;color:var(--hdr-ink);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;font-family:var(--mono)}
+.pivot .pv-sub{color:var(--ink-3);font-size:11px;margin-bottom:12px;font-family:var(--mono)}
+#chart{width:100%;height:300px}
+.pivot .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:11px;color:var(--ink-2)}
+.pivot .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+.pivot .pv-note{margin-top:14px;padding:10px 12px;border:1px solid var(--ribbon-line);border-radius:7px;background:#fff;font-size:11.5px;color:var(--ink-2);line-height:1.5}
+.pivot .pv-note b{color:var(--chrome-2)}
+
+/* delight: before/after toggle banner inside 지표 */
+.dax{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 12px;border:1px dashed var(--chrome);border-radius:8px;background:rgba(33,115,70,.05)}
+.dax .lab{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
+.toggle{position:relative;width:128px;height:26px;border-radius:14px;background:#e3e6e1;cursor:pointer;border:1px solid var(--ribbon-line);flex:none}
+.toggle .knob{position:absolute;top:2px;left:2px;width:60px;height:20px;border-radius:11px;background:var(--chrome);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:700;transition:.28s cubic-bezier(.4,1.3,.5,1)}
+.toggle.after .knob{left:66px;background:var(--chrome-3)}
+.toggle .ghost{position:absolute;top:0;height:100%;display:grid;place-items:center;font-size:10px;color:var(--ink-3);width:60px}
+.toggle .ghost.l{left:4px}.toggle .ghost.r{right:4px}
+
+/* ───────────────────────── sheet tabs + status bar ───────────────────────── */
+.tabbar{
+  display:flex;align-items:stretch;background:var(--ribbon);border-top:1px solid var(--ribbon-line);
+  height:30px;padding-left:8px;
+}
+.tabscroll{display:flex;align-items:center;color:var(--ink-3);padding:0 8px;font-family:var(--mono);font-size:11px;gap:6px}
+.tabs{display:flex;align-items:stretch}
+.tab{
+  display:flex;align-items:center;gap:7px;padding:0 16px;font-size:12.5px;color:var(--ink-2);
+  cursor:pointer;border-right:1px solid var(--ribbon-line);background:transparent;position:relative;
+  border:none;border-right:1px solid var(--ribbon-line);font-family:var(--sans);transition:.12s;
+}
+.tab .dot{width:9px;height:9px;border-radius:2px}
+.tab:hover{background:#e7eae5;color:var(--ink)}
+.tab.active{
+  background:#fff;color:var(--ink);font-weight:700;
+  box-shadow:inset 0 2.5px 0 var(--chrome);border-bottom:1px solid #fff;margin-bottom:-1px;
+}
+.tab .cnt{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
+.addtab{display:grid;place-items:center;width:34px;color:var(--ink-3);cursor:default}
+
+.statusbar{
+  display:flex;align-items:center;gap:0;background:linear-gradient(180deg,var(--chrome),var(--chrome-2));
+  color:#dffaeb;height:24px;font-size:11px;font-family:var(--mono);
+}
+.statusbar .sb{padding:0 14px;border-right:1px solid rgba(255,255,255,.15);height:100%;display:flex;align-items:center;gap:7px}
+.statusbar .sb.right{margin-left:auto;border-right:none;border-left:1px solid rgba(255,255,255,.15)}
+.statusbar b{color:#fff;font-weight:700}
+.statusbar .zoom{display:flex;align-items:center;gap:8px}
+.statusbar .ready{color:#a8f0c8}
+
+/* tooltip for formula explanation on hover */
+.celltip{
+  position:fixed;z-index:50;pointer-events:none;max-width:300px;
+  background:#1d2620;color:#eef4ef;font-family:var(--mono);font-size:11px;line-height:1.5;
+  padding:8px 11px;border-radius:7px;box-shadow:0 10px 30px -8px rgba(0,0,0,.5);
+  opacity:0;transform:translateY(4px);transition:.12s;border:1px solid rgba(255,255,255,.1);
+}
+.celltip.show{opacity:1;transform:translateY(0)}
+.celltip .tk{color:#7fdca0;font-weight:700}
+.celltip .tr{color:#82b1ff}
+
+/* responsive-ish guard */
+@media (max-width:1180px){
+  .metricwrap{grid-template-columns:1fr}
+  .pivot{border-top:1px solid var(--hdr-line)}
+}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- title bar -->
+  <div class="titlebar">
+    <span class="traffic"><i class="r"></i><i class="y"></i><i class="g"></i></span>
+    <span class="logo">박</span>
+    <span class="doc">이력서_박양하_v2026.xlsx <small>— 스스로 계산하는 이력서</small></span>
+    <span class="who">
+      마지막 재계산 <b id="lastcalc">—</b>
+      <span class="avatar">YH</span>
+    </span>
+  </div>
+
+  <!-- ribbon -->
+  <div class="ribbon">
+    <div class="rib-grp">
+      <button class="rbtn" id="btnRecalc"><span class="ic">∑</span> 전체 재계산 <small style="color:var(--ink-3)">F9</small></button>
+    </div>
+    <div class="rib-grp">
+      <button class="rbtn on" id="btnTrace"><span class="ic">→</span> 수식 추적</button>
+      <button class="rbtn on" id="btnHeat"><span class="ic">▦</span> 조건부 서식</button>
+    </div>
+    <div class="rib-grp">
+      <span style="color:var(--ink-3);font-family:var(--mono);font-size:11px">함수: =SUM · =AVG · =ROI · =YIELD · =DEFECT_RATE()</span>
+    </div>
+    <div class="rib-status">
+      <span class="recalc-led" id="led"></span>
+      <span id="recalcMsg">계산 준비</span>
+    </div>
+  </div>
+
+  <!-- formula bar -->
+  <div class="fxbar">
+    <div class="namebox"><span id="nameRef">A1</span><span class="caret">▾</span></div>
+    <div class="fx-icon">fx</div>
+    <div class="fx-input" id="fxInput"></div>
+  </div>
+
+  <!-- grid (panes swap per sheet) -->
+  <div class="gridwrap" id="gridwrap">
+    <!-- panes injected by JS -->
+  </div>
+
+  <!-- sheet tabs -->
+  <div class="tabbar">
+    <div class="tabscroll">◀ ▶</div>
+    <div class="tabs" id="tabs"></div>
+    <div class="addtab">+</div>
+  </div>
+
+  <!-- status bar -->
+  <div class="statusbar">
+    <span class="sb ready" id="sbReady">준비</span>
+    <span class="sb" id="sbCell">셀 A1</span>
+    <span class="sb" id="sbAgg">합계: —</span>
+    <span class="sb right zoom">박양하 · 생산운영 PM / 공정기술 엔지니어 / 총괄본부장 &nbsp; 100%</span>
+  </div>
+</div>
+
+<div class="celltip" id="celltip"></div>
+
+<script type="module">
+import * as echarts from "https://esm.sh/echarts@5.5.0?bundle";
+
+/* ─────────────────────────────────────────────────────────────────────
+   DATA MODEL  (real content — 박양하)
+   ───────────────────────────────────────────────────────────────────── */
+
+const CAREER = [
+  {co:"미러리스", from:"2025.08", to:"현재",     mo:11,  role:"총괄본부장",
+   work:"CRM·키오스크·앱 기획 · FastAPI·AWS/GCP·CI/CD 구축 · RPA·AI(MCP) AX 추진",
+   impact:92},
+  {co:"솔라엣지", from:"2023.09", to:"2024.12",  mo:16,  role:"공정기술 엔지니어",
+   work:"데이터 DB·대시보드 구축 · ST −50% · 검사성적서 자동발행 · MES · 사무공수 −451분/일",
+   impact:97},
+  {co:"이랜텍",   from:"2022.11", to:"2023.09",  mo:11,  role:"생산라인 PM / 파트장",
+   work:"DOE로 용착불량 15%→0% · C/T −49% · 생산성 +24% · 전용 Jig 개발",
+   impact:88},
+  {co:"은성에스아이티", from:"2020.08", to:"2022.11", mo:27, role:"생산관리과장 (배터리팩 총괄)",
+   work:"부품 단가 +30% 재협상 · 운영경비 −85% · 비전검사 도입 · 불량 0건 · IATF16949",
+   impact:90},
+];
+
+const SKILLS = [
+  {grp:"개발 / 데이터", lvl:5, items:["Python","SQL","FastAPI","React","TypeScript","Electron","Rust","MySQL/RDS","AWS","GCP","BI","ML","RPA","CI/CD"]},
+  {grp:"공정 / 품질",   lvl:5, items:["PFMEA","CP","PFD","SOP","산업용접","LOB","Jig개발","기구설계","비전검사","로봇티칭","Draftsight"]},
+  {grp:"시스템 / 표준", lvl:4, items:["ERP","MES","IATF16949"]},
+];
+
+// 지표: value used for chart magnitude (absolute % improvement), dir for arrow
+const METRICS = [
+  {k:"운영경비",  raw:"−85%",      mag:85, dir:-1, src:"은성에스아이티", cat:"비용"},
+  {k:"ST 단축",   raw:"−50%",      mag:50, dir:-1, src:"솔라엣지",       cat:"속도"},
+  {k:"C/T 단축",  raw:"−49%",      mag:49, dir:-1, src:"이랜텍",         cat:"속도"},
+  {k:"용착불량",  raw:"15%→0%",    mag:100,dir:-1, src:"이랜텍",         cat:"품질"},
+  {k:"생산성",    raw:"+24%",      mag:24, dir:1,  src:"이랜텍",         cat:"생산성"},
+  {k:"부품단가",  raw:"+30%",      mag:30, dir:1,  src:"은성에스아이티", cat:"협상"},
+  {k:"사무공수",  raw:"−451분/일", mag:94, dir:-1, src:"솔라엣지",       cat:"자동화"},
+  {k:"불량건수",  raw:"0건",       mag:100,dir:-1, src:"은성에스아이티", cat:"품질"},
+];
+
+const EDU = [
+  {a:"한국외국어대학교", b:"이탈리아어 (중퇴)",  c:"전공 전환 — 언어 → 제조·데이터"},
+  {a:"Kirana College",  b:"어학 / 호주 4년",     c:"TOEIC 930"},
+  {a:"CTIC",            b:"기술 교육",            c:"현장 기술 기반"},
+];
+const CONTACT = [
+  {a:"Email",  b:"64etuor@gmail.com"},
+  {a:"GitHub", b:"github.com/64etuor"},
+  {a:"Phone",  b:"010-7448-1791"},
+];
+
+const CAT_COLOR = {
+  "비용":"#217346","속도":"#2f6fed","품질":"#c0392b",
+  "생산성":"#1a8a4f","협상":"#b8860b","자동화":"#7b3fb5",
+};
+
+/* helpers ----------------------------------------------------------------- */
+const $  = s => document.querySelector(s);
+const COLNAME = n => { let s=""; n++; while(n>0){ s=String.fromCharCode(65+(n-1)%26)+s; n=Math.floor((n-1)/26);} return s; };
+const totalMonths = CAREER.reduce((a,c)=>a+c.mo,0);
+const avgImpact   = Math.round(CAREER.reduce((a,c)=>a+c.impact,0)/CAREER.length);
+const skillCount  = SKILLS.reduce((a,s)=>a+s.items.length,0);
+
+/* cell registry: id -> {ref, formula, explain, precedents:[refs], el} */
+const CELLS = {};
+function regCell(el, ref, opts={}){
+  el.dataset.ref = ref;
+  CELLS[ref] = {ref, el, ...opts};
+  return el;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   SHEET BUILDERS
+   ───────────────────────────────────────────────────────────────────── */
+
+function tableShell(cols){ // cols = array of widths(px) for data columns
+  const t = document.createElement("table"); t.className="sheet";
+  const cg = document.createElement("colgroup");
+  const c0 = document.createElement("col"); c0.className="rowhdr"; cg.appendChild(c0);
+  cols.forEach(w=>{ const c=document.createElement("col"); c.style.width=w+"px"; cg.appendChild(c); });
+  t.appendChild(cg);
+  const thead=document.createElement("thead"); const htr=document.createElement("tr");
+  const corner=document.createElement("th"); corner.className="corner"; htr.appendChild(corner);
+  cols.forEach((_,i)=>{ const th=document.createElement("th"); th.textContent=COLNAME(i); htr.appendChild(th); });
+  thead.appendChild(htr); t.appendChild(thead);
+  const tb=document.createElement("tbody"); t.appendChild(tb);
+  return {t, tb};
+}
+
+function addRow(tb, rownum, freeze=false){
+  const tr=document.createElement("tr"); if(freeze) tr.classList.add("freeze");
+  const rh=document.createElement("td"); rh.className="rowhdr"; rh.textContent=rownum;
+  tr.appendChild(rh); tb.appendChild(tr); return tr;
+}
+function cell(tr, text, cls=""){ const td=document.createElement("td"); if(cls) td.className=cls; td.innerHTML=text; tr.appendChild(td); return td; }
+
+/* ---- 경력 sheet ---- */
+function buildCareer(){
+  const pane=document.createElement("div"); pane.className="sheetpane"; pane.dataset.sheet="career";
+  const {t,tb}=tableShell([130,150,170,360,120]);
+  // header row (freeze)
+  let r=addRow(tb,1,true);
+  ["회사","기간","역할","핵심성과","임팩트지수"].forEach((h,i)=>{
+    const c=cell(tr0(r),h); regCell(c, COLNAME(i)+"1");
+  });
+  function tr0(x){return x;}
+  CAREER.forEach((c,idx)=>{
+    const rownum=idx+2;
+    const tr=addRow(tb,rownum, false);
+    const z = idx%2? "zebra":"";
+    const cA=cell(tr, c.co, "title "+z);
+    const cB=cell(tr, `${c.from} – ${c.to}`, "muted "+z);
+    const cC=cell(tr, c.role, z);
+    const cD=cell(tr, c.work, "wide "+z);
+    const cE=cell(tr, `<span class="v">${c.impact}</span>`, "heat "+z);
+    // databar for impact
+    const bar=document.createElement("span"); bar.className="databar";
+    bar.style.width=(c.impact*0.85)+"%";
+    bar.style.background="linear-gradient(90deg,rgba(33,115,70,.16),rgba(33,115,70,.42))";
+    cE.querySelector(".v").style.marginRight="2px"; cE.insertBefore(bar,cE.firstChild);
+    cE.classList.add("heatcell");
+    regCell(cA,`A${rownum}`,{explain:`'${c.co}' 텍스트 셀`});
+    regCell(cB,`B${rownum}`,{explain:`근속기간 = ${c.mo}개월`});
+    regCell(cC,`C${rownum}`);
+    regCell(cD,`D${rownum}`,{explain:`핵심성과 — 정량 지표는 '지표' 시트로 트레이스됨`});
+    regCell(cE,`E${rownum}`,{
+      formula:`=IMPACT(${c.role==="총괄본부장"?"전략·구축":"개선·정량성과"})`,
+      explain:`임팩트지수 ${c.impact} — 성과의 정량·범위 가중 점수`,
+      isFormula:true, recalc:()=>c.impact
+    });
+  });
+  // summary rows
+  const sr=addRow(tb,6);
+  cell(sr,"<b>합계 / 요약</b>","title");
+  const cTot=cell(sr,`=SUM(B2:B5)`,"formula");
+  regCell(cTot,"B6",{formula:`=SUM(B2:B5)`, explain:`총 근속개월 = 11+16+11+27`,
+    precedents:["B2","B3","B4","B5"], isFormula:true,
+    recalc:()=>{ cTot.textContent=`${totalMonths}개월 (≈${(totalMonths/12).toFixed(1)}년)`; return totalMonths; }});
+  cell(sr,`4개 사 / 제조→데이터→개발`,"muted");
+  const cNote=cell(sr,`=COUNTA(D2:D5)`,"formula");
+  regCell(cNote,"D6",{formula:`=COUNTA(D2:D5)`, explain:`성과 항목 누적 = 4건의 굵직한 트랙`,
+    precedents:["D2","D3","D4","D5"], isFormula:true,
+    recalc:()=>{ cNote.textContent=`4개 트랙 누적`; return 4;}});
+  const cAvg=cell(sr,`=AVG(E2:E5)`,"formula heat");
+  regCell(cAvg,"E6",{formula:`=AVERAGE(E2:E5)`, explain:`평균 임팩트지수 = (92+97+88+90)/4`,
+    precedents:["E2","E3","E4","E5"], isFormula:true,
+    recalc:()=>{ cAvg.textContent=`평균 ${avgImpact}`; return avgImpact;}});
+  pane.appendChild(t); return pane;
+}
+
+/* ---- 스킬 sheet ---- */
+function buildSkills(){
+  const pane=document.createElement("div"); pane.className="sheetpane"; pane.dataset.sheet="skills";
+  const {t,tb}=tableShell([170,90,560,110]);
+  let r=addRow(tb,1,true);
+  ["분류","숙련도","기술 스택","항목수"].forEach((h,i)=>regCell(cell(r,h),COLNAME(i)+"1"));
+  let rn=2;
+  SKILLS.forEach((s,idx)=>{
+    const tr=addRow(tb,rn); const z=idx%2?"zebra":"";
+    regCell(cell(tr,s.grp,"title "+z),`A${rn}`);
+    const stars="★".repeat(s.lvl)+"☆".repeat(5-s.lvl);
+    const cB=cell(tr,`<span style="color:var(--warn);letter-spacing:1px">${stars}</span>`,z);
+    regCell(cB,`B${rn}`,{explain:`숙련도 ${s.lvl}/5`});
+    // tags
+    const tags=s.items.map(i=>`<span style="display:inline-block;background:#eef4ef;border:1px solid var(--ribbon-line);border-radius:5px;padding:1px 7px;margin:2px 4px 2px 0;font-size:11px;font-family:var(--mono);color:var(--ink)">${i}</span>`).join("");
+    const cC=cell(tr,tags,"wide "+z); regCell(cC,`C${rn}`,{explain:`${s.items.length}개 기술`});
+    const cD=cell(tr,`=COUNTA(...)`,"formula heat "+z);
+    regCell(cD,`D${rn}`,{formula:`=COUNTA(${COLNAME(2)}${rn})`, explain:`이 분류의 기술 개수 = ${s.items.length}`,
+      precedents:[`C${rn}`], isFormula:true, recalc:()=>{cD.textContent=s.items.length; return s.items.length;}});
+    rn++;
+  });
+  const sr=addRow(tb,rn);
+  regCell(cell(sr,"<b>총 보유 기술</b>","title"),`A${rn}`);
+  cell(sr,"—","muted");
+  cell(sr,"제조 현장 ↔ 풀스택 개발을 잇는 T자형 역량","muted");
+  const cTot=cell(sr,`=SUM(D2:D4)`,"formula heat");
+  regCell(cTot,`D${rn}`,{formula:`=SUM(D2:D${rn-1})`, explain:`총 기술 수 = ${skillCount}개`,
+    precedents:["D2","D3","D4"], isFormula:true, recalc:()=>{cTot.textContent=`${skillCount}개`; return skillCount;}});
+  pane.appendChild(t); return pane;
+}
+
+/* ---- 지표 sheet : grid + pivot chart ---- */
+let chart=null;
+function buildMetrics(){
+  const pane=document.createElement("div"); pane.className="sheetpane"; pane.dataset.sheet="metrics";
+  const wrap=document.createElement("div"); wrap.className="metricwrap";
+  const gridcol=document.createElement("div"); gridcol.className="gridcol";
+  const {t,tb}=tableShell([130,140,110,170]);
+  let r=addRow(tb,1,true);
+  ["지표","원시값","개선폭","출처(회사)"].forEach((h,i)=>regCell(cell(r,h),COLNAME(i)+"1"));
+  const maxMag=Math.max(...METRICS.map(m=>m.mag));
+  METRICS.forEach((m,idx)=>{
+    const rn=idx+2; const tr=addRow(tb,rn); const z=idx%2?"zebra":"";
+    regCell(cell(tr,m.k,"title "+z),`A${rn}`);
+    const arrow = m.dir<0 ? `<span class="arrow-up">▼</span>` : `<span class="arrow-up">▲</span>`;
+    const cB=cell(tr,`${arrow} ${m.raw}`,"muted "+z);
+    regCell(cB,`B${rn}`,{explain:`${m.src}에서 달성한 실제 성과`});
+    // heatmap cell with color-scale by magnitude
+    const cC=cell(tr,`<span class="v">${m.mag}</span>`,"heat "+z);
+    const bar=document.createElement("span"); bar.className="databar";
+    bar.style.width=(m.mag/maxMag*92)+"%";
+    bar.style.background=heatScale(m.mag);
+    cC.insertBefore(bar,cC.firstChild);
+    regCell(cC,`C${rn}`,{formula:`=NORMALIZE("${m.raw}")`, explain:`개선폭 정규화값 ${m.mag} — 조건부 색상 스케일 적용`, isFormula:true, recalc:()=>m.mag, metric:m});
+    regCell(cell(tr,m.src,"muted "+z),`D${rn}`,{explain:`출처: ${m.src}`});
+  });
+  // pivot summary row
+  const sr=addRow(tb, METRICS.length+2);
+  regCell(cell(sr,"<b>=YIELD()</b>","title formula"),`A${METRICS.length+2}`);
+  const cY=cell(sr,"계산중…","formula heat");
+  regCell(cY,`B${METRICS.length+2}`,{formula:`=YIELD(품질지표)`, explain:`품질 수율 = (불량 0건 & 용착 0%) ⇒ 100.0%`,
+    precedents:["C5","C9"], isFormula:true, recalc:()=>{cY.textContent="수율 100.0%"; return 100;}});
+  cell(sr,"=ROI","formula");
+  const cR=cell(sr,"계산중…","formula heat");
+  regCell(cR,`D${METRICS.length+2}`,{formula:`=ROI(자동화·협상)`, explain:`사무공수 −451분/일 + 단가 +30% ⇒ 정성적 ROI 최상`,
+    precedents:["C8","C7"], isFormula:true, recalc:()=>{cR.textContent="ROI ★최상"; return 1;}});
+
+  gridcol.appendChild(t);
+
+  // pivot / chart side
+  const piv=document.createElement("div"); piv.className="pivot";
+  piv.innerHTML=`
+    <h4>피벗 차트 — 카테고리별 개선폭</h4>
+    <div class="pv-sub">=PIVOT(지표!A:C, 행=카테고리, 값=SUM(개선폭))</div>
+    <div id="chart"></div>
+    <div class="legend" id="chartLegend"></div>
+    <div class="dax">
+      <span class="lab">데이터 소스:</span>
+      <div class="toggle" id="excelToggle" role="switch" aria-checked="false" tabindex="0">
+        <span class="ghost l">Excel</span><span class="ghost r">DB</span>
+        <span class="knob">수기 Excel</span>
+      </div>
+      <span class="lab" id="daxRows">→ 451개 중복 행</span>
+    </div>
+    <div class="pv-note" id="pvNote">
+      <b>수기 Excel:</b> 매일 451분어치 중복 입력 행이 쌓임 — 시트는 점점 무거워지고 오류가 누적.
+      토글을 누르면 같은 데이터가 <b>단일 DB 쿼리 1행</b>으로 접힘. 그게 솔라엣지에서 한 일.
+    </div>`;
+  wrap.appendChild(gridcol); wrap.appendChild(piv);
+  pane.appendChild(wrap);
+  return pane;
+}
+function heatScale(v){ // green->yellow->red style "color scale" (here: low->high = light->deep green)
+  // map 0..100 to deep teal-green emphasis
+  const t=Math.min(1,v/100);
+  const a=0.20+t*0.55;
+  return `linear-gradient(90deg, rgba(33,115,70,${a*0.5}), rgba(33,115,70,${a}))`;
+}
+
+/* ---- 학력 sheet ---- */
+function buildEdu(){
+  const pane=document.createElement("div"); pane.className="sheetpane"; pane.dataset.sheet="edu";
+  const {t,tb}=tableShell([220,260,360]);
+  let r=addRow(tb,1,true);
+  ["기관","과정","비고"].forEach((h,i)=>regCell(cell(r,h),COLNAME(i)+"1"));
+  EDU.forEach((e,idx)=>{
+    const rn=idx+2; const tr=addRow(tb,rn); const z=idx%2?"zebra":"";
+    regCell(cell(tr,e.a,"title "+z),`A${rn}`);
+    regCell(cell(tr,e.b,z),`B${rn}`);
+    regCell(cell(tr,e.c,"muted wide "+z),`C${rn}`);
+  });
+  const sr=addRow(tb,EDU.length+2);
+  regCell(cell(sr,"<b>요약</b>","title"),`A${EDU.length+2}`);
+  cell(sr,"호주 4년 · TOEIC 930","muted");
+  cell(sr,"비전공 → 현장 → 데이터/개발로 스스로 경로를 재계산","muted wide");
+  pane.appendChild(t); return pane;
+}
+
+/* ---- 연락처 sheet ---- */
+function buildContact(){
+  const pane=document.createElement("div"); pane.className="sheetpane"; pane.dataset.sheet="contact";
+  const {t,tb}=tableShell([160,420]);
+  let r=addRow(tb,1,true);
+  ["항목","값(=HYPERLINK)"].forEach((h,i)=>regCell(cell(r,h),COLNAME(i)+"1"));
+  CONTACT.forEach((c,idx)=>{
+    const rn=idx+2; const tr=addRow(tb,rn); const z=idx%2?"zebra":"";
+    regCell(cell(tr,c.a,"title "+z),`A${rn}`);
+    const cB=cell(tr,`<span style="color:var(--num);font-family:var(--mono)">${c.b}</span>`,z);
+    regCell(cB,`B${rn}`,{formula:`=HYPERLINK("${c.b}")`, explain:`연락처 — 클릭 가능한 링크 셀`, isFormula:true});
+  });
+  const sr=addRow(tb,CONTACT.length+2);
+  regCell(cell(sr,"<b>=CONCAT()</b>","title formula"),`A${CONTACT.length+2}`);
+  const cB=cell(sr,"박양하 · 데이터로 일하는 생산운영가","muted");
+  regCell(cB,`B${CONTACT.length+2}`,{formula:`=CONCAT(이름," · ",한줄소개)`, explain:`자기소개 결합 셀`, isFormula:true});
+  pane.appendChild(t); return pane;
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   MOUNT
+   ───────────────────────────────────────────────────────────────────── */
+const SHEETS = [
+  {id:"career",  name:"경력",  color:"#217346", build:buildCareer},
+  {id:"skills",  name:"스킬",  color:"#2f6fed", build:buildSkills},
+  {id:"metrics", name:"지표",  color:"#c0392b", build:buildMetrics},
+  {id:"edu",     name:"학력",  color:"#b8860b", build:buildEdu},
+  {id:"contact", name:"연락처",color:"#7b3fb5", build:buildContact},
+];
+const gw=$("#gridwrap"), tabsEl=$("#tabs");
+const panes={};
+SHEETS.forEach(s=>{ const p=s.build(); panes[s.id]=p; gw.appendChild(p);
+  const tab=document.createElement("button"); tab.className="tab"; tab.dataset.sheet=s.id;
+  tab.innerHTML=`<span class="dot" style="background:${s.color}"></span>${s.name}`;
+  tab.addEventListener("click",()=>activateSheet(s.id));
+  tabsEl.appendChild(tab);
+});
+
+let activeSheet=null, activeRef=null;
+function activateSheet(id, opts={}){
+  SHEETS.forEach(s=>panes[s.id].classList.toggle("active", s.id===id));
+  [...tabsEl.children].forEach(tb=>tb.classList.toggle("active", tb.dataset.sheet===id));
+  activeSheet=id;
+  gw.scrollTop=0;
+  if(id==="metrics"){ requestAnimationFrame(()=>{ drawChart(); }); }
+  if(!opts.silent) recalcSweep(id, opts.thenSelect);
+}
+
+/* ── cell selection / formula bar / trace ── */
+function clearHighlights(){
+  document.querySelectorAll(".hl-active,.hl-precedent,.col-band,.row-band").forEach(el=>{
+    el.classList.remove("hl-active","hl-precedent","col-band","row-band");
+    const fh=el.querySelector(".fillhandle"); if(fh) fh.remove();
+  });
+}
+function fxHTML(formula){
+  if(!formula) return `<span class="cmt">— 입력값 (수식 없음)</span>`;
+  const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const L=String.fromCharCode(0xF000), R=String.fromCharCode(0xF001);
+  const strs=[];
+  // protect string literals so the ref/keyword regexes leave their contents alone
+  let s = esc(formula).replace(/"([^"]*)"/g,(m,g1)=>{ strs.push(g1); return L+(strs.length-1)+R; });
+  s = s
+    .replace(/=([A-Z_]+)/g,'=<span class="kw">$1</span>')
+    .replace(/\b([A-Z]+\d+(?::[A-Z]+\d+)?)\b/g,'<span class="ref">$1</span>');
+  // restore protected strings as styled literals
+  s = s.replace(new RegExp(L+"(\\d+)"+R,"g"),(m,i)=>`<span class="str">"${strs[+i]}"</span>`);
+  return s;
+}
+const traceOn=()=>$("#btnTrace").classList.contains("on");
+function selectCell(ref){
+  const c=CELLS[ref]; if(!c||!c.el) return;
+  clearHighlights();
+  activeRef=ref;
+  c.el.classList.add("hl-active");
+  const fh=document.createElement("span"); fh.className="fillhandle"; c.el.appendChild(fh);
+  // name box + fx bar
+  $("#nameRef").textContent=ref;
+  $("#fxInput").innerHTML = fxHTML(c.formula) + (c.formula?` &nbsp;<span class="cmt">// ${c.explain||""}</span>`:(c.explain?`<span class="cmt">// ${c.explain}</span>`:""));
+  // status bar
+  $("#sbCell").textContent="셀 "+ref;
+  const v = c.el.querySelector(".v");
+  $("#sbAgg").textContent = c.isFormula? ("값: "+ (v? v.textContent : c.el.textContent.trim())) : "합계: —";
+  // trace precedents
+  if(traceOn() && c.precedents && c.precedents.length){
+    c.precedents.forEach(p=>{ const pc=CELLS[p]; if(pc&&pc.el){ pc.el.classList.remove("hl-precedent"); void pc.el.offsetWidth; pc.el.classList.add("hl-precedent"); }});
+  }
+}
+// click delegation
+gw.addEventListener("click",e=>{
+  const td=e.target.closest("td[data-ref]"); if(!td) return;
+  selectCell(td.dataset.ref);
+});
+
+/* ── hover tooltip explaining formulas ── */
+const tip=$("#celltip");
+gw.addEventListener("mousemove",e=>{
+  const td=e.target.closest("td[data-ref]");
+  if(!td){ tip.classList.remove("show"); return; }
+  const c=CELLS[td.dataset.ref];
+  if(!c || (!c.formula && !c.explain)){ tip.classList.remove("show"); return; }
+  tip.innerHTML = (c.formula? `<span class="tk">${td.dataset.ref}</span>  ${fxHTML(c.formula)}<br>`:`<span class="tk">${td.dataset.ref}</span><br>`) + (c.explain||"");
+  tip.style.left=Math.min(window.innerWidth-310, e.clientX+14)+"px";
+  tip.style.top=(e.clientY+16)+"px";
+  tip.classList.add("show");
+});
+gw.addEventListener("mouseleave",()=>tip.classList.remove("show"));
+
+/* ── recalculation sweep ── */
+const led=$("#led"), recalcMsg=$("#recalcMsg"), sbReady=$("#sbReady");
+function recalcSweep(sheetId, thenSelect){
+  const pane=panes[sheetId];
+  const formulaCells=[...pane.querySelectorAll("td.formula, td.heat")].filter(td=>td.dataset.ref && CELLS[td.dataset.ref] && CELLS[td.dataset.ref].isFormula);
+  led.className="recalc-led busy"; recalcMsg.textContent="재계산 중…"; sbReady.textContent="계산 중";
+  let i=0;
+  const step=()=>{
+    if(i>=formulaCells.length){
+      led.className="recalc-led done"; recalcMsg.textContent="계산 완료";
+      sbReady.innerHTML='<span class="ready">준비</span>';
+      const now=new Date();
+      $("#lastcalc").textContent=now.toLocaleTimeString("ko-KR",{hour12:false});
+      if(thenSelect){ selectCell(thenSelect); }
+      return;
+    }
+    const td=formulaCells[i++]; const c=CELLS[td.dataset.ref];
+    td.classList.add("recalcing");
+    if(c.recalc){ try{ c.recalc(); }catch(_){} td.classList.add("justset"); setTimeout(()=>td.classList.remove("justset"),700); }
+    setTimeout(()=>td.classList.remove("recalcing"),500);
+    setTimeout(step, 70);
+  };
+  step();
+}
+
+/* ── DELIGHT: =DEFECT_RATE() animated 15% → 0% in career impact + metrics ── */
+// also Excel→DB toggle on metrics sheet
+function wireToggle(){
+  const tg=$("#excelToggle"), knob=tg.querySelector(".knob"), rows=$("#daxRows"), note=$("#pvNote");
+  const flip=()=>{
+    const after=tg.classList.toggle("after");
+    tg.setAttribute("aria-checked", after);
+    if(after){
+      knob.textContent="DB 1행";
+      // animate 451 -> 1
+      let n=451; rows.style.color="var(--good)";
+      const iv=setInterval(()=>{ n=Math.max(1,Math.round(n*0.78)-3); rows.textContent=`→ ${n}개 행`; if(n<=1){clearInterval(iv); rows.textContent="→ 1개 행 (DB 쿼리)";} },35);
+      note.innerHTML=`<b>DB:</b> 매일 451분 걸리던 수기 입력이 <b>쿼리 한 줄</b>로 접힘. 451개 중복 행 → 1행. 시트는 가벼워지고 오류율 0 — <b>사무공수 −451분/일</b>의 실제 메커니즘.`;
+      drawChart(true);
+    }else{
+      knob.textContent="수기 Excel"; rows.style.color="var(--ink-3)"; rows.textContent="→ 451개 중복 행";
+      note.innerHTML=`<b>수기 Excel:</b> 매일 451분어치 중복 입력 행이 쌓임 — 시트는 점점 무거워지고 오류가 누적. 토글을 누르면 같은 데이터가 <b>단일 DB 쿼리 1행</b>으로 접힘. 그게 솔라엣지에서 한 일.`;
+      drawChart(false);
+    }
+  };
+  tg.addEventListener("click",flip);
+  tg.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();flip();}});
+}
+
+/* ── PIVOT CHART (echarts) ── */
+function pivotData(){
+  const map={};
+  METRICS.forEach(m=>{ map[m.cat]=(map[m.cat]||0)+m.mag; });
+  return Object.entries(map).sort((a,b)=>b[1]-a[1]);
+}
+function drawChart(dbMode=false){
+  const el=$("#chart"); if(!el) return;
+  if(!chart){ chart=echarts.init(el,null,{renderer:"canvas"}); }
+  const data=pivotData();
+  const cats=data.map(d=>d[0]);
+  const vals=data.map(d=>d[1]);
+  chart.setOption({
+    animationDuration:700, animationEasing:"cubicOut",
+    grid:{left:8,right:18,top:10,bottom:6,containLabel:true},
+    tooltip:{trigger:"axis",axisPointer:{type:"shadow"},
+      backgroundColor:"#1d2620",borderColor:"#2c3b31",textStyle:{color:"#eef4ef",fontSize:11,fontFamily:"monospace"},
+      formatter:p=>`${p[0].name} 카테고리<br/>SUM(개선폭) = <b>${p[0].value}</b>`},
+    xAxis:{type:"value",max:Math.max(...vals)*1.15,splitLine:{lineStyle:{color:"#eef0ec"}},
+      axisLabel:{color:"#94a097",fontFamily:"monospace",fontSize:10},axisLine:{show:false},axisTick:{show:false}},
+    yAxis:{type:"category",data:cats,inverse:true,
+      axisLabel:{color:"#1d2620",fontWeight:"bold",fontSize:12,fontFamily:"sans-serif"},
+      axisLine:{lineStyle:{color:"#c7ccc3"}},axisTick:{show:false}},
+    series:[{
+      type:"bar",data:vals.map((v,i)=>({value:v,itemStyle:{color:CAT_COLOR[cats[i]]||"#217346",
+        borderRadius:[0,4,4,0], opacity:dbMode?1:0.92}})),
+      barWidth:dbMode?20:18,
+      label:{show:true,position:"right",color:"#5d6a61",fontFamily:"monospace",fontWeight:"bold",fontSize:11,
+        formatter:p=>p.value}
+    }]
+  });
+  // legend
+  const lg=$("#chartLegend");
+  if(lg){ lg.innerHTML=cats.map(c=>`<span><i style="background:${CAT_COLOR[c]||'#217346'}"></i>${c}</span>`).join(""); }
+}
+window.addEventListener("resize",()=>{ if(chart) chart.resize(); });
+
+/* ── ribbon buttons ── */
+$("#btnRecalc").addEventListener("click",()=>recalcSweep(activeSheet, activeRef));
+$("#btnTrace").addEventListener("click",()=>{ $("#btnTrace").classList.toggle("on"); if(activeRef) selectCell(activeRef); });
+$("#btnHeat").addEventListener("click",()=>{
+  const on=$("#btnHeat").classList.toggle("on");
+  document.querySelectorAll(".databar").forEach(b=>b.style.display=on?"":"none");
+});
+
+/* ─────────────────────────────────────────────────────────────────────
+   FIRST PAINT  (must show populated sheet + chart, default cell selected)
+   ───────────────────────────────────────────────────────────────────── */
+async function boot(){
+  if(document.fonts && document.fonts.ready){ try{ await document.fonts.ready; }catch(_){} }
+  wireToggle();
+  // show career first, run recalc, then select a meaningful default cell (E2 = 미러리스 임팩트)
+  activateSheet("career", {silent:true});
+  $("#tabs").children[0].classList.add("active");
+  // initial recalc + default selection (so headless PDF shows computed state)
+  // pre-fill formula cell text synchronously so static render is non-empty
+  Object.values(CELLS).forEach(c=>{ if(c.recalc){ try{c.recalc();}catch(_){}} });
+  selectCell("E2");
+  recalcSweep("career","E2");
+
+  // build the metrics chart once even though hidden, so switching is instant & static export safe
+  // create offscreen-safe: defer until pane has size
+  setTimeout(()=>{
+    const wasActive=activeSheet;
+    panes.metrics.classList.add("active");
+    drawChart(false);
+    panes.metrics.classList.toggle("active", wasActive==="metrics");
+  }, 120);
+}
+boot();
+
+/* keyboard: F9 recalc */
+window.addEventListener("keydown",e=>{ if(e.key==="F9"){ e.preventDefault(); recalcSweep(activeSheet, activeRef);} });
+</script>
+</body>
+</html>

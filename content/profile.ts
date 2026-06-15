@@ -1,0 +1,659 @@
+import type { Profile } from './types';
+
+/**
+ * SSOT (Single Source of Truth) for 박양하's portfolio.
+ *
+ * Authored from his Obsidian vault (400_Areas/PORTFOLIO, 300_Projects, 900_Writings)
+ * and src/data/resume.json. Korean copy is preserved verbatim where it is his own writing.
+ *
+ * Precedence: this file is the base layer. `overrides.ts` (DeepPartial) sits on top
+ * and wins on conflict — see `index.ts` for the merge.
+ */
+export const profile: Profile = {
+  identity: {
+    name: '박양하',
+    nameEn: 'Yangha Park',
+    title: '생산운영 PM · 공정기술 엔지니어 · 데이터/AI 기반 시스템 빌더',
+    tagline: '데이터 분석과 IT로 혁신을 추구하는 인문학 베이스 엔지니어',
+    beliefs: [
+      '관성에 따라 일하지 않는다',
+      '품질과 타협하지 않는다',
+      '불합리를 방치하지 않는다',
+    ],
+    quotes: [
+      {
+        text: '측정할 수 없는 건 관리할 수 없다는 생각은 잘못됐다. 그건 값비싼 신화다.',
+        source: 'W. Edwards Deming',
+      },
+      {
+        text: '기존의 패러다임을 깨고 실체를 찾는 과정, 이런 활동들이 역사에 ‘혁신’으로 기록됩니다. 혁신의 실마리를 찾기 위해 항상 고민하고 생각합니다.',
+        source: '박양하',
+      },
+      {
+        text: '숫자와 데이터에만 매몰되지 않고 정말로 중대하고 긴급한 ‘실존하는 문제의 근본’을 파악하기 위해 항상 합리적인 회의주의를 가지고 업무에 임합니다.',
+        source: '박양하',
+      },
+    ],
+  },
+
+  contact: {
+    email: '64etuor@gmail.com',
+    phone: '010-7448-1791',
+    github: 'https://github.com/64etuor',
+    githubPage: 'https://64etuor.github.io',
+    url: 'https://64etuor.github.io',
+  },
+
+  projects: [
+    {
+      id: 'work-radar',
+      name: 'Work Radar — Local-first AI 워크플로우 콕핏',
+      org: '개인 프로젝트',
+      period: '2026.01 ~ 현재',
+      role: '제품 기획, 프론트엔드, Rust 백엔드, 로컬 자동화 아키텍처',
+      background:
+        '개인 개발자의 업무는 캘린더, GitHub PR, Notion 백로그, 로컬 worktree, Codex/Hermes agent 세션, 루틴이 서로 다른 속도로 동시에 들어온다. 실제 병목은 자동화 부족이 아니라 “지금 무엇을 봐야 하는지”를 잃는 데 있다. 이 문제를 task manager가 아니라 운영면의 문제로 보고, 신호 수집·시간 배치·agent 실행·governance·회고를 하나의 반복 가능한 데스크톱 콕핏으로 묶기 위해 기획.',
+      work: [
+        'Capture Board: 미분류 inbox, Eisenhower matrix, Today rail, 루틴, Agent Bar, 뉴스 티커를 한 화면에 결합한 관제면 구현',
+        'Today Timeline: 미배치 tray, 연속 날짜 timeline, drag 배치, 완료 이력, Work Debt chip을 하나의 시간 좌표계로 합성',
+        'Control Room: Boule Governance(자동 개발 구현 시스템)를 readiness gate, bounded ticker, attention latch, lineage graph로 관측 가능한 복잡계로 노출',
+        'Google Calendar 동기화: OAuth(Auth Code + PKCE + loopback), 로컬 mirror와 pending write 큐, bounded SyncEngine retry로 외부 캘린더와 양방향 동기화',
+        'Work Radar MCP 게이트웨이: 외부 agent의 write tool을 기본 proposal-only로 두고, Hermes ACP permission card를 통과한 경우만 직접 실행하는 human-gate 설계',
+        'PR Radar / Worktree Diff: 여러 repo·worktree의 PR을 readiness bucket으로 분리하고, 코드 리뷰·CI triage·escalation을 read-only Jobs 제안 레일로 연결',
+      ],
+      impact: [
+        { metric: '운영 surface 통합', value: 'capture·schedule·jobs·governance·review를 단일 콕핏으로 통합' },
+        { metric: 'agent 실행 통제', value: 'timeout·max turns·cost cap·kill·accept/reject 로그로 bounded 실행' },
+        { metric: '외부 변경 안전성', value: 'GitHub·Notion·Calendar·MCP write를 모두 human gate + Rust boundary로 통제' },
+      ],
+      tech: [
+        'Tauri 2',
+        'Rust',
+        'SQLite',
+        'Vite',
+        'React',
+        'TypeScript',
+        'Tailwind v4',
+        'shadcn/ui',
+        'TanStack Query',
+        'Zustand',
+        'MCP',
+        'Google Calendar API',
+        'Codex CLI',
+        'Hermes ACP',
+      ],
+      domains: ['개발', 'AI', 'PM'],
+      links: [
+        { label: 'GitHub', url: 'https://github.com/64etuor' },
+      ],
+    },
+    {
+      id: 'mirrorless-beautifly',
+      name: 'Beautifly — 뷰티 매장 CRM·키오스크·앱 플랫폼',
+      org: '미러리스',
+      period: '2025.08 ~ 현재',
+      role: '총괄본부장 / 제품 요구사항 정의, 기능 기획, 개발 일정 관리, 백엔드·인프라·HW 프로토타입',
+      background:
+        '뷰티 매장의 매출·고객 이용 데이터를 전산화하고, CRM·키오스크·협업 SW·앱을 하나의 제품군으로 묶어 매장 운영을 데이터 기반으로 전환하기 위한 프로젝트. 제품 개발과 AX(AI Transformation) 기반 업무 시스템 구축을 동시에 담당.',
+      work: [
+        'CRM·키오스크·협업 SW·앱 제품 요구사항 정의, 기능 기획 및 개발 일정 관리',
+        'FastAPI 백엔드, RDS MySQL 데이터 모델링, AWS·GCP 인프라 및 CI/CD 구축',
+        '키오스크 하드웨어 프로토타입 기구 설계, 외주 제작 관리 및 운영 검토',
+        'RPA·AI MCP 서버 기반 AX 업무 시스템 기획 및 구축',
+        'Beautifly 웹 통계 분석 기능(매출 통계·고객 이용 통계 대시보드) 기획 및 사용자 매뉴얼 작성',
+      ],
+      impact: [
+        { metric: '제품군', value: 'CRM·키오스크·협업 SW·앱을 단일 플랫폼으로 통합' },
+        { metric: '인프라', value: 'FastAPI + RDS MySQL + AWS/GCP + CI/CD 풀스택 구축' },
+        { metric: '업무 자동화', value: 'RPA·AI MCP 기반 AX 업무 시스템 도입' },
+      ],
+      tech: [
+        'FastAPI',
+        'Python',
+        'MySQL',
+        'RDS',
+        'AWS',
+        'GCP',
+        'CI/CD',
+        'RPA',
+        'MCP',
+        'Electron',
+        'React',
+        'TypeScript',
+      ],
+      domains: ['개발', 'AI', 'PM', '하드웨어'],
+      links: [],
+    },
+    {
+      id: 'kh-project',
+      name: 'KH Project — 한국 거주 외국인 생활 마켓플레이스',
+      org: '개인 프로젝트',
+      period: '2024.07 ~ 진행/검증',
+      role: '제품 기획, 시장 분석, 기능 스펙, 사업 전략',
+      background:
+        '한국 거주 외국인이 자기 언어로 중고거래·방 구하기·구인구직을 한 곳에서 해결하는 생활 마켓플레이스. 2025년 말 기준 국내 체류외국인 278만 명 규모이지만, 기존 로컬 앱은 동네·한국어·내국인 생활패턴 기반으로 설계되어 외국인 체류자격별 니즈를 담지 못한다는 문제에서 출발. 중고거래 × 베트남어 × 경기 남부 산업단지의 단일 셀 유동성을 먼저 증명한 뒤 버티컬·언어·지역을 순차 확장하는 Phase 0a 전략 수립.',
+      work: [
+        '공개 통계(법무부 체류외국인, 통계청 이민자체류실태조사) 기반 시장 규모·세그먼트 분석',
+        '체류자격(E-9, H-2, F-4, 유학생 등)별 주거·구직·생활 패턴 분석 및 MECE 타깃 정의',
+        'HeyKorean, SFKorean, KLiK, KOWORK 등 벤치마크 구조 분석으로 “중고·방·일을 묶은 외국인 생활 마켓플레이스” 빈 시장 도출',
+        '구인구직 유동성 → 외국인 친화 방 매물 DB → 중고거래 리텐션 엔진의 3단계 사업 목표 및 KPI(유동성·응답속도·신뢰도·재방문율) 설계',
+      ],
+      impact: [
+        { metric: '목표 시장', value: '국내 체류외국인 278만 명 / 상주 외국인 156만 명' },
+        { metric: '핵심 KPI', value: 'GMV 아닌 유동성·응답속도·신뢰도·재방문율' },
+        { metric: '전략', value: 'Phase 0a 단일 셀(중고×베트남어×경기 남부) 유동성 선증명' },
+      ],
+      tech: ['시장 분석', '제품 기획', '웹 서비스', '데이터 기반 세그먼테이션'],
+      domains: ['PM', '데이터', '개발'],
+      links: [],
+    },
+    {
+      id: 'mes-newline-2410',
+      name: '신제품 생산 라인 셋업 프로젝트 (자동화 설비 MES 자체 개발)',
+      org: '아산 ETS / 솔라엣지테크놀로지스 코리아',
+      period: '2024.10 ~ 2024.12 (약 3개월, 사업 종료로 중단)',
+      role: '설비 공정능력 검증, 데이터 분석, 사이드 프로젝트 기획·리딩, MES SW 개발, DB 아키텍처 설계, 비전 검사 로직 검증',
+      background:
+        '해외에 설치하고자 했던 신제품 생산 라인을 한국에 설치하는 것으로 계획 변경되어 한국 법인이 해외 법인의 프로젝트를 이관 받음. FAT 이후 단계를 진행하던 중, 자동화 설비 예산 30만불이 이미 초과된 상황에서 MES 외주 개발비가 예산에서 누락된 것을 확인 → MES 자체 개발을 기획.',
+      work: [
+        '구형 OCV/IR 검사 장비 데이터 연동: Python, MS Access DB',
+        'Backend 개발: Python Django, Django REST Framework',
+        'Frontend 개발: React, TypeScript, Electron을 활용한 UI/UX 디자인',
+        'ETL 개발: OPC UA 설비 데이터 수집, TCP/IP 비전 데이터 수집',
+        'Database 아키텍처 설계: PostgreSQL',
+        '데이터 파이프라인·시각화: Python Dash를 이용한 실시간 공정 현황 대시보드 구현',
+      ],
+      impact: [
+        { metric: 'MES 외주비 절감', value: '외주 개발비 누락분을 자체 개발로 대체' },
+        { metric: '설비 예산 대응', value: '자동화 설비 예산 30만불 초과 상황에서 MES 내재화' },
+      ],
+      tech: [
+        'Python',
+        'Django',
+        'Django REST Framework',
+        'React',
+        'TypeScript',
+        'Electron',
+        'PostgreSQL',
+        'OPC UA',
+        'TCP/IP',
+        'Python Dash',
+        'MS Access',
+      ],
+      domains: ['제조', '개발', '데이터', '하드웨어'],
+      links: [],
+    },
+    {
+      id: 'dv-data-2408',
+      name: '개발품 DV 데이터 전산 관리 프로젝트',
+      org: '솔라엣지테크놀로지스 코리아',
+      period: '2024.08 ~ 2024.10 (약 2개월)',
+      role: '프로젝트 기획, 앱 개발, 데이터 분석/시각화',
+      background:
+        '한정된 기간 동안 진행되는 DV(Design Validation) 단계에서 고품질의 데이터를 더 많이 확보하고, 여러 현장에서 동시 진행되는 DV 현황을 실시간으로 파악하기 위해 프로젝트 기획.',
+      work: [
+        '앱 개발: Google AppSheet 생산실적·불량내역 등록 앱 개발(프로토타입)',
+        '공정 데이터 분석 SW 개발: Python Matplotlib 활용 공정 데이터 분석(CPK 등)',
+        '데이터 시각화: Google Sheets 활용 실시간 업데이트 대시보드 구현',
+        '데이터 추적: 제품 S/N QR Code 조회로 생산 이력을 확인하는 Apps Script QR 이력 추적 시스템(프로토타입) — EU 배터리 패스포트 대응 시험',
+      ],
+      impact: [
+        { metric: 'DV 데이터 확보', value: '한정 기간 내 고품질 데이터 수집량 증대' },
+        { metric: '현황 가시성', value: '다현장 DV 현황 실시간 파악' },
+      ],
+      tech: [
+        'Google AppSheet',
+        'Python',
+        'Matplotlib',
+        'Google Sheets',
+        'Apps Script',
+        'QR Code',
+        'CPK',
+      ],
+      domains: ['제조', '데이터', '품질', '개발'],
+      links: [],
+    },
+    {
+      id: 'traceability-2403',
+      name: '공정 추적성 관리 프로그램 개발 프로젝트',
+      org: '솔라엣지테크놀로지스 코리아',
+      period: '2024.03 ~ 2024.06 (약 3개월)',
+      role: '프로젝트 기획, 앱 개발, 데이터 분석/시각화, UI/UX 디자인',
+      background:
+        '필드에서 원자재 불량이 발견되었으나 S/N 관리 미흡(수기)으로 리스크 범위 측정이 불가능한 상황 발생. 문제 재발 방지를 위해 앱 개발을 기획.',
+      work: [
+        '커스텀 솔루션 개발: Power Apps 모바일 실적 등록, 모바일 체크리스트',
+        '프로세스 개선: 조립/검사 데이터가 등록되지 않은 제품이 상위 공정에서 조립되는 것을 방지, S/N 검증, 부품 혼입 방지 등 공정 품질 검증 기능 적용',
+        'Power BI 확장: 생산 이력 데이터를 대시보드에서 확인·추적할 수 있도록 확장',
+        '검사성적서 자동 발행: Power Automate 활용, 검사 완료 제품의 검사 성적서 서버에 자동 발행',
+      ],
+      impact: [
+        { metric: '리스크 추적성', value: 'S/N 기반 추적으로 불량 리스크 범위 측정 가능화' },
+        { metric: '공정 품질 검증', value: '미등록 제품 상위 공정 투입 차단, 부품 혼입 방지' },
+      ],
+      awards: ['2024 Core Value Award 수상'],
+      tech: [
+        'Power Apps',
+        'Power BI',
+        'Power Automate',
+        'S/N 추적',
+        'UI/UX',
+      ],
+      domains: ['제조', '품질', '데이터', '개발'],
+      links: [],
+    },
+    {
+      id: 'process-data-2310',
+      name: '공정 데이터 관리 시스템 개발 프로젝트',
+      org: '솔라엣지테크놀로지스 코리아',
+      period: '2023.10 ~ 2023.12 (약 3개월)',
+      role: '프로젝트 기획, 현황 조사, DB 아키텍처 설계, 솔루션 개발, 데이터 분석/시각화, UI/UX 디자인',
+      background:
+        '문서 관리 효율화, 데이터 무결성 확보, 데이터 분석 및 시각화 개선을 위해 기획. 엑셀 개별 문서 관리 방식을 데이터베이스 활용으로 전환.',
+      work: [
+        '엑셀 개별 문서 관리 방식에서 데이터베이스 활용으로 업무 자동화 구축',
+        '제품 ST 실 데이터 확보 근거 마련',
+        '커스텀 솔루션 개발: 엑셀 VBA 솔루션 개발, 작업 지시·생산 계획·생산 실적·불량 등 DB 저장',
+        '데이터 무결성 확보: 매뉴얼 입력 데이터 무결성 검증 로직 구현',
+        '데이터 신뢰성 확보: 엑셀로 관리하던 공수 등 작업 데이터의 신뢰성을 확보해 실제 투입 공수·생산현황 투명 집계',
+        '사무 자동화: 엑셀 쿼리 <> Microsoft 서버 간 On-premises Gateway 설치, 자동 업데이트 구현',
+        '데이터 시각화: Power BI를 활용한 통합 대시보드 구축(생산현황·불량현황·KPI 등)',
+        '보고서 통합: 기존 각종 보고서를 Script화하여 자동 보고서 생성',
+      ],
+      impact: [
+        { metric: '사무 공수 감축', value: '일 451분 감축', krw: '연 약 5천만원' },
+        { metric: '제품 ST', value: '50% 감축' },
+        { metric: '데이터 신뢰성', value: '공수·생산현황 투명 집계 확보' },
+      ],
+      awards: ['2023 MOC Best Employee 수상'],
+      tech: [
+        'Excel VBA',
+        'Power BI',
+        'On-premises Gateway',
+        'Database',
+        'Script 자동화',
+        'UI/UX',
+      ],
+      domains: ['제조', '데이터', '품질', '개발'],
+      links: [],
+    },
+    {
+      id: 'samsung-logistics-2303',
+      name: '삼성 제조 리더 교육 연계 과정 — 물류 시스템 개선 프로젝트',
+      org: '삼성전자 상생협력 아카데미 / 이랜텍',
+      period: '2023.03 ~ 2023.05 (약 3개월)',
+      role: '개선 과제 설정, 개선 방법 도출, 프로젝트 매니지먼트',
+      background: '제조 창고의 재고 비용 감축 및 물류 흐름 개선을 위해 진행.',
+      work: [
+        '삼성전자 멘토링을 지원받아 구매·영업·제조·생산관리 멤버의 TF 구성, 3개월간 프로젝트 리딩',
+        '면책 구역 지정, 제조-영업 재고 이관 전산 프로세스 개선',
+        '제조 및 영업 창고 3정 5S 진행',
+      ],
+      impact: [
+        { metric: '재고자산회전율', value: '17% 향상 (프로젝트 KPI)' },
+      ],
+      tech: ['SCM', '재고 관리', '3정 5S', '프로세스 개선', 'PM'],
+      domains: ['제조', 'PM', '데이터'],
+      links: [],
+    },
+    {
+      id: 'idle-equipment-2212',
+      name: '유휴 설비 재활용 프로젝트',
+      org: '다비치 비전, TOS / 이랜텍',
+      period: '2022.12 ~ 2023.04 (약 5개월)',
+      role: '프로젝트 기획, 설비 활용 방안 검토, 업체 컨택 및 업무 진행',
+      background:
+        '유휴 설비를 폐기하지 않고 일부를 재활용함으로써 비용을 절약하고, 비전 검사를 적용하지 못한 공정에 비전 검사를 도입함으로써 품질 확보.',
+      work: [
+        '유휴 비전 검사 M/C 4대 활용 방법 모색(초기 구입 가격 개당 약 4천만원)',
+        '1대분, 의료키트 반자동 조립 설비 제작 사급 장비로 활용하여 비전 검사 시스템 비용 일부 절약',
+        '1대분, 범용 비전 검사 소프트웨어 활용: 사출 파트 인서트·너트 누락 검사',
+        '1대분, 범용 비전 검사 소프트웨어 활용: 배터리 모듈 역삽 방지 비전 검사',
+        '1대 예비 장비로 보관',
+      ],
+      impact: [
+        { metric: '비전 시스템 비용 절감', value: '견적가액 약 4백만원 절감', krw: '약 4백만원' },
+        { metric: '품질 확보', value: '미적용 공정에 비전 검사 도입' },
+      ],
+      tech: ['비전 검사', '설비 재활용', '품질 검사 자동화'],
+      domains: ['제조', '품질', '하드웨어'],
+      links: [],
+    },
+    {
+      id: 'line-innovation-2211',
+      name: '연간 생산라인 혁신 프로젝트',
+      org: '이랜텍',
+      period: '2022.11 ~ 2023.09 (약 10개월)',
+      role: '혁신 과제 설정, 개선 과제 실행, 보고서 작성, 업무 배분',
+      background:
+        '초음파 용착 불량으로 폐기되던 사출물 케이스와 불량 재작업으로 발생하는 낭비를 개선하기 위해 프로젝트 기획, 이후 다양한 과제들을 추가하여 프로젝트 확장.',
+      work: [
+        '초음파 용착 조건 DOE·개선을 통해 불량율 15% → 0%대로 감소',
+        '커팅 Jig 개발로 Neck 공정 C/T 단축 (16.72sec → 12.76sec)',
+        '검사 Jig 개조로 Core-pack Function Test C/T 단축 (55sec → 28sec)',
+        '소형 배터리팩 라인 LOB 개선으로 생산성 24% 향상',
+        'MES 활용 공정 현황 실시간 분석 프로세스 도입',
+        'WBS, Gantt Chart, 공유 업무 보드 등을 활용한 인적 자원·프로젝트 관리 도입',
+        '3정 5S 활동 추진 및 기타 불합리 개선',
+        '생산관련문서 불합리 개선, 엑셀 자동화 양식 제작 → 업무 효율성 및 보고 정확성 개선',
+        '라벨 프린트 S/N 유효성 검증 프로그램 제작(Python)',
+      ],
+      impact: [
+        { metric: '초음파 용착 불량율', value: '15% → 0%대' },
+        { metric: '재작업 공수비용 절감', value: '연 환산 절감(초당 임율 6.3원 기준)', krw: '연 3천2백만원' },
+        { metric: '폐기 비용 절감', value: '연 환산 절감(단위 폐기 비용 7,688원)', krw: '연 3천6백만원' },
+        { metric: 'Neck 공정 C/T', value: '31% 단축 (16.72→12.76sec)' },
+        { metric: 'Core-pack Function Test C/T', value: '49% 단축 (55→28sec)' },
+        { metric: '소형 배터리팩 라인 생산성', value: '24% 향상', krw: '연 4,437만원' },
+      ],
+      tech: [
+        'DOE',
+        '초음파 용착',
+        'Jig 개발',
+        'LOB 분석',
+        'MES',
+        'WBS/Gantt',
+        'Python',
+        '3정 5S',
+      ],
+      domains: ['제조', '품질', 'PM', '하드웨어', '데이터'],
+      links: [],
+    },
+    {
+      id: 'smart-factory-2108',
+      name: '중소기업진흥청 대기업상생 스마트 팩토리 도입 프로젝트',
+      org: '중소기업진흥청 / 은성',
+      period: '2021.08 ~ 2022.01 (약 6개월)',
+      role: '프로젝트 신청, 프로젝트 매니지먼트, 개발 요구사항 수립',
+      background:
+        '기업에 스마트 팩토리 기초 솔루션을 도입하여 데이터를 전산화하고 업무 절차를 체계화하기 위해 중소기업진흥청 지원 프로그램 신청.',
+      work: [
+        'ERP 도입 (Ecount ERP)',
+        '물류 실수 방지 및 재고 관리 현황 파악을 위한 ERP 연계 바코드 관리 시스템 도입',
+        '모바일 태블릿을 활용한 수작업 라인 생산현황 파악 시스템 도입',
+      ],
+      impact: [
+        { metric: '데이터 전산화', value: 'ERP·바코드 기반 업무 절차 체계화' },
+        { metric: '재고 관리', value: '물류 실수 방지 및 재고 현황 가시화' },
+      ],
+      tech: ['Ecount ERP', '바코드 관리 시스템', '모바일 태블릿', 'MES'],
+      domains: ['제조', 'PM', '데이터'],
+      links: [],
+    },
+  ],
+
+  experience: [
+    {
+      company: '미러리스',
+      title: '총괄본부장 / Director',
+      period: '2025.08 ~ 현재',
+      summary:
+        '뷰티 매장 대상 Beautifly 제품군(CRM·키오스크·협업 SW·앱) 개발과 AX 기반 업무 시스템 구축 총괄.',
+      highlights: [
+        'CRM·키오스크·협업 SW·앱 제품 요구사항 정의, 기능 기획 및 개발 일정 관리',
+        'FastAPI 백엔드, RDS MySQL 데이터 모델링, AWS·GCP 인프라 및 CI/CD 구축',
+        '키오스크 하드웨어 프로토타입 기구 설계, 외주 제작 관리 및 운영 검토',
+        'RPA·AI MCP 서버 기반 AX 업무 시스템 기획 및 구축',
+      ],
+    },
+    {
+      company: '솔라엣지테크놀로지스코리아',
+      title: '공정기술 엔지니어',
+      period: '2023.09 ~ 2024.12',
+      summary:
+        '생산·불량·KPI·ST·OPEX 데이터 수집/정제와 DB·대시보드 운영, 신제품 라인 MES 생산운영 체계 구축.',
+      highlights: [
+        '생산현황·불량·KPI·BOM·ST·워크오더·OPEX 데이터 수집, 정제 및 DB/대시보드 운영',
+        '공정 LOB 분석, Jig 개발, 작업 방식 개선을 통한 ST 관리 및 공정 개선 수행',
+        '검사성적서 자동 발행 체계, S/N 기반 추적성 관리 및 생산·검사 데이터 수집 프로그램 개발',
+        '신제품 라인 MES 생산운영 체계 구축, PFMEA·CP·PFD·SOP 작성 및 번역',
+      ],
+    },
+    {
+      company: '이랜텍',
+      title: '생산라인 PM / 파트장',
+      period: '2022.11 ~ 2023.09',
+      summary: '생산라인 Capa·LOB·C/T 분석 기반 생산성 개선과 용착 공정 DOE·불량 개선 활동.',
+      highlights: [
+        '생산라인 Capa·LOB·공정 C/T 분석 및 생산성 개선 과제 수행',
+        '설비 관리, 스팟·레이저·초음파 용착 공정 DOE, 공정 조건 검증 및 불량 개선 활동',
+        'Jig 개발 및 검사 공정 개선을 통한 LOB 개선',
+        '삼성전자 상생협력아카데미 연계 SCM 개선, 재고·물류 흐름 분석',
+      ],
+    },
+    {
+      company: '은성에스아이티',
+      title: '생산관리 과장 · 2차전지 배터리팩 생산 총괄',
+      period: '2020.08 ~ 2022.11',
+      summary: '배터리팩·정수기 부품·자동차 와이어링 하네스 생산운영 및 생산관리 총괄.',
+      highlights: [
+        '배터리팩·정수기 부품·자동차 와이어링 하네스 생산운영 및 생산관리 총괄',
+        'Capa·투입 공수·생산실적·자재 사용량·재고 흐름 기반 제조원가 및 운영비 구조 분석',
+        '자재 공급단가 검토, 생산계획 최적화, 인원·공수 운영 및 재고 관리 개선',
+        'ERP·생산현황·자재현황 시스템 도입, SQ·ISO·IATF 16949 인증 관리',
+      ],
+    },
+  ],
+
+  skills: [
+    {
+      name: '데이터 · 개발 · 시스템',
+      keywords: [
+        'Python',
+        'SQL',
+        'FastAPI',
+        'Django',
+        'React',
+        'TypeScript',
+        'Electron',
+        'Rust',
+        'Tauri',
+        'MySQL/RDS',
+        'PostgreSQL',
+        'AWS',
+        'GCP',
+        'CI/CD',
+        'Power BI',
+        'Power Apps',
+        'BI',
+        'ML',
+      ],
+    },
+    {
+      name: '제조 · 공정 · 품질',
+      keywords: [
+        '생산계획/실적',
+        '인원/공수',
+        '자재/재고/원가',
+        'MES',
+        'ERP',
+        'LOB 분석',
+        'C/T 분석',
+        'DOE',
+        'PFMEA/CP/PFD/SOP',
+        'SQ/ISO/IATF 16949',
+      ],
+    },
+    {
+      name: 'AI · 자동화',
+      keywords: [
+        'MCP',
+        'RPA',
+        'AI Agent',
+        'LLM 워크플로우',
+        'Codex CLI',
+        'Hermes ACP',
+        'AX 업무 시스템',
+      ],
+    },
+    {
+      name: 'PM · 협업',
+      keywords: [
+        '프로젝트 매니지먼트',
+        'WBS/Gantt',
+        '요구사항 정의',
+        'Notion',
+        'GitHub',
+        'Jira',
+        'Google Workspace',
+        'SAP',
+        'Oracle Agile',
+      ],
+    },
+  ],
+
+  industrialSkills: [
+    {
+      name: '공정기술 · 설비 · 설계',
+      keywords: [
+        'PFMEA/CP/PFD/SOP',
+        '산업용접(스팟·레이저·초음파)',
+        'LOB 분석',
+        'Jig 개발',
+        '기구 설계',
+        '설비 PM/BM',
+        '4M 관리',
+        '비전 검사',
+        '로봇 티칭',
+        'Draftsight',
+        'QueryCAD',
+      ],
+    },
+  ],
+
+  education: [
+    {
+      institution: '한국외국어대학교 서울캠퍼스',
+      area: '이탈리아어',
+      period: '2005.03 ~ 2006.03',
+      note: '중퇴',
+    },
+    {
+      institution: 'Kirana College (호주)',
+      area: 'Social Media Marketing',
+      period: '2018.04 ~ 2019.04',
+      note: '졸업',
+    },
+    {
+      institution: 'CTIC International College (호주)',
+      area: 'Business Administration',
+      period: '2017.02 ~ 2018.02',
+      note: '졸업',
+    },
+    {
+      institution: '대입 검정고시',
+      area: '합격',
+      period: '2004.08',
+      note: '검정고시',
+    },
+  ],
+
+  training: [
+    {
+      name: '플레이데이터 — 한화시스템 Beyond SW 부트캠프',
+      org: '플레이데이터',
+      period: '2025.01 ~ 2025.07',
+      summary: 'Back/Front-end · DevOps',
+    },
+    {
+      name: '메타코드 데이터 분석 부트캠프',
+      org: '메타코드',
+      period: '2024.11 ~ 2025.04',
+      summary: 'Python · SQL · BI · 머신러닝',
+    },
+    {
+      name: '삼성전자 상생협력아카데미 제조 리더 양성 과정 1기',
+      org: '삼성전자 상생협력아카데미',
+      period: '2023.03 ~ 2023.07',
+      summary: 'SPS · 공정 혁신 · 물류 SCM',
+    },
+    {
+      name: '스파르타코딩클럽 앱 개발 · 웹개발 종합반',
+      org: '스파르타코딩클럽',
+      period: '2022.01 ~ 2022.02',
+      summary: '앱/웹 구현 · DB 연동 · 배포',
+    },
+  ],
+
+  writing: [
+    {
+      title: '글 쓰는 이유',
+      kind: 'essay',
+      year: '2012',
+      quote:
+        '나는 그러므로 이제부터 쓰는 법을 알기 위하여 쓴다. 또 잿빛 바다에서 나오는 길을 찾기 위해서 쓴다. 관찰되기 위해 쓴다. 흉내내지 않기 위해 쓴다. 내가 되기 위해 쓴다.',
+    },
+    {
+      title: '상냥함에 관한 이야기',
+      kind: 'essay',
+      year: '2026',
+      quote:
+        '상냥함은 남을 위해 자기를 조금 접는 일이다. 그것은 기질이라기보다 버릇에 가깝고, 버릇이라기보다 오래 지켜 온 마음의 자세에 가깝다.',
+    },
+    {
+      title: '내가 결혼하지 못하는 이유에 대한 변',
+      kind: 'essay',
+      year: '2021',
+      quote:
+        '행복한 가정은 대게 서로 비슷비슷하고, 불행한 가정은 제각기 다른 이유로 불행하다. 행복하게 사는 사람들을 흉내만 내도 되는 일이 아닌가.',
+    },
+    {
+      title: '점을 본 이야기 — 100억과 배우자',
+      kind: 'essay',
+      year: '2021',
+      quote:
+        '문장 하나하나 구구절절이 나보다 나를 더 잘 아는 것처럼 쓰인 저 글들을 보니… 사실 운세를 점치는 시도가 애초에 운세 따윈 믿을 게 못 된다는 자신의 믿음을 검증하려는 의미 같다.',
+    },
+    {
+      title: '존재증명',
+      kind: 'poem',
+      year: '2021',
+      quote: '외로움이란 먹어도 먹어도 배부르지 않은 것이어서, / 고로, 나는, 여기에 존재한다.',
+    },
+    {
+      title: '바벨의 거울',
+      kind: 'poem',
+      year: '2026',
+      quote:
+        '들을 심산이 없는 것들은 하나가 있든, 둘이 있든, 벌판에 서더라도 스스로 굴을 파고 갇히는 외로운 족속들이 되어… 대번 까놓고 보니 이건 영락 없는 거울이라!',
+    },
+  ],
+
+  philosophy: [
+    {
+      name: '의미는 사용이다 (비트겐슈타인)',
+      idea: '낱말의 의미는 정의가 아니라 언어게임 속에서 그것이 실제로 쓰이는 방식이다.',
+      bridge:
+        '지표(metric)의 “의미”도 정의서가 아니라 현장에서 어떻게 입력·해석·사용되는지에서 정해진다. 그래서 데이터 무결성은 스키마가 아니라 사용 맥락에서 검증한다.',
+    },
+    {
+      name: '리좀 (들뢰즈)',
+      idea: '세계는 위계적 나무가 아니라 어디서든 연결되고 가지를 치는 리좀으로 자란다.',
+      bridge:
+        'Work Radar의 spec·plan·task·session·handoff는 선형 큐가 아니라 서로 연결되며 창발하는 리좀이다. 그래서 큐가 아니라 graph와 latch로 운영한다.',
+    },
+    {
+      name: '존재론적 개입 (콰인)',
+      idea: '우리가 무엇이 존재한다고 인정하는지는 우리가 채택한 이론의 변항이 무엇을 가리키는가로 드러난다.',
+      bridge:
+        '“측정할 수 없는 건 관리할 수 없다.” 시스템에 변수로 올리지 않은 비용·공수·불량은 조직에 존재하지 않는 것이 된다. 그래서 먼저 측정 가능한 변항으로 끌어올린다.',
+    },
+    {
+      name: '개성화 (융)',
+      idea: '성숙은 그림자를 포함한 자기 전체를 통합해 고유한 자기(Self)가 되어 가는 과정이다.',
+      bridge:
+        '“관성에 따라 일하지 않는다.” 조직이 외면하는 불합리(그림자)를 직시하고 통합해야 시스템도 사람도 다음 단계로 개성화한다.',
+    },
+  ],
+
+  metrics: [
+    { metric: '운영경비(OPEX)', value: '−85%', note: '데이터 기반 운영 개선' },
+    { metric: '제품 ST', value: '−50%', note: '실 데이터 확보 기반 정규화' },
+    { metric: '공정 C/T', value: '31~49% 단축', note: 'Neck 31% / Core-pack Function Test 49%' },
+    { metric: '초음파 용착 불량율', value: '15% → 0%대', note: 'DOE 기반 조건 개선' },
+    { metric: '생산성', value: '+24%', krw: '연 4,437만원', note: '소형 배터리팩 라인 LOB 개선' },
+    { metric: '사무 공수', value: '−451분/일', krw: '연 약 5천만원', note: 'DB 자동화 전환' },
+    { metric: '재고자산회전율', value: '+17%', note: '삼성 물류 개선 프로젝트 KPI' },
+    { metric: '필드 원자재 불량 추적', value: '리스크 범위 측정 가능화', note: 'S/N 추적성 도입' },
+  ],
+};

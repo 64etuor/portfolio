@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>박양하 · 공정 라인 / ASSEMBLY LINE</title>
+<style>
+/* ============================================================
+   PARK YANGHA — ASSEMBLY LINE PORTFOLIO
+   공정 라인: 입고 → 가공 → 검사 → 조립 → 출하
+   Monochrome industrial + hazard yellow safety color.
+   ============================================================ */
+
+:root{
+  --bg:#0d0f10;
+  --panel:#15191b;
+  --panel-2:#1c2125;
+  --steel:#2a3136;
+  --steel-line:#39434a;
+  --ink:#e7ecef;
+  --ink-dim:#97a3aa;
+  --ink-faint:#5e6a71;
+  --hazard:#f5c518;       /* safety yellow */
+  --hazard-deep:#caa112;
+  --signal:#ff7a18;       /* spark / warning */
+  --pass:#34d27b;
+  --fail:#ff3b3b;
+  --grid:#1a2024;
+  --mono:"Roboto Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --sans:"Inter","Noto Sans KR",-apple-system,system-ui,sans-serif;
+}
+
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  word-break:keep-all;
+  line-height:1.55;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* hairline engineering grid background */
+body::before{
+  content:"";
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:42px 42px;
+  opacity:.5;
+  pointer-events:none;
+  z-index:0;
+}
+/* vignette */
+body::after{
+  content:"";
+  position:fixed; inset:0;
+  background:radial-gradient(ellipse at 50% 35%,transparent 40%,rgba(0,0,0,.55) 100%);
+  pointer-events:none; z-index:0;
+}
+
+.mono{font-family:var(--mono);}
+.upper{text-transform:uppercase;letter-spacing:.14em;}
+
+/* ============ TOP STATUS BAR (HMI) ============ */
+.hmi{
+  position:fixed; top:0; left:0; right:0; height:46px;
+  background:linear-gradient(180deg,#1b2024,#11161a);
+  border-bottom:2px solid var(--steel-line);
+  display:flex; align-items:center; gap:0;
+  z-index:50;
+  font-family:var(--mono); font-size:11px;
+  box-shadow:0 2px 10px rgba(0,0,0,.6);
+}
+.hmi .cell{
+  padding:0 16px; height:100%;
+  display:flex; align-items:center; gap:8px;
+  border-right:1px solid var(--steel-line);
+  white-space:nowrap;
+}
+.hmi .brand{
+  color:var(--bg); background:var(--hazard);
+  font-weight:800; letter-spacing:.18em; text-transform:uppercase;
+}
+.hmi .lbl{color:var(--ink-faint);text-transform:uppercase;letter-spacing:.12em;}
+.hmi .val{color:var(--ink);}
+.hmi .run{color:var(--pass);font-weight:700;}
+.led{width:8px;height:8px;border-radius:50%;background:var(--pass);box-shadow:0 0 8px var(--pass);animation:blink 1.6s infinite;}
+@keyframes blink{0%,70%{opacity:1}85%{opacity:.25}100%{opacity:1}}
+.hmi .takt{margin-left:auto;}
+.hmi .clock{color:var(--hazard);}
+
+@media (max-width:1100px){ .hmi .opt{display:none;} }
+
+/* ============ PROGRESS RAIL (line position) ============ */
+.rail{
+  position:fixed; top:46px; left:0; right:0; height:30px;
+  background:#0a0c0d; border-bottom:1px solid var(--steel-line);
+  z-index:49; display:flex; align-items:stretch;
+}
+.rail .stop{
+  flex:1; display:flex; align-items:center; justify-content:center;
+  gap:7px; font-family:var(--mono); font-size:10px;
+  color:var(--ink-faint); border-right:1px solid #14181b;
+  text-transform:uppercase; letter-spacing:.1em; cursor:pointer;
+  position:relative; transition:color .25s;
+  user-select:none;
+}
+.rail .stop:last-child{border-right:none;}
+.rail .stop .dot{width:7px;height:7px;border-radius:50%;background:var(--steel);border:1px solid var(--steel-line);transition:.25s;}
+.rail .stop.active{color:var(--hazard);background:rgba(245,197,24,.05);}
+.rail .stop.active .dot{background:var(--hazard);box-shadow:0 0 8px var(--hazard);border-color:var(--hazard);}
+.rail .stop.done .dot{background:var(--pass);border-color:var(--pass);}
+.rail .stop:hover{color:var(--ink);}
+@media (max-width:1100px){ .rail .stop .txt{display:none;} }
+
+/* ============ SECTION SHELL ============ */
+main{position:relative; z-index:1; padding-top:76px;}
+.station{
+  min-height:100vh;
+  position:relative;
+  padding:70px clamp(24px,6vw,120px) 90px;
+  display:flex; flex-direction:column; justify-content:center;
+  border-bottom:1px dashed var(--steel-line);
+}
+.station-tag{
+  display:flex; align-items:baseline; gap:18px; margin-bottom:8px;
+  font-family:var(--mono);
+}
+.op-no{
+  font-size:13px; font-weight:700; letter-spacing:.2em;
+  color:var(--bg); background:var(--hazard); padding:3px 10px;
+}
+.op-ko{font-size:13px; color:var(--ink-dim); letter-spacing:.3em;}
+.op-en{font-size:11px; color:var(--ink-faint); letter-spacing:.3em; text-transform:uppercase;}
+.station h2{
+  font-size:clamp(34px,5.5vw,74px); line-height:1.02; margin:6px 0 4px;
+  font-weight:800; letter-spacing:-.01em;
+}
+.station h2 .hl{color:var(--hazard);}
+.station .sub{color:var(--ink-dim); font-size:15px; max-width:60ch; margin:0 0 30px;}
+.period{font-family:var(--mono); font-size:12px; color:var(--signal); letter-spacing:.1em;}
+
+/* corner ticks decoration */
+.ticks{position:absolute;}
+.ticks::before,.ticks::after{content:"";position:absolute;width:14px;height:14px;border-color:var(--steel-line);border-style:solid;}
+.tl{top:18px;left:18px;} .tl::before{top:0;left:0;border-width:1px 0 0 1px;width:14px;height:14px;}
+.tr{top:18px;right:18px;} .tr::before{top:0;right:0;border-width:1px 1px 0 0;}
+
+/* ============ CONVEYOR BELT ============ */
+.belt-wrap{
+  position:relative; margin:18px 0 0; height:118px;
+  background:var(--panel);
+  border:1px solid var(--steel-line);
+  border-radius:3px; overflow:hidden;
+}
+.belt-rails{position:absolute;left:0;right:0;height:14px;background:#0a0c0d;}
+.belt-rails.top{top:0;} .belt-rails.bot{bottom:0;}
+.belt-surface{
+  position:absolute; left:0; right:0; top:14px; bottom:14px;
+  background:
+    repeating-linear-gradient(90deg,#23282c 0 26px,#1a1f23 26px 52px);
+  background-size:52px 100%;
+  animation:belt 1.1s linear infinite;
+}
+.belt-surface.paused{animation-play-state:paused;}
+@keyframes belt{from{background-position:0 0;}to{background-position:-52px 0;}}
+.belt-dashes{
+  position:absolute; left:0; right:0; top:50%; height:3px; transform:translateY(-50%);
+  background:repeating-linear-gradient(90deg,var(--hazard) 0 22px,transparent 22px 50px);
+  background-size:50px 3px; opacity:.55;
+  animation:belt2 .9s linear infinite;
+}
+@keyframes belt2{from{background-position:0 0;}to{background-position:-50px 0;}}
+/* roller hints */
+.rollers{position:absolute;left:0;right:0;bottom:0;height:14px;display:flex;}
+.rollers i{flex:1;border-right:1px solid #000;background:linear-gradient(180deg,#2c3338,#161a1d);}
+
+/* PART riding the belt */
+.part{
+  position:absolute; top:50%; transform:translateY(-50%);
+  width:78px; height:54px;
+  background:linear-gradient(150deg,#3a444b,#222a2f);
+  border:1px solid var(--steel-line);
+  border-radius:2px;
+  box-shadow:0 6px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  font-family:var(--mono); color:var(--ink-dim); font-size:8px; letter-spacing:.05em;
+  left:8%;
+}
+.part .pn{color:var(--hazard);font-weight:700;font-size:9px;}
+.part::before{ /* mounting holes */
+  content:""; position:absolute; left:6px; top:6px; width:5px;height:5px;border-radius:50%;
+  background:#0a0c0d; box-shadow:58px 0 0 #0a0c0d,0 36px 0 #0a0c0d,58px 36px 0 #0a0c0d;
+}
+
+/* ============ CARDS GRID ============ */
+.grid{
+  display:grid; gap:18px; margin-top:34px;
+  grid-template-columns:repeat(12,1fr);
+}
+.card{
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));
+  border:1px solid var(--steel-line);
+  border-radius:3px; padding:20px 20px 18px;
+  position:relative; overflow:hidden;
+}
+.card.span6{grid-column:span 6;}
+.card.span4{grid-column:span 4;}
+.card.span8{grid-column:span 8;}
+.card.span12{grid-column:span 12;}
+.card.span3{grid-column:span 3;}
+.card .ch{
+  font-family:var(--mono); font-size:10px; color:var(--ink-faint);
+  text-transform:uppercase; letter-spacing:.18em;
+  display:flex; align-items:center; gap:8px; margin-bottom:12px;
+  border-bottom:1px solid var(--steel-line); padding-bottom:8px;
+}
+.card .ch .barcode{
+  flex:1; height:14px; margin-left:6px;
+  background:repeating-linear-gradient(90deg,var(--ink-faint) 0 1px,transparent 1px 3px,var(--ink-faint) 3px 5px,transparent 5px 6px,var(--ink-faint) 6px 9px,transparent 9px 11px);
+  opacity:.5;
+}
+.card h3{font-size:18px;margin:0 0 4px;}
+.card .role{font-family:var(--mono);font-size:11px;color:var(--hazard);letter-spacing:.06em;margin-bottom:10px;}
+.card p{font-size:13.5px;color:var(--ink-dim);margin:0 0 8px;}
+.card ul{margin:6px 0 0;padding:0;list-style:none;}
+.card li{
+  font-size:13px;color:var(--ink-dim);padding:5px 0 5px 20px;position:relative;
+  border-bottom:1px dotted var(--steel-line);
+}
+.card li:last-child{border-bottom:none;}
+.card li::before{
+  content:"▸"; position:absolute;left:2px;top:5px;color:var(--hazard);font-size:11px;
+}
+.card li b{color:var(--ink);font-weight:600;}
+
+@media (max-width:980px){
+  .card.span6,.card.span4,.card.span8,.card.span3{grid-column:span 12;}
+}
+
+/* work-order / traveler card */
+.traveler{
+  background:repeating-linear-gradient(180deg,var(--panel-2) 0 27px,#191e22 27px 28px);
+  border:1px solid var(--steel-line);
+}
+.traveler .wo-head{
+  display:flex;justify-content:space-between;align-items:center;
+  background:#0a0c0d;margin:-20px -20px 14px;padding:9px 16px;
+  border-bottom:2px solid var(--hazard);
+  font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+}
+.traveler .wo-head .no{color:var(--hazard);font-weight:700;}
+.wo-row{display:flex;gap:14px;font-family:var(--mono);font-size:11px;color:var(--ink-dim);margin-bottom:6px;}
+.wo-row .k{color:var(--ink-faint);width:74px;flex:none;}
+.wo-row .v{color:var(--ink);}
+
+/* ============ QC METRIC READOUTS ============ */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;margin-top:30px;}
+.kpi{
+  background:#0a0c0d; border:1px solid var(--steel-line);
+  border-left:3px solid var(--hazard);
+  padding:14px 16px; position:relative; overflow:hidden;
+}
+.kpi .k-l{font-family:var(--mono);font-size:9.5px;color:var(--ink-faint);text-transform:uppercase;letter-spacing:.14em;margin-bottom:6px;}
+.kpi .k-v{font-family:var(--mono);font-size:30px;font-weight:700;color:var(--ink);line-height:1;}
+.kpi .k-v.good{color:var(--pass);}
+.kpi .k-v .u{font-size:14px;color:var(--ink-faint);}
+.kpi .k-bar{margin-top:9px;height:4px;background:#1a2024;overflow:hidden;}
+.kpi .k-bar i{display:block;height:100%;background:var(--hazard);width:0;transition:width 1.2s cubic-bezier(.2,.8,.2,1);}
+.kpi .k-bar i.good{background:var(--pass);}
+
+/* ============ QC STAMP ============ */
+.stamp{
+  position:absolute; pointer-events:none;
+  width:120px;height:120px;border-radius:50%;
+  border:5px solid var(--pass);color:var(--pass);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  font-family:var(--mono);font-weight:800;letter-spacing:.05em;
+  transform:rotate(-14deg) scale(2.4); opacity:0;
+  text-align:center; line-height:1.05;
+  box-shadow:0 0 0 2px rgba(52,210,123,.25) inset;
+  mix-blend-mode:screen;
+}
+.stamp.fail{border-color:var(--fail);color:var(--fail);}
+.stamp .big{font-size:26px;}
+.stamp .small{font-size:8px;letter-spacing:.12em;margin-top:4px;color:inherit;opacity:.85;}
+.stamp.hit{animation:thunk .5s cubic-bezier(.2,1.4,.3,1) forwards;}
+@keyframes thunk{
+  0%{opacity:0;transform:rotate(-14deg) scale(2.6);}
+  55%{opacity:1;transform:rotate(-14deg) scale(.9);}
+  70%{transform:rotate(-14deg) scale(1.04);}
+  100%{opacity:.92;transform:rotate(-14deg) scale(1);}
+}
+
+/* ============ INSPECTION / CAMERA SCAN ============ */
+.scanstage{
+  position:relative; margin-top:28px; height:300px;
+  background:#0a0c0d; border:1px solid var(--steel-line); border-radius:3px;
+  overflow:hidden;
+}
+.scanstage .hud-corner{position:absolute;width:22px;height:22px;border:2px solid var(--hazard);opacity:.7;}
+.scanstage .c1{top:14px;left:14px;border-width:2px 0 0 2px;}
+.scanstage .c2{top:14px;right:14px;border-width:2px 2px 0 0;}
+.scanstage .c3{bottom:14px;left:14px;border-width:0 0 2px 2px;}
+.scanstage .c4{bottom:14px;right:14px;border-width:0 2px 2px 0;}
+.scan-target{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:160px;height:160px;
+}
+.scan-line{
+  position:absolute;left:0;right:0;height:2px;background:var(--hazard);
+  box-shadow:0 0 14px 2px var(--hazard);top:0;
+  animation:scanmove 3.2s ease-in-out infinite;
+}
+@keyframes scanmove{0%{top:6%;}50%{top:92%;}100%{top:6%;}}
+.scan-readout{
+  position:absolute;left:18px;bottom:18px;font-family:var(--mono);font-size:11px;color:var(--pass);
+  line-height:1.7;
+}
+.scan-readout .blink{animation:blink 1s steps(1) infinite;}
+.crosshair{position:absolute;top:50%;left:50%;width:30px;height:30px;transform:translate(-50%,-50%);}
+.crosshair::before,.crosshair::after{content:"";position:absolute;background:var(--signal);}
+.crosshair::before{left:50%;top:0;width:1px;height:100%;transform:translateX(-50%);}
+.crosshair::after{top:50%;left:0;height:1px;width:100%;transform:translateY(-50%);}
+
+/* ============ BOM / PARTS BIN (skills) ============ */
+.bom{margin-top:30px;border:1px solid var(--steel-line);background:var(--panel);}
+.bom-head{
+  display:grid;grid-template-columns:60px 1fr 130px 90px;
+  background:#0a0c0d;border-bottom:2px solid var(--hazard);
+  font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:var(--ink-faint);
+}
+.bom-head>div{padding:9px 12px;border-right:1px solid var(--steel-line);}
+.bom-grp{padding:7px 12px;background:#11161a;border-bottom:1px solid var(--steel-line);font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--hazard);text-transform:uppercase;}
+.bom-row{
+  display:grid;grid-template-columns:60px 1fr 130px 90px;
+  border-bottom:1px dotted var(--steel-line);font-family:var(--mono);font-size:11.5px;
+  transition:background .15s;
+}
+.bom-row:hover{background:rgba(245,197,24,.06);}
+.bom-row>div{padding:7px 12px;border-right:1px solid #14181b;color:var(--ink-dim);display:flex;align-items:center;}
+.bom-row .ref{color:var(--ink-faint);}
+.bom-row .desc{color:var(--ink);}
+.bom-row .qty{color:var(--hazard);}
+.chip-bar{height:6px;width:100%;background:#1a2024;}
+.chip-bar i{display:block;height:100%;background:var(--hazard);}
+@media (max-width:760px){
+  .bom-head,.bom-row{grid-template-columns:46px 1fr 70px;}
+  .bom-head>div:nth-child(3),.bom-row>div:nth-child(3){display:none;}
+}
+
+/* ============ WELD STATION (machining delight) ============ */
+.weldstage{
+  position:relative;margin-top:26px;height:230px;background:#0a0c0d;
+  border:1px solid var(--steel-line);border-radius:3px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.welder-arm{
+  position:absolute;top:-10px;left:50%;transform:translateX(-50%);
+  width:18px;height:130px;background:linear-gradient(180deg,#3a444b,#1c2226);
+  border:1px solid var(--steel-line);transform-origin:top center;
+  animation:weldbob 2.4s ease-in-out infinite;
+}
+.welder-arm::after{content:"";position:absolute;bottom:-10px;left:50%;transform:translateX(-50%);width:26px;height:14px;background:#11161a;border:1px solid var(--steel-line);clip-path:polygon(15% 0,85% 0,100% 100%,0 100%);}
+@keyframes weldbob{0%,100%{transform:translateX(-90px) rotate(-4deg);}50%{transform:translateX(70px) rotate(4deg);}}
+.workpiece{
+  position:absolute;bottom:46px;left:50%;transform:translateX(-50%);
+  width:230px;height:30px;background:linear-gradient(180deg,#2c3338,#181c1f);
+  border:1px solid var(--steel-line);
+}
+.spark{position:absolute;left:50%;top:118px;width:3px;height:3px;border-radius:50%;background:var(--signal);opacity:0;}
+.weld-jig{position:absolute;bottom:30px;left:50%;transform:translateX(-50%);width:270px;height:16px;background:repeating-linear-gradient(90deg,#1c2226 0 8px,#0a0c0d 8px 16px);border:1px solid var(--steel-line);}
+.defect-meter{
+  position:absolute;top:16px;left:18px;font-family:var(--mono);font-size:12px;color:var(--ink-dim);
+}
+.defect-meter .pct{font-size:30px;font-weight:700;color:var(--fail);transition:color .5s;}
+.defect-meter .pct.zero{color:var(--pass);}
+
+/* ============ ROBOTIC PICK-AND-PLACE (assembly) ============ */
+.gantry{
+  position:relative;margin-top:26px;height:260px;background:#0a0c0d;
+  border:1px solid var(--steel-line);border-radius:3px;overflow:hidden;
+}
+.gantry .beam{position:absolute;top:30px;left:20px;right:20px;height:12px;background:linear-gradient(180deg,#2c3338,#161a1d);border:1px solid var(--steel-line);}
+.gantry .carriage{
+  position:absolute;top:24px;width:34px;height:24px;background:#39434a;border:1px solid var(--steel-line);
+  animation:gantryx 4s cubic-bezier(.45,0,.55,1) infinite;left:20px;
+}
+.gantry .zarm{position:absolute;top:46px;left:50%;transform:translateX(-50%);width:6px;height:40px;background:#2a3136;border:1px solid var(--steel-line);animation:gantryz 4s ease-in-out infinite;transform-origin:top;}
+.gantry .grip{position:absolute;top:84px;left:50%;transform:translateX(-50%);width:22px;height:10px;border:2px solid var(--hazard);border-top:none;}
+.gantry .cube{position:absolute;width:24px;height:24px;background:linear-gradient(150deg,#3a444b,#222a2f);border:1px solid var(--hazard);left:24px;top:80px;animation:cubemove 4s cubic-bezier(.45,0,.55,1) infinite;}
+.gantry .bins{position:absolute;bottom:18px;left:20px;right:20px;height:46px;display:flex;gap:10px;}
+.gantry .bin{flex:1;border:1px solid var(--steel-line);background:repeating-linear-gradient(90deg,#11161a 0 6px,#0d1114 6px 12px);position:relative;}
+.gantry .bin span{position:absolute;bottom:3px;left:5px;font-family:var(--mono);font-size:8px;color:var(--ink-faint);letter-spacing:.1em;}
+@keyframes gantryx{0%{left:20px;}25%{left:calc(60% - 17px);}50%{left:calc(85% - 34px);}75%{left:calc(40% - 17px);}100%{left:20px;}}
+@keyframes gantryz{0%,12%{height:40px;}18%,30%{height:96px;}40%,100%{height:40px;}}
+@keyframes cubemove{
+  0%{left:24px;top:80px;opacity:1;}
+  12%{left:24px;top:80px;}
+  18%{top:130px;}
+  25%{left:calc(60% - 12px);top:130px;}
+  31%{top:200px;opacity:1;}
+  33%{opacity:0;}
+  60%{opacity:0;left:24px;top:80px;}
+  62%{opacity:1;}
+  100%{left:24px;top:80px;opacity:1;}
+}
+
+/* ============ SHIPPING / CONTACT ============ */
+.ship{
+  display:grid;grid-template-columns:1.1fr .9fr;gap:26px;margin-top:30px;align-items:stretch;
+}
+@media(max-width:900px){.ship{grid-template-columns:1fr;}}
+.shipping-label{
+  background:#f3f0e6;color:#13171a;border-radius:3px;padding:0;overflow:hidden;
+  font-family:var(--mono);box-shadow:0 14px 40px rgba(0,0,0,.5);
+  position:relative;
+  transform:rotate(-.6deg);
+}
+.shipping-label .sl-top{display:flex;justify-content:space-between;background:#13171a;color:#f3f0e6;padding:10px 16px;letter-spacing:.16em;font-size:11px;text-transform:uppercase;}
+.shipping-label .sl-body{padding:18px 20px 8px;}
+.sl-line{display:flex;gap:12px;border-bottom:1px solid #c9c4b4;padding:9px 0;font-size:12px;}
+.sl-line .k{color:#6b675c;width:88px;flex:none;text-transform:uppercase;letter-spacing:.08em;font-size:10px;align-self:center;}
+.sl-line .v{color:#13171a;font-weight:600;font-size:13px;}
+.sl-line .v a{color:#13171a;text-decoration:none;border-bottom:1px solid #b8b3a3;}
+.sl-line .v a:hover{color:var(--hazard-deep);border-color:var(--hazard-deep);}
+.sl-barcode{height:60px;margin:14px 0 6px;background:repeating-linear-gradient(90deg,#13171a 0 2px,transparent 2px 4px,#13171a 4px 5px,transparent 5px 9px,#13171a 9px 13px,transparent 13px 15px,#13171a 15px 16px,transparent 16px 20px);}
+.sl-barcode-no{text-align:center;font-size:11px;letter-spacing:.42em;color:#13171a;}
+.sl-stamp{position:absolute;right:18px;top:64px;width:96px;height:96px;border:4px solid #1f7a45;border-radius:50%;color:#1f7a45;display:flex;align-items:center;justify-content:center;flex-direction:column;transform:rotate(12deg);opacity:.82;}
+.sl-stamp .b{font-size:20px;font-weight:800;}
+.sl-stamp .s{font-size:7px;letter-spacing:.1em;}
+
+.operator-card{
+  background:linear-gradient(180deg,var(--panel-2),var(--panel));
+  border:1px solid var(--steel-line);border-radius:3px;overflow:hidden;display:flex;flex-direction:column;
+}
+.operator-card .oc-head{background:#0a0c0d;border-bottom:2px solid var(--hazard);padding:9px 16px;font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-faint);display:flex;justify-content:space-between;}
+.operator-card .oc-head b{color:var(--hazard);}
+.oc-body{display:flex;gap:16px;padding:18px;align-items:center;flex:1;}
+.oc-photo{width:108px;height:132px;flex:none;border:1px solid var(--steel-line);background:#0a0c0d url('assets/portrait.png') center/cover no-repeat;filter:grayscale(.35) contrast(1.05);position:relative;}
+.oc-photo::after{content:"OPERATOR";position:absolute;bottom:0;left:0;right:0;background:var(--hazard);color:#0a0c0d;font-family:var(--mono);font-size:8px;text-align:center;letter-spacing:.18em;padding:2px 0;font-weight:700;}
+.oc-info .nm{font-size:22px;font-weight:800;margin-bottom:3px;}
+.oc-info .nm small{font-family:var(--mono);font-size:11px;color:var(--ink-faint);font-weight:400;letter-spacing:.08em;display:block;margin-top:2px;}
+.oc-info .ti{font-family:var(--mono);font-size:11px;color:var(--hazard);letter-spacing:.04em;line-height:1.7;margin-top:10px;}
+.oc-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;}
+.oc-tags span{font-family:var(--mono);font-size:9px;color:var(--ink-dim);border:1px solid var(--steel-line);padding:3px 7px;letter-spacing:.08em;text-transform:uppercase;}
+
+/* footer plate */
+.plate{
+  margin-top:34px;border-top:1px solid var(--steel-line);padding-top:18px;
+  display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;
+  font-family:var(--mono);font-size:10px;color:var(--ink-faint);letter-spacing:.12em;text-transform:uppercase;
+}
+
+/* ============ INTERSECTION REVEAL ============ */
+.reveal{opacity:0;transform:translateY(26px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1);}
+.reveal.in{opacity:1;transform:none;}
+.reveal.d1{transition-delay:.08s;} .reveal.d2{transition-delay:.16s;} .reveal.d3{transition-delay:.24s;} .reveal.d4{transition-delay:.32s;}
+
+/* hero specifics */
+#op00{min-height:100vh;justify-content:center;text-align:left;}
+.hero-mega{font-size:clamp(46px,9vw,128px);line-height:.92;font-weight:800;letter-spacing:-.02em;margin:0;}
+.hero-mega .ko{display:block;color:var(--ink);}
+.hero-mega .en{display:block;color:var(--hazard);font-family:var(--mono);font-size:clamp(13px,1.6vw,20px);letter-spacing:.5em;font-weight:600;margin-top:18px;}
+.hero-sub{max-width:64ch;color:var(--ink-dim);font-size:16px;margin:26px 0 0;}
+.hero-meta{display:flex;gap:26px;flex-wrap:wrap;margin-top:26px;font-family:var(--mono);font-size:11px;color:var(--ink-faint);letter-spacing:.1em;text-transform:uppercase;}
+.hero-meta b{color:var(--hazard);}
+.scroll-cue{margin-top:46px;font-family:var(--mono);font-size:11px;color:var(--ink-faint);letter-spacing:.2em;text-transform:uppercase;display:flex;align-items:center;gap:10px;}
+.scroll-cue .arr{width:14px;height:14px;border-right:2px solid var(--hazard);border-bottom:2px solid var(--hazard);transform:rotate(45deg);animation:bounce 1.5s infinite;}
+@keyframes bounce{0%,100%{transform:rotate(45deg) translate(0,0);}50%{transform:rotate(45deg) translate(4px,4px);}}
+
+.hazardline{height:10px;background:repeating-linear-gradient(45deg,var(--hazard) 0 16px,#0a0c0d 16px 32px);margin:0;}
+
+/* reduced motion */
+@media (prefers-reduced-motion:reduce){
+  *{animation:none!important;transition:none!important;}
+  .reveal{opacity:1;transform:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ HMI STATUS BAR ============ -->
+<div class="hmi">
+  <div class="cell brand">PYH-LINE&nbsp;01</div>
+  <div class="cell"><span class="led"></span><span class="run">RUNNING</span></div>
+  <div class="cell opt"><span class="lbl">PART</span><span class="val" id="hmiPart">SN-2025-0815</span></div>
+  <div class="cell opt"><span class="lbl">STATION</span><span class="val" id="hmiStation">OP-00 / 라인 대기</span></div>
+  <div class="cell opt"><span class="lbl">YIELD</span><span class="val run">100.0%</span></div>
+  <div class="cell takt"><span class="lbl">TAKT</span><span class="val mono" id="hmiTakt">12.0s</span></div>
+  <div class="cell"><span class="lbl">UTC+9</span><span class="val clock" id="hmiClock">--:--:--</span></div>
+</div>
+
+<!-- ============ PROGRESS RAIL ============ -->
+<div class="rail" id="rail">
+  <div class="stop" data-go="op00"><span class="dot"></span><span class="txt">OP-00 LINE</span></div>
+  <div class="stop" data-go="op10"><span class="dot"></span><span class="txt">OP-10 입고</span></div>
+  <div class="stop" data-go="op20"><span class="dot"></span><span class="txt">OP-20 가공</span></div>
+  <div class="stop" data-go="op30"><span class="dot"></span><span class="txt">OP-30 검사</span></div>
+  <div class="stop" data-go="op40"><span class="dot"></span><span class="txt">OP-40 조립</span></div>
+  <div class="stop" data-go="op50"><span class="dot"></span><span class="txt">OP-50 출하</span></div>
+</div>
+
+<main>
+
+<!-- ====================================================== OP-00 LINE START / HERO -->
+<section class="station" id="op00">
+  <div class="ticks tl"></div><div class="ticks tr"></div>
+  <div class="station-tag reveal">
+    <span class="op-no">OP-00</span>
+    <span class="op-ko">라인 가동 / LINE START</span>
+  </div>
+  <h1 class="hero-mega reveal d1">
+    <span class="ko">박양하</span>
+    <span class="en">PARK YANGHA · 공정 라인</span>
+  </h1>
+  <p class="hero-sub reveal d2">
+    원자재가 한 대의 완제품이 되기까지 — 교육에서 입고되고, 현장에서 가공·검사·조립을 거쳐
+    오늘의 <b>총괄본부장</b>으로 출하됩니다. 한 사람의 커리어를 하나의 <b>공정 라인</b>으로 봅니다.
+    스크롤하면 <span class="mono" style="color:var(--hazard)">PART SN-2025-0815</span> 가 다음 스테이션으로 이송됩니다.
+  </p>
+  <div class="hero-meta reveal d3">
+    <span>역할 / <b>생산운영 PM</b></span>
+    <span>전문 / <b>공정기술 엔지니어</b></span>
+    <span>직책 / <b>총괄본부장</b></span>
+    <span>가동률 / <b>100%</b></span>
+  </div>
+  <div class="scroll-cue reveal d4">SCROLL TO ADVANCE LINE <span class="arr"></span></div>
+
+  <!-- master conveyor with the traveling part -->
+  <div class="belt-wrap reveal d4" style="margin-top:48px;">
+    <div class="belt-rails top"></div>
+    <div class="belt-surface" id="masterBelt"></div>
+    <div class="belt-dashes"></div>
+    <div class="belt-rails bot"></div>
+    <div class="rollers" id="rollers"></div>
+    <div class="part" id="masterPart">
+      <span class="pn">SN-2025-0815</span>
+      <span>PART · REV.A</span>
+      <span>STEEL / AL6061</span>
+    </div>
+  </div>
+</section>
+
+<div class="hazardline"></div>
+
+<!-- ====================================================== OP-10 RECEIVING / 교육 -->
+<section class="station" id="op10">
+  <div class="ticks tl"></div><div class="ticks tr"></div>
+  <div class="station-tag reveal">
+    <span class="op-no">OP-10</span>
+    <span class="op-ko">입고 · 교육</span>
+    <span class="op-en">RECEIVING</span>
+  </div>
+  <h2 class="reveal d1">원자재 <span class="hl">입고</span> 검수<br/>— 기반 역량의 반입</h2>
+  <p class="sub reveal d2">언어·해외경험·경영 기초가 라인에 반입됩니다. 입고 검수에서 사양과 규격을 확인하고 LOT 번호를 부여합니다.</p>
+
+  <div class="grid">
+    <div class="card traveler span6 reveal d2">
+      <div class="wo-head"><span>RECEIVING / 입고 트래블러</span><span class="no">LOT EDU-001</span></div>
+      <div class="wo-row"><span class="k">원자재</span><span class="v">한국외국어대학교 · 이탈리아어 (중퇴)</span></div>
+      <div class="wo-row"><span class="k">반입</span><span class="v">Kirana College · Social Media Marketing</span></div>
+      <div class="wo-row"><span class="k">반입</span><span class="v">CTIC · Business Administration</span></div>
+      <div class="wo-row"><span class="k">스펙</span><span class="v">호주 체류 4년 · TOEIC 930</span></div>
+      <div class="wo-row"><span class="k">판정</span><span class="v" style="color:var(--pass)">ACCEPTED · 입고 승인</span></div>
+    </div>
+    <div class="card span6 reveal d3">
+      <div class="ch">INCOMING QC <span class="barcode"></span> CERT</div>
+      <h3>글로벌 커뮤니케이션 · 비즈니스 기초</h3>
+      <p class="role">FOUNDATION MATERIAL</p>
+      <ul>
+        <li>해외 4년 체류로 다국적 환경 <b>커뮤니케이션·적응력</b> 확보</li>
+        <li><b>TOEIC 930</b> — 영문 사양서·고객사 대응 가능 등급</li>
+        <li>소셜 마케팅·경영학 이수로 <b>현장-사업 연결</b> 시야 확보</li>
+        <li>다른 산업으로 전직, <b>제조 현장으로 라인 투입</b></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- station conveyor -->
+  <div class="belt-wrap reveal d3" style="height:90px;margin-top:34px;">
+    <div class="belt-rails top"></div>
+    <div class="belt-surface stationBelt"></div>
+    <div class="belt-dashes"></div>
+    <div class="belt-rails bot"></div>
+    <div class="part" style="left:14%;">
+      <span class="pn">LOT EDU-001</span><span>RAW MATERIAL</span><span>QTY 1 · ACCEPTED</span>
+    </div>
+  </div>
+</section>
+
+<div class="hazardline"></div>
+
+<!-- ====================================================== OP-20 MACHINING / 초기경력 (WELD) -->
+<section class="station" id="op20">
+  <div class="ticks tl"></div><div class="ticks tr"></div>
+  <div class="station-tag reveal">
+    <span class="op-no">OP-20</span>
+    <span class="op-ko">가공 · 초기 현장</span>
+    <span class="op-en">MACHINING / WELDING</span>
+  </div>
+  <h2 class="reveal d1">소재를 <span class="hl">가공</span>하다<br/>— 생산관리 · 라인 PM</h2>
+  <p class="sub reveal d2">2차전지 배터리팩 총괄, 초음파 용착 라인 — 첫 현장에서 원가·품질·생산성을 직접 깎아냅니다.</p>
+
+  <!-- WELD DELIGHT: defect 15% -> 0% -->
+  <div class="weldstage reveal d2" id="weldStage">
+    <div class="defect-meter">용착 불량률 / WELD DEFECT<br/><span class="pct" id="defectPct">15.0%</span></div>
+    <div class="welder-arm"></div>
+    <div class="workpiece"></div>
+    <div class="weld-jig"></div>
+  </div>
+
+  <div class="grid">
+    <div class="card span6 reveal d2">
+      <div class="ch">WORK ORDER <span class="barcode"></span> OP-20A</div>
+      <h3>은성에스아이티 · 생산관리 과장</h3>
+      <div class="role">2차전지 배터리팩 생산 총괄 · 2020.08–2022.11</div>
+      <ul>
+        <li>원가분석 기반 <b>단가 30%+ 재협상</b> 달성</li>
+        <li>라인 <b>운영경비 85%+ 절감</b></li>
+        <li><b>비전검사 도입</b> — 고객·필드 <b>불량 0건</b></li>
+        <li><b>ERP · IATF16949</b> 체계 운영</li>
+      </ul>
+    </div>
+    <div class="card span6 reveal d3">
+      <div class="ch">WORK ORDER <span class="barcode"></span> OP-20B</div>
+      <h3>이랜텍 · 생산라인 PM / 파트장</h3>
+      <div class="role">초음파 용착 라인 · 2022.11–2023.09</div>
+      <ul>
+        <li><b>DOE</b>로 초음파 용착 불량률 <b>15% → 0%대</b></li>
+        <li>공정 사이클타임(C/T) <b>최대 49% 단축</b></li>
+        <li>생산성(LOB) <b>+24%</b></li>
+        <li><b>Jig 개발</b> 및 공정 표준화</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="belt-wrap reveal d3" style="height:90px;margin-top:24px;">
+    <div class="belt-rails top"></div>
+    <div class="belt-surface stationBelt"></div>
+    <div class="belt-dashes"></div>
+    <div class="belt-rails bot"></div>
+    <div class="part" style="left:30%;">
+      <span class="pn">SN-...0815</span><span>MACHINED</span><span>C/T −49%</span>
+    </div>
+  </div>
+</section>
+
+<div class="hazardline"></div>
+
+<!-- ====================================================== OP-30 INSPECTION / 공정기술 -->
+<section class="station" id="op30">
+  <div class="ticks tl"></div><div class="ticks tr"></div>
+  <div class="station-tag reveal">
+    <span class="op-no">OP-30</span>
+    <span class="op-ko">검사 · 공정기술</span>
+    <span class="op-en">INSPECTION</span>
+  </div>
+  <h2 class="reveal d1"><span class="hl">검사</span>로 증명하다<br/>— 데이터 · MES · KPI</h2>
+  <p class="sub reveal d2">비전 카메라가 스캔하고, 데이터가 합·불을 판정합니다. 공정기술 엔지니어로서 라인을 숫자로 통제합니다.</p>
+
+  <!-- CAMERA SCAN DELIGHT -->
+  <div class="scanstage reveal d2" id="scanStage">
+    <div class="hud-corner c1"></div><div class="hud-corner c2"></div>
+    <div class="hud-corner c3"></div><div class="hud-corner c4"></div>
+    <div class="scan-target">
+      <div class="part" style="position:relative;left:auto;top:auto;transform:none;width:160px;height:160px;border-radius:3px;">
+        <span class="pn" style="font-size:13px;">SN-2025-0815</span>
+        <span style="font-size:10px;">DIM CHECK · ±0.02mm</span>
+        <span style="font-size:10px;">SURFACE · OK</span>
+      </div>
+      <div class="crosshair"></div>
+    </div>
+    <div class="scan-line"></div>
+    <div class="scan-readout mono">
+      VISION SYS v3.4<br/>
+      EDGE DETECT … <span style="color:var(--pass)">OK</span><br/>
+      DIM TOL ±0.02 … <span style="color:var(--pass)">OK</span><br/>
+      DEFECT MAP … <span class="blink">SCANNING</span>
+    </div>
+    <!-- QC stamp lands here -->
+    <div class="stamp" id="inspStamp" style="right:36px;top:28px;">
+      <span class="big">PASS</span><span class="small">QC · INSP · OP-30</span>
+    </div>
+  </div>
+
+  <div class="card span12 reveal d3" style="margin-top:18px;">
+    <div class="ch">WORK ORDER <span class="barcode"></span> OP-30</div>
+    <h3>솔라엣지 · 공정기술 엔지니어</h3>
+    <div class="role">데이터 기반 공정 통제 · 2023.09–2024.12</div>
+    <div class="grid" style="margin-top:8px;gap:14px;">
+      <ul class="span6" style="margin:0;">
+        <li>생산·불량·KPI <b>데이터 DB / 대시보드</b> 구축</li>
+        <li>공정 <b>LOB 분석</b> 으로 병목 가시화</li>
+        <li>표준작업시간(ST) <b>50% 절감</b></li>
+      </ul>
+      <ul class="span6" style="margin:0;">
+        <li><b>검사성적서 자동발행</b> 시스템</li>
+        <li><b>MES 구축</b> — 실시간 트래킹</li>
+        <li>사무공수 <b>일 451분 절감</b></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- KPI READOUTS -->
+  <div class="kpis reveal d3">
+    <div class="kpi"><div class="k-l">운영경비 / OPEX</div><div class="k-v good">−85<span class="u">%</span></div><div class="k-bar"><i class="good" data-w="85"></i></div></div>
+    <div class="kpi"><div class="k-l">표준시간 / ST</div><div class="k-v good">−50<span class="u">%</span></div><div class="k-bar"><i class="good" data-w="50"></i></div></div>
+    <div class="kpi"><div class="k-l">사이클 / C/T</div><div class="k-v good">−49<span class="u">%</span></div><div class="k-bar"><i class="good" data-w="49"></i></div></div>
+    <div class="kpi"><div class="k-l">용착불량 / WELD</div><div class="k-v good">0<span class="u">%</span></div><div class="k-bar"><i class="good" data-w="100"></i></div></div>
+    <div class="kpi"><div class="k-l">생산성 / LOB</div><div class="k-v">+24<span class="u">%</span></div><div class="k-bar"><i data-w="60"></i></div></div>
+    <div class="kpi"><div class="k-l">단가 / COST</div><div class="k-v">+30<span class="u">%</span></div><div class="k-bar"><i data-w="70"></i></div></div>
+    <div class="kpi"><div class="k-l">필드불량 / FIELD</div><div class="k-v good">0<span class="u">건</span></div><div class="k-bar"><i class="good" data-w="100"></i></div></div>
+  </div>
+</section>
+
+<div class="hazardline"></div>
+
+<!-- ====================================================== OP-40 ASSEMBLY / PM·총괄 -->
+<section class="station" id="op40">
+  <div class="ticks tl"></div><div class="ticks tr"></div>
+  <div class="station-tag reveal">
+    <span class="op-no">OP-40</span>
+    <span class="op-ko">조립 · 총괄</span>
+    <span class="op-en">ASSEMBLY</span>
+  </div>
+  <h2 class="reveal d1"><span class="hl">조립</span> · 시스템 통합<br/>— 총괄본부장</h2>
+  <p class="sub reveal d2">픽앤플레이스 갠트리가 부품을 집어 제품을 완성합니다. 제품 기획부터 백엔드·인프라·자동화까지 한 라인으로 통합합니다.</p>
+
+  <!-- PICK-AND-PLACE GANTRY -->
+  <div class="gantry reveal d2">
+    <div class="beam"></div>
+    <div class="carriage"><div class="zarm"></div><div class="grip"></div></div>
+    <div class="cube"></div>
+    <div class="bins">
+      <div class="bin"><span>CRM</span></div>
+      <div class="bin"><span>KIOSK</span></div>
+      <div class="bin"><span>APP</span></div>
+      <div class="bin"><span>FASTAPI</span></div>
+      <div class="bin"><span>AWS/GCP</span></div>
+      <div class="bin"><span>RPA·AI</span></div>
+    </div>
+  </div>
+
+  <div class="card traveler span12 reveal d3" style="margin-top:18px;">
+    <div class="wo-head"><span>ASSEMBLY ORDER / 조립 지시서</span><span class="no">미러리스 · 2025.08–현재</span></div>
+    <div class="grid" style="gap:14px;">
+      <ul class="span6" style="margin:0;">
+        <li><b>CRM · 키오스크 · 앱</b> 제품 기획·총괄</li>
+        <li><b>FastAPI</b> 백엔드 설계·구현</li>
+        <li><b>AWS / GCP</b> 클라우드 인프라 운영</li>
+      </ul>
+      <ul class="span6" style="margin:0;">
+        <li><b>CI/CD</b> 파이프라인 구축</li>
+        <li><b>RPA · AI MCP 서버</b> 기반 AX 시스템</li>
+        <li>현장 출신 PM → <b>전사 시스템 조립</b></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- BOM / PARTS BIN (SKILLS) -->
+  <div class="bom reveal d3">
+    <div class="bom-head"><div>REF</div><div>BOM / 자재 명세 · 보유 역량</div><div>CLASS</div><div>QTY</div></div>
+
+    <div class="bom-grp">A · SOFTWARE / 개발</div>
+    <div class="bom-row"><div class="ref">A1</div><div class="desc">Python · SQL · FastAPI</div><div>BACKEND</div><div class="qty">EXPERT</div></div>
+    <div class="bom-row"><div class="ref">A2</div><div class="desc">React · TypeScript · Electron</div><div>FRONTEND</div><div class="qty">HIGH</div></div>
+    <div class="bom-row"><div class="ref">A3</div><div class="desc">Rust · MySQL / RDS</div><div>SYSTEM</div><div class="qty">MID</div></div>
+
+    <div class="bom-grp">B · CLOUD / DATA / 자동화</div>
+    <div class="bom-row"><div class="ref">B1</div><div class="desc">AWS · GCP · CI/CD</div><div>INFRA</div><div class="qty">HIGH</div></div>
+    <div class="bom-row"><div class="ref">B2</div><div class="desc">BI · ML · 데이터 대시보드</div><div>DATA</div><div class="qty">HIGH</div></div>
+    <div class="bom-row"><div class="ref">B3</div><div class="desc">RPA · AI MCP · AX 시스템</div><div>AUTOMATION</div><div class="qty">EXPERT</div></div>
+
+    <div class="bom-grp">C · 공정 / 품질 / PROCESS</div>
+    <div class="bom-row"><div class="ref">C1</div><div class="desc">PFMEA · CP · PFD · SOP</div><div>PROCESS</div><div class="qty">EXPERT</div></div>
+    <div class="bom-row"><div class="ref">C2</div><div class="desc">산업용접 (스팟 · 레이저 · 초음파)</div><div>WELDING</div><div class="qty">EXPERT</div></div>
+    <div class="bom-row"><div class="ref">C3</div><div class="desc">LOB · Jig개발 · 기구설계</div><div>METHOD</div><div class="qty">HIGH</div></div>
+    <div class="bom-row"><div class="ref">C4</div><div class="desc">비전검사 · 로봇티칭 · Draftsight</div><div>QC / CAD</div><div class="qty">HIGH</div></div>
+    <div class="bom-row"><div class="ref">C5</div><div class="desc">ERP · MES · SQ / ISO / IATF16949</div><div>SYSTEM</div><div class="qty">EXPERT</div></div>
+  </div>
+</section>
+
+<div class="hazardline"></div>
+
+<!-- ====================================================== OP-50 SHIPPING / 연락 -->
+<section class="station" id="op50">
+  <div class="ticks tl"></div><div class="ticks tr"></div>
+  <div class="station-tag reveal">
+    <span class="op-no">OP-50</span>
+    <span class="op-ko">출하 · 연락</span>
+    <span class="op-en">SHIPPING</span>
+  </div>
+  <h2 class="reveal d1"><span class="hl">출하</span> 준비 완료<br/>— SHIP TO CONTACT</h2>
+  <p class="sub reveal d2">전 공정 합격. 완제품을 포장하고 송장을 부착합니다. 다음 라인은 당신의 조직입니다.</p>
+
+  <div class="ship">
+    <!-- SHIPPING LABEL -->
+    <div class="shipping-label reveal d2">
+      <div class="sl-top"><span>SHIPPING LABEL</span><span>PRIORITY · EXPRESS</span></div>
+      <div class="sl-body">
+        <div class="sl-line"><span class="k">Ship From</span><span class="v">PYH ASSEMBLY LINE 01 · 대한민국</span></div>
+        <div class="sl-line"><span class="k">Product</span><span class="v">박양하 / 생산운영 PM · 총괄본부장</span></div>
+        <div class="sl-line"><span class="k">Email</span><span class="v"><a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a></span></div>
+        <div class="sl-line"><span class="k">GitHub</span><span class="v"><a href="https://github.com/64etuor" target="_blank" rel="noopener">github.com/64etuor</a></span></div>
+        <div class="sl-line"><span class="k">Tel</span><span class="v"><a href="tel:01074481791">010-7448-1791</a></span></div>
+        <div class="sl-barcode"></div>
+        <div class="sl-barcode-no">SN-2025-0815-PYH</div>
+      </div>
+      <div class="sl-stamp"><span class="b">SHIP</span><span class="s">QC PASSED</span></div>
+    </div>
+
+    <!-- OPERATOR BADGE -->
+    <div class="operator-card reveal d3">
+      <div class="oc-head"><span>OPERATOR ID / 작업자 배지</span><b>OP-50</b></div>
+      <div class="oc-body">
+        <div class="oc-photo"></div>
+        <div class="oc-info">
+          <div class="nm">박양하 <small>PARK YANGHA</small></div>
+          <div class="ti">생산운영 PM<br/>공정기술 엔지니어<br/>총괄본부장 · 미러리스</div>
+          <div class="oc-tags">
+            <span>PROCESS</span><span>DATA</span><span>BACKEND</span><span>AX</span><span>QC</span><span>LEADERSHIP</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="plate reveal d3">
+    <span>PYH-LINE 01 · ASSEMBLY LINE PORTFOLIO</span>
+    <span>OP-10 → OP-50 · YIELD 100.0% · DEFECT 0</span>
+    <span>© 2025 PARK YANGHA · REV.A</span>
+  </div>
+</section>
+
+</main>
+
+<script>
+(function(){
+  "use strict";
+  var prefersReduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- live clock ---------- */
+  var clockEl = document.getElementById('hmiClock');
+  function tick(){
+    var d = new Date();
+    var s = [d.getHours(),d.getMinutes(),d.getSeconds()]
+      .map(function(n){return (n<10?'0':'')+n;}).join(':');
+    if(clockEl) clockEl.textContent = s;
+  }
+  tick(); setInterval(tick,1000);
+
+  /* ---------- rollers fill ---------- */
+  var rollers = document.getElementById('rollers');
+  if(rollers){ for(var i=0;i<28;i++){ rollers.appendChild(document.createElement('i')); } }
+
+  /* ---------- KPI bar fill on reveal ---------- */
+  function fillBars(scope){
+    var bars = (scope||document).querySelectorAll('.k-bar i, .chip-bar i');
+    bars.forEach(function(b){
+      var w = b.getAttribute('data-w');
+      if(w) b.style.width = w + '%';
+    });
+  }
+
+  /* ---------- IntersectionObserver reveals ---------- */
+  var revealEls = document.querySelectorAll('.reveal');
+  if('IntersectionObserver' in window && !prefersReduced){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    },{threshold:0.12});
+    revealEls.forEach(function(el){ io.observe(el); });
+  } else {
+    revealEls.forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ---------- Stations observer: HMI + rail + per-station effects ---------- */
+  var stations = ['op00','op10','op20','op30','op40','op50'];
+  var stationLabels = {
+    op00:'OP-00 / 라인 대기', op10:'OP-10 / 입고·교육', op20:'OP-20 / 가공·현장',
+    op30:'OP-30 / 검사·공정기술', op40:'OP-40 / 조립·총괄', op50:'OP-50 / 출하·연락'
+  };
+  var hmiStation = document.getElementById('hmiStation');
+  var hmiTakt = document.getElementById('hmiTakt');
+  var railStops = Array.prototype.slice.call(document.querySelectorAll('.rail .stop'));
+  var stampFired=false, defectFired=false;
+  var taktByStation = {op00:'12.0s',op10:'08.4s',op20:'15.2s',op30:'09.6s',op40:'18.0s',op50:'06.0s'};
+
+  function setActive(id){
+    var idx = stations.indexOf(id);
+    railStops.forEach(function(s,i){
+      s.classList.toggle('active', i===idx);
+      s.classList.toggle('done', i<idx);
+    });
+    if(hmiStation) hmiStation.textContent = stationLabels[id] || id;
+    if(hmiTakt) hmiTakt.textContent = taktByStation[id] || '12.0s';
+  }
+
+  if('IntersectionObserver' in window){
+    var sio = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting && e.intersectionRatio>=0.4){
+          setActive(e.target.id);
+          if(e.target.id==='op30'){ fireInspection(); }
+          if(e.target.id==='op20'){ fireDefect(); }
+        }
+      });
+    },{threshold:[0.4]});
+    stations.forEach(function(id){ var el=document.getElementById(id); if(el) sio.observe(el); });
+  }
+
+  /* ---------- QC PASS stamp thunk (inspection) ---------- */
+  function fireInspection(){
+    if(stampFired) return; stampFired=true;
+    var stamp = document.getElementById('inspStamp');
+    if(!stamp) return;
+    setTimeout(function(){
+      stamp.classList.add('hit');
+      // takt blip on yield
+    }, 1100);
+  }
+
+  /* ---------- Weld defect 15% -> 0% delight ---------- */
+  function fireDefect(){
+    if(defectFired) return; defectFired=true;
+    var el = document.getElementById('defectPct');
+    if(!el) return;
+    var start=15.0, cur=start, t0=null, dur=2200;
+    function step(ts){
+      if(!t0) t0=ts;
+      var p = Math.min(1,(ts-t0)/dur);
+      // ease-out
+      var e = 1 - Math.pow(1-p,3);
+      cur = start*(1-e);
+      el.textContent = cur.toFixed(1)+'%';
+      if(p<1){ requestAnimationFrame(step); }
+      else { el.textContent='0.0%'; el.classList.add('zero'); }
+    }
+    setTimeout(function(){ requestAnimationFrame(step); }, 600);
+  }
+
+  /* ---------- spark generator on weld station ---------- */
+  var weld = document.getElementById('weldStage');
+  if(weld && !prefersReduced){
+    setInterval(function(){
+      // only spawn when weld station visible (cheap check)
+      var r = weld.getBoundingClientRect();
+      if(r.bottom<0 || r.top>window.innerHeight) return;
+      var arm = weld.querySelector('.welder-arm');
+      if(!arm) return;
+      var armR = arm.getBoundingClientRect();
+      var weldR = weld.getBoundingClientRect();
+      var x = armR.left - weldR.left + armR.width/2;
+      for(var i=0;i<4;i++){ spawnSpark(weld, x, 118); }
+    }, 140);
+  }
+  function spawnSpark(parent, x, y){
+    var s = document.createElement('div');
+    s.className='spark';
+    s.style.left = x+'px'; s.style.top = y+'px';
+    parent.appendChild(s);
+    var ang = (Math.random()*Math.PI) + Math.PI*0.0; // downward-ish spread
+    var dist = 18 + Math.random()*44;
+    var dx = Math.cos(ang)*dist*(Math.random()<.5?-1:1);
+    var dy = 14 + Math.random()*52;
+    var dur = 280 + Math.random()*260;
+    s.animate([
+      {transform:'translate(0,0) scale(1)', opacity:1, background:'var(--hazard)'},
+      {transform:'translate('+dx+'px,'+dy+'px) scale(.2)', opacity:0, background:'var(--signal)'}
+    ],{duration:dur, easing:'cubic-bezier(.3,.7,.6,1)'}).onfinish=function(){ s.remove(); };
+  }
+
+  /* ---------- master part advances with scroll ---------- */
+  var masterPart = document.getElementById('masterPart');
+  var hmiPart = document.getElementById('hmiPart');
+  var hero = document.getElementById('op00');
+  function onScroll(){
+    if(masterPart && hero){
+      var hr = hero.getBoundingClientRect();
+      // map scroll within hero to belt travel 8% -> 86%
+      var prog = Math.min(1, Math.max(0, (-hr.top) / (hr.height*0.85)));
+      var leftPct = 8 + prog*78;
+      masterPart.style.left = leftPct + '%';
+    }
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  /* ---------- rail click nav ---------- */
+  railStops.forEach(function(s){
+    s.addEventListener('click', function(){
+      var go = s.getAttribute('data-go');
+      var el = document.getElementById(go);
+      if(el) el.scrollIntoView({behavior: prefersReduced?'auto':'smooth', block:'start'});
+    });
+  });
+
+  /* ---------- pause belts when offscreen (perf) is automatic via CSS; init bars ---------- */
+  fillBars(document);
+
+  setActive('op00');
+})();
+</script>
+</body>
+</html>

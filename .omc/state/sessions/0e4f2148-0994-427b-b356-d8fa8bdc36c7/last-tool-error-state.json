@@ -1,7 +1,7 @@
 {
-  "tool_name": "mcp__plugin_playwright_playwright__browser_evaluate",
-  "tool_input_preview": "{\"function\":\"() => { window.scrollTo(0,0); if (window.lenis) window.lenis.scrollTo(0,{immediate:true}); return { y: window.scrollY, canvas: !!document.querySelector('canvas') } }\"}",
-  "error": "### Error\nTypeError: window.lenis.scrollTo is not a function\n    at eval (eval at <anonymous> (eval at evaluate (:303:30)), <anonymous>:1:63)\n    at eval (eval at evaluate (:303:30), <anonymous>:4:50)\n    at UtilityScript.evaluate (<anonymous>:305:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)\n### Page\n- Page URL: http://localhost:4173/\n- Page Title: 박양하 — Portfolio\n- Console: 0 errors, 23 warnings\n### Events\n- New console entries: .playwright-mcp/console-2026-06-15T03-15-10-701Z.log#L4...",
-  "timestamp": "2026-06-15T03:15:57.123Z",
+  "tool_name": "Read",
+  "tool_input_preview": "{\"file_path\":\"/Users/davidpark/private_project/portfolio/.playwright-mcp/nexthome.png\"}",
+  "error": "File does not exist. Note: your current working directory is /Users/davidpark/private_project/portfolio.",
+  "timestamp": "2026-06-15T08:02:13.426Z",
   "retry_count": 1
 }

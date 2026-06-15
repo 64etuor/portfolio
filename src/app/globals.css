@@ -1,0 +1,40 @@
+/* 폰트 (CDN — 결정성 위해 추후 self-host 가능). @import 는 다른 규칙보다 앞서야 함. */
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Serif+KR:wght@500;600;700&display=swap');
+@import 'tailwindcss';
+
+/* 셸 테마 토큰 — ThemeProvider 가 :root inline style 로 덮어쓴다. 기본값 = Ink */
+:root {
+  --bg: #0b0d10;
+  --panel: #14171c;
+  --ink: #e9e9ec;
+  --muted: #8b909a;
+  --accent: #e07a5f;
+  --line: rgba(233, 233, 236, 0.12);
+  --font-sans: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', system-ui, sans-serif;
+  --font-serif: 'Cormorant Garamond', 'Noto Serif KR', serif;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    color-scheme: dark;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-sans);
+    word-break: keep-all;
+    overflow-wrap: break-word;
+    transition: background-color 0.4s ease, color 0.4s ease;
+  }
+  ::selection {
+    background: var(--accent);
+    color: #000;
+  }
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+}

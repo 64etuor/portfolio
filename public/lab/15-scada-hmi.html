@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SCADA HMI — 박양하 공정 감시제어 화면</title>
+<title>SCADA HMI — 박양하 재고·물류 SCM 감시화면</title>
 <style>
   @font-face {
     font-family:'Share Tech Mono';
@@ -304,17 +304,17 @@
   .contact-bar .ic{color:var(--info)}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
   @keyframes spin{to{transform:rotate(360deg)}}
-  /* ===== KNOWLEDGE PLANT (지식 볼트) ===== */
-  .vault-note{font-size:11px;color:var(--txt-dim);padding:0 14px 12px;line-height:1.6}
-  .vault-note b{color:var(--sp);font-weight:700}
-  .vault-creed{
+  /* ===== SCM TF 개선 현황 ===== */
+  .scm-creed{
     display:flex;align-items:center;gap:12px;margin:0 14px 14px;padding:11px 14px;border-radius:6px;
     background:linear-gradient(180deg,#11171c,#0d1217);border:1px solid var(--line);border-left:3px solid var(--info);
   }
-  .vault-creed .ic{font-size:18px;color:var(--info);flex:none}
-  .vault-creed .ct{font-size:11.5px;color:var(--txt);line-height:1.5}
-  .vault-creed .ct .principle{display:block;margin-top:4px;color:var(--sp);font-weight:700;font-size:11px}
-  /* PARA process-area tanks */
+  .scm-creed .ic{font-size:18px;color:var(--info);flex:none}
+  .scm-creed .ct{font-size:11.5px;color:var(--txt);line-height:1.5}
+  .scm-creed .ct .principle{display:block;margin-top:4px;color:var(--sp);font-weight:700;font-size:11px}
+  .scm-note{font-size:11px;color:var(--txt-dim);padding:0 14px 12px;line-height:1.6}
+  .scm-note b{color:var(--sp);font-weight:700}
+  /* SCM 개선 영역 탱크 */
   .para-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:14px}
   .para-tank{
     background:linear-gradient(180deg,#11171c,#0d1217);border:1px solid var(--line);border-radius:7px;
@@ -330,7 +330,7 @@
   .para-tank .cnt{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;
     font:700 18px 'Share Tech Mono',monospace;color:#fff;text-shadow:0 0 8px rgba(0,0,0,.8)}
   .para-tank .cap{font-size:9px;color:var(--txt-dim);text-align:center}
-  /* SSOT threshold table */
+  /* TF 추진 항목 목록 */
   .ssot-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
   .ssot-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;
     padding:10px 12px;border-radius:6px;background:linear-gradient(180deg,#11171c,#0d1217);border:1px solid var(--line)}
@@ -339,7 +339,7 @@
   .ssot-row .nm small{display:block;font:600 8.5px 'Share Tech Mono',monospace;color:var(--txt-dim);margin-top:2px}
   .ssot-row .pv{font:700 17px 'Share Tech Mono',monospace;text-align:right}
   .ssot-row .sp{font:600 9px 'Share Tech Mono',monospace;color:var(--sp);text-align:right;white-space:nowrap}
-  /* knowledge gap queue */
+  /* 개선 액션 큐 */
   .gap-queue{padding:0}
   .gap-item{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;
     padding:10px 14px;border-bottom:1px solid rgba(58,70,84,.4);font-size:11.5px}
@@ -348,8 +348,8 @@
   .gap-item .lk{color:var(--txt)}
   .gap-item .lk small{color:var(--txt-dim);font-size:9.5px}
   .gap-item .dep{font:700 13px 'Share Tech Mono',monospace;color:var(--pv)}
-  .gap-item .qd{font:600 9px 'Share Tech Mono',monospace;color:var(--warn);background:rgba(255,176,32,.12);
-    border:1px solid #5e3e00;padding:2px 7px;border-radius:3px}
+  .gap-item .qd{font:600 9px 'Share Tech Mono',monospace;color:var(--run);background:rgba(33,208,122,.12);
+    border:1px solid var(--run-d);padding:2px 7px;border-radius:3px}
   .gridrow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
   @media(max-width:1100px){.layout{grid-template-columns:1fr}.pv-strip{grid-template-columns:repeat(3,1fr)}.gridrow{grid-template-columns:1fr}}
 </style>
@@ -364,13 +364,13 @@
     <div class="brand">
       <div class="logo"></div>
       <div>
-        <h1>MIRRORLESS · 통합공정 SCADA</h1>
+        <h1>이랜텍 · 재고·물류 SCM SCADA</h1>
         <div class="sub">SUPERVISORY CONTROL &amp; DATA ACQUISITION</div>
       </div>
     </div>
-    <div class="hdr-block"><div class="k">Plant</div><div class="v">PY-OPS PLANT</div></div>
-    <div class="hdr-block"><div class="k">Operator</div><div class="v">박양하 · 총괄본부장</div></div>
-    <div class="hdr-block"><div class="k">Shift</div><div class="v">A조 · 주간</div></div>
+    <div class="hdr-block"><div class="k">Plant</div><div class="v">이랜텍 제조창고</div></div>
+    <div class="hdr-block"><div class="k">Operator</div><div class="v">박양하 · SCM TF 리더</div></div>
+    <div class="hdr-block"><div class="k">기간</div><div class="v">2022.11 — 2023.09</div></div>
     <div class="hdr-spacer"></div>
     <div class="mode-pill"><span class="dot"></span>AUTO</div>
     <div class="clock">
@@ -382,11 +382,11 @@
   <!-- NAV -->
   <nav class="tabs" id="nav">
     <button class="active" data-tab="overview">개요 <span class="tag">OVW</span></button>
-    <button data-tab="line1">라인1 <span class="tag">L-01</span></button>
-    <button data-tab="quality">품질 <span class="tag">QC</span></button>
+    <button data-tab="line1">역량 <span class="tag">SKILL</span></button>
+    <button data-tab="quality">SCM KPI <span class="tag">KPI</span></button>
     <button data-tab="alarms">알람 <span class="tag">ALM</span></button>
     <button data-tab="history">이력 <span class="tag">HIST</span></button>
-    <button data-tab="vault">지식 볼트 <span class="tag">KP-VLT</span></button>
+    <button data-tab="scmtf">TF 개선 <span class="tag">TF-SCM</span></button>
   </nav>
 
   <!-- ALARM BANNER -->
@@ -394,7 +394,7 @@
     <div class="ico" id="almIco">!</div>
     <div class="msg">
       <div class="lvl" id="almLvl">HIGH ALARM · 미확인</div>
-      <div class="txt" id="almTxt">공정 불량률 HIGH — PV 4.0% &gt; SP 1.0% · 라인1 검사 STN-03 (개선전)</div>
+      <div class="txt" id="almTxt">재고비용 HIGH — 적정재고 기준 미설정 · 제조창고 재고 적체 (개선 전)</div>
     </div>
     <button class="ack-btn" id="ackBtn">ACK · 개선 적용</button>
   </div>
@@ -406,7 +406,7 @@
         <!-- MIMIC PANEL -->
         <div class="panel">
           <div class="panel-h">
-            <div class="ttl">공정 MIMIC <small>P&amp;ID 감시화면 · 박양하 커리어 = 공정 영역</small></div>
+            <div class="ttl">재고·물류 MIMIC <small>P&amp;ID 감시화면 · 재고 흐름 공정</small></div>
             <div class="tagid">MIM-001</div>
           </div>
           <div class="mimic-wrap">
@@ -431,7 +431,7 @@
               </defs>
 
               <!-- Title strip -->
-              <text x="14" y="22" fill="#7e8c99" font-family="'Share Tech Mono',monospace" font-size="11" letter-spacing="2">LINE OVERVIEW · 4 PROCESS AREAS</text>
+              <text x="14" y="22" fill="#7e8c99" font-family="'Share Tech Mono',monospace" font-size="11" letter-spacing="2">재고·물류 FLOW OVERVIEW · 4 PROCESS AREAS</text>
 
               <!-- FLOW LINES (drawn first, behind) -->
               <g stroke="#2a333d" stroke-width="7" fill="none">
@@ -448,7 +448,7 @@
                 <path d="M150 320 H300"/><path d="M420 320 H560"/><path d="M680 320 H820"/>
               </g>
 
-              <!-- ====== AREA 1 : 은성에스아이티 (TANK TK-01) ====== -->
+              <!-- ====== AREA 1 : 구매 입고 (TK-01 자재창고) ====== -->
               <g transform="translate(60,90)">
                 <rect x="0" y="0" width="90" height="120" rx="10" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
                 <!-- liquid fill -->
@@ -459,12 +459,12 @@
                 </g>
                 <rect x="0" y="0" width="90" height="120" rx="10" fill="none" stroke="#46535f" stroke-width="2"/>
                 <text x="45" y="-8" text-anchor="middle" fill="#dbe7f0" font-size="11" font-weight="700">TK-01</text>
-                <text x="45" y="138" text-anchor="middle" fill="#7e8c99" font-size="9">배터리팩 생산관리</text>
+                <text x="45" y="138" text-anchor="middle" fill="#7e8c99" font-size="9">구매 입고 · 자재창고</text>
                 <text id="tk1pct" x="45" y="65" text-anchor="middle" fill="#fff" font-family="'Share Tech Mono',monospace" font-size="13" font-weight="700">--%</text>
                 <circle cx="78" cy="10" r="5" fill="#21d07a" class="led" stroke="#0c5a36"/>
               </g>
 
-              <!-- ====== PUMP P-101 ====== -->
+              <!-- ====== PUMP P-101 (입고→제조 이송 펌프) ====== -->
               <g transform="translate(345,150)">
                 <circle r="34" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
                 <g class="pump" id="pump1">
@@ -477,20 +477,20 @@
                 <circle cx="26" cy="-26" r="5" fill="#21d07a" class="led"/>
               </g>
 
-              <!-- ====== AREA 2 : 이랜텍 (REACTOR / weld station) ====== -->
+              <!-- ====== AREA 2 : 제조창고 (재고 적체 → 개선) ====== -->
               <g transform="translate(560,95)">
                 <rect x="0" y="0" width="120" height="110" rx="8" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
-                <text x="60" y="-8" text-anchor="middle" fill="#dbe7f0" font-size="11" font-weight="700">STN-03 용착</text>
-                <text x="60" y="128" text-anchor="middle" fill="#7e8c99" font-size="9">생산라인 PM · DOE</text>
-                <!-- weld spark / progress bar -->
+                <text x="60" y="-8" text-anchor="middle" fill="#dbe7f0" font-size="11" font-weight="700">MFG-WH 제조창고</text>
+                <text x="60" y="128" text-anchor="middle" fill="#7e8c99" font-size="9">면책구역 · 3정5S · 이관전산화</text>
+                <!-- 재고비용 프로그레스 바 (개선 전→후) -->
                 <rect x="14" y="30" width="92" height="14" rx="3" fill="#0c1014" stroke="#3a4654"/>
                 <rect id="weldBar" x="16" y="32" width="20" height="10" rx="2" fill="#ffb020"/>
-                <text x="60" y="66" text-anchor="middle" fill="#7e8c99" font-size="9" font-family="'Share Tech Mono',monospace">C/T</text>
-                <text id="weldCt" x="60" y="84" text-anchor="middle" fill="#39d6ff" font-size="15" font-weight="700" font-family="'Share Tech Mono',monospace">--s</text>
+                <text x="60" y="66" text-anchor="middle" fill="#7e8c99" font-size="9" font-family="'Share Tech Mono',monospace">재고비용</text>
+                <text id="weldCt" x="60" y="84" text-anchor="middle" fill="#39d6ff" font-size="15" font-weight="700" font-family="'Share Tech Mono',monospace">--</text>
                 <circle id="weldLed" cx="106" cy="10" r="5" fill="#ffb020" class="led"/>
               </g>
 
-              <!-- ====== VALVE V-203 ====== -->
+              <!-- ====== VALVE V-203 (면책구역 게이트) ====== -->
               <g transform="translate(750,150)" id="valve1">
                 <rect x="-26" y="-14" width="52" height="28" rx="4" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
                 <path id="valveTri" d="M-14 -10 L0 0 L-14 10 Z M14 -10 L0 0 L14 10 Z" fill="#21d07a"/>
@@ -498,7 +498,7 @@
                 <text x="0" y="-22" text-anchor="middle" fill="#21d07a" font-size="8" font-family="'Share Tech Mono',monospace" id="valveSt">OPEN</text>
               </g>
 
-              <!-- ====== AREA 3 : 솔라엣지 (DB/Dashboard server + tank) ====== -->
+              <!-- ====== AREA 3 : 영업창고 (완제품 보관) ====== -->
               <g transform="translate(820,90)">
                 <rect x="0" y="0" width="100" height="120" rx="10" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
                 <clipPath id="clipTk2"><rect x="6" y="6" width="88" height="108" rx="6"/></clipPath>
@@ -507,13 +507,13 @@
                   <rect id="tk2wave" x="6" y="78" width="88" height="6" fill="#a6ffd0" opacity=".5"/>
                 </g>
                 <rect x="0" y="0" width="100" height="120" rx="10" fill="none" stroke="#46535f" stroke-width="2"/>
-                <text x="50" y="-8" text-anchor="middle" fill="#dbe7f0" font-size="11" font-weight="700">DB-09</text>
-                <text x="50" y="138" text-anchor="middle" fill="#7e8c99" font-size="9">공정기술 · MES/대시보드</text>
+                <text x="50" y="-8" text-anchor="middle" fill="#dbe7f0" font-size="11" font-weight="700">SLS-WH</text>
+                <text x="50" y="138" text-anchor="middle" fill="#7e8c99" font-size="9">영업창고 · 완제품 · 3정5S</text>
                 <text id="tk2pct" x="50" y="105" text-anchor="middle" fill="#fff" font-family="'Share Tech Mono',monospace" font-size="13" font-weight="700">--%</text>
                 <circle cx="88" cy="10" r="5" fill="#21d07a" class="led"/>
               </g>
 
-              <!-- ====== CONVEYOR (bottom row) feeding AREA 4 ====== -->
+              <!-- ====== CONVEYOR (이관 전산 프로세스) ====== -->
               <g transform="translate(60,300)">
                 <rect x="0" y="0" width="240" height="40" rx="6" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
                 <!-- rollers -->
@@ -523,11 +523,11 @@
                 </g>
                 <!-- product box moving -->
                 <rect id="convBox" x="0" y="2" width="26" height="16" rx="2" fill="#ffd23f"/>
-                <text x="120" y="58" text-anchor="middle" fill="#7e8c99" font-size="9">CONV-1 · 자동 컨베이어</text>
-                <text x="120" y="-8" text-anchor="middle" fill="#dbe7f0" font-size="10" font-weight="700" font-family="'Share Tech Mono',monospace" id="uph">UPH ----</text>
+                <text x="120" y="58" text-anchor="middle" fill="#7e8c99" font-size="9">CONV-1 · 제조→영업 이관 전산화</text>
+                <text x="120" y="-8" text-anchor="middle" fill="#dbe7f0" font-size="10" font-weight="700" font-family="'Share Tech Mono',monospace" id="uph">회전 ----</text>
               </g>
 
-              <!-- ====== PUMP P-102 (bottom) ====== -->
+              <!-- ====== PUMP P-102 (영업→출하 이송) ====== -->
               <g transform="translate(345,320)">
                 <circle r="30" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
                 <g class="pump" id="pump2">
@@ -540,19 +540,19 @@
                 <circle cx="22" cy="-22" r="5" fill="#21d07a" class="led"/>
               </g>
 
-              <!-- ====== AREA 4 : 미러리스 (현재 · vessel + cloud) ====== -->
+              <!-- ====== AREA 4 : TF 통합관제 (구매·영업·제조·생산관리) ====== -->
               <g transform="translate(560,275)">
                 <rect x="0" y="0" width="260" height="90" rx="10" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
-                <text x="130" y="-8" text-anchor="middle" fill="#dbe7f0" font-size="11" font-weight="700">SYS-AX · 미러리스 통합본부</text>
-                <text x="130" y="108" text-anchor="middle" fill="#7e8c99" font-size="9">총괄본부장 · CRM·키오스크·앱 · FastAPI·AWS/GCP·CI/CD · RPA·AI MCP</text>
+                <text x="130" y="-8" text-anchor="middle" fill="#dbe7f0" font-size="11" font-weight="700">TF-CTR · SCM 개선 TF 통합관제</text>
+                <text x="130" y="108" text-anchor="middle" fill="#7e8c99" font-size="9">삼성 멘토링 · 구매·영업·제조·생산관리 TF · 3개월 리딩 · 재고회전율 +17%</text>
                 <!-- mini status lamps -->
                 <g font-family="'Share Tech Mono',monospace" font-size="9">
-                  <circle cx="30" cy="30" r="6" fill="#21d07a" class="led"/><text x="44" y="34" fill="#c4d2dd">CRM</text>
-                  <circle cx="100" cy="30" r="6" fill="#21d07a" class="led"/><text x="114" y="34" fill="#c4d2dd">API</text>
-                  <circle cx="165" cy="30" r="6" fill="#21d07a" class="led"/><text x="179" y="34" fill="#c4d2dd">CI/CD</text>
-                  <circle cx="30" cy="58" r="6" fill="#39d6ff" class="led"/><text x="44" y="62" fill="#c4d2dd">AWS</text>
-                  <circle cx="100" cy="58" r="6" fill="#39d6ff" class="led"/><text x="114" y="62" fill="#c4d2dd">GCP</text>
-                  <circle id="axLed" cx="165" cy="58" r="6" fill="#ffb020" class="led"/><text x="179" y="62" fill="#c4d2dd">AI/RPA</text>
+                  <circle cx="30" cy="30" r="6" fill="#21d07a" class="led"/><text x="44" y="34" fill="#c4d2dd">구매</text>
+                  <circle cx="100" cy="30" r="6" fill="#21d07a" class="led"/><text x="114" y="34" fill="#c4d2dd">영업</text>
+                  <circle cx="165" cy="30" r="6" fill="#21d07a" class="led"/><text x="179" y="34" fill="#c4d2dd">제조</text>
+                  <circle cx="30" cy="58" r="6" fill="#39d6ff" class="led"/><text x="44" y="62" fill="#c4d2dd">생산관리</text>
+                  <circle cx="100" cy="58" r="6" fill="#39d6ff" class="led"/><text x="114" y="62" fill="#c4d2dd">3정5S</text>
+                  <circle id="axLed" cx="165" cy="58" r="6" fill="#ffb020" class="led"/><text x="179" y="62" fill="#c4d2dd">이관전산</text>
                 </g>
               </g>
 
@@ -563,10 +563,10 @@
         <!-- PV STRIP -->
         <div class="pv-strip" id="pvStrip"></div>
 
-        <!-- 재고회전율 +17% — 삼성 물류개선 (전용 PV + 재고 흐름 트렌드) -->
+        <!-- 재고회전율 +17% KPI 패널 -->
         <div class="panel inv-panel" style="margin-top:16px">
           <div class="panel-h">
-            <div class="ttl">재고회전율 KPI <small>삼성전자 상생협력아카데미 · 물류개선</small></div>
+            <div class="ttl">재고회전율 KPI <small>이랜텍 · 삼성전자 상생협력아카데미 SCM 개선 TF</small></div>
             <div class="tagid">INV-017</div>
           </div>
           <div class="inv-grid">
@@ -576,20 +576,20 @@
                 <path id="invArc" d="M20 110 A80 80 0 0 1 180 110" fill="none" stroke="#21d07a" stroke-width="14" stroke-linecap="round"
                       stroke-dasharray="251.2" stroke-dashoffset="251.2"/>
                 <text x="100" y="86" text-anchor="middle" fill="#21d07a" font-family="'Share Tech Mono',monospace" font-size="30" font-weight="700" id="invNum">+0%</text>
-                <text x="100" y="106" text-anchor="middle" fill="#7e8c99" font-size="10">재고회전율 향상</text>
+                <text x="100" y="106" text-anchor="middle" fill="#7e8c99" font-size="10">재고자산회전율 향상</text>
               </svg>
             </div>
             <div class="inv-body">
-              <div class="inv-stat"><span class="k">출처</span><span class="v">삼성전자 상생협력아카데미 · 물류개선 프로젝트</span></div>
-              <div class="inv-stat"><span class="k">대상</span><span class="v">자재·완제품 재고 흐름 / 회전 주기</span></div>
-              <div class="inv-stat"><span class="k">성과</span><span class="v" style="color:#21d07a">재고회전율 <b>+17%</b> — 동일 매출 대비 묶인 재고 감소</span></div>
-              <div class="inv-note">물류 표준화 · 적정재고 기준 재설정 · 입출고 리드타임 단축으로 회전율을 끌어올림.</div>
+              <div class="inv-stat"><span class="k">회사</span><span class="v">이랜텍 (2022.11 — 2023.09)</span></div>
+              <div class="inv-stat"><span class="k">연계</span><span class="v">삼성전자 상생협력아카데미 제조 리더 양성 1기</span></div>
+              <div class="inv-stat"><span class="k">KPI</span><span class="v" style="color:#21d07a">재고자산회전율 <b>+17%</b> — 프로젝트 핵심 성과지표</span></div>
+              <div class="inv-note">제조·영업 창고 재고 흐름 분석 → 면책구역 지정 + 이관 전산 프로세스 개선 + 3정5S → 묶인 재고 감소·회전율 향상.</div>
             </div>
           </div>
           <div class="trend-box" style="border-top:1px solid var(--line)">
             <div class="trend-legend">
-              <span><i style="background:#21d07a"></i>재고회전율 PV (지수)</span>
-              <span><i style="background:#39d6ff"></i>재고 흐름 (입출고 균형)</span>
+              <span><i style="background:#21d07a"></i>재고회전율 PV (개선 추이)</span>
+              <span><i style="background:#39d6ff"></i>재고 흐름 균형 (입출고)</span>
             </div>
             <canvas id="trendInv" width="900" height="160"></canvas>
           </div>
@@ -598,14 +598,14 @@
         <!-- TREND -->
         <div class="panel" style="margin-top:16px">
           <div class="panel-h">
-            <div class="ttl">실시간 TREND <small>스트립 차트 레코더 · 60s 윈도우</small></div>
+            <div class="ttl">실시간 TREND <small>스트립 차트 레코더 · 재고비용·회전율 60s 윈도우</small></div>
             <div class="tagid">TRD-101</div>
           </div>
           <div class="trend-box">
             <div class="trend-legend">
-              <span><i style="background:#ff3b3b"></i>공정 불량률 PV (%)</span>
-              <span><i style="background:#39d6ff"></i>가동률 PV (%)</span>
-              <span><i style="background:#ffd23f"></i>SP 목표</span>
+              <span><i style="background:#ff3b3b"></i>재고비용 PV (상대지수)</span>
+              <span><i style="background:#39d6ff"></i>재고회전율 PV (개선후)</span>
+              <span><i style="background:#ffd23f"></i>SP 목표선</span>
             </div>
             <canvas id="trend" width="900" height="200"></canvas>
           </div>
@@ -615,7 +615,7 @@
       <!-- SIDEBAR -->
       <aside>
         <div class="panel">
-          <div class="panel-h"><div class="ttl">SETPOINT · 핵심성과 PV</div><div class="tagid">SP-KPI</div></div>
+          <div class="panel-h"><div class="ttl">SETPOINT · 핵심 SCM PV</div><div class="tagid">SP-KPI</div></div>
           <div class="sp-list" id="spList"></div>
         </div>
         <div class="panel" style="margin-top:16px">
@@ -626,36 +626,36 @@
     </div>
   </section>
 
-  <!-- ============ LINE1 (Equipment IO / skills) ============ -->
+  <!-- ============ LINE1 (역량) ============ -->
   <section class="stage" data-stage="line1">
     <div class="panel">
-      <div class="panel-h"><div class="ttl">라인1 장비 IO 목록 <small>설비 태그 · 보유 역량 = I/O 포인트</small></div><div class="tagid">IO-L01</div></div>
+      <div class="panel-h"><div class="ttl">SCM·제조 역량 IO 목록 <small>보유 역량 = I/O 포인트</small></div><div class="tagid">IO-L01</div></div>
       <div class="io-grid" id="ioGrid"></div>
     </div>
     <div class="gridrow">
       <div class="panel">
-        <div class="panel-h"><div class="ttl">제어 SW 스택</div><div class="tagid">SW-STK</div></div>
+        <div class="panel-h"><div class="ttl">물류·재고 관리 도구</div><div class="tagid">SCM-STK</div></div>
         <div class="io-grid" id="swGrid"></div>
       </div>
       <div class="panel">
-        <div class="panel-h"><div class="ttl">현장 엔지니어링</div><div class="tagid">ENG-FLD</div></div>
+        <div class="panel-h"><div class="ttl">제조현장 엔지니어링</div><div class="tagid">ENG-FLD</div></div>
         <div class="io-grid" id="engGrid"></div>
       </div>
     </div>
   </section>
 
-  <!-- ============ QUALITY ============ -->
+  <!-- ============ QUALITY (SCM KPI) ============ -->
   <section class="stage" data-stage="quality">
     <div class="panel">
-      <div class="panel-h"><div class="ttl">품질 지표 대시보드 <small>실측 성과 PV</small></div><div class="tagid">QC-001</div></div>
+      <div class="panel-h"><div class="ttl">SCM 성과 지표 대시보드 <small>이랜텍 · 삼성 SCM 개선 TF 실측 KPI</small></div><div class="tagid">KPI-001</div></div>
       <div class="q-grid" id="qGrid"></div>
     </div>
     <div class="panel" style="margin-top:16px">
-      <div class="panel-h"><div class="ttl">수율 / 가동 TREND <small>품질 트렌드</small></div><div class="tagid">QC-TRD</div></div>
+      <div class="panel-h"><div class="ttl">재고회전율 개선 TREND <small>TF 추진 전→후 추이</small></div><div class="tagid">KPI-TRD</div></div>
       <div class="trend-box">
         <div class="trend-legend">
-          <span><i style="background:#21d07a"></i>수율 PV (%)</span>
-          <span><i style="background:#39d6ff"></i>가동률 PV (%)</span>
+          <span><i style="background:#21d07a"></i>재고회전율 PV (%↑)</span>
+          <span><i style="background:#39d6ff"></i>입출고 리드타임 PV (단축 추이)</span>
         </div>
         <canvas id="trend2" width="900" height="200"></canvas>
       </div>
@@ -682,53 +682,53 @@
         <a href="mailto:64etuor@gmail.com"><span class="ic">✉</span>64etuor@gmail.com</a>
         <a href="https://github.com/64etuor" target="_blank"><span class="ic">⌥</span>github.com/64etuor</a>
         <span><span class="ic">☎</span>010-7448-1791</span>
-        <span><span class="ic">◆</span>생산운영 PM · 공정기술 엔지니어 · 총괄본부장</span>
+        <span><span class="ic">◆</span>SCM 개선 TF 리더 · 제조 생산관리과장</span>
       </div>
     </div>
   </section>
 
-  <!-- ============ KNOWLEDGE PLANT (지식 볼트) ============ -->
-  <section class="stage" data-stage="vault">
-    <div class="vault-creed">
+  <!-- ============ SCM TF 개선 현황 ============ -->
+  <section class="stage" data-stage="scmtf">
+    <div class="scm-creed">
       <span class="ic">◎</span>
       <div class="ct">
-        측정은 자동 / 검토 트리거는 주기적 / 처분은 수동 — <b style="color:#39b6ff">신호는 판결이 아니다.</b>
-        <span class="principle">운영 원칙: "불합리를 방치하지 않는다."</span>
+        재고 측정은 현장 / 검토 트리거는 TF 주간회의 / 처분(이관·면책)은 부서 합의 — <b style="color:#39b6ff">수치는 판결이 아니라 개선의 시작이다.</b>
+        <span class="principle">TF 운영 원칙: "불합리한 재고 흐름을 방치하지 않는다."</span>
       </div>
     </div>
-    <div class="vault-note">
-      <b>지식 볼트 플랜트 (PY-OPS / VAULT-01)</b> — 자신의 Obsidian 지식 베이스를 하나의 공정 플랜트로 운전.
-      손수 작성한 DataviewJS 대시보드(<span class="mono">health.md · knowledge.md</span>)가 <span class="mono">dashboard-metrics.json</span>을 읽어
-      단일 SSOT <span class="mono">HEALTH_THRESHOLDS</span> 기준으로 warn/alarm 카드를 색으로 판정. 공장 밖 데이터에도 같은 시스템 사고를 적용.
+    <div class="scm-note">
+      <b>SCM 개선 TF (이랜텍 · 2022.11 — 2023.09)</b> — 삼성전자 상생협력아카데미 제조 리더 양성 1기 멘토링을 받아
+      구매·영업·제조·생산관리 4개 부서 TF를 구성, 3개월간 직접 리딩.
+      제조창고·영업창고 재고 흐름 분석 → 면책구역 지정 → 이관 전산 프로세스 개선 → 3정5S → 재고자산회전율 <b>+17%</b> 달성.
     </div>
 
     <div class="layout">
       <div>
-        <!-- PARA process areas -->
+        <!-- SCM 개선 영역 탱크 (재고 흐름 단계) -->
         <div class="panel">
           <div class="panel-h">
-            <div class="ttl">PARA 공정 영역 <small>지식 루트 000~900 = 탱크 레벨 (노트 수)</small></div>
-            <div class="tagid">VLT-PARA</div>
+            <div class="ttl">SCM 개선 공정 영역 <small>단계별 재고 흐름 개선도 = 탱크 레벨</small></div>
+            <div class="tagid">TF-PARA</div>
           </div>
           <div class="para-grid" id="paraGrid"></div>
         </div>
 
-        <!-- Vault PV tiles -->
-        <div class="pv-strip" id="vaultPv"></div>
+        <!-- SCM PV 타일 -->
+        <div class="pv-strip" id="scmPv"></div>
 
-        <!-- Vault health trend -->
+        <!-- SCM 개선 추이 트렌드 -->
         <div class="panel" style="margin-top:16px">
           <div class="panel-h">
-            <div class="ttl">볼트 건전성 TREND <small>스트립 차트 · health.md 신호</small></div>
-            <div class="tagid">TRD-VLT</div>
+            <div class="ttl">TF 추진 개선 TREND <small>스트립 차트 · 재고회전율·비용절감 추이</small></div>
+            <div class="tagid">TRD-TF</div>
           </div>
           <div class="trend-box">
             <div class="trend-legend">
-              <span><i style="background:#21d07a"></i>Lint 통과율 PV (%)</span>
-              <span><i style="background:#39d6ff"></i>그래프 건전성 PV (%)</span>
-              <span><i style="background:#ffd23f"></i>SSOT warn 임계</span>
+              <span><i style="background:#21d07a"></i>재고회전율 개선도 PV (%)</span>
+              <span><i style="background:#39d6ff"></i>창고 운영 효율 PV (%)</span>
+              <span><i style="background:#ffd23f"></i>목표 기준선</span>
             </div>
-            <canvas id="trendVault" width="900" height="200"></canvas>
+            <canvas id="trendScm" width="900" height="200"></canvas>
           </div>
         </div>
       </div>
@@ -736,11 +736,11 @@
       <!-- SIDEBAR -->
       <aside>
         <div class="panel">
-          <div class="panel-h"><div class="ttl">HEALTH_THRESHOLDS · SSOT</div><div class="tagid">SP-SSOT</div></div>
+          <div class="panel-h"><div class="ttl">TF 추진 항목 · 진행상태</div><div class="tagid">TF-SP</div></div>
           <div class="ssot-grid" id="ssotGrid"></div>
         </div>
         <div class="panel" style="margin-top:16px">
-          <div class="panel-h"><div class="ttl">Knowledge-Gap 큐 <small>끊긴 wikilink → 다음에 쓸 것</small></div><div class="tagid">GAP-Q</div></div>
+          <div class="panel-h"><div class="ttl">개선 액션 큐 <small>부서별 실행 항목</small></div><div class="tagid">ACT-Q</div></div>
           <div class="gap-queue" id="gapQueue"></div>
         </div>
       </aside>
@@ -753,8 +753,8 @@
     <div class="seg">통신: <b style="color:#21d07a">OK</b></div>
     <div class="seg">스캔주기: <b class="mono">250ms</b></div>
     <div class="seg">활성알람: <b id="sbAlm" class="mono" style="color:#ff3b3b">1</b></div>
-    <div class="seg">노드: <b class="mono">PY-OPS / SCADA-01</b></div>
-    <div class="seg hdr-spacer" style="border-right:0;justify-content:flex-end;color:#7e8c99">© 박양하 PARK YANGHA · OPERATOR-GRADE HMI</div>
+    <div class="seg">노드: <b class="mono">이랜텍 / SCM-TF-01</b></div>
+    <div class="seg hdr-spacer" style="border-right:0;justify-content:flex-end;color:#7e8c99">© 박양하 PARK YANGHA · SCM 재고·물류 HMI</div>
   </footer>
 
 </div>
@@ -786,23 +786,20 @@
 
   /* ===== Process state ===== */
   const state={
-    weldDefect:4.0,    // % 공정 불량률 (alarm driver) — generic, 용착 아님
-    weldSP:1.0,
-    uptime:88.0,       // 가동률
-    yield:97.6,        // 수율
-    cycle:0.86,        // C/T (relative s for animation)
+    invCost:4.0,      // 재고비용 지수 (alarm driver, 개선 전 높음)
+    invCostSP:1.5,    // 목표 기준
+    turnRate:62.0,    // 재고회전율 개선 추이 (%)
+    whEff:78.0,       // 창고 운영 효율
     acked:false,
-    doeProgress:0,
   };
 
-  /* ===== PV TILES — 운영 PV (다른 씬이 소유한 통제수치는 제외) =====
-     재고회전율 +17%(삼성 물류개선)은 이 씬의 1급 PV로 별도 게이지 패널에서 표시. */
+  /* ===== PV TILES ===== */
   const pvDefs=[
-    {lbl:'재고회전율', tag:'PV-101', base:17, unit:'%↑', sp:'삼성 물류', cls:'good', dir:'up'},
-    {lbl:'설비 가동률', tag:'PV-102', base:96, unit:'%', sp:'SP ≥90', cls:'good', dir:'up'},
-    {lbl:'라인 수율', tag:'PV-103', base:98, unit:'%', sp:'SP ≥97', cls:'good', dir:'up'},
-    {lbl:'정시 출하율', tag:'PV-104', base:99, unit:'%', sp:'SP ≥98', cls:'good', dir:'up'},
-    {lbl:'공정 불량률', tag:'PV-105', base:4, unit:'%', sp:'SP 1', cls:'warn', dir:'def', live:'defect'},
+    {lbl:'재고회전율', tag:'PV-101', base:17, unit:'%↑', sp:'TF KPI', cls:'good', dir:'up'},
+    {lbl:'창고 가동률', tag:'PV-102', base:94, unit:'%', sp:'SP ≥90', cls:'good', dir:'up'},
+    {lbl:'입출고 리드타임', tag:'PV-103', base:28, unit:'%↓', sp:'단축목표', cls:'good', dir:'up'},
+    {lbl:'정시 출하율', tag:'PV-104', base:97, unit:'%', sp:'SP ≥95', cls:'good', dir:'up'},
+    {lbl:'재고비용 지수', tag:'PV-105', base:4, unit:'', sp:'SP 1.5', cls:'warn', dir:'def', live:'cost'},
   ];
   const pvStrip=$('#pvStrip');
   pvDefs.forEach((p,i)=>{
@@ -810,7 +807,7 @@
     el.className='pv-tile '+p.cls;
     el.innerHTML=`<div class="lbl"><span>${p.lbl}</span><span class="tg">${p.tag}</span></div>
       <div><span class="num" data-i="${i}">0.0</span><span class="unit">${p.unit}</span></div>
-      <div class="sp">${p.sp} ${p.unit}</div>`;
+      <div class="sp">${p.sp}</div>`;
     pvStrip.appendChild(el);
   });
   const pvNums=$$('#pvStrip .num');
@@ -822,19 +819,19 @@
     const t=Math.min((ts-cuStart)/1400,1);
     const ease=1-Math.pow(1-t,3);
     pvDefs.forEach((p,i)=>{
-      if(p.live==='defect'){ pvNums[i].textContent=state.weldDefect.toFixed(1); }
+      if(p.live==='cost'){ pvNums[i].textContent=state.invCost.toFixed(1); }
       else pvNums[i].textContent=(p.base*ease).toFixed(1);
     });
     if(t<1)requestAnimationFrame(countUp);
   }
   requestAnimationFrame(countUp);
 
-  /* ===== SETPOINT list (career areas) ===== */
+  /* ===== SETPOINT list ===== */
   const spDefs=[
-    {nm:'삼성 상생아카데미 · 물류개선', yr:'재고회전율', pv:'17', un:'재고회전%↑', c:'#21d07a'},
-    {nm:'은성에스아이티 · 배터리팩 총괄', yr:'2020.08–2022.11', pv:'QC', un:'비전·IATF', c:'#39d6ff'},
-    {nm:'이랜텍 · 생산라인 PM/파트장', yr:'2022.11–2023.09', pv:'DOE', un:'용착·LOB', c:'#ffd23f'},
-    {nm:'미러리스 · 총괄본부장', yr:'2025.08–현재', pv:'RUN', un:'AX 가동', c:'#21d07a'},
+    {nm:'재고자산회전율 +17%', yr:'TF 프로젝트 KPI', pv:'+17', un:'%↑', c:'#21d07a'},
+    {nm:'이랜텍 · SCM TF 리더', yr:'2022.11–2023.09', pv:'TF', un:'3개월', c:'#ffd23f'},
+    {nm:'삼성 상생협력아카데미', yr:'제조 리더 양성 1기', pv:'멘토', un:'지원', c:'#39d6ff'},
+    {nm:'구매·영업·제조·생산관리', yr:'4개 부서 TF 구성', pv:'RUN', un:'개선중', c:'#21d07a'},
   ];
   const spList=$('#spList');
   spDefs.forEach(s=>{
@@ -848,14 +845,14 @@
 
   /* ===== ALARM data ===== */
   const baseAlarms=[
-    {sev:'#ff3b3b', ts:'08:14:02', desc:'공정 불량률 HIGH · 4.0% > SP 1%', st:'ALM', key:'main'},
-    {sev:'#ffb020', ts:'07:58:41', desc:'설비 가동률 편차 경고 · STN-02', st:'ACK'},
-    {sev:'#21d07a', ts:'07:30:10', desc:'재고회전율 목표 달성 · +17% (삼성 물류개선)', st:'RTN'},
-    {sev:'#21d07a', ts:'06:45:55', desc:'정시 출하율 정상복귀 · TK-01', st:'RTN'},
-    {sev:'#39b6ff', ts:'06:12:00', desc:'MES 데이터 DB 동기화 완료', st:'RTN'},
-    {sev:'#ffb020', ts:'05:40:33', desc:'적정재고 임계 재설정 완료 INFO', st:'ACK'},
-    {sev:'#ffb020', ts:'05:02:18', desc:'지식볼트 · LINT MUST 위반 3건 · 검토 필요', st:'ACK'},
-    {sev:'#39b6ff', ts:'04:30:05', desc:'지식볼트 · Dead notes 12건(90일 미접근) · 처분 트리거', st:'RTN'},
+    {sev:'#ff3b3b', ts:'08:14:02', desc:'재고비용 HIGH · 적정재고 기준 미설정 · 제조창고 적체 (개선 전)', st:'ALM', key:'main'},
+    {sev:'#ffb020', ts:'07:58:41', desc:'제조→영업 이관 전산화 미흡 · 수기 처리 오류 감지', st:'ACK'},
+    {sev:'#21d07a', ts:'07:30:10', desc:'재고자산회전율 목표 달성 · +17% (TF 개선 완료)', st:'RTN'},
+    {sev:'#21d07a', ts:'06:45:55', desc:'면책구역 지정 완료 · 제조창고 정상화', st:'RTN'},
+    {sev:'#39b6ff', ts:'06:12:00', desc:'3정5S 제조·영업창고 완료 · 현장 감사 통과', st:'RTN'},
+    {sev:'#ffb020', ts:'05:40:33', desc:'입출고 리드타임 단축 목표 대비 진행 INFO', st:'ACK'},
+    {sev:'#21d07a', ts:'05:02:18', desc:'구매·영업·제조·생산관리 TF 킥오프 완료', st:'RTN'},
+    {sev:'#39b6ff', ts:'04:30:05', desc:'삼성 멘토 현장 방문 피드백 · 개선 계획 확정', st:'RTN'},
   ];
   function renderAlarms(){
     const mk=a=>`<div class="alm-item">
@@ -868,7 +865,7 @@
   }
   renderAlarms();
 
-  /* ===== IO / SKILL grids (라인1) ===== */
+  /* ===== IO / SKILL grids ===== */
   function fillGrid(id,items){
     const g=$(id);
     items.forEach((it,i)=>{
@@ -879,21 +876,17 @@
       g.appendChild(el);
     });
   }
-  fillGrid('#ioGrid',[['Python','I'],['SQL','I'],['FastAPI','Q'],['React','Q'],['TypeScript','I'],
-    ['Electron','Q'],['Rust','I'],['MySQL/RDS','M'],['AWS','Q'],['GCP','Q'],['BI','I'],['ML','M'],
-    ['RPA','Q'],['CI/CD','Q']]);
-  fillGrid('#swGrid',[['ERP','M'],['MES','M'],['CRM','Q'],['대시보드','I'],['키오스크','Q'],['모바일앱','Q'],['AI MCP','M'],['검사성적서 자동발행','Q']]);
-  fillGrid('#engGrid',[['PFMEA/CP/PFD/SOP','I'],['산업용접','I'],['LOB','I'],['Jig개발','Q'],
-    ['기구설계','Q'],['비전검사','I'],['로봇티칭','Q'],['Draftsight','M'],['DOE','M'],['IATF16949','I']]);
+  fillGrid('#ioGrid',[['재고 흐름 분석','I'],['적정재고 기준설정','I'],['물류 표준화','I'],['리드타임 관리','Q'],['창고 레이아웃','I'],
+    ['면책구역 지정','I'],['이관 전산화','M'],['3정5S','I'],['PFMEA/CP','Q'],['TF 리딩','I'],['삼성 멘토링','M'],['KPI 보고','I']]);
+  fillGrid('#swGrid',[['ERP 재고모듈','M'],['MES 연동','M'],['재고대장 전산화','I'],['입출고 집계','I'],['이관 프로세스','I'],['보고서 자동화','Q']]);
+  fillGrid('#engGrid',[['창고 3정5S','I'],['면책구역 설계','I'],['LOB 분석','I'],['Jig 개발','Q'],['기구설계','Q'],['현장 감사','I'],['DOE','M'],['IATF16949','I']]);
 
-  /* ===== Quality cards ===== */
-  /* 품질/운영 카드 — 이 씬이 소유한 대표수치는 재고회전율 +17%.
-     다른 씬이 소유한 통제수치(용착·OPEX·ST·C/T·생산성 등)는 제외. */
+  /* ===== Quality (SCM KPI) cards ===== */
   const qDefs=[
-    {big:'+17%', cap:'재고회전율 향상<br>삼성전자 상생협력아카데미 물류개선', delta:'INVENTORY TURN↑', dn:false},
-    {big:'96%', cap:'설비 가동률<br>실시간 SCADA 감시', delta:'UPTIME↑', dn:false},
-    {big:'98%', cap:'라인 수율<br>공정 품질 게이트', delta:'YIELD↑', dn:false},
-    {big:'99%', cap:'정시 출하율<br>물류·출고 추적', delta:'ON-TIME↑', dn:false},
+    {big:'+17%', cap:'재고자산회전율 향상<br>이랜텍 · 삼성 SCM TF 프로젝트 KPI', delta:'INVENTORY TURN↑', dn:false},
+    {big:'3개월', cap:'TF 리딩 기간<br>구매·영업·제조·생산관리 4개 부서', delta:'TF LEAD', dn:false},
+    {big:'3정5S', cap:'제조·영업 창고 전면 실시<br>현장 정리·정돈·청소·청결·습관화', delta:'WH STANDARD↑', dn:false},
+    {big:'면책', cap:'면책구역 지정 완료<br>제조-영업 재고 이관 경계 명확화', delta:'EXEMPTION ZONE', dn:false},
   ];
   const qGrid=$('#qGrid');
   qDefs.forEach(q=>{
@@ -904,24 +897,19 @@
   });
 
   /* ===== History ===== */
-  /* 운전 이력(커리어) — 이 씬은 재고회전율 +17%(삼성 물류개선)을 소유.
-     다른 씬이 소유한 통제수치는 칩에서 제외하고 역량·도메인 위주로 표기. */
   const hist=[
-    {when:'2025.08', sub:'현재', role:'총괄본부장', org:'미러리스',
-     body:'CRM·키오스크·모바일앱 통합 운영. FastAPI 백엔드, AWS/GCP 인프라, CI/CD 파이프라인 구축. RPA·AI MCP 기반 AX(자동화 전환) 추진.',
-     chips:['FastAPI','AWS/GCP','CI/CD','RPA','AI MCP']},
+    {when:'2022.11', sub:'~2023.09', role:'SCM 개선 TF 리더 · 생산라인 PM / 파트장', org:'이랜텍',
+     body:'삼성전자 상생협력아카데미 제조 리더 양성 1기 멘토링 지원을 받아 구매·영업·제조·생산관리 4개 부서 TF 구성 및 3개월 리딩. 재고·물류 흐름 분석, 제조창고 재고비용 감축, 물류 흐름 개선, 면책구역 지정, 제조-영업 재고 이관 전산 프로세스 개선, 제조·영업 창고 3정5S 실시.',
+     chips:['재고회전율 +17%','면책구역','이관전산화','3정5S','삼성 멘토링','TF 리딩']},
+    {when:'2020.08', sub:'~2022.11', role:'생산관리과장 · 배터리팩 총괄', org:'은성에스아이티',
+     body:'2차전지 배터리팩 라인 총괄. 비전검사 도입 및 IATF16949 품질체계 운영.',
+     chips:['비전검사','IATF16949','ERP','품질체계']},
     {when:'2023.09', sub:'~2024.12', role:'공정기술 엔지니어', org:'솔라엣지',
      body:'데이터 DB·대시보드 구축. 검사성적서 자동발행, MES 도입으로 공정 데이터 통합·셋업 표준화.',
      chips:['MES','데이터 DB','검사성적서 자동','대시보드']},
-    {when:'2022.11', sub:'~2023.09', role:'생산라인 PM / 파트장', org:'이랜텍',
-     body:'DOE 기반 용착 공정 최적화 및 Jig 개발로 라인 표준화·밸런싱. (용착·C/T·생산성 수치는 전용 씬에서 상세)',
-     chips:['DOE','산업용접','Jig개발','LOB']},
-    {when:'2022 (교육)', sub:'물류개선', role:'재고회전율 +17%', org:'삼성전자 상생협력아카데미',
-     body:'삼성전자 상생협력아카데미 물류개선 프로젝트에서 적정재고 재설정·입출고 리드타임 단축으로 재고회전율 +17% 달성 — 본 SCADA 씬의 대표 성과.',
-     chips:['재고회전율 +17%','물류표준화','적정재고','리드타임↓']},
-    {when:'2020.08', sub:'~2022.11', role:'생산관리과장 · 배터리팩 총괄', org:'은성에스아이티',
-     body:'2차전지 배터리팩 라인 총괄. 비전검사 도입 및 IATF16949 품질체계 운영. (원가·불량 수치는 전용 씬에서 상세)',
-     chips:['비전검사','IATF16949','ERP','품질체계']},
+    {when:'2025.08', sub:'현재', role:'총괄본부장', org:'미러리스',
+     body:'CRM·키오스크·모바일앱 통합 운영. FastAPI 백엔드, AWS/GCP 인프라, CI/CD 파이프라인 구축.',
+     chips:['FastAPI','AWS/GCP','CI/CD','RPA','AI MCP']},
   ];
   const histList=$('#histList');
   hist.forEach(h=>{
@@ -947,25 +935,25 @@
     pump1.setAttribute('transform',`rotate(${(t*220)%360})`);
     pump2.setAttribute('transform',`rotate(${(-t*180)%360})`);
     // tank levels (oscillate around target)
-    const lv1=78+Math.sin(t*0.8)*9;             // ~ 70-87
+    const lv1=78+Math.sin(t*0.8)*9;             // 자재창고 입고 레벨
     const h1=108*(lv1/100);
     tk1fill.setAttribute('y',6+108-h1); tk1fill.setAttribute('height',h1);
     tk1wave.setAttribute('y',6+108-h1-2);
     tk1pct.textContent=Math.round(lv1)+'%';
-    const lv2=62+Math.sin(t*0.6+1)*7;
+    const lv2=62+Math.sin(t*0.6+1)*7;           // 영업창고 완제품 레벨
     const h2=108*(lv2/100);
     tk2fill.setAttribute('y',6+108-h2); tk2fill.setAttribute('height',h2);
     tk2wave.setAttribute('y',6+108-h2-2);
     tk2pct.textContent=Math.round(lv2)+'%';
-    // conveyor box
+    // conveyor box (이관 흐름)
     const bx=((t*60)%266);
     convBox.setAttribute('x',bx-26);
-    // weld progress bar pulsing
+    // 재고비용 개선 바 (pulsing)
     const wp=20+((t*40)%90);
     weldBar.setAttribute('width',Math.min(wp,90));
     // dynamic readouts
-    weldCt.textContent=(state.cycle*100).toFixed(0)+'s';
-    uph.textContent='UPH '+Math.round(420+Math.sin(t)*18);
+    weldCt.textContent=(state.invCost).toFixed(1);
+    uph.textContent='회전 '+Math.round(62+Math.sin(t)*5)+'%';
     requestAnimationFrame(loop);
   }
   requestAnimationFrame(loop);
@@ -973,6 +961,7 @@
   /* ===== TREND strip charts ===== */
   function makeTrend(canvasId, series){
     const cv=document.getElementById(canvasId);
+    if(!cv)return;
     const ctx=cv.getContext('2d');
     const W=cv.width, H=cv.height;
     const buf=series.map(s=>new Array(120).fill(s.start));
@@ -982,15 +971,12 @@
       ctx.strokeStyle='rgba(57,182,255,0.07)';ctx.lineWidth=1;
       for(let x=0;x<=W;x+=W/12){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
       for(let y=0;y<=H;y+=H/6){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-      // SP line for first trend (defect target 0)
       series.forEach((s,si)=>{
-        // shift buffer
         const b=buf[si];
         b.shift();
         s.val += (s.target()-s.val)*0.08 + (Math.random()-0.5)*s.noise;
         s.val=Math.max(0,Math.min(100,s.val));
         b.push(s.val);
-        // draw
         ctx.strokeStyle=s.color;ctx.lineWidth=2;
         ctx.shadowColor=s.color;ctx.shadowBlur=6;
         ctx.beginPath();
@@ -1001,36 +987,35 @@
         }
         ctx.stroke();ctx.shadowBlur=0;
       });
-      // SP marker (yellow dashed at 0 for trend1)
+      // SP marker (yellow dashed)
       if(canvasId==='trend'){
         ctx.strokeStyle='#ffd23f';ctx.setLineDash([6,5]);ctx.lineWidth=1.4;
-        const y=H-(state.weldSP/100)*H-1;
+        const y=H-(state.invCostSP/10*H)-1;
         ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();ctx.setLineDash([]);
       }
-      // SSOT warn threshold marker for vault trend (lint pass% warn @85)
-      if(canvasId==='trendVault'){
+      if(canvasId==='trendScm'){
         ctx.strokeStyle='#ffd23f';ctx.setLineDash([6,5]);ctx.lineWidth=1.4;
-        const y=H-(85/100)*H-1;
+        const y=H-(80/100)*H-1;
         ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();ctx.setLineDash([]);
       }
       requestAnimationFrame(draw);
     }
     requestAnimationFrame(draw);
   }
+
   makeTrend('trend',[
-    {color:'#ff3b3b', start:15, val:15, noise:0.6, target:()=>state.weldDefect},
-    {color:'#39d6ff', start:88, val:88, noise:0.8, target:()=>state.uptime},
+    {color:'#ff3b3b', start:40, val:40, noise:0.6, target:()=>state.invCost*10},
+    {color:'#39d6ff', start:62, val:62, noise:0.8, target:()=>state.turnRate},
   ]);
   makeTrend('trend2',[
-    {color:'#21d07a', start:97, val:97, noise:0.5, target:()=>state.yield},
-    {color:'#39d6ff', start:88, val:88, noise:0.7, target:()=>state.uptime},
+    {color:'#21d07a', start:62, val:62, noise:0.5, target:()=>state.turnRate},
+    {color:'#39d6ff', start:72, val:72, noise:0.7, target:()=>state.whEff},
   ]);
 
   /* ===== 재고회전율 +17% gauge + 재고 흐름 트렌드 ===== */
   (function inventoryKPI(){
     const arc=$('#invArc'), num=$('#invNum');
-    const TARGET=17, FULL=251.2; // semicircle dash length
-    // gauge maps 0..40% range → arc; +17% fills ~ (17/40) of the half-gauge
+    const TARGET=17, FULL=251.2;
     if(arc&&num){
       const frac=Math.min(1,TARGET/40);
       const t0=performance.now(), dur=1400;
@@ -1045,9 +1030,8 @@
       }
       requestAnimationFrame(ramp);
     }
-    // 재고 흐름 트렌드: 회전율 지수(상승) + 입출고 균형선
     if(document.getElementById('trendInv')){
-      const turn={base:62, t:0};
+      const turn={t:0};
       makeTrend('trendInv',[
         {color:'#21d07a', start:62, val:62, noise:0.5, target:()=>{turn.t+=0.004; return Math.min(82,62+20*Math.min(1,turn.t));}},
         {color:'#39d6ff', start:50, val:50, noise:0.9, target:()=>50+Math.sin(performance.now()*0.0009)*6},
@@ -1055,7 +1039,7 @@
     }
   })();
 
-  /* ===== ACK → DOE auto-action delight ===== */
+  /* ===== ACK → 재고 개선 자동 액션 ===== */
   const banner=$('#alarmBanner'), ackBtn=$('#ackBtn');
   const almIco=$('#almIco'), almLvl=$('#almLvl'), almTxt=$('#almTxt'), sbAlm=$('#sbAlm');
   const weldLed=$('#weldLed'), axLed=$('#axLed');
@@ -1063,165 +1047,130 @@
     if(state.acked)return;
     state.acked=true;
     banner.classList.remove('active');
-    almLvl.textContent='ACK · 공정개선 자동 적용 진행중…';
-    almTxt.textContent='개선 조치 적용 — 공정 파라미터 보정 중 · PV 하강 추적';
+    almLvl.textContent='ACK · 재고 개선 조치 적용 진행중…';
+    almTxt.textContent='면책구역 지정·이관 전산화·3정5S 적용 — 재고비용 지수 하강 추적';
     almIco.textContent='⟳';
     ackBtn.disabled=true; ackBtn.textContent='개선 적용중…';
     weldLed.setAttribute('fill','#ffb020');
-    // ramp defect 15 -> 0, uptime up, yield up
     const dur=2600, s0=performance.now();
-    const d0=state.weldDefect;
+    const d0=state.invCost;
     function ramp(now){
       const k=Math.min((now-s0)/dur,1);
       const e=1-Math.pow(1-k,3);
-      state.weldDefect=d0*(1-e);
-      state.uptime=88+ (96-88)*e;
-      state.yield=97.6+(99.8-97.6)*e;
-      // update PV tile 5 (defect)
-      pvNums[4].textContent=state.weldDefect.toFixed(1);
-      $$('#pvStrip .pv-tile')[4].classList.toggle('warn',state.weldDefect>1);
-      $$('#pvStrip .pv-tile')[4].classList.toggle('good',state.weldDefect<=1);
+      state.invCost=d0*(1-e)+state.invCostSP*e;
+      state.turnRate=62+(79-62)*e;
+      state.whEff=78+(92-78)*e;
+      pvNums[4].textContent=state.invCost.toFixed(1);
+      $$('#pvStrip .pv-tile')[4].classList.toggle('warn',state.invCost>state.invCostSP);
+      $$('#pvStrip .pv-tile')[4].classList.toggle('good',state.invCost<=state.invCostSP);
       if(k<1)requestAnimationFrame(ramp);
       else {
-        // CLEARED
         banner.classList.add('cleared');
         almIco.textContent='✓';
         almLvl.textContent='RTN · 정상복귀 (CLEARED)';
-        almTxt.textContent='공정 불량률 SP 충족 · 개선 조치 완료 · 정상 운전 복귀';
+        almTxt.textContent='재고비용 정상화 · 재고회전율 +17% 달성 · TF 개선 완료';
         ackBtn.classList.add('ok'); ackBtn.textContent='✓ CLEARED';
         weldLed.setAttribute('fill','#21d07a');
         axLed.setAttribute('fill','#21d07a');
         sbAlm.textContent='0'; sbAlm.style.color='#21d07a';
-        // update alarm log main entry to RTN
-        baseAlarms[0]={sev:'#21d07a', ts:$('#clk').textContent, desc:'공정 불량률 정상복귀 · SP 충족 (개선 적용)', st:'RTN'};
+        baseAlarms[0]={sev:'#21d07a', ts:$('#clk').textContent, desc:'재고비용 정상복귀 · 재고회전율 +17% 달성 (개선 완료)', st:'RTN'};
         renderAlarms();
       }
     }
     requestAnimationFrame(ramp);
   });
 
-  /* ===== KNOWLEDGE PLANT (지식 볼트) ===== */
-  /* HEALTH_THRESHOLDS — single SSOT governing warn/alarm color判정 */
-  const HEALTH_THRESHOLDS={
-    lint_must:     {warn:1,  alarm:5,  hib:false}, // must 위반 수 (낮을수록 좋음)
-    lint_soft:     {warn:8,  alarm:20, hib:false}, // soft 위반 수
-    dead_notes:    {warn:10, alarm:30, hib:false}, // 90일 미접근
-    status_aging:  {warn:5,  alarm:15, hib:false}, // status aging
-    god_notes:     {warn:2,  alarm:5,  hib:false}, // graph_health: god-notes
-    hub_overload:  {warn:1,  alarm:3,  hib:false}, // graph_health: hub-overload
-    echo_chambers: {warn:2,  alarm:4,  hib:false}, // graph_health: echo-chambers
-    knowledge_gap: {warn:6,  alarm:15, hib:false}, // 끊긴 wikilink 큐 깊이
-  };
-  /* current monitored signals (= dashboard-metrics.json) */
-  const vaultMetrics={
-    lint_must:3, lint_soft:11, dead_notes:12, status_aging:6,
-    god_notes:1, hub_overload:0, echo_chambers:2, knowledge_gap:7,
-  };
-  /* classify a signal against its SSOT threshold */
-  function classify(key,v){
-    const th=HEALTH_THRESHOLDS[key]; if(!th)return 'good';
-    if(v>=th.alarm)return 'alarm';
-    if(v>=th.warn)return 'warn';
-    return 'good';
-  }
-  const sevColor={good:'#21d07a',warn:'#ffb020',alarm:'#ff3b3b'};
+  /* ===== SCM TF 개선 현황 (scmtf 탭) ===== */
 
-  /* PARA roots as process-area tanks (note count = level) */
-  const paraDefs=[
-    {root:'000', nm:'System', cnt:34},
-    {root:'100', nm:'Projects', cnt:128},
-    {root:'200', nm:'Areas', cnt:96},
-    {root:'300', nm:'Resources', cnt:212},
-    {root:'900', nm:'Archive', cnt:74},
+  /* SCM 개선 공정 영역 탱크 (단계별 개선도) */
+  const scmAreas=[
+    {root:'구매', nm:'입고', cnt:85},
+    {root:'제조WH', nm:'적정재고', cnt:72},
+    {root:'이관', nm:'전산화', cnt:90},
+    {root:'영업WH', nm:'3정5S', cnt:88},
+    {root:'출하', nm:'리드타임', cnt:78},
   ];
-  const paraMax=Math.max(...paraDefs.map(p=>p.cnt));
+  const scmAreaMax=Math.max(...scmAreas.map(p=>p.cnt));
   const paraGrid=$('#paraGrid');
   if(paraGrid){
-    paraDefs.forEach(p=>{
-      const pct=Math.round((p.cnt/paraMax)*100);
+    scmAreas.forEach(p=>{
+      const pct=Math.round((p.cnt/scmAreaMax)*100);
       const el=document.createElement('div');
       el.className='para-tank';
       el.innerHTML=`<div class="ph"><span class="root">${p.root}</span><span class="nm">${p.nm}</span></div>
         <div class="lvlwrap"><div class="lvl" style="height:0%"><div class="wave"></div></div>
-          <div class="cnt">${p.cnt}</div></div>
-        <div class="cap">notes · ${pct}% lvl</div>`;
+          <div class="cnt">${p.cnt}%</div></div>
+        <div class="cap">개선도 · ${pct}% lvl</div>`;
       paraGrid.appendChild(el);
       requestAnimationFrame(()=>{ el.querySelector('.lvl').style.height=pct+'%'; });
     });
   }
 
-  /* Vault PV tiles */
-  const lintTotal=vaultMetrics.lint_must+vaultMetrics.lint_soft;
-  const lintPass=Math.max(0,100-lintTotal); // pass% proxy
-  const echoIdx=vaultMetrics.echo_chambers;
-  const vaultPvDefs=[
-    {lbl:'LINT 통과율', tag:'PV-V01', val:lintPass.toFixed(0), unit:'%', sp:'SP ≥85', cls: lintPass>=85?'good':'warn'},
-    {lbl:'Dead Notes', tag:'PV-V02', val:vaultMetrics.dead_notes, unit:'건', sp:`SP <${HEALTH_THRESHOLDS.dead_notes.warn}`, cls: classify('dead_notes',vaultMetrics.dead_notes)==='good'?'good':'warn'},
-    {lbl:'Echo-Chamber 지수', tag:'PV-V03', val:echoIdx, unit:'', sp:`SP <${HEALTH_THRESHOLDS.echo_chambers.warn}`, cls: classify('echo_chambers',echoIdx)==='good'?'good':'warn'},
-    {lbl:'Gap 큐 깊이', tag:'PV-V04', val:vaultMetrics.knowledge_gap, unit:'', sp:`SP <${HEALTH_THRESHOLDS.knowledge_gap.warn}`, cls: classify('knowledge_gap',vaultMetrics.knowledge_gap)==='good'?'good':'warn'},
-    {lbl:'총 노트 수', tag:'PV-V05', val:paraDefs.reduce((s,p)=>s+p.cnt,0), unit:'', sp:'PARA 000~900', cls:'good'},
+  /* SCM PV 타일 */
+  const scmPvDefs=[
+    {lbl:'재고회전율 향상', tag:'PV-S01', val:'+17', unit:'%', sp:'TF KPI', cls:'good'},
+    {lbl:'창고 3정5S', tag:'PV-S02', val:'완료', unit:'', sp:'제조·영업', cls:'good'},
+    {lbl:'면책구역 지정', tag:'PV-S03', val:'완료', unit:'', sp:'경계 명확', cls:'good'},
+    {lbl:'이관 전산화', tag:'PV-S04', val:'완료', unit:'', sp:'수기→전산', cls:'good'},
+    {lbl:'TF 구성 부서', tag:'PV-S05', val:'4', unit:'개', sp:'3개월 리딩', cls:'good'},
   ];
-  const vaultPv=$('#vaultPv');
-  if(vaultPv){
-    vaultPvDefs.forEach(p=>{
+  const scmPvEl=$('#scmPv');
+  if(scmPvEl){
+    scmPvDefs.forEach(p=>{
       const el=document.createElement('div');
       el.className='pv-tile '+p.cls;
       el.innerHTML=`<div class="lbl"><span>${p.lbl}</span><span class="tg">${p.tag}</span></div>
         <div><span class="num">${p.val}</span><span class="unit">${p.unit}</span></div>
         <div class="sp">${p.sp}</div>`;
-      vaultPv.appendChild(el);
+      scmPvEl.appendChild(el);
     });
   }
 
-  /* SSOT threshold rows (setpoints w/ live判정) */
-  const ssotLabels={
-    lint_must:['Lint MUST 위반','필수 규칙'],
-    lint_soft:['Lint SOFT 위반','권고 규칙'],
-    dead_notes:['Dead notes','90일 미접근'],
-    status_aging:['Status aging','상태 정체'],
-    god_notes:['God-notes','graph_health'],
-    hub_overload:['Hub-overload','graph_health'],
-    echo_chambers:['Echo-chambers','graph_health'],
-    knowledge_gap:['Knowledge-gap','끊긴 wikilink'],
-  };
+  /* TF 추진 항목 상태 */
+  const tfItems=[
+    {nm:'재고 흐름 분석', sub:'제조·영업 창고 전체', v:'완료', col:'#21d07a', sp:'W → RTN'},
+    {nm:'면책구역 지정', sub:'제조-영업 경계 명확화', v:'완료', col:'#21d07a', sp:'W → RTN'},
+    {nm:'이관 전산 개선', sub:'수기→ERP 전산 프로세스', v:'완료', col:'#21d07a', sp:'W → RTN'},
+    {nm:'3정5S 제조창고', sub:'정리·정돈·청소·청결·습관화', v:'완료', col:'#21d07a', sp:'W → RTN'},
+    {nm:'3정5S 영업창고', sub:'완제품 창고 전면 적용', v:'완료', col:'#21d07a', sp:'W → RTN'},
+    {nm:'TF 킥오프', sub:'구매·영업·제조·생산관리', v:'완료', col:'#21d07a', sp:'W → RTN'},
+    {nm:'삼성 멘토링 연계', sub:'상생협력아카데미 1기', v:'완료', col:'#21d07a', sp:'W → RTN'},
+    {nm:'재고회전율 KPI', sub:'프로젝트 최종 목표 +17%', v:'+17%', col:'#21d07a', sp:'KPI ↑'},
+  ];
   const ssotGrid=$('#ssotGrid');
   if(ssotGrid){
-    Object.keys(HEALTH_THRESHOLDS).forEach(key=>{
-      const v=vaultMetrics[key], th=HEALTH_THRESHOLDS[key];
-      const sev=classify(key,v), col=sevColor[sev];
-      const lab=ssotLabels[key];
+    tfItems.forEach(item=>{
       const el=document.createElement('div');
       el.className='ssot-row';
-      el.innerHTML=`<span class="sl" style="background:${col};color:${col}"></span>
-        <div class="nm">${lab[0]}<small>${lab[1]}</small></div>
-        <div class="pv" style="color:${col}">${v}</div>
-        <div class="sp">W${th.warn} · A${th.alarm}</div>`;
+      el.innerHTML=`<span class="sl" style="background:${item.col};color:${item.col}"></span>
+        <div class="nm">${item.nm}<small>${item.sub}</small></div>
+        <div class="pv" style="color:${item.col}">${item.v}</div>
+        <div class="sp">${item.sp}</div>`;
       ssotGrid.appendChild(el);
     });
   }
 
-  /* Knowledge-gap queue (끊긴 wikilink ranking → 다음에 쓸 것) */
-  const gapDefs=[
-    {lk:'[[DOE 표준 절차서]]', sub:'STN-03 용착 파라미터에서 8회 참조', dep:8},
-    {lk:'[[MCP 서버 운영 노트]]', sub:'AX 추진 메모에서 6회 참조', dep:6},
-    {lk:'[[CI/CD 롤백 런북]]', sub:'배포 회고에서 5회 참조', dep:5},
-    {lk:'[[PFMEA 체크리스트]]', sub:'품질체계 노트에서 4회 참조', dep:4},
-    {lk:'[[키오스크 장애 패턴]]', sub:'현장 운영 로그에서 3회 참조', dep:3},
+  /* 개선 액션 큐 */
+  const actionDefs=[
+    {lk:'재고비용 감축', sub:'제조창고 적정재고 기준 재설정', dep:'완료', qd:'RTN'},
+    {lk:'물류 흐름 개선', sub:'입출고 리드타임 단축 표준화', dep:'완료', qd:'RTN'},
+    {lk:'이관 프로세스 전산화', sub:'제조→영업 재고 이관 ERP 처리', dep:'완료', qd:'RTN'},
+    {lk:'창고 3정5S 실시', sub:'제조·영업 창고 전면 정비', dep:'완료', qd:'RTN'},
+    {lk:'TF 주간 보고', sub:'삼성 멘토 피드백 반영', dep:'완료', qd:'RTN'},
   ];
   const gapQueue=$('#gapQueue');
   if(gapQueue){
-    gapQueue.innerHTML=gapDefs.map((g,i)=>`<div class="gap-item">
+    gapQueue.innerHTML=actionDefs.map((g,i)=>`<div class="gap-item">
       <span class="rk">#${i+1}</span>
       <span class="lk">${g.lk}<br><small>${g.sub}</small></span>
-      <span class="dep">${g.dep}</span>
-      <span class="qd">WRITE</span></div>`).join('');
+      <span class="dep" style="color:#21d07a">${g.dep}</span>
+      <span class="qd">${g.qd}</span></div>`).join('');
   }
 
-  /* Vault health trend (reuses makeTrend) */
-  const graphHealthPv=Math.max(0,100-(vaultMetrics.god_notes*6+vaultMetrics.hub_overload*8+vaultMetrics.echo_chambers*5));
-  makeTrend('trendVault',[
-    {color:'#21d07a', start:lintPass, val:lintPass, noise:0.5, target:()=>lintPass},
-    {color:'#39d6ff', start:graphHealthPv, val:graphHealthPv, noise:0.6, target:()=>graphHealthPv},
+  /* SCM TF 추이 트렌드 */
+  makeTrend('trendScm',[
+    {color:'#21d07a', start:62, val:62, noise:0.5, target:()=>82},
+    {color:'#39d6ff', start:70, val:70, noise:0.6, target:()=>90},
   ]);
 
 })();

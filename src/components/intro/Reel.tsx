@@ -93,7 +93,7 @@ export function Reel({ onComplete }: { onComplete: () => void }) {
   const cur = FRAMES[idx]
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#000', zIndex: 100 }}>
+    <div style={{ position: 'absolute', inset: 0, background: '#000' }}>
       {[0, 1].map((layer) => (
         <iframe
           key={layer}

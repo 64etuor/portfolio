@@ -1,0 +1,756 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>박양하 · THERMAL-CAM / 용접 아크 열화상</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  :root{
+    --hud:#d7f5ee;
+    --hud-dim:#5f8d86;
+    --amber:#ffcf4d;
+    --hot:#ff7a18;
+    --white:#fffef0;
+    --line:rgba(120,200,190,.22);
+    --mono:"DM Mono","SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    --kr:"Pretendard Variable",Pretendard,system-ui,sans-serif;
+  }
+  html,body{height:100%;}
+  body{
+    background:#000;
+    color:var(--hud);
+    font-family:var(--kr);
+    word-break:keep-all;
+    overflow:hidden;
+    position:fixed; inset:0;
+  }
+  #stage{ position:absolute; inset:0; }
+  canvas#thermal{ position:absolute; inset:0; width:100%; height:100%; display:block; }
+  /* scanline / sensor grain overlay */
+  #grain{
+    position:absolute; inset:0; pointer-events:none; z-index:6; opacity:.5;
+    background:
+      repeating-linear-gradient(0deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px, rgba(0,0,0,.16) 3px, rgba(0,0,0,0) 4px),
+      radial-gradient(120% 90% at 50% 50%, rgba(0,0,0,0) 55%, rgba(0,0,0,.55) 100%);
+    mix-blend-mode:multiply;
+  }
+  #vig{ position:absolute; inset:0; pointer-events:none; z-index:5;
+    background:radial-gradient(130% 120% at 50% 42%, rgba(0,0,0,0) 50%, rgba(0,0,0,.65) 100%);
+  }
+
+  /* ============ HUD ============ */
+  .hud{ position:absolute; z-index:8; font-family:var(--mono); pointer-events:none;
+        text-shadow:0 0 6px rgba(0,0,0,.9), 0 0 2px rgba(0,0,0,1); }
+  .hud b{ color:var(--white); font-weight:500; }
+  .lbl{ color:var(--hud-dim); }
+
+  /* corner brackets */
+  .bracket{ position:absolute; width:46px; height:46px; z-index:8; pointer-events:none;
+            border:2px solid var(--hud); opacity:.85; }
+  #b-tl{ top:18px; left:18px; border-right:0; border-bottom:0; }
+  #b-tr{ top:18px; right:18px; border-left:0; border-bottom:0; }
+  #b-bl{ bottom:18px; left:18px; border-right:0; border-top:0; }
+  #b-br{ bottom:18px; right:18px; border-left:0; border-top:0; }
+
+  /* top-left readouts */
+  #tl{ top:30px; left:36px; font-size:12.5px; line-height:1.85; letter-spacing:.04em; }
+  #tl .row{ display:flex; gap:8px; }
+  #tl .k{ color:var(--hud-dim); width:42px; }
+  .rec{ display:inline-flex; align-items:center; gap:7px; color:#ff5b5b; font-weight:700;
+        letter-spacing:.18em; font-size:12px; }
+  .rec .dot{ width:9px;height:9px;border-radius:50%;background:#ff3636; box-shadow:0 0 10px #ff3636; animation:blink 1.1s steps(1) infinite;}
+  @keyframes blink{50%{opacity:.15}}
+
+  /* top-right meta */
+  #tr{ top:30px; right:40px; text-align:right; font-size:12.5px; line-height:1.85; letter-spacing:.04em;}
+  #tr .big{ font-size:13.5px; color:var(--white); letter-spacing:.1em;}
+
+  /* min/max/avg bottom-left */
+  #stats{ bottom:34px; left:36px; font-size:12.5px; line-height:1.95; letter-spacing:.03em;}
+  #stats .v{ color:var(--white); }
+  #stats .vmax{ color:var(--hot); }
+  #stats .vmin{ color:#7fb6ff; }
+
+  /* timestamp / camera id bottom-right */
+  #br{ bottom:34px; right:40px; text-align:right; font-size:12px; line-height:1.85; color:var(--hud-dim);}
+  #br b{ color:var(--hud); }
+
+  /* spot crosshair */
+  #crosshair{ position:absolute; z-index:9; width:64px; height:64px; margin:-32px 0 0 -32px; pointer-events:none;
+              transition:left .5s cubic-bezier(.4,0,.2,1), top .5s cubic-bezier(.4,0,.2,1); }
+  #crosshair .h,#crosshair .v{ position:absolute; background:var(--white); box-shadow:0 0 4px rgba(0,0,0,.8);}
+  #crosshair .h{ left:0; right:0; top:50%; height:1.5px; margin-top:-.75px;}
+  #crosshair .v{ top:0; bottom:0; left:50%; width:1.5px; margin-left:-.75px;}
+  #crosshair .ring{ position:absolute; inset:22px; border:1.5px solid var(--white); border-radius:50%; opacity:.9;}
+  #spotlbl{ position:absolute; left:38px; top:-8px; white-space:nowrap; font-family:var(--mono);
+            font-size:13px; color:var(--white); text-shadow:0 0 6px rgba(0,0,0,1);}
+  #spotlbl .t{ font-size:16px; font-weight:700; color:var(--hot);}
+
+  /* temp scale bar (right) */
+  #scale{ position:absolute; z-index:8; right:30px; top:50%; transform:translateY(-50%);
+          width:30px; height:300px; pointer-events:none; }
+  #scalebar{ position:absolute; inset:0 14px 0 0; border:1px solid var(--line); border-radius:2px;}
+  #scale .tick{ position:absolute; right:0; font-family:var(--mono); font-size:10.5px; color:var(--hud);
+                transform:translateY(-50%); text-shadow:0 0 5px #000;}
+  #scale .tick::before{ content:""; position:absolute; right:18px; top:50%; width:5px; height:1px; background:var(--hud);}
+
+  /* ============ Headline / identity ============ */
+  #identity{ position:absolute; z-index:8; left:36px; top:50%; transform:translateY(-50%);
+             max-width:560px; pointer-events:none; }
+  #identity .ey{ font-family:var(--mono); font-size:12px; letter-spacing:.42em; color:var(--amber);
+                 text-transform:uppercase; margin-bottom:14px; text-shadow:0 0 10px rgba(255,140,40,.5),0 0 3px #000;}
+  #identity h1{ font-size:clamp(40px,5.4vw,82px); font-weight:800; line-height:.96; letter-spacing:-.02em;
+                color:#fff; text-shadow:0 0 40px rgba(255,110,30,.55), 0 0 14px rgba(0,0,0,.9);}
+  #identity h1 .sub{ display:block; font-size:.34em; font-weight:600; letter-spacing:.02em; margin-top:18px;
+                     color:var(--hud); text-shadow:0 0 12px rgba(0,0,0,1);}
+  #identity .tags{ margin-top:22px; display:flex; flex-wrap:wrap; gap:8px; font-family:var(--mono); }
+  #identity .tags span{ font-size:11.5px; letter-spacing:.06em; color:var(--hud); border:1px solid var(--line);
+                        padding:5px 10px; border-radius:3px; background:rgba(8,16,15,.4); backdrop-filter:blur(2px);
+                        text-shadow:0 0 6px #000;}
+
+  /* ============ Pass timeline (bottom) ============ */
+  #passes{ position:absolute; z-index:8; left:0; right:0; bottom:74px; display:flex; justify-content:center; gap:0;
+           pointer-events:auto; }
+  .pass{ width:150px; padding:0 14px; text-align:center; cursor:pointer; opacity:.45;
+         transition:opacity .35s, transform .35s; font-family:var(--mono);}
+  .pass:hover{ opacity:.85; }
+  .pass.active{ opacity:1; transform:translateY(-6px); }
+  .pass .yr{ font-size:11px; color:var(--amber); letter-spacing:.08em; text-shadow:0 0 8px rgba(255,140,40,.4),0 0 3px #000;}
+  .pass .co{ font-size:14px; color:#fff; font-weight:600; margin-top:4px; font-family:var(--kr); text-shadow:0 0 8px #000;}
+  .pass .ro{ font-size:10.5px; color:var(--hud-dim); margin-top:2px; font-family:var(--kr); }
+  .pass .node{ width:13px; height:13px; border-radius:50%; margin:10px auto 0; border:1.5px solid var(--hud-dim);
+               background:#0a1413; transition:all .35s; }
+  .pass.active .node{ border-color:var(--white); background:var(--hot); box-shadow:0 0 16px var(--hot),0 0 6px #fff;}
+
+  /* detail panel for active pass */
+  #detail{ position:absolute; z-index:8; left:50%; transform:translateX(-50%); bottom:188px; width:min(880px,84vw);
+           text-align:center; pointer-events:none; transition:opacity .4s; }
+  #detail .desc{ font-size:15px; line-height:1.65; color:var(--hud); text-shadow:0 0 10px #000;
+                 background:rgba(6,12,11,.35); display:inline-block; padding:10px 22px; border-radius:6px;
+                 border:1px solid var(--line); backdrop-filter:blur(3px);}
+  #detail .desc b{ color:var(--white); }
+  #detail .desc .hot{ color:var(--hot); font-weight:700; }
+
+  /* ============ DOE signature button / banner ============ */
+  #doe{ position:absolute; z-index:9; left:50%; top:40px; transform:translateX(-50%);
+        font-family:var(--mono); pointer-events:auto; text-align:center; }
+  #doebtn{ cursor:pointer; border:1px solid var(--hot); color:var(--white); background:rgba(40,12,4,.55);
+           padding:9px 18px; border-radius:4px; font-size:12.5px; letter-spacing:.1em; font-family:var(--mono);
+           text-shadow:0 0 8px #000; box-shadow:0 0 24px rgba(255,90,20,.25) inset; transition:.2s; backdrop-filter:blur(3px);}
+  #doebtn:hover{ background:rgba(70,20,6,.7); box-shadow:0 0 30px rgba(255,90,20,.5); }
+  #doebtn .blink{ color:var(--amber); }
+  #doestate{ margin-top:8px; font-size:11.5px; color:var(--amber); letter-spacing:.08em; height:14px;
+             text-shadow:0 0 8px #000; }
+
+  /* contact strip */
+  #contact{ position:absolute; z-index:8; left:50%; bottom:30px; transform:translateX(-50%);
+            font-family:var(--mono); font-size:11.5px; color:var(--hud-dim); letter-spacing:.06em;
+            text-shadow:0 0 6px #000; pointer-events:auto; }
+  #contact a{ color:var(--hud); text-decoration:none; }
+  #contact a:hover{ color:var(--amber); }
+  #contact .sep{ opacity:.4; margin:0 10px; }
+
+  /* metric tickers top-center-ish (floating thermal readouts) */
+  #metrics{ position:absolute; z-index:7; right:30px; bottom:90px; font-family:var(--mono); text-align:right;
+            pointer-events:none; }
+  #metrics .m{ font-size:12px; line-height:2.0; letter-spacing:.04em; text-shadow:0 0 6px #000;}
+  #metrics .m .lab{ color:var(--hud-dim); }
+  #metrics .m .num{ color:var(--white); font-size:15px; font-weight:700; }
+  #metrics .m .num.dn{ color:#7fd6ff; }
+  #metrics .m .num.up{ color:var(--hot); }
+
+  .nosel{ user-select:none; }
+  @media (max-width:1180px){
+    #identity{ max-width:46vw; }
+    #metrics{ display:none; }
+  }
+</style>
+</head>
+<body class="nosel">
+<div id="stage">
+  <canvas id="thermal"></canvas>
+  <div id="vig"></div>
+  <div id="grain"></div>
+
+  <!-- corner brackets -->
+  <div class="bracket" id="b-tl"></div>
+  <div class="bracket" id="b-tr"></div>
+  <div class="bracket" id="b-bl"></div>
+  <div class="bracket" id="b-br"></div>
+
+  <!-- top-left HUD -->
+  <div class="hud" id="tl">
+    <div class="rec"><span class="dot"></span>REC</div>
+    <div class="row"><span class="k">EMIS</span><b id="emis">ε 0.95</b></div>
+    <div class="row"><span class="k">RANGE</span><b>-20 / 1600°C</b></div>
+    <div class="row"><span class="k">PALET</span><b id="palname">IRON</b></div>
+    <div class="row"><span class="k">FUSION</span><b id="modetxt">ARC · AUTO</b></div>
+  </div>
+
+  <!-- top-right HUD -->
+  <div class="hud" id="tr">
+    <div class="big">FLIR · THERMACAM™ T-1480</div>
+    <div><span class="lbl">IFOV</span> 1.31 mrad &nbsp; <span class="lbl">f/</span>1.0</div>
+    <div><span class="lbl">FPS</span> <b id="fps">60</b> &nbsp; <span class="lbl">FRAME</span> <b id="frame">000000</b></div>
+    <div><span class="lbl">ATM</span> 22.0°C &nbsp; <span class="lbl">RH</span> 41%</div>
+  </div>
+
+  <!-- bottom-left stats -->
+  <div class="hud" id="stats">
+    <div>T<sub>max</sub> <span class="v vmax" id="tmax">1480.0°C</span></div>
+    <div>T<sub>min</sub> <span class="v vmin" id="tmin">24.0°C</span></div>
+    <div>T<sub>avg</sub> <span class="v" id="tavg">218.0°C</span></div>
+  </div>
+
+  <!-- bottom-right -->
+  <div class="hud" id="br">
+    <div id="clock"><b>--:--:--.--</b></div>
+    <div><span class="lbl">SITE</span> <b>LINE-7 / ULTRASONIC WELD</b></div>
+    <div><span class="lbl">OP</span> <b>PARK Y.</b> &nbsp; <span class="lbl">CAM</span> <b>IR-07</b></div>
+  </div>
+
+  <!-- temp scale bar -->
+  <div id="scale">
+    <div id="scalebar"></div>
+  </div>
+
+  <!-- spot crosshair -->
+  <div id="crosshair">
+    <div class="h"></div><div class="v"></div><div class="ring"></div>
+    <div id="spotlbl"><span class="t" id="spottemp">1480°C</span><br><span class="lbl" id="spotname">ARC SPOT</span></div>
+  </div>
+
+  <!-- DOE signature control -->
+  <div id="doe">
+    <div id="doebtn">▶ <span class="blink">DOE</span> 용착불량 재용접 시뮬레이션 &nbsp;15% → 0%</div>
+    <div id="doestate"></div>
+  </div>
+
+  <!-- identity -->
+  <div id="identity">
+    <div class="ey">INFRARED THERMOGRAPHY · 생산운영 &amp; 공정기술</div>
+    <h1>박양하<span class="sub">생산운영 PM · 공정기술 엔지니어 · 총괄본부장 — 산업용접(스팟·레이저·초음파)</span></h1>
+    <div class="tags">
+      <span>PFMEA / CP / PFD</span><span>DOE</span><span>비전검사</span><span>Jig·기구설계</span>
+      <span>Python · FastAPI</span><span>MES · IATF16949</span><span>AWS · GCP · CI/CD</span>
+    </div>
+  </div>
+
+  <!-- metric tickers -->
+  <div id="metrics">
+    <div class="m"><span class="lab">용착불량 &nbsp;</span><span class="num up" id="mt-weld">15→0%</span></div>
+    <div class="m"><span class="lab">운영경비 &nbsp;</span><span class="num dn">−85%</span></div>
+    <div class="m"><span class="lab">C/T &nbsp;</span><span class="num dn">−49%</span></div>
+    <div class="m"><span class="lab">ST &nbsp;</span><span class="num dn">−50%</span></div>
+    <div class="m"><span class="lab">생산성 &nbsp;</span><span class="num up">+24%</span></div>
+    <div class="m"><span class="lab">단가 &nbsp;</span><span class="num up">+30%</span></div>
+    <div class="m"><span class="lab">사무공수 &nbsp;</span><span class="num dn">−451분/일</span></div>
+  </div>
+
+  <!-- active pass detail -->
+  <div id="detail"><div class="desc" id="detailtxt"></div></div>
+
+  <!-- pass timeline -->
+  <div id="passes"></div>
+
+  <!-- contact -->
+  <div id="contact">
+    <a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a><span class="sep">|</span>
+    <a href="https://github.com/64etuor" target="_blank" rel="noopener">github.com/64etuor</a><span class="sep">|</span>
+    <span>010-0000-0000</span>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   THERMAL-CAM portfolio — Canvas 2D heat field + iron LUT
+   ============================================================ */
+
+const cv = document.getElementById('thermal');
+const ctx = cv.getContext('2d', { alpha:false });
+
+// Low-res heat simulation buffer scaled up to screen (perf + thermal blur look)
+let SW=0, SH=0;          // screen px
+let GW=0, GH=0;          // grid (sim) size
+const GRID_TARGET = 200; // sim cols (rows derived from aspect)
+let dpr = Math.min(window.devicePixelRatio||1, 1.6);
+
+let heat, heat2;         // Float32 temperature fields (°C-ish, 0..1600)
+let off, offCtx, img;    // offscreen for LUT-colored grid -> upscaled
+
+const AMB = 24;          // ambient °C
+const TMAX_SCALE = 1600; // top of palette
+let mouseX=-1, mouseY=-1, mouseInside=false;
+
+/* ---------- IRON / RAINBOW palette LUT (256) ---------- */
+// Build a smooth "iron" thermal palette: black->purple->magenta->red->orange->yellow->white
+const LUT = new Uint8Array(256*3);
+(function buildLUT(){
+  // control stops (pos 0..1) -> rgb
+  const stops = [
+    [0.00,   2,  0,  8],
+    [0.12,  26,  4, 64],
+    [0.26,  86,  6,128],
+    [0.40, 168, 18,110],
+    [0.54, 224, 42, 54],
+    [0.66, 252,108, 16],
+    [0.78, 255,170, 24],
+    [0.88, 255,222, 96],
+    [0.96, 255,248,196],
+    [1.00, 255,255,255]
+  ];
+  for(let i=0;i<256;i++){
+    const t=i/255;
+    let a=stops[0], b=stops[stops.length-1];
+    for(let s=0;s<stops.length-1;s++){
+      if(t>=stops[s][0] && t<=stops[s+1][0]){ a=stops[s]; b=stops[s+1]; break; }
+    }
+    const span=(b[0]-a[0])||1, f=(t-a[0])/span;
+    LUT[i*3]   = (a[1]+(b[1]-a[1])*f)|0;
+    LUT[i*3+1] = (a[2]+(b[2]-a[2])*f)|0;
+    LUT[i*3+2] = (a[3]+(b[3]-a[3])*f)|0;
+  }
+})();
+
+/* ---------- resize ---------- */
+function resize(){
+  SW = window.innerWidth; SH = window.innerHeight;
+  cv.width = Math.floor(SW*dpr); cv.height = Math.floor(SH*dpr);
+  cv.style.width = SW+'px'; cv.style.height = SH+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  GW = GRID_TARGET;
+  GH = Math.max(40, Math.round(GRID_TARGET * (SH/SW)));
+  heat  = new Float32Array(GW*GH).fill(AMB);
+  heat2 = new Float32Array(GW*GH).fill(AMB);
+
+  off = document.createElement('canvas');
+  off.width=GW; off.height=GH;
+  offCtx = off.getContext('2d');
+  img = offCtx.createImageData(GW,GH);
+
+  layoutScale();
+}
+window.addEventListener('resize', resize);
+
+/* ---------- temp scale ticks ---------- */
+function layoutScale(){
+  const box=document.getElementById('scale');
+  // build gradient on scalebar via canvas->dataurl? simpler: CSS gradient from LUT
+  const bar=document.getElementById('scalebar');
+  let g='linear-gradient(to top';
+  for(let i=0;i<=10;i++){ const idx=Math.round(i/10*255); g+=`, rgb(${LUT[idx*3]},${LUT[idx*3+1]},${LUT[idx*3+2]}) ${i*10}%`; }
+  g+=')';
+  bar.style.background=g;
+  // ticks
+  box.querySelectorAll('.tick').forEach(e=>e.remove());
+  const vals=[1600,1200,800,400,100,-20];
+  vals.forEach(v=>{
+    const t=(v-(-20))/(1600-(-20));
+    const el=document.createElement('div'); el.className='tick';
+    el.style.top=(100-t*100)+'%'; el.textContent=v+'°';
+    box.appendChild(el);
+  });
+}
+
+/* ============================================================
+   HEAT SOURCES (career weld passes) + arc
+   ============================================================ */
+// normalized positions across the field (avoid HUD edges, weighted to center-band)
+const PASSES = [
+  { yr:'2020.08–2022.11', co:'은성에스아이티', ro:'생산관리과장 · 배터리팩 총괄',
+    x:0.20, y:0.40, peak:980,
+    desc:'배터리팩 라인 총괄 · <b>비전검사 도입</b>으로 <b>불량 0건</b>, 단가 <span class="hot">+30%</span> · 운영경비 <span class="hot">−85%</span> · <b>IATF16949</b> 대응.' },
+  { yr:'2022.11–2023.09', co:'이랜텍', ro:'생산라인 PM · 파트장',
+    x:0.40, y:0.56, peak:1480, signature:true,
+    desc:'<b>DOE</b>로 초음파 <span class="hot">용착불량 15% → 0%</span> · C/T <span class="hot">−49%</span> · 생산성 <span class="hot">+24%</span> · 전용 <b>Jig 개발</b>. — 핵심 용접 서사' },
+  { yr:'2023.09–2024.12', co:'솔라엣지', ro:'공정기술 엔지니어',
+    x:0.60, y:0.40, peak:1120,
+    desc:'데이터 <b>DB · 대시보드 · MES</b> 구축 · 검사성적서 자동발행 · ST <span class="hot">−50%</span> · 사무공수 <span class="hot">−451분/일</span>.' },
+  { yr:'2025.08–현재', co:'미러리스', ro:'총괄본부장',
+    x:0.80, y:0.56, peak:1320,
+    desc:'CRM · 키오스크 · 앱 · <b>FastAPI · AWS/GCP · CI/CD</b> · <b>RPA · AI MCP</b> 기반 전사 AX 총괄.' }
+];
+let activePass = 1; // start on the welding signature pass
+
+// arc state — travels along a weld seam, injects heat
+const arc = {
+  px:0, py:0,         // pixel target (screen)
+  gx:0, gy:0,         // grid pos
+  t:0,                // path param
+  seamA:null, seamB:null,
+  power:1, sparks:[]
+};
+
+// build a weld seam path through the passes (in grid coords)
+function gp(p){ return { x:p.x*GW, y:p.y*GH }; }
+
+// DOE signature state machine
+let doe = { active:false, phase:'idle', t:0, defects:[] };
+
+/* ---- inject a gaussian heat blob into grid ---- */
+function inject(cx, cy, radius, amount){
+  const r2=radius*radius;
+  const x0=Math.max(0,(cx-radius)|0), x1=Math.min(GW-1,(cx+radius)|0);
+  const y0=Math.max(0,(cy-radius)|0), y1=Math.min(GH-1,(cy+radius)|0);
+  for(let y=y0;y<=y1;y++){
+    for(let x=x0;x<=x1;x++){
+      const dx=x-cx, dy=y-cy, d2=dx*dx+dy*dy;
+      if(d2>r2) continue;
+      const f=Math.exp(-d2/(r2*0.4));
+      const i=y*GW+x;
+      heat[i]=Math.min(TMAX_SCALE+200, heat[i]+amount*f);
+    }
+  }
+}
+
+/* ============================================================
+   PASS heat blooms — keep career heat sources alive (bloom+cool)
+   ============================================================ */
+const blooms = PASSES.map((p,i)=>({ p, g:gp(p), phase:i*1.4, lit:(i===activePass) }));
+
+/* ---------- simulation step (diffusion + cooling) ---------- */
+function simulate(dt){
+  // diffuse heat -> heat2
+  const k=0.135;          // diffusion
+  const cool=0.0085;      // exponential cooling toward ambient
+  for(let y=0;y<GH;y++){
+    const yu=(y>0?y-1:0)*GW, yd=(y<GH-1?y+1:GH-1)*GW, yc=y*GW;
+    for(let x=0;x<GW;x++){
+      const xl=x>0?x-1:0, xr=x<GW-1?x+1:GW-1;
+      const c=heat[yc+x];
+      const lap=heat[yc+xl]+heat[yc+xr]+heat[yu+x]+heat[yd+x]-4*c;
+      let v=c+k*lap;
+      v = v + (AMB - v)*cool;       // cool toward ambient
+      heat2[yc+x]=v;
+    }
+  }
+  const tmp=heat; heat=heat2; heat2=tmp;
+}
+
+/* ---------- render grid -> LUT image -> upscale ---------- */
+let tmax=0,tmin=9999,tavg=0;
+function renderField(){
+  const d=img.data; let mx=-1e9,mn=1e9,sum=0;
+  for(let i=0;i<GW*GH;i++){
+    const v=heat[i];
+    if(v>mx)mx=v; if(v<mn)mn=v; sum+=v;
+    let t=v/TMAX_SCALE; if(t<0)t=0; if(t>1)t=1;
+    // slight gamma for richer mid-tones
+    t=Math.pow(t,0.78);
+    const idx=(t*255)|0, o=idx*3, j=i*4;
+    d[j]=LUT[o]; d[j+1]=LUT[o+1]; d[j+2]=LUT[o+2]; d[j+3]=255;
+  }
+  tmax=mx; tmin=mn; tavg=sum/(GW*GH);
+  offCtx.putImageData(img,0,0);
+  // upscale with smoothing -> thermal blur
+  ctx.imageSmoothingEnabled=true;
+  ctx.imageSmoothingQuality='high';
+  ctx.drawImage(off,0,0,GW,GH,0,0,SW,SH);
+}
+
+/* ---------- arc + sparks rendered on top (screen space) ---------- */
+function renderArc(now){
+  const sx=arc.gx/GW*SW, sy=arc.gy/GH*SH;
+  // white-hot core bloom
+  const grd=ctx.createRadialGradient(sx,sy,0, sx,sy, 70*arc.power);
+  grd.addColorStop(0,'rgba(255,255,255,'+(0.95*arc.power)+')');
+  grd.addColorStop(0.18,'rgba(255,244,210,'+(0.85*arc.power)+')');
+  grd.addColorStop(0.5,'rgba(255,150,40,'+(0.35*arc.power)+')');
+  grd.addColorStop(1,'rgba(255,80,10,0)');
+  ctx.globalCompositeOperation='lighter';
+  ctx.fillStyle=grd;
+  ctx.beginPath(); ctx.arc(sx,sy,70*arc.power,0,7); ctx.fill();
+
+  // flicker plasma core
+  const flick=0.7+Math.random()*0.3;
+  ctx.fillStyle='rgba(255,255,255,'+(0.9*arc.power*flick)+')';
+  ctx.beginPath(); ctx.arc(sx,sy,(6+Math.random()*4)*arc.power,0,7); ctx.fill();
+
+  // sparks
+  for(let i=arc.sparks.length-1;i>=0;i--){
+    const s=arc.sparks[i];
+    s.life-=1; s.x+=s.vx; s.y+=s.vy; s.vy+=0.12; s.vx*=0.99;
+    if(s.life<=0){ arc.sparks.splice(i,1); continue; }
+    const a=s.life/s.max;
+    ctx.fillStyle='rgba(255,'+(190+60*a|0)+','+(80*a|0)+','+a+')';
+    ctx.fillRect(s.x, s.y, 2, 2);
+  }
+  ctx.globalCompositeOperation='source-over';
+}
+
+function emitSparks(sx,sy,n,pow){
+  for(let i=0;i<n;i++){
+    const ang=Math.random()*Math.PI*2, sp=1+Math.random()*4*pow;
+    arc.sparks.push({ x:sx,y:sy, vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp-1.2,
+                      life:20+Math.random()*30|0, max:50 });
+  }
+}
+
+/* ============================================================
+   MAIN LOOP
+   ============================================================ */
+let frame=0, lastFps=performance.now(), fpsCount=0, lastT=performance.now();
+const seam = []; // ordered grid points the arc travels
+
+function buildSeam(){
+  seam.length=0;
+  // gentle wavy seam left->right passing near each pass
+  for(let i=0;i<PASSES.length;i++) seam.push(gp(PASSES[i]));
+}
+
+function arcUpdate(now, dt){
+  // when DOE running, arc is controlled by the DOE routine
+  if(doe.active){ doeStep(now,dt); return; }
+
+  // travel along seam between consecutive passes, looping
+  arc.t += dt*0.10;
+  const total=seam.length-1;
+  let tt=arc.t % (total);
+  const seg=Math.floor(tt), f=tt-seg;
+  const a=seam[seg], b=seam[Math.min(seg+1,total)];
+  // ease
+  const fe=f*f*(3-2*f);
+  arc.gx=a.x+(b.x-a.x)*fe;
+  arc.gy=a.y+(b.y-a.y)*fe + Math.sin(now*0.004)*4;
+  arc.power=0.85+Math.sin(now*0.02)*0.15;
+
+  // mouse-as-torch override: if pointer inside, heat under cursor
+  if(mouseInside){
+    const mgx=mouseX/SW*GW, mgy=mouseY/SH*GH;
+    inject(mgx, mgy, 9, 70);
+    if(Math.random()<0.6) emitSparks(mouseX,mouseY,2,0.8);
+    document.getElementById('modetxt').textContent='ARC · MANUAL';
+  } else {
+    document.getElementById('modetxt').textContent='ARC · AUTO';
+  }
+
+  // lay molten bead at arc
+  inject(arc.gx, arc.gy, 7, 95*arc.power);
+  if(Math.random()<0.8) emitSparks(arc.gx/GW*SW, arc.gy/GH*SH, 3, arc.power);
+
+  // crossing a pass node -> set active + spot label
+  for(let i=0;i<seam.length;i++){
+    const d=Math.hypot(arc.gx-seam[i].x, arc.gy-seam[i].y);
+    if(d<5 && activePass!==i){ setActive(i); }
+  }
+}
+
+/* keep all career blooms breathing (heat sources) */
+function bloomUpdate(now){
+  for(const bl of blooms){
+    const p=bl.p;
+    // active pass burns hottest
+    const base = (PASSES.indexOf(p)===activePass)? p.peak : p.peak*0.42;
+    const pulse = base*(0.6+0.4*Math.abs(Math.sin(now*0.0011+bl.phase)));
+    inject(bl.g.x, bl.g.y, 12, pulse*0.012);
+  }
+}
+
+/* ============================================================
+   DOE SIGNATURE: 용착불량 15% -> 0%
+   defect spatter weld -> DOE pass -> clean uniform bead
+   ============================================================ */
+const doeState=document.getElementById('doestate');
+function startDOE(){
+  if(doe.active) return;
+  doe.active=true; doe.phase='defect'; doe.t=0; doe.defects=[];
+  setActive(1); // ensure on the welding pass
+  document.getElementById('modetxt').textContent='DOE · OPTIMIZING';
+  document.getElementById('doebtn').style.borderColor='var(--amber)';
+}
+function doeStep(now,dt){
+  doe.t+=dt;
+  const sp=seam[1], spN=seam[2]; // weld pass 2 -> toward 3, defect band
+  const ax=sp.x, ay=sp.y, bx=spN.x, by=spN.y;
+
+  if(doe.phase==='defect'){
+    // sweep an UGLY spattery, cold-lap weld: irregular power, gaps, spatter blobs
+    const f=Math.min(1, doe.t/2.6);
+    const gx=ax+(bx-ax)*f, gy=ay+(by-ay)*f;
+    arc.gx=gx; arc.gy=gy; arc.power=0.5+Math.random()*0.5;
+    // irregular: sometimes cold (gap = cold lap), sometimes spatter overheat
+    if(Math.random()<0.35){
+      // cold lap — barely fuse (defect: cold spot)
+    } else if(Math.random()<0.4){
+      // spatter — random nearby hot blobs (porosity/overheat)
+      const sx=gx+(Math.random()-0.5)*22, sy=gy+(Math.random()-0.5)*18;
+      inject(sx,sy, 4+Math.random()*4, 1200+Math.random()*300);
+      doe.defects.push({x:sx,y:sy});
+      emitSparks(sx/GW*SW, sy/GH*SH, 8, 1.3);
+    } else {
+      inject(gx,gy, 6, 700);
+    }
+    doeState.textContent='DEFECT WELD · 용착불량 검출 15% · 스패터/콜드랩 이상';
+    if(f>=1){ doe.phase='scan'; doe.t=0; }
+  }
+  else if(doe.phase==='scan'){
+    // 비전검사 pass: box the hottest defect anomalies (drawn in renderDOE)
+    doeState.textContent='VISION INSPECT · 비전검사 — 온도 이상 ' + doe.defects.length + '개소 박싱';
+    arc.power=0; // arc off during inspection
+    if(doe.t>1.8){ doe.phase='reweld'; doe.t=0; }
+  }
+  else if(doe.phase==='reweld'){
+    // DOE-optimized pass: smooth, constant power, clean uniform bead
+    const f=Math.min(1, doe.t/3.0);
+    const gx=ax+(bx-ax)*f, gy=ay+(by-ay)*f;
+    arc.gx=gx; arc.gy=gy; arc.power=1.0; // steady
+    inject(gx,gy, 7, 130); // uniform molten bead
+    emitSparks(gx/GW*SW, gy/GH*SH, 2, 0.6);
+    // actively cool/erase defect anomalies (they fade)
+    for(const dfc of doe.defects){
+      // pull defect spots toward ambient (re-fused)
+      coolSpot(dfc.x, dfc.y, 8, 0.16);
+    }
+    doeState.textContent='DOE RE-WELD · 최적 파라미터 균일 비드 형성 → 0%';
+    if(f>=1){ doe.phase='done'; doe.t=0; }
+  }
+  else if(doe.phase==='done'){
+    doeState.textContent='✔ 용착불량 0% · 균일 비드 검증 완료 (C/T −49% · 생산성 +24%)';
+    if(doe.t>2.2){
+      doe.active=false; doe.phase='idle'; doe.defects=[];
+      doeState.textContent='';
+      document.getElementById('doebtn').style.borderColor='var(--hot)';
+    }
+  }
+}
+function coolSpot(cx,cy,r,rate){
+  const x0=Math.max(0,(cx-r)|0),x1=Math.min(GW-1,(cx+r)|0);
+  const y0=Math.max(0,(cy-r)|0),y1=Math.min(GH-1,(cy+r)|0);
+  for(let y=y0;y<=y1;y++)for(let x=x0;x<=x1;x++){
+    const i=y*GW+x; heat[i]+=(AMB-heat[i])*rate;
+  }
+}
+
+/* draw vision-inspection boxes during DOE scan phase */
+function renderDOE(){
+  if(!doe.active) return;
+  if(doe.phase==='scan' || doe.phase==='defect'){
+    ctx.save();
+    ctx.lineWidth=1.5;
+    const pulse=0.5+0.5*Math.sin(performance.now()*0.012);
+    for(const dfc of doe.defects){
+      const sx=dfc.x/GW*SW, sy=dfc.y/GH*SH, s=16;
+      ctx.strokeStyle='rgba(255,70,70,'+(0.5+0.4*pulse)+')';
+      ctx.strokeRect(sx-s,sy-s,s*2,s*2);
+      ctx.fillStyle='rgba(255,90,90,0.95)';
+      ctx.font='10px ui-monospace,monospace';
+      ctx.fillText('DEFECT', sx-s, sy-s-4);
+    }
+    ctx.restore();
+  }
+}
+
+/* ============================================================
+   HUD updaters
+   ============================================================ */
+const elTmax=document.getElementById('tmax'), elTmin=document.getElementById('tmin'),
+      elTavg=document.getElementById('tavg'), elFrame=document.getElementById('frame'),
+      elFps=document.getElementById('fps'), elClock=document.getElementById('clock').firstElementChild,
+      elSpotT=document.getElementById('spottemp'), elSpotN=document.getElementById('spotname'),
+      cross=document.getElementById('crosshair');
+
+function pad(n,l){ n=''+n; while(n.length<l)n='0'+n; return n; }
+function updateHUD(now){
+  elTmax.textContent=tmax.toFixed(1)+'°C';
+  elTmin.textContent=tmin.toFixed(1)+'°C';
+  elTavg.textContent=tavg.toFixed(1)+'°C';
+  elFrame.textContent=pad(frame,6);
+  // clock
+  const d=new Date();
+  elClock.textContent=pad(d.getHours(),2)+':'+pad(d.getMinutes(),2)+':'+pad(d.getSeconds(),2)+'.'+pad((d.getMilliseconds()/10)|0,2);
+  // crosshair follows arc, reads its temp
+  const sx=arc.gx/GW*SW, sy=arc.gy/GH*SH;
+  cross.style.left=sx+'px'; cross.style.top=sy+'px';
+  // read grid temp at arc
+  const gi=Math.max(0,Math.min(GW*GH-1, (Math.round(arc.gy)*GW+Math.round(arc.gx))));
+  const spotT = mouseInside ? heat[Math.max(0,Math.min(GW*GH-1,(Math.round(mouseY/SH*GH)*GW+Math.round(mouseX/SW*GW))))] : heat[gi];
+  elSpotT.textContent=Math.round(spotT)+'°C';
+  elSpotN.textContent= doe.active ? doe.phase.toUpperCase() : (mouseInside?'TORCH':'ARC SPOT');
+  if(mouseInside){ cross.style.left=mouseX+'px'; cross.style.top=mouseY+'px'; }
+}
+
+/* ============================================================
+   PASS UI (timeline)
+   ============================================================ */
+const passesEl=document.getElementById('passes');
+const detailTxt=document.getElementById('detailtxt');
+PASSES.forEach((p,i)=>{
+  const el=document.createElement('div');
+  el.className='pass'+(i===activePass?' active':'');
+  el.dataset.i=i;
+  el.innerHTML='<div class="yr">'+p.yr+'</div><div class="co">'+p.co+'</div><div class="ro">'+p.ro+'</div><div class="node"></div>';
+  el.addEventListener('click',()=>{ if(!doe.active){ jumpTo(i); } });
+  passesEl.appendChild(el);
+});
+function setActive(i){
+  if(activePass===i) { return; }
+  activePass=i;
+  [...passesEl.children].forEach((c,j)=>c.classList.toggle('active', j===i));
+  detailTxt.innerHTML=PASSES[i].desc;
+  // emphasize the signature pass DOE button
+}
+function jumpTo(i){
+  // snap arc travel param to that pass
+  arc.t=i;
+  setActive(i);
+}
+detailTxt.innerHTML=PASSES[activePass].desc;
+
+/* ============================================================
+   pointer torch
+   ============================================================ */
+window.addEventListener('pointermove',e=>{ mouseX=e.clientX; mouseY=e.clientY; mouseInside=true; });
+window.addEventListener('pointerleave',()=>{ mouseInside=false; });
+document.getElementById('doebtn').addEventListener('click', startDOE);
+
+/* ============================================================
+   BOOT
+   ============================================================ */
+resize();
+buildSeam();
+arc.gx=seam[activePass].x; arc.gy=seam[activePass].y; arc.t=activePass;
+
+// pre-warm field so first paint already shows live heat + arc bloom
+for(const bl of blooms){ inject(bl.g.x,bl.g.y, 14, bl.p.peak*0.5); }
+inject(seam[activePass].x, seam[activePass].y, 9, 1400);
+for(let i=0;i<8;i++) simulate(1);
+
+function loop(now){
+  const dt=Math.min(40, now-lastT)/16.6667; lastT=now;
+  frame++;
+
+  bloomUpdate(now);
+  arcUpdate(now, dt);
+  simulate(dt);
+
+  renderField();
+  renderArc(now);
+  renderDOE();
+  updateHUD(now);
+
+  // fps
+  fpsCount++;
+  if(now-lastFps>500){ elFps.textContent=Math.round(fpsCount*1000/(now-lastFps)); fpsCount=0; lastFps=now; }
+
+  requestAnimationFrame(loop);
+}
+
+// wait for fonts so KR text is measured/painted, then run
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(()=>requestAnimationFrame(loop));
+  // safety: start anyway after 1.2s in case fonts hang in headless
+  setTimeout(()=>{ if(frame===0) requestAnimationFrame(loop); }, 1200);
+}else{
+  requestAnimationFrame(loop);
+}
+
+})();
+</script>
+</body>
+</html>

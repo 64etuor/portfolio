@@ -1,0 +1,1482 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>박양하 · 티칭 펜던트 — 커리어 프로그램 PROG[CAREER]</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+:root{
+  --case:#2b2c2e;          /* pendant shell */
+  --case-2:#202123;
+  --case-edge:#3b3d40;
+  --case-hi:#46484c;
+  --bezel:#161718;
+  --lcd:#0a1410;           /* LCD substrate */
+  --lcd-2:#0c1813;
+  --lcd-grid:#10231a;
+  --scan:#0e2018;
+  --ink:#c8f6d8;           /* phosphor green ink */
+  --ink-dim:#5fae84;
+  --ink-3:#367a55;
+  --amber:#ffc14d;         /* selected / running */
+  --amber-dim:#7a5a18;
+  --red:#ff4d52;           /* fault / estop */
+  --red-dim:#7a2326;
+  --cyan:#54d6ff;          /* coord / data */
+  --white:#eaf4ee;
+  --key:#34363a;           /* hard keys */
+  --key-2:#26282b;
+  --key-edge:#16171a;
+  --key-hi:#4a4d52;
+  --c-eun:#ff7a8a;         /* 은성 */
+  --c-elen:#ffb454;        /* 이랜텍 */
+  --c-sol:#54d6ff;         /* 솔라엣지 */
+  --c-mir:#c9a3ff;         /* 미러리스 */
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --sans:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  background:
+    radial-gradient(1400px 900px at 50% -8%, #1a1c1f 0%, transparent 60%),
+    radial-gradient(1000px 800px at 50% 120%, #141517 0%, transparent 55%),
+    #0c0d0e;
+  color:var(--white);
+  font-family:var(--sans);
+  word-break:keep-all;
+  -webkit-font-smoothing:antialiased;
+  display:flex;align-items:center;justify-content:center;
+}
+::selection{background:rgba(255,193,77,.3);color:#fff}
+
+/* ===== hazard tape ===== */
+.hazard{
+  background:repeating-linear-gradient(45deg,#f2b705 0 14px,#161718 14px 28px);
+}
+
+/* ===== device shell ===== */
+#device{
+  position:relative;
+  width:1320px;height:812px;
+  border-radius:30px;
+  padding:18px;
+  background:
+    linear-gradient(160deg,var(--case-hi) 0%, var(--case) 18%, var(--case-2) 100%);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,.10) inset,
+    0 -2px 0 rgba(0,0,0,.5) inset,
+    0 40px 90px rgba(0,0,0,.6),
+    0 8px 30px rgba(0,0,0,.5);
+  border:1px solid #0a0b0c;
+  transform:scale(var(--fit,1));
+  transform-origin:center center;
+}
+/* grip dimples on the bezel */
+#device::before{
+  content:"";position:absolute;left:0;top:90px;bottom:90px;width:14px;
+  border-radius:0 8px 8px 0;
+  background:repeating-linear-gradient(180deg,#1d1e20 0 7px,#34363a 7px 14px);
+  box-shadow:1px 0 0 rgba(255,255,255,.05) inset;
+}
+#device::after{
+  content:"";position:absolute;right:0;top:90px;bottom:90px;width:14px;
+  border-radius:8px 0 0 8px;
+  background:repeating-linear-gradient(180deg,#1d1e20 0 7px,#34363a 7px 14px);
+  box-shadow:-1px 0 0 rgba(255,255,255,.05) inset;
+}
+
+.inner{
+  position:relative;width:100%;height:100%;
+  display:grid;
+  grid-template-columns:198px 1fr 226px;
+  grid-template-rows:46px 1fr 110px;
+  gap:12px;
+  padding:14px 26px;
+  border-radius:18px;
+  background:linear-gradient(180deg,#1c1d1f,#161718);
+  box-shadow:0 2px 5px rgba(0,0,0,.6) inset, 0 1px 0 rgba(255,255,255,.05);
+}
+
+/* ===== top status bar ===== */
+.topbar{
+  grid-column:1 / -1;grid-row:1;
+  display:flex;align-items:center;gap:14px;
+  padding:0 4px;
+}
+.brand{display:flex;align-items:center;gap:10px;min-width:300px}
+.brand .logo{
+  width:30px;height:30px;border-radius:7px;
+  background:linear-gradient(150deg,#ffd24d,#e69400);
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-weight:800;font-size:15px;color:#231600;
+  box-shadow:0 1px 0 rgba(255,255,255,.4) inset,0 2px 4px rgba(0,0,0,.5);
+}
+.brand .nm{font-size:13px;font-weight:700;letter-spacing:.01em;line-height:1.15}
+.brand .nm small{display:block;font-family:var(--mono);font-size:9px;color:#7c7f84;letter-spacing:.18em;font-weight:500}
+
+/* status LED row */
+.lamps{display:flex;align-items:center;gap:7px;margin-left:auto}
+.lamp{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 9px;border-radius:6px;
+  background:#121315;border:1px solid #2a2c2f;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;color:#5a5d62;font-weight:700;
+}
+.led{width:9px;height:9px;border-radius:50%;background:#2a2c2f;box-shadow:0 0 0 1px #000 inset;flex:none}
+.lamp.on{color:var(--white)}
+.lamp.on .led{box-shadow:0 0 8px 1px currentColor, 0 0 0 1px rgba(0,0,0,.5) inset}
+.led.g{color:#3ce67a} .led.a{color:#ffc14d} .led.r{color:#ff4d52} .led.c{color:#54d6ff} .led.w{color:#eaf4ee}
+.lamp.on .led.g{background:#3ce67a}.lamp.on .led.a{background:#ffc14d}.lamp.on .led.r{background:#ff4d52}.lamp.on .led.c{background:#54d6ff}.lamp.on .led.w{background:#eaf4ee}
+.lamp.blink .led{animation:blk 1s steps(2) infinite}
+@keyframes blk{50%{opacity:.25}}
+
+/* ===== left soft-key / file column ===== */
+.leftcol{grid-column:1;grid-row:2 / 4;display:flex;flex-direction:column;gap:10px}
+.panel{
+  background:linear-gradient(180deg,#202123,#191a1c);
+  border:1px solid #0c0d0e;border-radius:11px;
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 3px 8px rgba(0,0,0,.4);
+}
+.phead{
+  font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:#7c7f84;font-weight:700;
+  padding:9px 12px 7px;border-bottom:1px solid #0d0e0f;text-transform:uppercase;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.phead b{color:var(--amber)}
+
+.softkeys{display:flex;flex-direction:column;gap:8px;padding:11px}
+.skey{
+  position:relative;
+  display:flex;align-items:center;gap:9px;
+  padding:10px 11px;border-radius:8px;cursor:pointer;
+  background:linear-gradient(180deg,var(--key-hi),var(--key) 40%,var(--key-2));
+  border:1px solid var(--key-edge);
+  box-shadow:0 1px 0 rgba(255,255,255,.12) inset,0 2px 3px rgba(0,0,0,.5);
+  transition:transform .05s,box-shadow .1s;
+  user-select:none;
+}
+.skey:active,.skey.held{transform:translateY(2px);box-shadow:0 0 0 rgba(0,0,0,.5) inset,0 1px 2px rgba(0,0,0,.6)}
+.skey .ic{
+  width:26px;height:26px;border-radius:6px;flex:none;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:11px;font-weight:800;color:#0c0d0e;
+}
+.skey .lab{font-size:12px;font-weight:700;letter-spacing:.01em}
+.skey .lab small{display:block;font-family:var(--mono);font-size:8.5px;color:#8a8d92;letter-spacing:.12em;font-weight:600}
+.skey.k-sel .ic{background:linear-gradient(150deg,#3ce67a,#1f9c52)}
+.skey.k-edit .ic{background:linear-gradient(150deg,#ffc14d,#d68a12)}
+.skey.k-data .ic{background:linear-gradient(150deg,#54d6ff,#1f8fd1)}
+.skey.k-reset .ic{background:linear-gradient(150deg,#ff6a6f,#c12f34);color:#fff}
+.skey.k-harness .ic{background:linear-gradient(150deg,#c9a3ff,#7d4fd1);color:#fff}
+.skey.active{outline:2px solid var(--amber);outline-offset:-2px}
+
+.metaP{padding:10px 12px;display:flex;flex-direction:column;gap:7px;flex:1;min-height:0}
+.mrow{display:flex;justify-content:space-between;align-items:baseline;font-family:var(--mono);font-size:10px}
+.mrow .k{color:#6f7378;letter-spacing:.08em}
+.mrow .v{color:var(--ink);font-weight:700}
+.mrow .v.amb{color:var(--amber)}
+
+/* ===== center: LCD ===== */
+.lcdwrap{
+  grid-column:2;grid-row:2;
+  position:relative;border-radius:14px;padding:9px;
+  background:#000;
+  border:1px solid #000;
+  box-shadow:0 0 0 3px #2a2c2f, 0 0 0 4px #0a0b0c, 0 10px 24px rgba(0,0,0,.5) inset;
+}
+.lcd{
+  position:relative;width:100%;height:100%;border-radius:7px;overflow:hidden;
+  background:
+    linear-gradient(180deg,var(--lcd-2),var(--lcd));
+  box-shadow:0 0 60px rgba(60,230,122,.06) inset,0 0 0 1px rgba(60,230,122,.08) inset;
+  display:grid;grid-template-rows:30px 1fr 26px;
+}
+.lcd::after{ /* scanlines + vignette */
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:5;
+  background:
+    repeating-linear-gradient(0deg,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.16) 2px 3px),
+    radial-gradient(120% 130% at 50% 50%, transparent 60%, rgba(0,0,0,.45) 100%);
+  mix-blend-mode:multiply;
+}
+.lcd-top{
+  display:flex;align-items:center;gap:12px;padding:0 12px;
+  border-bottom:1px solid var(--lcd-grid);
+  font-family:var(--mono);font-size:10px;color:var(--ink-dim);letter-spacing:.06em;
+  background:linear-gradient(180deg,rgba(60,230,122,.05),transparent);
+}
+.lcd-top .tt{color:var(--ink);font-weight:700;letter-spacing:.1em}
+.lcd-top .sp{margin-left:auto}
+.lcd-top .pct{color:var(--amber);font-weight:700}
+
+.lcd-body{display:grid;grid-template-columns:1fr 300px;min-height:0}
+/* program listing */
+.prog{position:relative;overflow:hidden;font-family:var(--mono);padding:6px 0 6px 0}
+.prog-scroll{position:absolute;inset:0;overflow-y:auto;padding:2px 4px 8px}
+.prog-scroll::-webkit-scrollbar{width:8px}
+.prog-scroll::-webkit-scrollbar-thumb{background:#1e3a2b;border-radius:4px}
+.pline{
+  display:grid;grid-template-columns:34px 1fr;
+  gap:8px;padding:4px 10px;font-size:12.5px;line-height:1.3;
+  color:var(--ink-dim);cursor:pointer;border-radius:4px;
+  position:relative;white-space:nowrap;
+}
+.pline:hover{background:rgba(60,230,122,.05)}
+.pline .ln{color:var(--ink-3);text-align:right}
+.pline .code{color:var(--ink)}
+.pline .code .mv{color:var(--cyan);font-weight:700}
+.pline .code .pt{color:var(--white);font-weight:700}
+.pline .code .sp{color:var(--ink-dim)}
+.pline .code .cm{color:var(--ink-3)}
+.pline.sel{background:linear-gradient(90deg,rgba(255,193,77,.18),rgba(255,193,77,.04));}
+.pline.sel .ln{color:var(--amber)}
+.pline.sel::before{content:"";position:absolute;left:0;top:3px;bottom:3px;width:3px;background:var(--amber);border-radius:2px;box-shadow:0 0 8px var(--amber)}
+.pline.run{background:linear-gradient(90deg,rgba(60,230,122,.2),rgba(60,230,122,.03))}
+.pline.run .ln{color:#3ce67a}
+.pline.run .cursor{color:#3ce67a}
+.pline.done .code{opacity:.55}
+.pline.done .code .cm::after{content:" ✓";color:#3ce67a}
+.pline .badge{color:var(--c-eun)}
+.pline.b-eun .cm{color:var(--c-eun)}
+.pline.b-elen .cm{color:var(--c-elen)}
+.pline.b-sol .cm{color:var(--c-sol)}
+.pline.b-mir .cm{color:var(--c-mir)}
+
+/* detail pane on right of LCD */
+.detail{
+  border-left:1px solid var(--lcd-grid);padding:9px 11px;overflow:hidden;
+  display:flex;flex-direction:column;gap:7px;min-height:0;
+  background:linear-gradient(180deg,rgba(0,0,0,.18),transparent);
+}
+.detail .dtag{
+  font-family:var(--mono);font-size:9px;letter-spacing:.18em;color:var(--ink-3);
+  display:flex;justify-content:space-between;align-items:center;
+}
+.detail .dtag .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:-1px}
+.detail h3{font-size:15px;font-weight:800;color:var(--white);line-height:1.2;letter-spacing:-.01em}
+.detail .role{font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:.04em}
+.detail .period{font-family:var(--mono);font-size:9.5px;color:var(--ink-dim)}
+.detail .desc{font-size:11.5px;line-height:1.55;color:#a9d8bd;flex-shrink:1;overflow-y:auto}
+.detail .desc::-webkit-scrollbar{width:6px}
+.detail .desc::-webkit-scrollbar-thumb{background:#1e3a2b;border-radius:3px}
+.regs{display:flex;flex-wrap:wrap;gap:5px;margin-top:auto}
+.reg{
+  font-family:var(--mono);font-size:9.5px;font-weight:700;
+  padding:3px 7px;border-radius:5px;
+  background:rgba(60,230,122,.08);border:1px solid rgba(60,230,122,.22);color:var(--ink);
+}
+.reg b{color:var(--amber)}
+
+.lcd-status{
+  display:flex;align-items:center;gap:0;border-top:1px solid var(--lcd-grid);
+  font-family:var(--mono);font-size:10px;
+}
+.lcd-status .seg{padding:0 13px;height:100%;display:flex;align-items:center;color:var(--ink-dim);border-right:1px solid var(--lcd-grid);letter-spacing:.05em}
+.lcd-status .seg b{color:var(--ink);margin-left:6px;font-weight:700}
+.lcd-status .seg.amb b{color:var(--amber)}
+.lcd-status .grow{margin-left:auto;border-right:none;color:var(--ink-3)}
+
+/* ===== right column: viewport + jog ===== */
+.rightcol{grid-column:3;grid-row:2 / 4;display:flex;flex-direction:column;gap:11px}
+.viewport{
+  position:relative;border-radius:11px;overflow:hidden;height:268px;flex:none;
+  background:#000;border:1px solid #000;
+  box-shadow:0 0 0 3px #2a2c2f,0 0 0 4px #0a0b0c;
+}
+#arm{display:block;width:100%;height:100%}
+.vp-ov{position:absolute;inset:0;pointer-events:none;font-family:var(--mono);font-size:9px;color:var(--cyan);padding:8px}
+.vp-ov .tl{position:absolute;top:8px;left:9px;color:var(--ink-dim);letter-spacing:.12em}
+.vp-ov .tr{position:absolute;top:8px;right:9px;color:var(--amber);letter-spacing:.08em}
+.vp-ov .bl{position:absolute;bottom:8px;left:9px;color:var(--ink-3)}
+
+/* DRO */
+.dro{padding:9px 11px}
+.dro-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.dro-cell{
+  background:#0c1410;border:1px solid #16271d;border-radius:6px;padding:5px 7px;
+  font-family:var(--mono);
+}
+.dro-cell .ax{font-size:8.5px;color:var(--ink-3);letter-spacing:.1em;font-weight:700}
+.dro-cell .val{font-size:13px;color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+.dro-cell .un{font-size:8px;color:var(--ink-3)}
+.dro-cell.x .val{color:#ff8a8e}.dro-cell.y .val{color:#7dffa6}.dro-cell.z .val{color:#7fc4ff}
+
+/* JOG dpad */
+.jog{padding:11px;display:flex;gap:13px;align-items:center}
+.dpad{position:relative;width:118px;height:118px;flex:none}
+.jbtn{
+  position:absolute;width:38px;height:38px;border-radius:8px;cursor:pointer;
+  background:linear-gradient(180deg,var(--key-hi),var(--key) 45%,var(--key-2));
+  border:1px solid var(--key-edge);
+  box-shadow:0 1px 0 rgba(255,255,255,.12) inset,0 2px 3px rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center;color:var(--white);
+  font-family:var(--mono);font-size:13px;font-weight:800;user-select:none;
+  transition:transform .05s,box-shadow .08s;
+}
+.jbtn:active,.jbtn.held{transform:translateY(2px);box-shadow:0 1px 1px rgba(0,0,0,.6) inset;background:linear-gradient(180deg,#ffc14d,#d68a12);color:#231600}
+.jbtn.up{top:0;left:40px}.jbtn.dn{bottom:0;left:40px}
+.jbtn.lf{left:0;top:40px}.jbtn.rt{right:0;top:40px}
+.jbtn.zp{top:0;right:0;width:34px;height:34px;font-size:11px}
+.jbtn.zm{bottom:0;right:0;width:34px;height:34px;font-size:11px}
+.dpad .ctr{
+  position:absolute;left:40px;top:40px;width:38px;height:38px;border-radius:8px;
+  background:#121315;border:1px solid #2a2c2f;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:8px;color:var(--ink-3);letter-spacing:.06em;text-align:center;line-height:1.1;
+}
+.jogside{display:flex;flex-direction:column;gap:8px;flex:1}
+.coordsel{display:flex;gap:4px}
+.csel{
+  flex:1;text-align:center;padding:6px 0;border-radius:6px;cursor:pointer;
+  font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.06em;
+  background:#15171a;border:1px solid #2a2c2f;color:#7c7f84;user-select:none;
+}
+.csel.on{background:linear-gradient(180deg,#1e3f2c,#143020);color:var(--ink);border-color:#2f6644;box-shadow:0 0 8px rgba(60,230,122,.2)}
+.ovr{display:flex;flex-direction:column;gap:4px}
+.ovr-top{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9px;color:#7c7f84;letter-spacing:.08em}
+.ovr-top b{color:var(--amber);font-size:13px}
+.ovr-bar{height:9px;border-radius:5px;background:#0c1410;overflow:hidden;border:1px solid #16271d;cursor:pointer}
+.ovr-fill{height:100%;background:linear-gradient(90deg,#1f9c52,#3ce67a,#ffc14d);transition:width .2s}
+.ovr-ticks{display:flex;justify-content:space-between;font-family:var(--mono);font-size:7.5px;color:var(--ink-3)}
+
+/* ===== bottom: function keys + run controls ===== */
+.bottombar{
+  grid-column:1 / -1;grid-row:3;
+  display:grid;grid-template-columns:1fr 360px;gap:14px;align-items:stretch;
+}
+.fkeys{
+  display:flex;gap:7px;align-items:center;
+  background:linear-gradient(180deg,#202123,#191a1c);
+  border:1px solid #0c0d0e;border-radius:11px;padding:11px 13px;
+  box-shadow:0 1px 0 rgba(255,255,255,.05) inset;
+}
+.fk{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;
+  padding:9px 4px;border-radius:8px;
+  background:linear-gradient(180deg,var(--key-hi),var(--key) 45%,var(--key-2));
+  border:1px solid var(--key-edge);
+  box-shadow:0 1px 0 rgba(255,255,255,.1) inset,0 2px 3px rgba(0,0,0,.5);
+  user-select:none;transition:transform .05s,box-shadow .08s;
+}
+.fk:active,.fk.held{transform:translateY(2px);box-shadow:0 1px 1px rgba(0,0,0,.6) inset}
+.fk .ico{font-family:var(--mono);font-size:15px;font-weight:800;line-height:1}
+.fk .ttl{font-size:10.5px;font-weight:700}
+.fk .sub{font-family:var(--mono);font-size:7.5px;color:#8a8d92;letter-spacing:.1em}
+.fk.play .ico{color:#3ce67a}.fk.step .ico{color:var(--cyan)}.fk.pause .ico{color:var(--amber)}.fk.rew .ico{color:#aeb2b8}
+.fk.play.active{outline:2px solid #3ce67a;outline-offset:-2px}
+
+/* right cluster: mode switch + estop */
+.cluster{display:flex;gap:14px;align-items:stretch}
+.modesw{
+  flex:1;background:linear-gradient(180deg,#202123,#191a1c);
+  border:1px solid #0c0d0e;border-radius:11px;padding:9px 12px;
+  display:flex;flex-direction:column;gap:7px;box-shadow:0 1px 0 rgba(255,255,255,.05) inset;
+}
+.modesw .ml{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:#7c7f84;font-weight:700}
+.modes{display:flex;gap:5px}
+.mode{
+  flex:1;text-align:center;padding:7px 0;border-radius:6px;cursor:pointer;
+  font-family:var(--mono);font-size:10px;font-weight:800;letter-spacing:.04em;
+  background:#15171a;border:1px solid #2a2c2f;color:#6f7378;user-select:none;position:relative;
+}
+.mode.on{color:#231600;background:linear-gradient(180deg,#ffd24d,#e69400);border-color:#8a5a00;box-shadow:0 0 10px rgba(255,193,77,.3)}
+.mode small{display:block;font-size:7px;letter-spacing:.06em;font-weight:600;opacity:.85}
+.servo{display:flex;align-items:center;gap:8px;margin-top:auto}
+.servo .sw{
+  width:46px;height:22px;border-radius:12px;background:#0c1410;border:1px solid #16271d;
+  position:relative;cursor:pointer;transition:background .2s;flex:none;
+}
+.servo .sw .kn{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#5a5d62;transition:all .2s}
+.servo.on .sw{background:#1e3f2c;border-color:#2f6644}
+.servo.on .sw .kn{left:26px;background:#3ce67a;box-shadow:0 0 8px #3ce67a}
+.servo .slab{font-family:var(--mono);font-size:9px;color:#7c7f84;letter-spacing:.1em;font-weight:700}
+.servo.on .slab{color:var(--ink)}
+
+/* E-STOP */
+.estop{
+  width:124px;flex:none;border-radius:14px;cursor:pointer;
+  background:repeating-linear-gradient(45deg,#f2b705 0 12px,#161718 12px 24px);
+  padding:9px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 2px 6px rgba(0,0,0,.5);user-select:none;
+}
+.estop .btn{
+  width:90px;height:90px;border-radius:50%;
+  background:radial-gradient(circle at 38% 32%,#ff6b6f 0%,#e22a30 45%,#a8161b 100%);
+  box-shadow:0 5px 0 #6e0e12,0 8px 14px rgba(0,0,0,.55),0 2px 0 rgba(255,255,255,.3) inset;
+  display:flex;align-items:center;justify-content:center;text-align:center;
+  font-family:var(--mono);font-size:11px;font-weight:900;color:#fff;line-height:1.05;letter-spacing:.04em;
+  text-shadow:0 1px 2px rgba(0,0,0,.5);transition:all .08s;
+}
+.estop.pressed .btn{transform:translateY(5px);box-shadow:0 0 0 #6e0e12,0 2px 6px rgba(0,0,0,.6),0 2px 0 rgba(255,255,255,.2) inset}
+
+/* fault flash overlay */
+#faultflash{position:absolute;inset:18px;border-radius:18px;pointer-events:none;z-index:30;
+  box-shadow:0 0 0 4px var(--red) inset;opacity:0;transition:opacity .1s}
+#faultflash.on{opacity:.85;animation:fault .5s steps(2) infinite}
+@keyframes fault{50%{opacity:.25}}
+
+/* small print tag */
+.minitag{position:absolute;bottom:6px;right:30px;font-family:var(--mono);font-size:8px;color:#4a4d52;letter-spacing:.14em}
+.contact{position:absolute;top:24px;right:30px;font-family:var(--mono);font-size:9px;color:#6f7378;text-align:right;letter-spacing:.04em;line-height:1.5}
+.contact b{color:#9da1a7}
+
+/* ===== HARNESS ENGINEERING overlay (teach-pendant "page") ===== */
+#harnessOv{
+  position:absolute;inset:18px;border-radius:18px;z-index:35;
+  display:none;flex-direction:column;
+  background:linear-gradient(180deg,rgba(8,16,12,.97),rgba(6,12,9,.99));
+  box-shadow:0 0 0 1px rgba(60,230,122,.2) inset, 0 0 90px rgba(60,230,122,.07) inset;
+  overflow:hidden;
+}
+#harnessOv.show{display:flex;animation:hov .22s ease-out}
+@keyframes hov{from{opacity:0;transform:scale(.985)}to{opacity:1;transform:none}}
+#harnessOv::after{ /* scanlines to match LCD */
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:2;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.14) 2px 3px);
+  mix-blend-mode:multiply;
+}
+.hx-top{
+  display:flex;align-items:center;gap:14px;padding:14px 22px;
+  border-bottom:1px solid var(--lcd-grid);font-family:var(--mono);
+  background:linear-gradient(180deg,rgba(60,230,122,.06),transparent);
+}
+.hx-top .hx-tt{font-size:14px;font-weight:800;color:var(--ink);letter-spacing:.04em}
+.hx-top .hx-tt small{display:block;font-size:9px;color:var(--ink-3);letter-spacing:.2em;font-weight:600;margin-top:2px}
+.hx-top .hx-env{
+  margin-left:auto;display:flex;align-items:center;gap:6px;
+  font-size:9.5px;color:var(--amber);letter-spacing:.08em;
+  padding:5px 10px;border-radius:6px;background:rgba(255,193,77,.08);border:1px solid rgba(255,193,77,.22);
+}
+.hx-close{
+  cursor:pointer;font-size:11px;font-weight:800;color:#231600;
+  background:linear-gradient(180deg,#ffd24d,#e69400);border:1px solid #8a5a00;
+  padding:6px 12px;border-radius:7px;letter-spacing:.06em;user-select:none;
+}
+.hx-close:active{transform:translateY(1px)}
+.hx-body{position:relative;z-index:1;flex:1;display:grid;grid-template-columns:1fr 360px;gap:0;min-height:0}
+.hx-left{padding:16px 22px;overflow-y:auto;display:flex;flex-direction:column;gap:14px}
+.hx-left::-webkit-scrollbar{width:8px}.hx-left::-webkit-scrollbar-thumb{background:#1e3a2b;border-radius:4px}
+.hx-right{
+  border-left:1px solid var(--lcd-grid);padding:16px 18px;overflow-y:auto;
+  display:flex;flex-direction:column;gap:12px;background:linear-gradient(180deg,rgba(0,0,0,.2),transparent);
+}
+.hx-right::-webkit-scrollbar{width:8px}.hx-right::-webkit-scrollbar-thumb{background:#1e3a2b;border-radius:4px}
+
+/* core paradox banner */
+.hx-paradox{
+  border:1px solid rgba(255,193,77,.3);border-radius:10px;padding:14px 16px;
+  background:linear-gradient(135deg,rgba(255,193,77,.10),rgba(60,230,122,.04));
+}
+.hx-paradox .lbl{font-family:var(--mono);font-size:8.5px;letter-spacing:.22em;color:var(--amber-dim,#7a5a18);color:#c79a3a;font-weight:700;margin-bottom:6px}
+.hx-paradox .big{font-size:18px;font-weight:800;line-height:1.4;color:var(--white);letter-spacing:-.01em}
+.hx-paradox .big b{color:var(--amber)}
+
+/* 5-pillar lamp checklist */
+.hx-sec-h{font-family:var(--mono);font-size:9px;letter-spacing:.2em;color:var(--ink-3);font-weight:700;display:flex;justify-content:space-between;align-items:center}
+.hx-sec-h b{color:var(--ink)}
+.hx-pillars{display:flex;flex-direction:column;gap:8px}
+.hx-pillar{
+  display:flex;align-items:center;gap:12px;cursor:pointer;user-select:none;
+  padding:11px 13px;border-radius:9px;
+  background:linear-gradient(180deg,#11201a,#0c1813);
+  border:1px solid #16271d;transition:border-color .15s,background .15s;
+}
+.hx-pillar:hover{border-color:#2f6644}
+.hx-pillar .plamp{
+  width:14px;height:14px;border-radius:50%;flex:none;
+  background:#0c1410;box-shadow:0 0 0 1px #16271d inset;transition:all .2s;
+}
+.hx-pillar.on{background:linear-gradient(180deg,#173324,#102619);border-color:#2f6644}
+.hx-pillar.on .plamp{background:#3ce67a;box-shadow:0 0 10px 1px #3ce67a,0 0 0 1px rgba(0,0,0,.4) inset}
+.hx-pillar .pmain{flex:1;min-width:0}
+.hx-pillar .pname{font-size:13px;font-weight:800;color:#7c9c8a;letter-spacing:.02em}
+.hx-pillar.on .pname{color:var(--white)}
+.hx-pillar .pname small{font-family:var(--mono);font-size:8.5px;color:var(--ink-3);letter-spacing:.14em;margin-left:7px;font-weight:600}
+.hx-pillar .pdesc{font-size:10.5px;line-height:1.45;color:#6f8a7b;margin-top:3px}
+.hx-pillar.on .pdesc{color:#a9d8bd}
+.hx-pillar .pmap{
+  font-family:var(--mono);font-size:8px;color:var(--ink-3);letter-spacing:.04em;flex:none;text-align:right;
+  max-width:118px;line-height:1.35;
+}
+.hx-pillar.on .pmap{color:var(--cyan)}
+
+/* envelope completion bar */
+.hx-env-bar{height:10px;border-radius:5px;background:#0c1410;border:1px solid #16271d;overflow:hidden}
+.hx-env-fill{height:100%;width:100%;background:linear-gradient(90deg,#1f9c52,#3ce67a,#ffc14d);transition:width .25s}
+.hx-env-cap{font-family:var(--mono);font-size:9.5px;color:var(--ink-dim);letter-spacing:.04em;text-align:center}
+.hx-env-cap b{color:var(--amber)}
+
+/* thesis readouts (right column) */
+.hx-read{
+  border:1px solid #16271d;border-radius:9px;padding:12px 13px;
+  background:linear-gradient(180deg,rgba(0,0,0,.22),transparent);
+}
+.hx-read .rt{font-family:var(--mono);font-size:8px;letter-spacing:.2em;color:var(--ink-3);font-weight:700;margin-bottom:7px}
+.hx-read .rv{font-size:12px;line-height:1.55;color:#a9d8bd}
+.hx-read .rv b{color:var(--ink);font-weight:800}
+.hx-read.moat{border-color:rgba(201,163,255,.25);background:linear-gradient(180deg,rgba(201,163,255,.07),transparent)}
+.hx-read.moat .rv b{color:var(--c-mir)}
+.hx-read.fail{border-color:rgba(255,77,82,.22);background:linear-gradient(180deg,rgba(255,77,82,.05),transparent)}
+.hx-read.fail .rv b{color:#ff8a8e}
+.hx-read .rmono{font-family:var(--mono);font-size:11px;color:var(--cyan);letter-spacing:.02em;margin-top:6px}
+.hx-cap{
+  font-size:11.5px;line-height:1.6;color:#8fb8a2;padding:11px 13px;border-radius:9px;
+  background:rgba(60,230,122,.05);border:1px solid rgba(60,230,122,.16);
+}
+.hx-cap b{color:var(--ink)}
+
+/* toast */
+#toast{position:absolute;left:50%;bottom:130px;transform:translateX(-50%) translateY(10px);
+  background:#0c1410;border:1px solid #2f6644;color:var(--ink);
+  font-family:var(--mono);font-size:11px;padding:8px 16px;border-radius:8px;
+  letter-spacing:.04em;opacity:0;pointer-events:none;transition:all .25s;z-index:40;
+  box-shadow:0 0 24px rgba(60,230,122,.25),0 6px 16px rgba(0,0,0,.5)}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.warn{border-color:var(--amber);color:var(--amber);box-shadow:0 0 24px rgba(255,193,77,.25)}
+</style>
+</head>
+<body>
+<div id="device">
+  <div class="contact">
+    <b>박양하 PARK YANGHA</b><br>64etuor@gmail.com · 010-0000-0000<br>github.com/64etuor
+  </div>
+  <div id="faultflash"></div>
+
+  <!-- ===== HARNESS ENGINEERING / 경계 설계 overlay ===== -->
+  <div id="harnessOv">
+    <div class="hx-top">
+      <div class="hx-tt">하네스 엔지니어링 · 경계 설계<small>HARNESS ENGINEERING · AUTONOMY ENVELOPE</small></div>
+      <div class="hx-env"><span class="led c" style="width:8px;height:8px;border-radius:50%;background:#54d6ff;box-shadow:0 0 8px #54d6ff"></span>ENVELOPE: <span id="hx-mode">T1</span> · OVR <span id="hx-ovr">100%</span></div>
+      <div class="hx-close" id="hxClose">✕ CLOSE</div>
+    </div>
+    <div class="hx-body">
+      <div class="hx-left">
+        <div class="hx-paradox">
+          <div class="lbl">핵심 역설 · CORE PARADOX</div>
+          <div class="big">에이전트에게 자유를 주려면 먼저 <b>경계를 설계</b>하라 —<br>제약이 자율성을 확장한다.</div>
+        </div>
+
+        <div class="hx-sec-h">5기둥 위임 / 하네스 모델 <b>좋은 위임 = 하네스 설계</b></div>
+        <div class="hx-pillars" id="hxPillars">
+          <div class="hx-pillar on" data-pillar="goal">
+            <span class="plamp"></span>
+            <div class="pmain"><div class="pname">목표<small>GOAL</small></div><div class="pdesc">무엇을 달성해야 하는가 — 끝 상태를 명확히 한다.</div></div>
+            <div class="pmap">teach된 waypoint<br>= 명세된 목표 P[ ]</div>
+          </div>
+          <div class="hx-pillar on" data-pillar="context">
+            <span class="plamp"></span>
+            <div class="pmain"><div class="pname">맥락<small>CONTEXT</small></div><div class="pdesc">환경·자원·이력. "환경이 충분히 명세되지 않으면 에이전트는 실패한다."</div></div>
+            <div class="pmap">좌표계 / UFRAME·UTOOL<br>= 작업 맥락</div>
+          </div>
+          <div class="hx-pillar on" data-pillar="criteria">
+            <span class="plamp"></span>
+            <div class="pmain"><div class="pname">기준<small>CRITERIA</small></div><div class="pdesc">성공·품질의 판정 기준. 무엇이 "끝"이고 무엇이 불량인가.</div></div>
+            <div class="pmap">FINE / CNT · 비전검사<br>= 합격 기준</div>
+          </div>
+          <div class="hx-pillar on" data-pillar="authority">
+            <span class="plamp"></span>
+            <div class="pmain"><div class="pname">권한<small>AUTHORITY</small></div><div class="pdesc">허용된 행동 범위. 자율성 봉투(envelope)의 크기를 정한다.</div></div>
+            <div class="pmap">T1/T2/AUTO · 소프트리밋<br>= autonomy envelope</div>
+          </div>
+          <div class="hx-pillar on" data-pillar="verify">
+            <span class="plamp"></span>
+            <div class="pmain"><div class="pname">검증<small>VERIFY</small></div><div class="pdesc">결과를 확인하고 벗어나면 멈춘다. 루프를 닫는 마지막 기둥.</div></div>
+            <div class="pmap">E-STOP / FAULT 정지<br>= 검증·차단</div>
+          </div>
+        </div>
+
+        <div class="hx-env-bar"><div class="hx-env-fill" id="hxEnvFill"></div></div>
+        <div class="hx-env-cap">AUTONOMY ENVELOPE 명세도 <b id="hxEnvPct">100%</b> · 5기둥 중 <b id="hxEnvN">5</b>개 충족</div>
+
+        <div class="hx-cap">
+          <b>제약이 자율성을 확장한다.</b> jog 소프트리밋·좌표계, T1/T2/AUTO 모드 전환은 로봇을 가두는 장치가 아니라
+          <b>bounded autonomy</b>의 봉투다 — 경계가 분명할 때 비로소 전속 운전(AUTO)을 맡길 수 있다.
+          <b>창의성은 경계가 없을 때가 아니라 경계가 분명할 때 나온다.</b>
+        </div>
+      </div>
+
+      <div class="hx-right">
+        <div class="hx-sec-h" style="margin-bottom:2px">테제 READOUTS</div>
+        <div class="hx-read moat">
+          <div class="rt">THESIS · MOAT</div>
+          <div class="rv">모델은 <b>상품(commodity)</b>, 하네스가 <b>해자(Moat)</b>.</div>
+          <div class="rmono">PROMPT_ENG → HARNESS_ENG</div>
+          <div class="rv" style="margin-top:6px;font-size:11px;color:#8fb8a2">프롬프트 엔지니어링의 후계자 = 하네스 엔지니어링.</div>
+        </div>
+        <div class="hx-read fail">
+          <div class="rt">FAILURE MODE</div>
+          <div class="rv">에이전트는 <b>능력이 없어서가 아니라 환경이 충분히 명세되지 않아서</b> 실패한다.</div>
+          <div class="rv" style="margin-top:6px;font-size:11px;color:#8fb8a2">→ 코드를 직접 고치지 말고 <b style="color:#ff8a8e">하네스의 빈 구멍</b>을 메워라.</div>
+        </div>
+        <div class="hx-read">
+          <div class="rt">MAPPING · 펜던트 → 하네스</div>
+          <div class="rv" style="font-family:var(--mono);font-size:10px;line-height:1.9;color:#a9d8bd">
+            T1/T2/AUTO&nbsp;&nbsp;= autonomy envelope<br>
+            jog 좌표계&nbsp;&nbsp;= 경계 설계<br>
+            소프트리밋&nbsp;&nbsp;= 권한 범위<br>
+            teach P[ ]&nbsp;&nbsp;&nbsp;= 명세된 환경<br>
+            E-STOP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 검증·차단
+          </div>
+        </div>
+        <div class="hx-read" style="border-color:rgba(255,193,77,.22)">
+          <div class="rt">LIVE · 현재 봉투</div>
+          <div class="rv" style="font-family:var(--mono);font-size:11px;line-height:1.8">
+            MODE&nbsp;<b id="hx-mode2">T1</b> · SPD OVR <b id="hx-ovr2">100%</b><br>
+            FRAME <b id="hx-frame2">WORLD</b> · SERVO <b id="hx-servo2">ON</b>
+          </div>
+          <div class="rv" style="margin-top:6px;font-size:10.5px;color:#8fb8a2">모드를 좁힐수록 권한은 작아지고, 봉투가 분명해진다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="inner">
+
+    <!-- ===== TOP STATUS BAR ===== -->
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo">PY</div>
+        <div class="nm">티칭 펜던트 · 커리어 프로그램<small>PROG[CAREER] · PARK YANGHA</small></div>
+      </div>
+      <div class="lamps">
+        <div class="lamp on" id="l-run"><span class="led g"></span>RUNNING</div>
+        <div class="lamp" id="l-pause"><span class="led a"></span>PAUSED</div>
+        <div class="lamp" id="l-fault"><span class="led r"></span>FAULT</div>
+        <div class="lamp on" id="l-servo"><span class="led g"></span>SERVO</div>
+        <div class="lamp on" id="l-t1"><span class="led c"></span>T1</div>
+      </div>
+    </div>
+
+    <!-- ===== LEFT COLUMN ===== -->
+    <div class="leftcol">
+      <div class="panel">
+        <div class="phead">SOFT KEYS <b>F-MENU</b></div>
+        <div class="softkeys">
+          <div class="skey k-sel active" data-soft="SELECT"><span class="ic">SE</span><span class="lab">SELECT<small>프로그램 선택</small></span></div>
+          <div class="skey k-edit" data-soft="EDIT"><span class="ic">ED</span><span class="lab">EDIT<small>라인 편집</small></span></div>
+          <div class="skey k-data" data-soft="DATA"><span class="ic">DA</span><span class="lab">DATA<small>레지스터 R[ ]</small></span></div>
+          <div class="skey k-reset" data-soft="RESET"><span class="ic">RS</span><span class="lab">RESET<small>알람 해제</small></span></div>
+          <div class="skey k-harness" data-soft="HARNESS"><span class="ic">HX</span><span class="lab">HARNESS<small>경계 설계</small></span></div>
+        </div>
+      </div>
+      <div class="panel" style="flex:1;display:flex;flex-direction:column">
+        <div class="phead">PROGRAM INFO</div>
+        <div class="metaP">
+          <div class="mrow"><span class="k">PROG</span><span class="v amb">CAREER.TP</span></div>
+          <div class="mrow"><span class="k">LINES</span><span class="v" id="mi-lines">— / —</span></div>
+          <div class="mrow"><span class="k">CURRENT</span><span class="v amb" id="mi-cur">P[1]</span></div>
+          <div class="mrow"><span class="k">GROUP</span><span class="v">GP1</span></div>
+          <div class="mrow"><span class="k">UFRAME</span><span class="v">UF:0</span></div>
+          <div class="mrow"><span class="k">UTOOL</span><span class="v">UT:1</span></div>
+          <div class="mrow"><span class="k">PAYLOAD</span><span class="v">12.0 kg</span></div>
+          <div class="mrow"><span class="k">CYCLE</span><span class="v" id="mi-cyc">000124</span></div>
+          <div class="mrow"><span class="k">REACH</span><span class="v">1632 mm</span></div>
+          <div class="mrow"><span class="k">CTRL</span><span class="v">R-30iB+</span></div>
+          <div class="mrow" style="margin-top:auto;border-top:1px solid #0d0e0f;padding-top:8px"><span class="k">SKILL SET</span><span class="v" id="mi-skill">TOOL[01..18]</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CENTER LCD ===== -->
+    <div class="lcdwrap">
+      <div class="lcd">
+        <div class="lcd-top">
+          <span class="tt">CAREER</span>
+          <span>LINE <b id="lt-line" style="color:var(--ink)">0001</b></span>
+          <span>JOINT</span>
+          <span class="sp">100% <span class="pct" id="lt-ovr">OVR</span></span>
+          <span id="lt-state" style="color:#3ce67a;font-weight:700">▶ RUNNING</span>
+        </div>
+        <div class="lcd-body">
+          <div class="prog">
+            <div class="prog-scroll" id="progScroll"></div>
+          </div>
+          <div class="detail" id="detail"><!-- filled by JS --></div>
+        </div>
+        <div class="lcd-status">
+          <div class="seg">TOOL <b id="st-tool">UT:1 [WELD-TCP]</b></div>
+          <div class="seg amb">SPD <b id="st-spd">100%</b></div>
+          <div class="seg">MOTN <b id="st-motn">FINE</b></div>
+          <div class="seg grow" id="st-msg">2020.08 — 현재 · 5 WAYPOINTS TAUGHT</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== RIGHT COLUMN ===== -->
+    <div class="rightcol">
+      <div class="panel" style="padding:0;overflow:hidden">
+        <div class="viewport">
+          <canvas id="arm"></canvas>
+          <div class="vp-ov">
+            <span class="tl">VIEW · WORLD FRAME</span>
+            <span class="tr" id="vp-pt">▸ AT P[1]</span>
+            <span class="bl" id="vp-st">6-AXIS · SERVO ON</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel dro">
+        <div class="phead" style="border:none;padding:2px 0 8px">TCP POSITION <b id="dro-frame">WORLD</b></div>
+        <div class="dro-grid">
+          <div class="dro-cell x"><div class="ax">X</div><div class="val" id="d-x">0.0</div><div class="un">mm</div></div>
+          <div class="dro-cell y"><div class="ax">Y</div><div class="val" id="d-y">0.0</div><div class="un">mm</div></div>
+          <div class="dro-cell z"><div class="ax">Z</div><div class="val" id="d-z">0.0</div><div class="un">mm</div></div>
+          <div class="dro-cell"><div class="ax">W</div><div class="val" id="d-w">0.0</div><div class="un">deg</div></div>
+          <div class="dro-cell"><div class="ax">P</div><div class="val" id="d-p">0.0</div><div class="un">deg</div></div>
+          <div class="dro-cell"><div class="ax">R</div><div class="val" id="d-r">0.0</div><div class="un">deg</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="phead">JOG · 수동 조작 <b id="jog-frame">WORLD</b></div>
+        <div class="jog">
+          <div class="dpad">
+            <div class="jbtn up" data-jog="Y+">+Y</div>
+            <div class="jbtn dn" data-jog="Y-">−Y</div>
+            <div class="jbtn lf" data-jog="X-">−X</div>
+            <div class="jbtn rt" data-jog="X+">+X</div>
+            <div class="jbtn zp" data-jog="Z+">+Z</div>
+            <div class="jbtn zm" data-jog="Z-">−Z</div>
+            <div class="ctr">JOG<br>1.0mm</div>
+          </div>
+          <div class="jogside">
+            <div class="coordsel">
+              <div class="csel on" data-coord="WORLD">WORLD</div>
+              <div class="csel" data-coord="TOOL">TOOL</div>
+              <div class="csel" data-coord="JOINT">JOINT</div>
+            </div>
+            <div class="ovr">
+              <div class="ovr-top"><span>SPEED OVR</span><b id="ovr-val">100%</b></div>
+              <div class="ovr-bar" id="ovrBar"><div class="ovr-fill" id="ovrFill" style="width:100%"></div></div>
+              <div class="ovr-ticks"><span>VFINE</span><span>25</span><span>50</span><span>100</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== BOTTOM BAR ===== -->
+    <div class="bottombar">
+      <div class="fkeys">
+        <div class="fk rew" data-act="rew"><span class="ico">⏮</span><span class="ttl">REWIND</span><span class="sub">BWD</span></div>
+        <div class="fk play active" data-act="play"><span class="ico">▶</span><span class="ttl">PLAY</span><span class="sub">CYCLE START</span></div>
+        <div class="fk pause" data-act="pause"><span class="ico">⏸</span><span class="ttl">HOLD</span><span class="sub">FEED HOLD</span></div>
+        <div class="fk step" data-act="step"><span class="ico">⏭</span><span class="ttl">STEP</span><span class="sub">FWD 1 LINE</span></div>
+      </div>
+      <div class="cluster">
+        <div class="modesw">
+          <div class="ml">MODE SELECT KEY-SW</div>
+          <div class="modes">
+            <div class="mode on" data-mode="T1">T1<small>≤250mm/s</small></div>
+            <div class="mode" data-mode="T2">T2<small>TEST FULL</small></div>
+            <div class="mode" data-mode="AUTO">AUTO<small>운전</small></div>
+          </div>
+          <div class="servo on" id="servoSw"><div class="sw"><div class="kn"></div></div><span class="slab">SERVO ON</span></div>
+        </div>
+        <div class="estop" id="estop"><div class="btn">EMERGENCY<br>STOP</div></div>
+      </div>
+    </div>
+
+  </div>
+  <div class="minitag">FANUC-STYLE iPENDANT · CAREER.TP · v2025.08</div>
+</div>
+<div id="toast"></div>
+
+<script>
+"use strict";
+/* ============================================================
+   CAREER PROGRAM  — waypoints (oldest -> newest)
+   ============================================================ */
+const COMPANY = {
+  eun:{name:"은성에스아이티", color:"#ff7a8a", cls:"b-eun"},
+  elen:{name:"이랜텍",       color:"#ffb454", cls:"b-elen"},
+  sol:{name:"솔라엣지",       color:"#54d6ff", cls:"b-sol"},
+  mir:{name:"미러리스",       color:"#c9a3ff", cls:"b-mir"},
+};
+
+const WAYPOINTS = [
+  {
+    id:1, co:"eun", speed:100, motn:"FINE",
+    code:[["mv","J"],["pt"," P[1]"],["sp"," 100% FINE"],["cm","  ; 은성-배터리팩 총괄"]],
+    company:"은성에스아이티", role:"생산관리과장 · 배터리팩 생산 총괄",
+    period:"2020.08 — 2022.11",
+    desc:"배터리팩 생산라인 전체를 총괄. 공정 재설계와 협상으로 제품 단가를 +30% 개선하고, 운영경비를 −85% 절감. 비전검사 도입으로 출하 불량 0건을 달성하고 IATF16949 품질시스템을 구축·운영했다.",
+    regs:[["단가","+30%"],["운영경비","−85%"],["불량","0건"],["품질","IATF16949"]],
+    tool:"UT:1 [PACK-JIG]",
+    pose:[ -42, 28, -38, 0, 35, 10 ]
+  },
+  {
+    id:2, co:"elen", speed:75, motn:"CNT50", weld:true,
+    code:[["mv","L"],["pt"," P[2]"],["sp"," 75% CNT50"],["cm","  ; 이랜텍-용착 DOE"]],
+    company:"이랜텍", role:"생산라인 PM · 파트장",
+    period:"2022.11 — 2023.09",
+    desc:"DOE(실험계획법)로 초음파 용착 불량을 15%→0%로 잡고, Jig 개발과 라인 밸런싱으로 사이클타임을 −49%, 생산성을 +24% 끌어올렸다. 라인 PM으로서 작업표준(SOP)과 PFMEA를 정비했다.",
+    regs:[["용착불량","15%→0%"],["C/T","−49%"],["생산성","+24%"],["Jig","개발"]],
+    tool:"UT:1 [WELD-TCP]",
+    pose:[ -8, 52, -64, 5, 40, -12 ]
+  },
+  {
+    id:3, co:"sol", speed:50, motn:"FINE",
+    code:[["mv","J"],["pt"," P[3]"],["sp"," 50% FINE"],["cm","  ; 솔라엣지-MES/DB"]],
+    company:"솔라엣지", role:"공정기술 엔지니어",
+    period:"2023.09 — 2024.12",
+    desc:"공정 데이터 DB와 대시보드를 구축해 표준시간(ST)을 −50% 단축. 검사성적서 자동발행 및 MES 연동으로 일일 사무공수를 −451분/일 절감했다. 데이터 기반 공정관리로 전환을 주도.",
+    regs:[["ST","−50%"],["사무공수","−451분/일"],["검사성적서","자동발행"],["MES","연동"]],
+    tool:"UT:2 [PROBE]",
+    pose:[ 30, 40, -50, -8, 30, 24 ]
+  },
+  {
+    id:4, co:"mir", speed:100, motn:"FINE",
+    code:[["mv","J"],["pt"," P[4]"],["sp"," 100% FINE"],["cm","  ; 미러리스-총괄본부장"]],
+    company:"미러리스", role:"총괄본부장",
+    period:"2025.08 — 현재",
+    desc:"CRM·키오스크·데스크톱 앱을 총괄 기획·개발. FastAPI 백엔드와 AWS/GCP 인프라, CI/CD 파이프라인을 구축하고 RPA·AI MCP 기반 AX(업무 자동화 전환)를 추진. 현장 엔지니어에서 소프트웨어/AI 총괄로 진화.",
+    regs:[["스택","FastAPI·React"],["인프라","AWS/GCP·CI/CD"],["AX","RPA·AI MCP"],["역할","총괄본부장"]],
+    tool:"UT:3 [AX-EOAT]",
+    pose:[ 64, 18, -30, 12, 48, -20 ]
+  },
+];
+
+const HOME = [0, 12, -18, 0, 22, 0];
+
+/* second "program" = SKILL / TOOL register list */
+const SKILLS = ["Python","SQL","FastAPI","React","TypeScript","Electron","Rust","MySQL/RDS","AWS","GCP","BI","ML","RPA","CI/CD","PFMEA/CP","산업용접","Jig개발","비전검사","로봇티칭","ERP/MES"];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const S = {
+  selected:0,        // index into WAYPOINTS for SELECT/detail
+  running:0,         // index currently executing
+  mode:"AUTO_PAUSED",// PLAY / PAUSED / FAULT
+  estop:false,
+  servo:true,
+  coord:"WORLD",
+  ovr:100,
+  keyMode:"T1",
+  soft:"SELECT",
+  cycle:124,
+  // arm joints (degrees) -- animated toward target
+  jntCur:HOME.slice(),
+  jntTgt:WAYPOINTS[0].pose.slice(),
+  jogOff:{x:0,y:0,z:0},
+  weldFx:0,          // weld defect re-teach animation 0..1 progress flag
+  weldDone:false,
+  playTimer:null,
+};
+
+/* ============================================================
+   DOM refs
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const progScroll = $("progScroll");
+const detail = $("detail");
+const toastEl = $("toast");
+
+/* ============================================================
+   BUILD PROGRAM LISTING
+   ============================================================ */
+function buildProgram(){
+  progScroll.innerHTML = "";
+  // header pseudo-lines
+  WAYPOINTS.forEach((wp, i)=>{
+    const line = document.createElement("div");
+    line.className = "pline " + COMPANY[wp.co].cls;
+    line.dataset.idx = i;
+    const codeHtml = wp.code.map(c=>`<span class="${c[0]}">${c[1]}</span>`).join("");
+    line.innerHTML =
+      `<span class="ln">${String(i+1).padStart(4,"0")}</span>`+
+      `<span class="code">${codeHtml}<span class="cursor"></span></span>`;
+    line.addEventListener("click", ()=>selectLine(i, true));
+    progScroll.appendChild(line);
+  });
+  // END marker
+  const end = document.createElement("div");
+  end.className = "pline";
+  end.innerHTML = `<span class="ln">${String(WAYPOINTS.length+1).padStart(4,"0")}</span><span class="code"><span class="sp">[ END ]</span></span>`;
+  progScroll.appendChild(end);
+  // skills as a register comment block
+  const reg = document.createElement("div");
+  reg.className="pline";
+  reg.style.opacity=".6";reg.style.cursor="default";
+  reg.innerHTML=`<span class="ln">R[]</span><span class="code"><span class="cm">; TOOL/REGISTER — ${SKILLS.length} SKILLS LOADED</span></span>`;
+  progScroll.appendChild(reg);
+}
+
+/* ============================================================
+   SELECT a line -> show detail + move arm
+   ============================================================ */
+function selectLine(i, fromUser){
+  S.selected = i;
+  const wp = WAYPOINTS[i];
+  // highlight
+  document.querySelectorAll(".pline").forEach(p=>p.classList.remove("sel"));
+  const el = progScroll.querySelector(`.pline[data-idx="${i}"]`);
+  if(el){ el.classList.add("sel"); el.scrollIntoView({block:"nearest"}); }
+  // detail pane
+  const c = COMPANY[wp.co];
+  detail.innerHTML =
+    `<div class="dtag"><span><span class="dot" style="background:${c.color};box-shadow:0 0 8px ${c.color}"></span>P[${wp.id}] WAYPOINT</span><span>${wp.speed}% ${wp.motn}</span></div>`+
+    `<div class="role">${wp.role}</div>`+
+    `<h3>${wp.company}</h3>`+
+    `<div class="period">${wp.period}</div>`+
+    `<div class="desc">${wp.desc}</div>`+
+    `<div class="regs">${wp.regs.map(r=>`<span class="reg">${r[0]} <b>${r[1]}</b></span>`).join("")}</div>`;
+  // info panel + status
+  $("mi-cur").textContent = `P[${wp.id}]`;
+  $("lt-line").textContent = String(i+1).padStart(4,"0");
+  $("st-tool").textContent = wp.tool;
+  $("st-spd").textContent = wp.speed+"%";
+  $("st-motn").textContent = wp.motn;
+  $("st-msg").textContent = `${wp.period} · ${wp.company}`;
+  $("vp-pt").textContent = `▸ AT P[${wp.id}]`;
+  // move arm (only if not estop)
+  if(!S.estop){ S.jntTgt = wp.pose.slice(); }
+  if(fromUser) toast(`P[${wp.id}] SELECTED · ${wp.company}`);
+}
+
+/* ============================================================
+   RUN / STEP through program
+   ============================================================ */
+function setRunLine(i){
+  document.querySelectorAll(".pline").forEach(p=>{p.classList.remove("run");});
+  WAYPOINTS.forEach((w,idx)=>{
+    const el = progScroll.querySelector(`.pline[data-idx="${idx}"]`);
+    if(!el) return;
+    el.classList.toggle("done", idx < i && S.mode==="PLAY");
+    if(idx===i) el.classList.add("run");
+  });
+}
+
+function gotoLine(i){
+  if(i<0) i=0; if(i>=WAYPOINTS.length) i=WAYPOINTS.length-1;
+  S.running = i;
+  setRunLine(i);
+  selectLine(i,false);
+  $("mi-cur").textContent = `P[${WAYPOINTS[i].id}]`;
+  // trigger weld re-teach delight on P[2]
+  if(WAYPOINTS[i].weld && !S.weldDone){ startWeldReteach(); }
+}
+
+function play(){
+  if(S.estop){ toast("E-STOP 해제 필요",true); return; }
+  setMode("PLAY");
+  clearInterval(S.playTimer);
+  // if at end, rewind
+  if(S.running >= WAYPOINTS.length-1){ S.running = -1; }
+  S.playTimer = setInterval(()=>{
+    if(S.mode!=="PLAY"){ clearInterval(S.playTimer); return; }
+    if(S.running >= WAYPOINTS.length-1){
+      clearInterval(S.playTimer);
+      setMode("PAUSED");
+      $("lt-state").textContent="■ CYCLE DONE";
+      $("lt-state").style.color="var(--cyan)";
+      toast("CYCLE COMPLETE · 4/4 WAYPOINTS");
+      S.cycle++; $("mi-cyc").textContent=String(S.cycle).padStart(6,"0");
+      // mark all done
+      WAYPOINTS.forEach((w,idx)=>{const el=progScroll.querySelector(`.pline[data-idx="${idx}"]`);if(el)el.classList.add("done");});
+      return;
+    }
+    gotoLine(S.running+1);
+  }, 2400);
+  // immediate first step
+  gotoLine(Math.max(0,S.running+1));
+}
+function pause(){ setMode("PAUSED"); clearInterval(S.playTimer); }
+function stepFwd(){ pause(); gotoLine(S.running+1); toast(`STEP → P[${WAYPOINTS[Math.min(S.running,WAYPOINTS.length-1)].id}]`); }
+function rewind(){ pause(); WAYPOINTS.forEach((w,idx)=>{const el=progScroll.querySelector(`.pline[data-idx="${idx}"]`);if(el)el.classList.remove("done");}); gotoLine(0); toast("REWIND → P[1]"); }
+
+function setMode(m){
+  S.mode = m;
+  const lt = $("lt-state");
+  $("l-run").classList.toggle("on", m==="PLAY");
+  $("l-pause").classList.toggle("on", m==="PAUSED");
+  $("l-fault").classList.toggle("on", m==="FAULT");
+  $("l-fault").classList.toggle("blink", m==="FAULT");
+  document.querySelector(".fk.play").classList.toggle("active", m==="PLAY");
+  if(m==="PLAY"){ lt.textContent="▶ RUNNING"; lt.style.color="#3ce67a"; }
+  else if(m==="PAUSED"){ lt.textContent="⏸ HELD"; lt.style.color="var(--amber)"; }
+  else if(m==="FAULT"){ lt.textContent="✖ FAULT"; lt.style.color="var(--red)"; }
+}
+
+/* ============================================================
+   WELD RE-TEACH DELIGHT  (P[2]: 불량 15% -> 0%)
+   ============================================================ */
+function startWeldReteach(){
+  S.weldFx = 1;            // engage spark fx in canvas
+  $("st-msg").textContent = "DOE 용착 재교시 중… 불량 15%";
+  toast("⚠ 용착 불량 검출 15% — 재교시(RE-TEACH) 실행", true);
+  let pct = 15;
+  const t = setInterval(()=>{
+    pct -= 3;
+    if(pct<=0){
+      pct=0; clearInterval(t);
+      S.weldFx = 0; S.weldDone = true;
+      $("st-msg").textContent = "RE-TEACH 완료 · 용착 불량 0% ✓";
+      toast("✓ P[2] 재교시 완료 — 불량 0% 달성");
+    } else {
+      $("st-msg").textContent = `DOE 용착 재교시 중… 불량 ${pct}%`;
+    }
+  }, 320);
+}
+
+/* ============================================================
+   JOG -> live arm move + DRO
+   ============================================================ */
+function jog(dir){
+  if(S.estop){ toast("E-STOP 상태 · JOG 불가",true); return; }
+  if(!S.servo){ toast("SERVO OFF · JOG 불가",true); return; }
+  const stepDeg = 4 * (S.ovr/100);
+  // map axes to joints depending on coord frame (simplified)
+  const J = S.jntTgt;
+  switch(dir){
+    case "X+": J[0]+=stepDeg; S.jogOff.x+=8; break;
+    case "X-": J[0]-=stepDeg; S.jogOff.x-=8; break;
+    case "Y+": J[1]+=stepDeg; S.jogOff.y+=8; break;
+    case "Y-": J[1]-=stepDeg; S.jogOff.y-=8; break;
+    case "Z+": J[2]+=stepDeg; S.jogOff.z+=8; break;
+    case "Z-": J[2]-=stepDeg; S.jogOff.z-=8; break;
+  }
+  // clamp
+  J[0]=clamp(J[0],-120,120); J[1]=clamp(J[1],-20,90); J[2]=clamp(J[2],-120,40);
+  $("vp-st").textContent = `JOG ${dir} · ${S.coord}`;
+}
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ============================================================
+   TOAST
+   ============================================================ */
+let toastT;
+function toast(msg, warn){
+  toastEl.textContent = msg;
+  toastEl.classList.toggle("warn", !!warn);
+  toastEl.classList.add("show");
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>toastEl.classList.remove("show"), 2200);
+}
+
+/* ============================================================
+   CANVAS : 2.5D jointed 6-axis robot arm
+   ============================================================ */
+const cv = $("arm");
+const ctx = cv.getContext("2d");
+let CW=0, CH=0, DPR=Math.min(2, window.devicePixelRatio||1);
+function sizeCanvas(){
+  const r = cv.getBoundingClientRect();
+  CW=r.width; CH=r.height;
+  cv.width = CW*DPR; cv.height = CH*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+}
+
+// forward-kinematics for a stylized planar arm w/ pseudo-depth shading
+function fk(joints){
+  // base at bottom-center
+  const bx = CW*0.5, by = CH*0.84;
+  const L = [0, CH*0.30, CH*0.26, CH*0.16, CH*0.10]; // link lengths
+  const a = joints.map(d=>d*Math.PI/180);
+  let x=bx, y=by, ang=-Math.PI/2 + a[0]*0.18; // base yaw -> slight lean
+  const pts=[{x,y}];
+  // J2 shoulder
+  ang = -Math.PI/2 + a[1]*0.9;
+  x += Math.cos(ang)*L[1]; y += Math.sin(ang)*L[1]; pts.push({x,y});
+  // J3 elbow
+  ang += a[2]*0.95;
+  x += Math.cos(ang)*L[2]; y += Math.sin(ang)*L[2]; pts.push({x,y});
+  // J5 wrist
+  ang += a[4]*0.55 + 0.2;
+  x += Math.cos(ang)*L[3]; y += Math.sin(ang)*L[3]; pts.push({x,y});
+  // tcp / flange
+  ang += a[5]*0.4;
+  x += Math.cos(ang)*L[4]; y += Math.sin(ang)*L[4]; pts.push({x,y});
+  return {pts, base:{x:bx,y:by}, tcpAng:ang, yaw:a[0]};
+}
+
+function drawGrid(){
+  ctx.save();
+  // floor gradient
+  const g = ctx.createLinearGradient(0,0,0,CH);
+  g.addColorStop(0,"#04100a"); g.addColorStop(.6,"#06140d"); g.addColorStop(1,"#020805");
+  ctx.fillStyle=g; ctx.fillRect(0,0,CW,CH);
+  // perspective floor grid
+  ctx.strokeStyle="rgba(60,230,122,.10)"; ctx.lineWidth=1;
+  const hz = CH*0.62;
+  for(let i=-6;i<=6;i++){
+    const fx = CW*0.5 + i*(CW*0.09);
+    ctx.beginPath(); ctx.moveTo(CW*0.5 + i*(CW*0.18), CH); ctx.lineTo(fx, hz); ctx.stroke();
+  }
+  for(let j=0;j<7;j++){
+    const t=j/6; const yy = hz + (CH-hz)*t*t;
+    ctx.globalAlpha = .10 - t*0.05;
+    ctx.beginPath(); ctx.moveTo(0,yy); ctx.lineTo(CW,yy); ctx.stroke();
+  }
+  ctx.globalAlpha=1;
+  // company color zones along floor (waypoint cells)
+  WAYPOINTS.forEach((wp,i)=>{
+    const cx = CW*(0.16 + i*0.22);
+    ctx.fillStyle = COMPANY[wp.co].color+"18";
+    ctx.fillRect(cx-26, CH-30, 52, 8);
+    ctx.fillStyle = COMPANY[wp.co].color;
+    ctx.globalAlpha = (i===S.running||i===S.selected)?1:.4;
+    ctx.font="700 9px ui-monospace,monospace";
+    ctx.textAlign="center";
+    ctx.fillText("P"+wp.id, cx, CH-12);
+    ctx.globalAlpha=1;
+  });
+  ctx.restore();
+}
+
+function roundLink(p0,p1,w0,w1,col,hi){
+  // capsule-ish link with gradient
+  const dx=p1.x-p0.x, dy=p1.y-p0.y, len=Math.hypot(dx,dy)||1;
+  const nx=-dy/len, ny=dx/len;
+  ctx.beginPath();
+  ctx.moveTo(p0.x+nx*w0, p0.y+ny*w0);
+  ctx.lineTo(p1.x+nx*w1, p1.y+ny*w1);
+  ctx.lineTo(p1.x-nx*w1, p1.y-ny*w1);
+  ctx.lineTo(p0.x-nx*w0, p0.y-ny*w0);
+  ctx.closePath();
+  const g=ctx.createLinearGradient(p0.x+nx*w0,p0.y+ny*w0,p0.x-nx*w0,p0.y-ny*w0);
+  g.addColorStop(0,hi); g.addColorStop(.5,col); g.addColorStop(1,"#0e1512");
+  ctx.fillStyle=g; ctx.fill();
+  ctx.strokeStyle="rgba(0,0,0,.55)"; ctx.lineWidth=1.4; ctx.stroke();
+}
+function joint(p,r,col){
+  ctx.beginPath(); ctx.arc(p.x,p.y,r,0,7);
+  const g=ctx.createRadialGradient(p.x-r*0.4,p.y-r*0.4,1,p.x,p.y,r);
+  g.addColorStop(0,"#3a3d42");g.addColorStop(.7,"#1c1e21");g.addColorStop(1,"#0d0e10");
+  ctx.fillStyle=g; ctx.fill();
+  ctx.strokeStyle=col; ctx.lineWidth=1.6; ctx.stroke();
+  ctx.beginPath(); ctx.arc(p.x,p.y,r*0.4,0,7); ctx.fillStyle=col+"cc"; ctx.fill();
+}
+
+let sparkParts=[];
+function drawArm(){
+  const wp = WAYPOINTS[Math.min(S.selected,WAYPOINTS.length-1)];
+  const accent = S.estop ? "#ff4d52" : (S.mode==="FAULT"?"#ff4d52": COMPANY[wp.co].color);
+  const {pts, base, tcpAng} = fk(S.jntCur);
+
+  // shadow on floor
+  ctx.save();
+  ctx.globalAlpha=.4;
+  ctx.fillStyle="#000";
+  ctx.beginPath();
+  ctx.ellipse(base.x+S.jogOff.x*0.4, CH*0.85, 60, 9, 0,0,7);
+  ctx.fill();
+  ctx.restore();
+
+  // base pedestal
+  ctx.save();
+  ctx.fillStyle="#1a1c1f";
+  ctx.beginPath();
+  ctx.moveTo(base.x-34,CH*0.86); ctx.lineTo(base.x+34,CH*0.86);
+  ctx.lineTo(base.x+24,CH*0.72); ctx.lineTo(base.x-24,CH*0.72); ctx.closePath();
+  ctx.fill(); ctx.strokeStyle="#2a2c2f"; ctx.stroke();
+  // base accent ring
+  ctx.beginPath(); ctx.ellipse(base.x,CH*0.72,24,7,0,0,7);
+  ctx.fillStyle="#26282b"; ctx.fill();
+  ctx.strokeStyle=accent; ctx.lineWidth=2; ctx.stroke();
+  ctx.restore();
+
+  // links
+  const widths=[16,12.5,9,7,6];
+  roundLink(pts[0],pts[1],14,12,"#2a2d31","#3e4248");
+  roundLink(pts[1],pts[2],12,9,"#2a2d31","#3e4248");
+  roundLink(pts[2],pts[3],9,7,"#23262a","#34373c");
+  roundLink(pts[3],pts[4],7,5,"#23262a","#34373c");
+
+  // joints
+  joint(pts[0],15,accent);
+  joint(pts[1],12,accent);
+  joint(pts[2],9,accent);
+  joint(pts[3],7,accent);
+
+  // EOAT / tool at TCP
+  const tcp = pts[4];
+  ctx.save();
+  ctx.translate(tcp.x,tcp.y); ctx.rotate(tcpAng);
+  ctx.fillStyle="#15171a"; ctx.strokeStyle=accent; ctx.lineWidth=1.6;
+  ctx.beginPath(); ctx.roundRect(-5,-5,18,10,2); ctx.fill(); ctx.stroke();
+  // tool tip
+  ctx.beginPath(); ctx.moveTo(13,-3); ctx.lineTo(22,0); ctx.lineTo(13,3); ctx.closePath();
+  ctx.fillStyle=accent; ctx.fill();
+  ctx.restore();
+
+  // TCP marker + crosshair
+  ctx.save();
+  ctx.strokeStyle=accent; ctx.globalAlpha=.9; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.arc(tcp.x,tcp.y,11,0,7); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(tcp.x-16,tcp.y); ctx.lineTo(tcp.x+16,tcp.y);
+  ctx.moveTo(tcp.x,tcp.y-16); ctx.lineTo(tcp.x,tcp.y+16); ctx.stroke();
+  ctx.restore();
+
+  // weld sparks delight
+  if(S.weldFx){
+    if(Math.random()<0.9){
+      for(let k=0;k<3;k++){
+        sparkParts.push({x:tcp.x,y:tcp.y, vx:(Math.random()-.5)*4, vy:-Math.random()*3-1, life:1});
+      }
+    }
+    // weld glow
+    ctx.save();
+    const wg=ctx.createRadialGradient(tcp.x,tcp.y,0,tcp.x,tcp.y,26);
+    wg.addColorStop(0,"rgba(255,240,180,.9)");wg.addColorStop(.4,"rgba(255,180,60,.5)");wg.addColorStop(1,"transparent");
+    ctx.fillStyle=wg; ctx.beginPath(); ctx.arc(tcp.x,tcp.y,26,0,7); ctx.fill();
+    ctx.restore();
+  }
+  // update + draw sparks
+  ctx.save();
+  sparkParts = sparkParts.filter(p=>p.life>0);
+  sparkParts.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy; p.vy+=0.25; p.life-=0.04;
+    ctx.globalAlpha=Math.max(0,p.life);
+    ctx.fillStyle = p.life>0.6?"#fff8e0":"#ffb43c";
+    ctx.fillRect(p.x,p.y,2,2);
+  });
+  ctx.restore();
+
+  return tcp;
+}
+
+/* DRO derived from arm pose */
+function updateDRO(tcp){
+  // pseudo world coords from joints
+  const j=S.jntCur;
+  const x = (j[0]*8.4 + S.jogOff.x).toFixed(1);
+  const y = (520 + j[1]*6.2 + S.jogOff.y).toFixed(1);
+  const z = (880 + j[2]*5.1 + S.jogOff.z).toFixed(1);
+  const w = (j[3]).toFixed(1);
+  const p = (j[4]).toFixed(1);
+  const r = (j[5]).toFixed(1);
+  $("d-x").textContent=x; $("d-y").textContent=y; $("d-z").textContent=z;
+  $("d-w").textContent=w; $("d-p").textContent=p; $("d-r").textContent=r;
+}
+
+/* main animation loop */
+let lastT=0;
+function loop(t){
+  const dt = Math.min(50,(t-lastT)||16); lastT=t;
+  // ease joints toward target
+  const spd = S.estop?0:(0.10 * (S.ovr/100) + 0.02);
+  for(let i=0;i<6;i++){
+    S.jntCur[i] += (S.jntTgt[i]-S.jntCur[i]) * Math.min(1,spd*(dt/16));
+  }
+  ctx.clearRect(0,0,CW,CH);
+  drawGrid();
+  const tcp = drawArm();
+  updateDRO(tcp);
+  requestAnimationFrame(loop);
+}
+
+/* ============================================================
+   FIT device to viewport
+   ============================================================ */
+function fit(){
+  const dev = $("device");
+  const margin = 24;
+  const sx = (window.innerWidth-margin)/1320;
+  const sy = (window.innerHeight-margin)/812;
+  const s = Math.min(1, sx, sy);
+  dev.style.setProperty("--fit", s.toFixed(3));
+}
+
+/* ============================================================
+   HARNESS ENGINEERING / 경계 설계 overlay
+   ============================================================ */
+const harnessOv = $("harnessOv");
+function syncHarnessLive(){
+  // reflect the live autonomy "envelope" (mode / override / frame / servo) into the panel
+  const md = S.keyMode, ov = S.ovr+"%";
+  $("hx-mode").textContent = md;  $("hx-mode2").textContent = md;
+  $("hx-ovr").textContent  = ov;  $("hx-ovr2").textContent  = ov;
+  $("hx-frame2").textContent = S.coord;
+  $("hx-servo2").textContent = S.servo ? "ON" : "OFF";
+}
+function syncEnvelopeMeter(){
+  const on = harnessOv.querySelectorAll(".hx-pillar.on").length;
+  const pct = Math.round(on/5*100);
+  $("hxEnvFill").style.width = pct+"%";
+  $("hxEnvPct").textContent = pct+"%";
+  $("hxEnvN").textContent = on;
+}
+function openHarness(){
+  syncHarnessLive();
+  syncEnvelopeMeter();
+  harnessOv.classList.add("show");
+}
+function closeHarness(){ harnessOv.classList.remove("show"); }
+
+$("hxClose").addEventListener("click", closeHarness);
+harnessOv.querySelectorAll(".hx-pillar").forEach(p=>{
+  p.addEventListener("click", ()=>{
+    p.classList.toggle("on");
+    syncEnvelopeMeter();
+    const nm = p.querySelector(".pname").childNodes[0].textContent.trim();
+    const lit = p.classList.contains("on");
+    if(lit) toast(`기둥 충족 → ${nm}`);
+    else toast(`기둥 누락 → ${nm} · 하네스 빈 구멍`, true);
+  });
+});
+
+/* ============================================================
+   EVENT WIRING
+   ============================================================ */
+function press(el){ el.classList.add("held"); setTimeout(()=>el.classList.remove("held"),120); }
+
+// soft keys
+document.querySelectorAll(".skey").forEach(k=>{
+  k.addEventListener("click",()=>{
+    document.querySelectorAll(".skey").forEach(x=>x.classList.remove("active"));
+    k.classList.add("active");
+    S.soft = k.dataset.soft;
+    press(k);
+    const m={SELECT:"프로그램 선택 모드 — 라인을 눌러 상세 보기",EDIT:"EDIT 모드 — 라인 편집 활성",DATA:"DATA 모드 — 레지스터 R[ ] 표시",RESET:"RESET — 알람/FAULT 해제",HARNESS:"HARNESS — 경계 설계 / 자율성 봉투 페이지"}[S.soft];
+    if(S.soft==="RESET"){ if(S.mode==="FAULT"){ setMode("PAUSED"); } toast("RESET · 알람 해제"); }
+    else if(S.soft==="HARNESS"){ openHarness(); }
+    else toast(m);
+  });
+});
+
+// fkeys
+document.querySelectorAll(".fk").forEach(f=>{
+  f.addEventListener("click",()=>{
+    press(f);
+    const a=f.dataset.act;
+    if(a==="play") play();
+    else if(a==="pause") pause();
+    else if(a==="step") stepFwd();
+    else if(a==="rew") rewind();
+  });
+});
+
+// jog dpad
+document.querySelectorAll(".jbtn").forEach(b=>{
+  let iv;
+  const go=()=>jog(b.dataset.jog);
+  b.addEventListener("mousedown",()=>{ b.classList.add("held"); go(); iv=setInterval(go,90); });
+  b.addEventListener("mouseup",()=>{ b.classList.remove("held"); clearInterval(iv); });
+  b.addEventListener("mouseleave",()=>{ b.classList.remove("held"); clearInterval(iv); });
+  b.addEventListener("click",go);
+});
+
+// coord select
+document.querySelectorAll(".csel").forEach(c=>{
+  c.addEventListener("click",()=>{
+    document.querySelectorAll(".csel").forEach(x=>x.classList.remove("on"));
+    c.classList.add("on");
+    S.coord=c.dataset.coord;
+    $("jog-frame").textContent=S.coord;
+    $("dro-frame").textContent=S.coord;
+    document.querySelector(".vp-ov .tl").textContent=`VIEW · ${S.coord} FRAME`;
+    syncHarnessLive();
+    toast(`좌표계 → ${S.coord}`);
+  });
+});
+
+// override bar
+$("ovrBar").addEventListener("click",e=>{
+  const r=e.currentTarget.getBoundingClientRect();
+  let p=Math.round(((e.clientX-r.left)/r.width)*100);
+  p=clamp(p,5,100);
+  S.ovr=p;
+  $("ovrFill").style.width=p+"%";
+  $("ovr-val").textContent=p+"%";
+  $("lt-ovr").textContent="OVR";
+  $("st-spd").textContent=p+"%";
+  syncHarnessLive();
+  toast(`SPEED OVERRIDE → ${p}%`);
+});
+
+// mode key switch
+document.querySelectorAll(".mode").forEach(m=>{
+  m.addEventListener("click",()=>{
+    document.querySelectorAll(".mode").forEach(x=>x.classList.remove("on"));
+    m.classList.add("on");
+    S.keyMode=m.dataset.mode;
+    // update lamp
+    $("l-t1").querySelector(".led").className="led "+(S.keyMode==="AUTO"?"a":"c");
+    $("l-t1").childNodes[1]; // noop
+    $("l-t1").lastChild.textContent=S.keyMode;
+    document.querySelector(".lcd-top").children[2].textContent = S.coord==="JOINT"?"JOINT":S.keyMode;
+    syncHarnessLive();
+    toast(`운전 모드 → ${S.keyMode}`);
+  });
+});
+
+// servo toggle
+$("servoSw").addEventListener("click",()=>{
+  if(S.estop){ toast("E-STOP 상태 · SERVO ON 불가",true); return; }
+  S.servo=!S.servo;
+  $("servoSw").classList.toggle("on",S.servo);
+  $("servoSw").querySelector(".slab").textContent = S.servo?"SERVO ON":"SERVO OFF";
+  $("l-servo").classList.toggle("on",S.servo);
+  if(!S.servo) pause();
+  syncHarnessLive();
+  toast(S.servo?"SERVO ON · 서보 투입":"SERVO OFF · 서보 차단",!S.servo);
+});
+
+// E-STOP
+$("estop").addEventListener("click",()=>{
+  S.estop=!S.estop;
+  $("estop").classList.toggle("pressed",S.estop);
+  if(S.estop){
+    pause(); setMode("FAULT");
+    S.servo=false;
+    $("servoSw").classList.remove("on");
+    $("servoSw").querySelector(".slab").textContent="SERVO OFF";
+    $("l-servo").classList.remove("on");
+    $("faultflash").classList.add("on");
+    toast("⛔ EMERGENCY STOP — 비상정지",true);
+  } else {
+    $("faultflash").classList.remove("on");
+    setMode("PAUSED");
+    toast("E-STOP 해제 · RESET 후 SERVO ON 필요");
+  }
+  syncHarnessLive();
+});
+
+// keyboard shortcuts
+window.addEventListener("keydown",e=>{
+  if(e.key==="Escape"){ if(harnessOv.classList.contains("show")){ closeHarness(); return; } }
+  if(e.key==="h"||e.key==="H"){ harnessOv.classList.contains("show")?closeHarness():openHarness(); return; }
+  if(e.key===" "){ e.preventDefault(); S.mode==="PLAY"?pause():play(); }
+  else if(e.key==="ArrowRight") stepFwd();
+  else if(e.key==="ArrowLeft") rewind();
+  else if(e.key>="1"&&e.key<="4") selectLine(+e.key-1,true);
+});
+
+window.addEventListener("resize",()=>{ fit(); sizeCanvas(); });
+
+/* ============================================================
+   INIT  — headless-ready first paint
+   ============================================================ */
+function init(){
+  buildProgram();
+  fit();
+  sizeCanvas();
+  // line count meta
+  $("mi-lines").textContent = `${WAYPOINTS.length} / ${WAYPOINTS.length}`;
+  // skill tool register text
+  $("mi-skill").textContent = `TOOL[01..${SKILLS.length}]`;
+  // FIRST PAINT STATE: program loaded, P[1] selected, arm posed, running lamp
+  S.jntCur = WAYPOINTS[0].pose.slice();   // pre-pose so first frame shows posed arm
+  S.jntTgt = WAYPOINTS[0].pose.slice();
+  selectLine(0,false);
+  setRunLine(0);
+  setMode("PAUSED");
+  $("lt-state").textContent="⏸ READY · CYCLE 대기";
+  $("lt-state").style.color="var(--amber)";
+  $("mi-cyc").textContent=String(S.cycle).padStart(6,"0");
+  requestAnimationFrame(loop);
+}
+
+// await fonts for clean headless paint
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(init);
+  // safety fallback
+  setTimeout(()=>{ if(!progScroll.children.length) init(); }, 600);
+} else {
+  init();
+}
+</script>
+</body>
+</html>

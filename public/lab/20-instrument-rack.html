@@ -1,0 +1,997 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>박양하 · 19" 벤치 계측 랙 / Instrument Rack</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#070809;
+    --rack:#15181c;          /* rack rail metal */
+    --rail:#0c0e10;
+    --panel:#1c2127;         /* brushed front panel */
+    --panel2:#161a1f;
+    --panelhi:#2a313a;
+    --bezel:#040506;
+    --line:#262d35;
+    --line2:#323b45;
+    --ink:#e6ece9;
+    --muted:#7e8c87;
+    --muted2:#5a665f;
+    --amber:#ffb01f;
+    --green:#39ff8a;
+    --greend:#1bd96a;
+    --red:#ff4d4d;
+    --cyan:#5cd8ff;
+    --vfd:#39ff9e;          /* 7-seg phosphor */
+    --vfdoff:#0c2419;
+    --blue:#4f86ff;
+    --screw:#3a424b;
+  }
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(1300px 800px at 50% -8%, #101418 0%, var(--bg) 62%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"Pretendard Variable",Pretendard,system-ui,sans-serif;
+    word-break:keep-all;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .mono{font-family:"DM Mono","SF Mono",ui-monospace,"Cascadia Code",Menlo,monospace}
+  .seg{font-family:"DSEG7 Classic","DM Mono",ui-monospace,monospace}
+
+  /* ===== rack shell ===== */
+  .wrap{max-width:1500px;margin:0 auto;padding:clamp(14px,2vw,30px)}
+  .rack{
+    position:relative;
+    background:
+      linear-gradient(180deg,#1a1e23 0%, #0f1216 100%);
+    border:1px solid #2b333c;
+    border-radius:14px;
+    padding:clamp(10px,1.3vw,18px);
+    box-shadow:0 50px 130px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .rack::before,.rack::after{ /* the two 19" rails */
+    content:"";position:absolute;top:14px;bottom:14px;width:26px;
+    background:
+      linear-gradient(90deg,#0a0c0e,#22272e 40%,#14181c 60%,#0a0c0e);
+    border:1px solid #2c333b;border-radius:5px;
+    box-shadow:inset 0 0 8px rgba(0,0,0,.6);
+  }
+  .rack::before{left:14px}
+  .rack::after{right:14px}
+  .rackinner{position:relative;margin:0 32px;display:flex;flex-direction:column;gap:11px;z-index:1}
+
+  /* rail screw holes overlay */
+  .railholes{position:absolute;top:0;bottom:0;width:26px;z-index:0;display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;padding:10px 0}
+  .railholes.l{left:14px} .railholes.r{right:14px}
+  .rhole{width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#000,#1a1f24);box-shadow:inset 0 1px 2px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.04)}
+
+  /* ===== generic U-module ===== */
+  .u{
+    position:relative;
+    background:
+      linear-gradient(180deg,var(--panel) 0%,var(--panel2) 100%);
+    border:1px solid var(--line2);
+    border-radius:8px;
+    padding:14px 16px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 8px 22px rgba(0,0,0,.4);
+  }
+  .u::before{ /* brushed metal texture */
+    content:"";position:absolute;inset:0;border-radius:8px;pointer-events:none;
+    background:repeating-linear-gradient(90deg,rgba(255,255,255,.014) 0 1px,transparent 1px 3px);
+    mix-blend-mode:overlay;
+  }
+  /* ear screws */
+  .ear{position:absolute;width:11px;height:11px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#586069,#2a3037);
+    box-shadow:inset 0 0 0 1px #1b2026,0 1px 1px rgba(0,0,0,.6)}
+  .ear::after{content:"";position:absolute;inset:3px;border-radius:50%;
+    background:linear-gradient(45deg,#1b2026 40%,#444b53 41% 59%,#1b2026 60%)}
+  .ear.tl{top:7px;left:7px}.ear.tr{top:7px;right:7px}
+  .ear.bl{bottom:7px;left:7px}.ear.br{bottom:7px;right:7px}
+
+  .ulabel{position:absolute;top:6px;left:50%;transform:translateX(-50%);
+    font-size:9px;letter-spacing:.32em;color:var(--muted2);text-transform:uppercase;font-weight:700}
+  .modtitle{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .modtitle .uno{font-size:9.5px;letter-spacing:.14em;color:var(--amber);border:1px solid #4a3a12;background:#1c160a;border-radius:4px;padding:2px 7px;font-weight:800}
+  .modtitle h3{font-size:13.5px;font-weight:800;letter-spacing:-.01em}
+  .modtitle .sub{font-size:10px;color:var(--muted);letter-spacing:.05em;margin-left:auto;text-align:right}
+
+  /* ===== header / brand U ===== */
+  .head{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .logo{width:50px;height:50px;border-radius:11px;flex:0 0 auto;
+    background:radial-gradient(circle at 35% 30%,#143b2c,#06120c);
+    border:1px solid #2c5a48;display:grid;place-items:center;
+    box-shadow:0 0 18px rgba(57,255,138,.22),inset 0 0 12px rgba(0,0,0,.6)}
+  .logo svg{filter:drop-shadow(0 0 4px rgba(57,255,138,.8))}
+  .brand h1{font-size:clamp(16px,1.6vw,21px);font-weight:800;letter-spacing:-.01em;line-height:1.12}
+  .brand .role{font-size:11px;color:var(--muted);letter-spacing:.04em;margin-top:4px}
+  .brand .role b{color:var(--green);font-weight:700}
+  .topmeta{margin-left:auto;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .pill{font-size:10px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;
+    border:1px solid var(--line);border-radius:999px;padding:6px 11px;color:var(--muted);
+    display:flex;align-items:center;gap:7px;background:#0e1216}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .dot.run{animation:blink 1.2s steps(2,end) infinite}
+  @keyframes blink{50%{opacity:.22}}
+  .pill .dot.warn{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+
+  /* ===== DMM (the hero) ===== */
+  .grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:11px}
+  @media(max-width:1080px){.grid2{grid-template-columns:1fr}}
+
+  .dmm{display:grid;grid-template-columns:1fr 220px;gap:16px;align-items:stretch}
+  @media(max-width:760px){.dmm{grid-template-columns:1fr}}
+
+  .vfdpanel{
+    position:relative;border-radius:9px;padding:16px 18px 14px;
+    background:
+      linear-gradient(180deg,#03130c,#020a07);
+    border:1px solid #0b2a1e;
+    box-shadow:inset 0 0 40px rgba(0,0,0,.85), inset 0 0 0 1px rgba(57,255,138,.05);
+    overflow:hidden;
+  }
+  .vfdpanel::after{ /* glass glare */
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:linear-gradient(160deg,rgba(255,255,255,.06) 0%,transparent 30%);
+  }
+  .annun{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px}
+  .an{font-size:9.5px;letter-spacing:.16em;font-weight:700;color:var(--vfdoff);transition:color .2s,text-shadow .2s}
+  .an.on{color:var(--vfd);text-shadow:0 0 8px rgba(57,255,158,.7)}
+  .readout{display:flex;align-items:flex-end;justify-content:flex-end;gap:8px;min-height:78px}
+  .digits{font-family:"DM Mono",ui-monospace,monospace;font-weight:700;
+    font-size:clamp(48px,7vw,84px);line-height:.9;letter-spacing:.02em;
+    color:var(--vfd);text-shadow:0 0 14px rgba(57,255,158,.55),0 0 3px rgba(57,255,158,.9);
+    font-variant-numeric:tabular-nums}
+  .digits .neg{opacity:.95}
+  .unit{font-family:"DM Mono",ui-monospace,monospace;font-weight:700;font-size:clamp(20px,2.4vw,30px);
+    color:var(--vfd);text-shadow:0 0 10px rgba(57,255,158,.5);padding-bottom:8px;min-width:46px}
+  .barrow{display:flex;align-items:center;gap:8px;margin-top:10px}
+  .barlabel{font-size:9px;color:#1f6b4a;letter-spacing:.1em;font-weight:700}
+  .bargraph{flex:1;height:10px;border-radius:3px;background:#041a11;border:1px solid #0b2a1e;overflow:hidden;position:relative}
+  .barfill{position:absolute;left:0;top:0;bottom:0;width:30%;
+    background:linear-gradient(90deg,#0c5a39,var(--vfd));box-shadow:0 0 10px rgba(57,255,158,.5);transition:width .35s ease}
+  .metricname{margin-top:11px;font-size:11px;color:#2a8a60;letter-spacing:.04em;font-weight:700}
+  .metricname b{color:var(--vfd)}
+
+  /* function selector */
+  .selector{display:flex;flex-direction:column;gap:10px;justify-content:center}
+  .dial-wrap{display:flex;align-items:center;gap:12px}
+  .dial{position:relative;width:120px;height:120px;flex:0 0 auto}
+  .knobtxt{flex:1}
+  .knobtxt .kt{font-size:10px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;font-weight:700}
+  .knobtxt .kv{font-size:16px;font-weight:800;color:var(--green);margin-top:2px}
+  .selbtns{display:flex;flex-direction:column;gap:5px}
+  .selbtn{
+    display:flex;align-items:center;gap:9px;cursor:pointer;
+    background:linear-gradient(180deg,#1f252c,#171c22);border:1px solid var(--line2);
+    border-radius:6px;padding:7px 10px;transition:.15s;text-align:left;
+    font-family:inherit;color:var(--ink);width:100%;
+  }
+  .selbtn:hover{border-color:#3f6b58;background:linear-gradient(180deg,#232b33,#1a2027)}
+  .selbtn.active{border-color:var(--green);box-shadow:0 0 0 1px rgba(57,255,138,.3),inset 0 0 14px rgba(57,255,138,.08)}
+  .selbtn .led{width:8px;height:8px;border-radius:50%;background:#143226;box-shadow:inset 0 0 3px #000;flex:0 0 auto;transition:.15s}
+  .selbtn.active .led{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .selbtn .nm{font-size:11.5px;font-weight:700}
+  .selbtn .ds{font-size:9px;color:var(--muted);letter-spacing:.08em;margin-left:auto}
+
+  /* jacks */
+  .jacks{display:flex;gap:18px;margin-top:14px;padding-top:13px;border-top:1px dashed var(--line)}
+  .jack{display:flex;flex-direction:column;align-items:center;gap:5px}
+  .jhole{width:26px;height:26px;border-radius:50%;border:2px solid #3a434c;
+    background:radial-gradient(circle at 40% 35%,#2a3138,#06080a 70%);box-shadow:inset 0 0 6px #000}
+  .jhole.red{border-color:#7a2a2a;box-shadow:inset 0 0 6px #000,0 0 6px rgba(255,77,77,.25)}
+  .jhole.black{border-color:#444}
+  .jlbl{font-size:8.5px;color:var(--muted2);letter-spacing:.1em;font-weight:700}
+  .bnc{width:24px;height:24px;border-radius:50%;border:2px solid #4a525b;
+    background:conic-gradient(from 0deg,#2a3138,#10141a,#2a3138,#10141a,#2a3138);box-shadow:inset 0 0 5px #000}
+
+  /* ===== CAL routine (delight) ===== */
+  .calbody{display:flex;flex-direction:column;gap:12px}
+  .caltop{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .calreadbox{
+    flex:1;min-width:150px;border-radius:8px;padding:11px 14px;position:relative;overflow:hidden;
+    background:linear-gradient(180deg,#120605,#0a0403);border:1px solid #3a1414;transition:border-color .5s,background .5s;
+  }
+  .calreadbox.pass{background:linear-gradient(180deg,#03130c,#020a07);border-color:#0b2a1e}
+  .calread-lbl{font-size:9px;letter-spacing:.16em;color:var(--muted);font-weight:700;text-transform:uppercase}
+  .calread{font-family:"DM Mono",ui-monospace,monospace;font-weight:700;font-size:38px;line-height:1;margin-top:6px;
+    color:var(--red);text-shadow:0 0 12px rgba(255,77,77,.5);font-variant-numeric:tabular-nums;transition:color .5s}
+  .calreadbox.pass .calread{color:var(--vfd);text-shadow:0 0 12px rgba(57,255,158,.55)}
+  .specrow{display:flex;align-items:center;gap:8px;margin-top:7px;font-size:9.5px;color:var(--muted)}
+  .verdict{font-size:11px;font-weight:800;letter-spacing:.12em;padding:3px 9px;border-radius:4px;
+    background:#2a0d0d;color:var(--red);border:1px solid #5a1a1a}
+  .verdict.pass{background:#0a2417;color:var(--green);border-color:#1c5a3c}
+
+  .lamp{width:44px;height:44px;border-radius:50%;flex:0 0 auto;position:relative;
+    background:radial-gradient(circle at 38% 32%,#3a1414,#180808);border:2px solid #2a1010;transition:.4s}
+  .lamp .glass{position:absolute;inset:5px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#5a1c1c,#240a0a)}
+  .lamp.pass{background:radial-gradient(circle at 38% 32%,#0c3a24,#04140d);border-color:#0c3a24;box-shadow:0 0 26px rgba(57,255,138,.6)}
+  .lamp.pass .glass{background:radial-gradient(circle at 40% 35%,#7dffbf,#16c46a);box-shadow:0 0 16px rgba(57,255,138,.9)}
+  .lamplbl{font-size:8.5px;text-align:center;margin-top:5px;letter-spacing:.1em;color:var(--muted);font-weight:700}
+
+  .calbtn{
+    display:flex;align-items:center;gap:9px;cursor:pointer;align-self:flex-start;
+    background:linear-gradient(180deg,#243b2f,#16241c);border:1px solid #2c5a44;color:var(--ink);
+    border-radius:7px;padding:9px 16px;font-family:inherit;font-weight:800;font-size:12px;letter-spacing:.04em;
+    transition:.15s;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
+  .calbtn:hover{border-color:var(--green);box-shadow:0 0 0 1px rgba(57,255,138,.25)}
+  .calbtn:disabled{opacity:.5;cursor:not-allowed}
+  .calbtn .ico{width:14px;height:14px;border-radius:50%;border:2px solid var(--green);position:relative}
+  .calbtn .ico::after{content:"";position:absolute;left:50%;top:1px;width:2px;height:5px;background:var(--green);transform:translateX(-50%)}
+  .calsteps{font-size:10px;color:var(--muted);line-height:1.7;letter-spacing:.02em}
+  .calsteps b{color:var(--cyan)}
+  .calsteps .step{display:flex;gap:8px;align-items:center}
+  .calsteps .step .sd{width:6px;height:6px;border-radius:50%;background:#243038;flex:0 0 auto;transition:.2s}
+  .calsteps .step.done .sd{background:var(--green);box-shadow:0 0 6px var(--green)}
+  .calsteps .step.done{color:var(--ink)}
+
+  /* ===== scope (CRT) ===== */
+  .scopewrap{display:grid;grid-template-columns:1fr 188px;gap:14px}
+  @media(max-width:640px){.scopewrap{grid-template-columns:1fr}}
+  .crt{position:relative;border-radius:8px;overflow:hidden;background:#020806;
+    border:1px solid #0b2a1e;box-shadow:inset 0 0 40px rgba(0,0,0,.85)}
+  .crt canvas{display:block;width:100%;height:170px}
+  .crt .ovl{position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 2px,transparent 2px 4px)}
+  .crt .corner{position:absolute;font-size:9px;color:#2a8a60;letter-spacing:.1em;font-weight:700;font-family:"DM Mono",monospace}
+  .crt .c-tl{top:7px;left:9px}.crt .c-tr{top:7px;right:9px}.crt .c-bl{bottom:7px;left:9px}.crt .c-br{bottom:7px;right:9px;color:var(--amber)}
+  .scopeside{display:flex;flex-direction:column;gap:8px}
+  .srow{display:flex;align-items:center;justify-content:space-between;font-size:10px;
+    background:#0e1216;border:1px solid var(--line);border-radius:5px;padding:7px 9px}
+  .srow .k{color:var(--muted);letter-spacing:.08em}
+  .srow .v{font-family:"DM Mono",monospace;color:var(--green);font-weight:700}
+  .srow .v.amb{color:var(--amber)} .srow .v.cy{color:var(--cyan)}
+
+  /* ===== DAQ / telemetry ===== */
+  .daqgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+  @media(max-width:760px){.daqgrid{grid-template-columns:repeat(2,1fr)}}
+  .tcell{background:#0e1216;border:1px solid var(--line);border-radius:6px;padding:10px 11px}
+  .tcell .tk{font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-weight:700}
+  .tcell .tv{font-family:"DM Mono",monospace;font-size:19px;font-weight:700;color:var(--cyan);margin-top:5px;font-variant-numeric:tabular-nums}
+  .tcell .tu{font-size:10px;color:var(--muted2);margin-left:3px}
+  .tcell.g .tv{color:var(--green)} .tcell.a .tv{color:var(--amber)}
+  .opcrow{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:10px;color:var(--muted);flex-wrap:wrap}
+  .tag{font-family:"DM Mono",monospace;font-size:9.5px;background:#0c1d28;color:var(--cyan);border:1px solid #16384a;border-radius:4px;padding:3px 7px}
+
+  /* ===== device inventory ===== */
+  .inv{display:flex;flex-direction:column;gap:7px}
+  .invrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;
+    background:#0e1216;border:1px solid var(--line);border-radius:6px;padding:8px 11px}
+  .invrow .nm{font-size:11px;font-weight:700}
+  .invrow .cap{font-size:9px;color:var(--muted);letter-spacing:.04em;font-family:"DM Mono",monospace}
+  .stled{display:flex;align-items:center;gap:6px;font-size:9px;font-weight:700;letter-spacing:.1em}
+  .stled .d{width:7px;height:7px;border-radius:50%}
+  .stled.ok{color:var(--green)} .stled.ok .d{background:var(--green);box-shadow:0 0 6px var(--green)}
+  .stled.cal{color:var(--amber)} .stled.cal .d{background:var(--amber);box-shadow:0 0 6px var(--amber);animation:blink 1s steps(2,end) infinite}
+  .stled.idle{color:var(--muted)} .stled.idle .d{background:var(--muted2)}
+
+  /* ===== stack chips + contact ===== */
+  .footu{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{font-size:10px;font-family:"DM Mono",monospace;color:var(--muted);
+    border:1px solid var(--line2);border-radius:5px;padding:5px 9px;background:#0e1216;letter-spacing:.02em}
+  .chip b{color:var(--green)}
+  .contact{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+  .cbtn{font-size:11px;font-family:"DM Mono",monospace;color:var(--ink);text-decoration:none;
+    border:1px solid var(--line2);border-radius:6px;padding:7px 12px;background:#0e1216;display:flex;align-items:center;gap:7px;transition:.15s}
+  .cbtn:hover{border-color:var(--green);color:var(--green)}
+  .cbtn .d{width:6px;height:6px;border-radius:50%;background:var(--amber)}
+
+  .label-strip{font-size:9px;color:var(--muted2);letter-spacing:.3em;text-transform:uppercase;
+    text-align:center;font-weight:700;padding:2px 0 6px}
+
+  /* ===== OBS-1U observability ===== */
+  .obscreed{font-size:10px;color:var(--muted);line-height:1.6;margin-bottom:12px;
+    border-left:2px solid #2c5a48;padding:2px 0 2px 11px;letter-spacing:.01em}
+  .obscreed b{color:var(--green);font-weight:700}
+  .obscreed .vs{color:var(--amber);font-weight:700}
+  .obsgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+  @media(max-width:900px){.obsgrid{grid-template-columns:1fr}}
+  .obspane{background:#0b0f12;border:1px solid var(--line);border-radius:7px;padding:11px 12px}
+  .obspane .ph{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .obspane .ph .pt{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .obspane .ph .pn{margin-left:auto;font-family:"DM Mono",monospace;font-size:9.5px;color:var(--muted2)}
+
+  /* 3-tier readout: metric / log / trace */
+  .tier{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:5px;
+    background:#0e1216;border:1px solid var(--line);margin-bottom:6px;transition:.2s;cursor:default}
+  .tier:last-child{margin-bottom:0}
+  .tier .tl{width:8px;height:8px;border-radius:50%;flex:0 0 auto;background:#243038;transition:.2s}
+  .tier .tn{font-size:11px;font-weight:700;min-width:54px}
+  .tier .td{font-family:"DM Mono",monospace;font-size:9.5px;color:var(--muted);letter-spacing:.01em}
+  .tier .tx{margin-left:auto;font-family:"DM Mono",monospace;font-size:9px;color:var(--muted2)}
+  .tier.act{border-color:#2c5a48;background:#0c1812;box-shadow:inset 0 0 12px rgba(57,255,138,.06)}
+  .tier.act .tl{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .tier.act .tn{color:var(--green)}
+  .tier.m .tn{color:var(--cyan)} .tier.l .tn{color:var(--amber)} .tier.t .tn{color:#c79bff}
+  .drillnote{font-size:9px;color:var(--muted2);letter-spacing:.06em;margin-top:8px;font-family:"DM Mono",monospace}
+  .drillnote b{color:var(--green)}
+
+  /* cardinality meter */
+  .cardrow{display:flex;flex-direction:column;gap:10px}
+  .cardmeter{position:relative}
+  .cardmeter .cl{display:flex;justify-content:space-between;font-size:9.5px;color:var(--muted);font-weight:700;letter-spacing:.04em;margin-bottom:4px}
+  .cardmeter .cl .cv{font-family:"DM Mono",monospace;font-weight:700}
+  .cardtrack{height:12px;border-radius:4px;background:#04140d;border:1px solid #0b2a1e;overflow:hidden;position:relative}
+  .cardfill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+  .cardfill.ctl{background:linear-gradient(90deg,#0c5a39,var(--vfd));box-shadow:0 0 8px rgba(57,255,158,.4);width:8%}
+  .cardfill.rich{background:linear-gradient(90deg,#16384a,var(--cyan));box-shadow:0 0 8px rgba(92,216,255,.4);width:88%}
+  .cardmeter.agg .cv{color:var(--green)} .cardmeter.raw .cv{color:var(--cyan)}
+  .cardlaw{font-size:9px;color:var(--muted);line-height:1.5;letter-spacing:.01em;
+    background:#0e1216;border:1px solid var(--line);border-radius:5px;padding:8px 9px;margin-top:2px}
+  .cardlaw b{color:var(--green)} .cardlaw .w{color:var(--red);font-weight:700}
+
+  /* RED + USE gauges */
+  .gaugegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .gauge{background:#0e1216;border:1px solid var(--line);border-radius:6px;padding:8px 6px;text-align:center}
+  .gauge svg{display:block;margin:0 auto}
+  .gauge .gk{font-size:8.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-top:4px}
+  .gauge .gv{font-family:"DM Mono",monospace;font-size:12px;font-weight:700;color:var(--green);margin-top:1px}
+  .gauge .gv.a{color:var(--amber)} .gauge .gv.c{color:var(--cyan)} .gauge .gv.r{color:var(--red)}
+  .gsub{font-size:9px;color:var(--muted2);letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin:2px 0 7px}
+
+  /* SLO / error-budget burn bar */
+  .slobar{margin-top:4px}
+  .sloline{display:flex;justify-content:space-between;align-items:baseline;font-size:10px;color:var(--muted);font-weight:700;margin-bottom:5px}
+  .sloline .sv{font-family:"DM Mono",monospace;color:var(--green);font-size:13px}
+  .burntrack{height:14px;border-radius:4px;background:#0e1216;border:1px solid var(--line);overflow:hidden;position:relative;display:flex}
+  .burnused{height:100%;background:linear-gradient(90deg,#7a2a2a,var(--red));box-shadow:0 0 8px rgba(255,77,77,.3);width:32%;transition:width .8s ease}
+  .burnleft{height:100%;background:linear-gradient(90deg,#0c5a39,var(--vfd));flex:1;opacity:.85}
+  .burnlabels{display:flex;justify-content:space-between;font-family:"DM Mono",monospace;font-size:9px;color:var(--muted2);margin-top:4px}
+  .burnlabels b{color:var(--amber)}
+
+  /* trace span waterfall */
+  .wf{display:flex;flex-direction:column;gap:5px}
+  .wfrow{display:flex;align-items:center;gap:8px;font-size:9.5px}
+  .wfname{width:108px;flex:0 0 auto;font-family:"DM Mono",monospace;color:var(--muted);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .wftrack{flex:1;height:11px;border-radius:3px;background:#0e1216;border:1px solid var(--line);position:relative;overflow:hidden}
+  .wfspan{position:absolute;top:1px;bottom:1px;border-radius:2px;
+    background:linear-gradient(90deg,#16384a,var(--cyan));box-shadow:0 0 6px rgba(92,216,255,.3);
+    transform:scaleX(0);transform-origin:left;transition:transform .5s ease}
+  .wfspan.err{background:linear-gradient(90deg,#7a2a2a,var(--red));box-shadow:0 0 6px rgba(255,77,77,.4)}
+  .wfspan.shown{transform:scaleX(1)}
+  .wfms{width:42px;flex:0 0 auto;text-align:right;font-family:"DM Mono",monospace;color:var(--muted2)}
+  .wftrace{font-family:"DM Mono",monospace;font-size:9px;color:var(--cyan);margin-bottom:8px;letter-spacing:.02em}
+  .wftrace b{color:var(--amber)}
+  .antip{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
+  .antip .a{font-family:"DM Mono",monospace;font-size:9px;color:var(--red);border:1px solid #5a1a1a;
+    background:#2a0d0d;border-radius:4px;padding:3px 7px;letter-spacing:.01em}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="rack">
+    <div class="railholes l" aria-hidden="true"></div>
+    <div class="railholes r" aria-hidden="true"></div>
+    <div class="rackinner">
+
+      <!-- ===== U1: brand / power ===== -->
+      <section class="u" aria-label="시스템 헤더">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="head">
+          <div class="logo" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#39ff8a" stroke-width="2" stroke-linecap="round">
+              <path d="M3 12h4l2 6 4-14 2 8h6"/>
+            </svg>
+          </div>
+          <div class="brand">
+            <h1>박양하 <span style="color:var(--muted);font-weight:600;font-size:.7em">／ MEASUREMENT BENCH RACK</span></h1>
+            <div class="role">공정·품질 엔지니어 <b>계측 · 검사 · 캘리브레이션</b> → 풀스택 개발</div>
+          </div>
+          <div class="topmeta">
+            <span class="pill"><span class="dot run"></span> SYSTEM&nbsp;ON</span>
+            <span class="pill"><span class="dot"></span> SELF-CAL&nbsp;OK</span>
+            <span class="pill mono"><span class="dot warn"></span> NIST-TRACEABLE</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== U2-3: DMM (hero) ===== -->
+      <section class="u" aria-label="디지털 멀티미터">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="modtitle">
+          <span class="uno">2U · DMM</span>
+          <h3>디지털 멀티미터 — 6½ 자리 정밀 측정</h3>
+          <span class="sub mono">MODEL DP-6500 · 분해능 0.1ppm · 셀렉터로 측정항목 전환</span>
+        </div>
+
+        <div class="dmm">
+          <!-- VFD display -->
+          <div class="vfdpanel">
+            <div class="annun" id="annun">
+              <span class="an" data-an="AUTO">AUTO</span>
+              <span class="an" data-an="HOLD">HOLD</span>
+              <span class="an on" data-an="DCV">REL</span>
+              <span class="an" data-an="PCT">%</span>
+              <span class="an" data-an="MV">mV</span>
+              <span class="an" data-an="OHM">Ω</span>
+              <span class="an" data-an="MIN">MIN</span>
+              <span class="an on" data-an="REC">REC</span>
+            </div>
+            <div class="readout">
+              <span class="digits" id="dmmDigits">−85.00</span>
+              <span class="unit" id="dmmUnit">%</span>
+            </div>
+            <div class="barrow">
+              <span class="barlabel">BAR</span>
+              <div class="bargraph"><div class="barfill" id="dmmBar"></div></div>
+            </div>
+            <div class="metricname" id="dmmName">측정항목 · <b>운영경비 절감</b></div>
+          </div>
+
+          <!-- selector -->
+          <div class="selector">
+            <div class="dial-wrap">
+              <div class="dial" aria-hidden="true">
+                <svg viewBox="0 0 120 120" width="120" height="120">
+                  <circle cx="60" cy="60" r="56" fill="#0d1115" stroke="#2c333b" stroke-width="2"/>
+                  <circle cx="60" cy="60" r="40" fill="url(#kg)" stroke="#3a434c" stroke-width="2"/>
+                  <defs><radialGradient id="kg" cx="38%" cy="32%"><stop offset="0" stop-color="#2c343d"/><stop offset="1" stop-color="#11151a"/></radialGradient></defs>
+                  <g id="dialMarks"></g>
+                  <g id="dialPtr"><rect x="58.5" y="22" width="3" height="20" rx="1.5" fill="#39ff8a" style="filter:drop-shadow(0 0 4px #39ff8a)"/></g>
+                  <circle cx="60" cy="60" r="6" fill="#0a0d10" stroke="#3a434c"/>
+                </svg>
+              </div>
+              <div class="knobtxt">
+                <div class="kt">FUNCTION</div>
+                <div class="kv" id="dialFn">DC&nbsp;%</div>
+              </div>
+            </div>
+            <div class="selbtns" id="selbtns" role="group" aria-label="측정항목 선택"></div>
+          </div>
+        </div>
+
+        <div class="jacks" aria-hidden="true">
+          <div class="jack"><div class="jhole red"></div><div class="jlbl">HI / VΩ</div></div>
+          <div class="jack"><div class="jhole black"></div><div class="jlbl">LO / COM</div></div>
+          <div class="jack"><div class="jhole"></div><div class="jlbl">SENSE Hi</div></div>
+          <div class="jack"><div class="jhole"></div><div class="jlbl">SENSE Lo</div></div>
+          <div class="jack" style="margin-left:auto"><div class="bnc"></div><div class="jlbl">EXT TRIG</div></div>
+          <div class="jack"><div class="bnc"></div><div class="jlbl">REF OUT</div></div>
+        </div>
+      </section>
+
+      <!-- ===== row: CAL unit + scope ===== -->
+      <div class="grid2">
+        <!-- CAL routine -->
+        <section class="u" aria-label="캘리브레이션 유닛">
+          <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+          <div class="modtitle">
+            <span class="uno">1U · CAL</span>
+            <h3>캘리브레이션 유닛 — 용착불량 보정 루틴</h3>
+            <span class="sub mono">이랜텍 라인 · DOE 기반</span>
+          </div>
+          <div class="calbody">
+            <div class="caltop">
+              <div class="lamp" id="calLamp" aria-hidden="true"><div class="glass"></div></div>
+              <div style="display:flex;flex-direction:column;align-items:center"><div class="lamplbl">PASS</div></div>
+              <div class="calreadbox" id="calBox">
+                <div class="calread-lbl">용착 불량률 · MEASURED</div>
+                <div class="calread" id="calRead">15.0<span style="font-size:.6em"> %</span></div>
+                <div class="specrow">
+                  <span class="verdict" id="calVerdict">OUT-OF-SPEC</span>
+                  <span class="mono">공차 USL ≤ 0.5% · ε ±0.1%</span>
+                </div>
+              </div>
+            </div>
+            <button class="calbtn" id="calBtn"><span class="ico"></span> CAL 루틴 실행 — DOE 보정</button>
+            <div class="calsteps" id="calSteps">
+              <div class="step" data-s="0"><span class="sd"></span> 기준 게이지 영점 · <b>device_inventory</b> 조회</div>
+              <div class="step" data-s="1"><span class="sd"></span> 용착 압력/시간 인자 DOE 설계 (3³ 직교배열)</div>
+              <div class="step" data-s="2"><span class="sd"></span> 광학축 정렬 검증 · 비전 판정 재측정</div>
+              <div class="step" data-s="3"><span class="sd"></span> 캘리브레이션 인증 · 릴레이 래치 · PASS</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- scope -->
+        <section class="u" aria-label="오실로스코프 / 검사 모듈">
+          <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+          <div class="modtitle">
+            <span class="uno">1U · SCOPE</span>
+            <h3>검사 모듈 — OCV / IR 파형</h3>
+            <span class="sub mono">솔라엣지</span>
+          </div>
+          <div class="scopewrap">
+            <div class="crt">
+              <canvas id="scopeCv" width="640" height="340"></canvas>
+              <div class="ovl"></div>
+              <span class="corner c-tl mono">CH1 OCV</span>
+              <span class="corner c-tr mono">CH2 IR</span>
+              <span class="corner c-bl mono">2ms/div</span>
+              <span class="corner c-br mono">PASS</span>
+            </div>
+            <div class="scopeside">
+              <div class="srow"><span class="k">OCV</span><span class="v">3.642 V</span></div>
+              <div class="srow"><span class="k">IR (절연)</span><span class="v cy">> 500 MΩ</span></div>
+              <div class="srow"><span class="k">판정</span><span class="v">IN-SPEC</span></div>
+              <div class="srow"><span class="k">비전 검사</span><span class="v amb">은성/이랜텍</span></div>
+              <div class="srow"><span class="k">DV 전산화</span><span class="v cy">100%</span></div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ===== U: DAQ telemetry ===== -->
+      <section class="u" aria-label="신호원 / DAQ">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="modtitle">
+          <span class="uno">1U · DAQ</span>
+          <h3>신호원 · 데이터 수집 — OPC UA 텔레메트리</h3>
+          <span class="sub mono">python-opcua · 5분 간격</span>
+        </div>
+        <div class="daqgrid" id="daqGrid">
+          <div class="tcell g"><div class="tk">생산성</div><div class="tv">+24<span class="tu">%</span></div></div>
+          <div class="tcell g"><div class="tk">ST 단축</div><div class="tv">−50<span class="tu">%</span></div></div>
+          <div class="tcell a"><div class="tk">C/T 단축</div><div class="tv">−49<span class="tu">%</span></div></div>
+          <div class="tcell"><div class="tk">사무공수</div><div class="tv" id="tManhr">−451<span class="tu">분/일</span></div></div>
+        </div>
+        <div class="opcrow">
+          <span class="tag">opc.tcp://bench.dut:4840</span>
+          <span class="tag" id="opcNode">ns=2;s=Line.Telemetry</span>
+          <span style="color:var(--green);font-weight:700">● STREAMING</span>
+          <span class="mono" id="opcSeq">seq 0001</span>
+          <span style="margin-left:auto" class="mono">last poll <span id="opcTime" style="color:var(--cyan)">00:00</span> ago</span>
+        </div>
+      </section>
+
+      <!-- ===== U: OBS observability ===== -->
+      <section class="u" aria-label="관찰성 / 옵저버빌리티">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="modtitle">
+          <span class="uno">1U · OBS</span>
+          <h3>관찰성 / OBSERVABILITY — 출력 시점부터 설계된 디버그 가능성</h3>
+          <span class="sub mono">metrics · logs · traces · RED/USE · SLO</span>
+        </div>
+
+        <div class="obscreed">
+          <b>“디버그 가능성은 사후에 더할 수 없고, 출력 시점부터 설계되는 1급 속성이다.”</b><br>
+          관찰성 <span class="vs">≠</span> 모니터링 — 모니터링은 <b>known unknowns</b>(질문을 미리 안다),
+          관찰성은 <b>unknown unknowns</b>(사후 임의 차원으로 슬라이스). Kalman 제어이론 차용: 외부 신호로 내부 상태를 추론한다.
+        </div>
+
+        <div class="obsgrid">
+          <!-- left: 3-tier readout + drilldown -->
+          <div class="obspane">
+            <div class="ph"><span class="dot"></span><span class="pt">3-Tier Signal · Drilldown</span><span class="pn" id="obsDrill">metric → trace → log</span></div>
+            <div class="tier m act" data-tier="0"><span class="tl"></span><span class="tn">METRIC</span><span class="td">집계 신호 · 카디널리티 통제</span><span class="tx">RED/USE</span></div>
+            <div class="tier t" data-tier="1"><span class="tl"></span><span class="tn">TRACE</span><span class="td">trace_id 전파 · span 트리</span><span class="tx">head/tail 샘플링</span></div>
+            <div class="tier l" data-tier="2"><span class="tl"></span><span class="tn">LOG</span><span class="td">원본 신호 · 카디널리티 풍부</span><span class="tx">no-sample</span></div>
+            <div class="drillnote">드릴다운: 이상 <b id="obsAnom">metric</b> 감지 → 해당 <b>trace_id</b>로 점프 → 원본 <b>log</b> 확인</div>
+          </div>
+
+          <!-- right: cardinality meter -->
+          <div class="obspane">
+            <div class="ph"><span class="dot warn" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan)"></span><span class="pt">카디널리티 미터</span><span class="pn">cardinality</span></div>
+            <div class="cardrow">
+              <div class="cardmeter agg">
+                <div class="cl"><span>집계 신호 (metric) · 통제</span><span class="cv" id="cardAgg">~12 series</span></div>
+                <div class="cardtrack"><div class="cardfill ctl" id="cardAggBar"></div></div>
+              </div>
+              <div class="cardmeter raw">
+                <div class="cl"><span>원본 신호 (log/trace) · 풍부 보존</span><span class="cv" id="cardRaw">~1.4M events</span></div>
+                <div class="cardtrack"><div class="cardfill rich" id="cardRawBar"></div></div>
+              </div>
+              <div class="cardlaw">운영 규율 — <b>집계 신호는 카디널리티 통제, 원본 신호는 카디널리티 풍부하게 보존.</b>
+                안티: user_id를 <span class="w">메트릭 라벨</span>로 쓰면 라벨 폭발 → OOM.</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RED + USE gauges + SLO -->
+        <div class="obsgrid" style="margin-top:11px">
+          <div class="obspane">
+            <div class="ph"><span class="dot"></span><span class="pt">RED · 요청 신호</span><span class="pn">Rate/Errors/Duration</span></div>
+            <div class="gaugegrid" id="redGauges"></div>
+            <div class="ph" style="margin:13px 0 9px"><span class="dot" style="background:var(--amber);box-shadow:0 0 8px var(--amber)"></span><span class="pt">USE · 자원 신호</span><span class="pn">Utilization/Saturation/Errors</span></div>
+            <div class="gaugegrid" id="useGauges"></div>
+          </div>
+
+          <div class="obspane">
+            <div class="ph"><span class="dot"></span><span class="pt">SLO · Error Budget Burn</span><span class="pn">99.9% / 30d</span></div>
+            <div class="slobar">
+              <div class="sloline"><span>가용성 SLO</span><span class="sv" id="sloVal">99.94%</span></div>
+              <div class="burntrack"><div class="burnused" id="burnUsed"></div><div class="burnleft"></div></div>
+              <div class="burnlabels"><span>소진 <b id="burnPct">32%</b></span><span>잔여 예산 <span id="burnRem">29.4 min</span></span></div>
+            </div>
+            <div class="ph" style="margin:14px 0 8px"><span class="dot" style="background:#c79bff;box-shadow:0 0 8px #c79bff"></span><span class="pt">Trace Span Waterfall</span><span class="pn">span tree</span></div>
+            <div class="wftrace">trace_id <b id="wfTid">7f3a…e2c1</b> · 드릴다운 metric→trace→log</div>
+            <div class="wf" id="wfRows"></div>
+            <div class="antip">
+              <span class="a">✕ 라벨 폭발</span>
+              <span class="a">✕ 로그를 메트릭처럼</span>
+              <span class="a">✕ 샘플링 없는 전수수집</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== U: DUT bay / device inventory ===== -->
+      <section class="u" aria-label="DUT 베이 / 장비 인벤토리">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="modtitle">
+          <span class="uno">2U · DUT BAY</span>
+          <h3>피측정 장치 · device_inventory</h3>
+          <span class="sub mono">status · capabilities</span>
+        </div>
+        <div class="inv">
+          <div class="invrow">
+            <div><div class="nm">Mirrorless · calibration_profile</div><div class="cap">WB · EXPOSURE · CROP · COLOR · mode=gpu</div></div>
+            <div class="cap">WebGL2 / MediaPipe</div>
+            <div class="stled cal"><span class="d"></span> CALIBRATING</div>
+          </div>
+          <div class="invrow">
+            <div><div class="nm">Canon EOS R100 · 광학축 정렬</div><div class="cap">렌즈중심 → 얼굴 target · tilt ≈ 18°</div></div>
+            <div class="cap">TensorFlow.js</div>
+            <div class="stled ok"><span class="d"></span> ALIGNED</div>
+          </div>
+          <div class="invrow">
+            <div><div class="nm">솔라엣지 OCV/IR 검사장비</div><div class="cap">OCV 3.642V · IR > 500MΩ</div></div>
+            <div class="cap">DAQ / OPC UA</div>
+            <div class="stled ok"><span class="d"></span> ONLINE</div>
+          </div>
+          <div class="invrow">
+            <div><div class="nm">비전 검사 시스템 · 은성/이랜텍</div><div class="cap">용착 불량 판정 · DOE</div></div>
+            <div class="cap">비전검사 / CadQuery</div>
+            <div class="stled ok"><span class="d"></span> PASS 0건</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== U: stack + contact ===== -->
+      <section class="u" aria-label="기술 스택 / 연락처">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="footu">
+          <div class="chips">
+            <span class="chip">Electron</span><span class="chip"><b>WebGL2</b></span><span class="chip">MediaPipe</span>
+            <span class="chip">TensorFlow.js</span><span class="chip">React</span><span class="chip">Django</span>
+            <span class="chip">PostgreSQL&nbsp;17</span><span class="chip"><b>OPC&nbsp;UA</b></span><span class="chip">CadQuery</span><span class="chip">비전검사</span>
+          </div>
+          <div class="contact">
+            <a class="cbtn" href="mailto:64etuor@gmail.com"><span class="d"></span> 64etuor@gmail.com</a>
+            <a class="cbtn" href="https://github.com/64etuor" target="_blank" rel="noopener"><span class="d"></span> github.com/64etuor</a>
+            <a class="cbtn" href="tel:010-0000-0000"><span class="d"></span> 010-0000-0000</a>
+          </div>
+        </div>
+        <div class="label-strip" style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px">박양하 · 계측 랙 v2.0 · 측정은 신뢰를 만든다 · MEASURE · CALIBRATE · VERIFY</div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ---------- DMM function selector ---------- */
+  var METRICS = [
+    {fn:"DC %",   nm:"운영경비 절감", val:-85.00, unit:"%",     pct:0.85, ann:["PCT"]},
+    {fn:"ST",     nm:"표준시간(ST) 단축", val:-50.00, unit:"%", pct:0.50, ann:["PCT"]},
+    {fn:"C/T",    nm:"사이클타임(C/T) 단축", val:-49.00, unit:"%", pct:0.49, ann:["PCT"]},
+    {fn:"PROD",   nm:"생산성 향상", val:+24.00, unit:"%", pct:0.24, ann:["PCT"]},
+    {fn:"UNIT",   nm:"단가 개선", val:+30.00, unit:"%", pct:0.30, ann:["PCT"]},
+    {fn:"OFFICE", nm:"사무공수 절감", val:-451, unit:"분", pct:0.78, ann:["MV"]},
+    {fn:"DEFECT", nm:"불량", val:0, unit:"건", pct:0.0, ann:["OHM"]}
+  ];
+  var selBtns = document.getElementById("selbtns");
+  var dmmDigits = document.getElementById("dmmDigits");
+  var dmmUnit = document.getElementById("dmmUnit");
+  var dmmBar = document.getElementById("dmmBar");
+  var dmmName = document.getElementById("dmmName");
+  var dialFn = document.getElementById("dialFn");
+  var dialPtr = document.getElementById("dialPtr");
+  var dialMarks = document.getElementById("dialMarks");
+  var annunEls = Array.prototype.slice.call(document.querySelectorAll("#annun .an"));
+  var curIdx = 0, rolling = false;
+
+  // dial marks
+  (function(){
+    var svgns="http://www.w3.org/2000/svg", N=METRICS.length, span=270, start=-135;
+    for(var i=0;i<N;i++){
+      var a=(start + span*(i/(N-1)))*Math.PI/180;
+      var x1=60+Math.cos(a-Math.PI/2)*0, y1=60+Math.sin(a-Math.PI/2)*0;
+      var r1=44,r2=50;
+      var mx1=60+Math.cos(a-Math.PI/2)*r1, my1=60+Math.sin(a-Math.PI/2)*r1;
+      var mx2=60+Math.cos(a-Math.PI/2)*r2, my2=60+Math.sin(a-Math.PI/2)*r2;
+      var ln=document.createElementNS(svgns,"line");
+      ln.setAttribute("x1",mx1.toFixed(1));ln.setAttribute("y1",my1.toFixed(1));
+      ln.setAttribute("x2",mx2.toFixed(1));ln.setAttribute("y2",my2.toFixed(1));
+      ln.setAttribute("stroke","#4a545d");ln.setAttribute("stroke-width","2");
+      dialMarks.appendChild(ln);
+    }
+  })();
+  function dialAngle(i){var N=METRICS.length;return -135 + 270*(i/(N-1));}
+
+  function fmtVal(m){
+    if(m.unit==="분") return (m.val>0?"+":"")+m.val;
+    if(m.unit==="건") return m.val.toFixed(0);
+    var s=(m.val>0?"+":(m.val<0?"−":""))+Math.abs(m.val).toFixed(2);
+    return s;
+  }
+
+  // build selector buttons
+  METRICS.forEach(function(m,i){
+    var b=document.createElement("button");
+    b.className="selbtn"+(i===0?" active":"");
+    b.innerHTML='<span class="led"></span><span class="nm">'+m.nm+'</span><span class="ds">'+m.fn+'</span>';
+    b.addEventListener("click",function(){selectMetric(i);});
+    selBtns.appendChild(b);
+  });
+  var selButtonEls = Array.prototype.slice.call(selBtns.children);
+
+  function setAnnun(list){
+    annunEls.forEach(function(el){
+      var key=el.getAttribute("data-an");
+      var keep = (key==="REC"||key==="AUTO");
+      if(key==="AUTO"){ el.classList.add("on"); return; }
+      if(key==="REC"){ el.classList.add("on"); return; }
+      if(list.indexOf(key)>=0) el.classList.add("on"); else el.classList.remove("on");
+    });
+  }
+
+  function rollTo(target, unit){
+    // digit-roll animation toward target value
+    if(rolling) return;
+    rolling=true;
+    var cur=parseFloat((dmmDigits.textContent||"0").replace("−","-").replace(/[^0-9.\-]/g,""))||0;
+    var t0=performance.now(), dur=480, from=cur;
+    function frame(now){
+      var p=Math.min(1,(now-t0)/dur);
+      var e=1-Math.pow(1-p,3);
+      var v=from+(target-from)*e;
+      var jitter = p<1 ? (Math.random()-0.5)*Math.abs(target-from)*0.04*(1-p) : 0;
+      renderDigits(v+jitter, unit, target);
+      if(p<1) requestAnimationFrame(frame);
+      else { renderDigits(target, unit, target); rolling=false; }
+    }
+    requestAnimationFrame(frame);
+  }
+  function renderDigits(v, unit, target){
+    var txt;
+    if(unit==="분"){ txt=(v>0?"+":(v<0?"−":""))+Math.abs(Math.round(v)); }
+    else if(unit==="건"){ txt=Math.abs(Math.round(v)).toFixed(0); }
+    else { txt=(target>0?"+":(target<0?"−":""))+Math.abs(v).toFixed(2); }
+    dmmDigits.textContent=txt;
+  }
+
+  function selectMetric(i){
+    curIdx=i;
+    var m=METRICS[i];
+    selButtonEls.forEach(function(el,j){el.classList.toggle("active",j===i);});
+    dialFn.innerHTML = m.fn.replace(" ","&nbsp;");
+    dialPtr.setAttribute("transform","rotate("+dialAngle(i).toFixed(1)+" 60 60)");
+    dmmUnit.textContent=m.unit;
+    dmmName.innerHTML="측정항목 · <b>"+m.nm+"</b>";
+    setAnnun(m.ann);
+    dmmBar.style.width=(Math.max(4,m.pct*100)).toFixed(0)+"%";
+    rollTo(m.val, m.unit);
+  }
+  // initial render (powered, no interaction)
+  dialPtr.setAttribute("transform","rotate("+dialAngle(0).toFixed(1)+" 60 60)");
+  dmmBar.style.width="85%";
+  selectMetric(0);
+
+  /* ---------- CAL routine (delight) ---------- */
+  var calBtn=document.getElementById("calBtn");
+  var calRead=document.getElementById("calRead");
+  var calBox=document.getElementById("calBox");
+  var calLamp=document.getElementById("calLamp");
+  var calVerdict=document.getElementById("calVerdict");
+  var calSteps=Array.prototype.slice.call(document.querySelectorAll("#calSteps .step"));
+  var calBusy=false, calState="fail";
+
+  function beep(freq,dur){
+    try{
+      var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
+      window._ac=window._ac||new AC();
+      var ac=window._ac; if(ac.state==="suspended") ac.resume();
+      var o=ac.createOscillator(),g=ac.createGain();
+      o.type="square";o.frequency.value=freq;
+      g.gain.setValueAtTime(0.0001,ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.08,ac.currentTime+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,ac.currentTime+dur);
+      o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+dur+0.02);
+    }catch(e){}
+  }
+
+  function runCal(){
+    if(calBusy) return; calBusy=true; calBtn.disabled=true;
+    // reset to OUT-OF-SPEC
+    calState="fail";
+    calBox.classList.remove("pass"); calLamp.classList.remove("pass");
+    calVerdict.classList.remove("pass"); calVerdict.textContent="OUT-OF-SPEC";
+    calRead.innerHTML='15.0<span style="font-size:.6em"> %</span>';
+    calSteps.forEach(function(s){s.classList.remove("done");});
+    var i=0;
+    function step(){
+      if(i<calSteps.length){
+        calSteps[i].classList.add("done");
+        beep(660+i*120,0.05);
+        // measured value descends through steps
+        var seq=[15.0,8.2,2.4,0.0];
+        var v=seq[i];
+        calRead.innerHTML=(v.toFixed(1))+'<span style="font-size:.6em"> %</span>';
+        if(v<=0.5){ calRead.style.color="var(--vfd)"; }
+        i++; setTimeout(step,520);
+      } else {
+        // relay latch + PASS
+        beep(990,0.04); setTimeout(function(){beep(1320,0.12);},60);
+        calBox.classList.add("pass"); calLamp.classList.add("pass");
+        calVerdict.classList.add("pass"); calVerdict.textContent="IN-SPEC ✓";
+        calRead.style.color="";
+        calRead.innerHTML='0.0<span style="font-size:.6em"> %</span>';
+        calState="pass";
+        calBusy=false; calBtn.disabled=false;
+      }
+    }
+    step();
+  }
+  calBtn.addEventListener("click",runCal);
+
+  /* ---------- OPC UA telemetry ticker ---------- */
+  var opcSeq=document.getElementById("opcSeq"), opcTime=document.getElementById("opcTime");
+  var seq=1, secs=0;
+  function tickOpc(){
+    secs=(secs+1)%300;
+    var mm=String(Math.floor(secs/60)).padStart(2,"0"), ss=String(secs%60).padStart(2,"0");
+    opcTime.textContent=mm+":"+ss;
+    if(secs%5===0){ seq++; opcSeq.textContent="seq "+String(seq).padStart(4,"0"); }
+  }
+  setInterval(tickOpc,1000);
+
+  /* ---------- CRT scope (OCV / IR waveform) ---------- */
+  var cv=document.getElementById("scopeCv"), ctx=cv.getContext("2d");
+  var W=cv.width, H=cv.height, t=0;
+  function drawGrid(){
+    ctx.clearRect(0,0,W,H);
+    var g=ctx.createLinearGradient(0,0,0,H);
+    g.addColorStop(0,"#031309");g.addColorStop(1,"#020806");
+    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    ctx.strokeStyle="rgba(57,255,138,.10)";ctx.lineWidth=1;
+    var dx=W/10, dy=H/6;
+    for(var x=0;x<=W+1;x+=dx){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+    for(var y=0;y<=H+1;y+=dy){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+    // center axes brighter
+    ctx.strokeStyle="rgba(57,255,138,.22)";
+    ctx.beginPath();ctx.moveTo(0,H/2);ctx.lineTo(W,H/2);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.stroke();
+    // tick marks on center axis
+    ctx.strokeStyle="rgba(57,255,138,.3)";
+    for(var xx=0;xx<=W;xx+=dx/5){ctx.beginPath();ctx.moveTo(xx,H/2-3);ctx.lineTo(xx,H/2+3);ctx.stroke();}
+  }
+  function wave(){
+    drawGrid();
+    // CH1 OCV: clean settling sine (charge curve flavor)
+    ctx.lineWidth=2.2;ctx.strokeStyle="#39ff8a";ctx.shadowBlur=10;ctx.shadowColor="rgba(57,255,138,.7)";
+    ctx.beginPath();
+    for(var x=0;x<=W;x++){
+      var ph=(x/W)*Math.PI*4 + t;
+      var env=0.55*(1-Math.exp(-(x/W)*3));
+      var y=H/2 - (env*Math.sin(ph)*H*0.30) - (0.06*H*Math.sin(t*0.6));
+      x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.stroke();
+    // CH2 IR: amber square-ish pulse (insulation test)
+    ctx.strokeStyle="#ffb01f";ctx.shadowColor="rgba(255,176,31,.6)";ctx.lineWidth=1.8;
+    ctx.beginPath();
+    for(var x2=0;x2<=W;x2++){
+      var ph2=(x2/W)*Math.PI*6 + t*0.7;
+      var sq=Math.tanh(Math.sin(ph2)*3)*0.5;
+      var y2=H*0.74 - sq*H*0.14;
+      x2===0?ctx.moveTo(x2,y2):ctx.lineTo(x2,y2);
+    }
+    ctx.stroke();
+    ctx.shadowBlur=0;
+    // sweep dot
+    var sx=((t*40)%W);
+    ctx.fillStyle="rgba(57,255,138,.9)";
+    ctx.beginPath();ctx.arc(sx,H/2,2.5,0,Math.PI*2);ctx.fill();
+    t+=0.05;
+    requestAnimationFrame(wave);
+  }
+  // ensure first paint shows a populated waveform
+  drawGrid();
+  requestAnimationFrame(wave);
+
+  /* ---------- OBS observability module ---------- */
+  (function(){
+    // arc gauge builder (semicircle)
+    function gauge(parent, label, sub, val, klass){
+      var ns="http://www.w3.org/2000/svg";
+      var wrap=document.createElement("div"); wrap.className="gauge";
+      var svg=document.createElementNS(ns,"svg");
+      svg.setAttribute("width","52"); svg.setAttribute("height","32"); svg.setAttribute("viewBox","0 0 52 32");
+      var cx=26, cy=28, r=22, frac=Math.max(0,Math.min(1,val));
+      function arc(p0,p1,color,w){
+        var a0=Math.PI*(1-p0), a1=Math.PI*(1-p1);
+        var x0=cx+r*Math.cos(a0), y0=cy-r*Math.sin(a0);
+        var x1=cx+r*Math.cos(a1), y1=cy-r*Math.sin(a1);
+        var pth=document.createElementNS(ns,"path");
+        pth.setAttribute("d","M"+x0.toFixed(1)+" "+y0.toFixed(1)+" A"+r+" "+r+" 0 0 1 "+x1.toFixed(1)+" "+y1.toFixed(1));
+        pth.setAttribute("fill","none"); pth.setAttribute("stroke",color);
+        pth.setAttribute("stroke-width",w); pth.setAttribute("stroke-linecap","round");
+        svg.appendChild(pth);
+      }
+      arc(0,1,"#1a2228",4);
+      var stroke = klass==="r"?"#ff4d4d":klass==="a"?"#ffb01f":klass==="c"?"#5cd8ff":"#39ff8a";
+      if(frac>0.01) arc(0,frac,stroke,4);
+      wrap.appendChild(svg);
+      var k=document.createElement("div"); k.className="gk"; k.textContent=label; wrap.appendChild(k);
+      var v=document.createElement("div"); v.className="gv "+(klass||""); v.textContent=sub; wrap.appendChild(v);
+      parent.appendChild(wrap);
+    }
+    var red=document.getElementById("redGauges");
+    if(red){
+      gauge(red,"Rate","1.2k/s",0.62,"c");
+      gauge(red,"Errors","0.04%",0.04,"");
+      gauge(red,"Duration","p99 84ms",0.34,"a");
+    }
+    var use=document.getElementById("useGauges");
+    if(use){
+      gauge(use,"Util","58%",0.58,"");
+      gauge(use,"Sat","0.21",0.21,"c");
+      gauge(use,"Errors","0",0.0,"");
+    }
+
+    // animate cardinality + burn bars on first frame
+    requestAnimationFrame(function(){
+      var ab=document.getElementById("cardAggBar"); if(ab) ab.style.width="7%";
+      var rb=document.getElementById("cardRawBar"); if(rb) rb.style.width="92%";
+      var bu=document.getElementById("burnUsed"); if(bu) bu.style.width="32%";
+    });
+
+    // span waterfall: api.gateway -> auth -> db.query(err) -> render
+    var spans=[
+      {n:"api.gateway",   o:0,  w:1.00, err:false, ms:"84ms"},
+      {n:"auth.verify",   o:.06,w:.18,  err:false, ms:"15ms"},
+      {n:"db.query users",o:.26,w:.54,  err:true,  ms:"45ms"},
+      {n:"cache.lookup",  o:.30,w:.10,  err:false, ms:"8ms"},
+      {n:"render.json",   o:.84,w:.14,  err:false, ms:"12ms"}
+    ];
+    var wf=document.getElementById("wfRows");
+    if(wf){
+      spans.forEach(function(s){
+        var row=document.createElement("div"); row.className="wfrow";
+        var nm=document.createElement("div"); nm.className="wfname"; nm.textContent=s.n;
+        var tr=document.createElement("div"); tr.className="wftrack";
+        var sp=document.createElement("div"); sp.className="wfspan"+(s.err?" err":"");
+        sp.style.left=(s.o*100).toFixed(1)+"%"; sp.style.width=(s.w*100).toFixed(1)+"%";
+        tr.appendChild(sp);
+        var ms=document.createElement("div"); ms.className="wfms"; ms.textContent=s.ms;
+        row.appendChild(nm); row.appendChild(tr); row.appendChild(ms);
+        wf.appendChild(row);
+      });
+      requestAnimationFrame(function(){
+        Array.prototype.forEach.call(wf.querySelectorAll(".wfspan"),function(el,i){
+          setTimeout(function(){el.classList.add("shown");}, 120+i*90);
+        });
+      });
+    }
+
+    // gentle drilldown cycle across the 3 tiers (metric->trace->log)
+    var tiers=Array.prototype.slice.call(document.querySelectorAll(".tier"));
+    var anomEl=document.getElementById("obsAnom"), labels=["metric","trace","log"];
+    var di=0;
+    if(tiers.length){
+      setInterval(function(){
+        di=(di+1)%tiers.length;
+        tiers.forEach(function(el,j){el.classList.toggle("act",j===di);});
+        if(anomEl) anomEl.textContent=labels[di];
+      },2400);
+    }
+  })();
+
+  /* fonts: re-draw once loaded so headless capture is crisp */
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(function(){ /* layout already live */ }); }
+})();
+</script>
+</body>
+</html>

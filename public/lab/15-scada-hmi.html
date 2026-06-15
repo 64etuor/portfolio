@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCADA HMI — 박양하 공정 감시제어 화면</title>
+<style>
+  @font-face {
+    font-family:'Share Tech Mono';
+    src:local('Courier New');
+  }
+  :root{
+    --bg:#0c1014;
+    --panel:#161b21;
+    --panel2:#1d242c;
+    --steel:#2a333d;
+    --steel-lo:#202830;
+    --line:#3a4654;
+    --txt:#c4d2dd;
+    --txt-dim:#7e8c99;
+    --run:#21d07a;
+    --run-d:#0c5a36;
+    --alarm:#ff3b3b;
+    --alarm-d:#5e0f0f;
+    --warn:#ffb020;
+    --warn-d:#5e3e00;
+    --info:#39b6ff;
+    --pv:#39d6ff;
+    --sp:#ffd23f;
+    --grid:#1f2a33;
+    --chrome-hi:#3c4854;
+    --chrome-lo:#10161b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(1200px 700px at 50% -10%, #18222b 0%, transparent 60%),
+      linear-gradient(180deg,#0a0e12 0%, #0c1014 100%);
+    color:var(--txt);
+    font-family:'Segoe UI','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+    word-break:keep-all;
+    overflow-x:hidden;
+    min-height:100vh;
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'Share Tech Mono','Courier New',monospace;letter-spacing:.04em}
+  /* ===== Bezel / outer frame ===== */
+  .hmi{
+    max-width:1600px;
+    margin:0 auto;
+    padding:14px;
+  }
+  .bezel{
+    border-radius:14px;
+    padding:10px;
+    background:
+      linear-gradient(145deg,#39434e,#161c22 55%,#0d1217);
+    box-shadow:
+      0 0 0 1px #05080b,
+      0 30px 80px rgba(0,0,0,.7),
+      inset 0 1px 0 rgba(255,255,255,.08);
+  }
+  .screen{
+    background:linear-gradient(180deg,#10151a,#0c1014);
+    border-radius:8px;
+    border:1px solid #05080b;
+    box-shadow:inset 0 0 80px rgba(0,0,0,.6), inset 0 0 1px rgba(57,182,255,.2);
+    overflow:hidden;
+    position:relative;
+  }
+  .screen::after{
+    content:"";position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(255,255,255,.012) 0 1px,transparent 1px 3px);
+    mix-blend-mode:overlay;
+  }
+  /* ===== Header bar ===== */
+  header.bar{
+    display:flex;align-items:center;gap:0;
+    background:linear-gradient(180deg,#222b34,#141a20);
+    border-bottom:1px solid #05080b;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06);
+    height:58px;
+  }
+  .brand{
+    display:flex;align-items:center;gap:12px;
+    padding:0 18px;height:100%;
+    border-right:1px solid var(--line);
+  }
+  .logo{
+    width:34px;height:34px;border-radius:6px;flex:none;
+    background:conic-gradient(from 0deg,#39d6ff,#21d07a,#ffd23f,#39d6ff);
+    position:relative;
+    box-shadow:0 0 14px rgba(57,214,255,.4);
+  }
+  .logo::before{
+    content:"";position:absolute;inset:4px;border-radius:4px;background:#0c1014;
+  }
+  .logo::after{
+    content:"PY";position:absolute;inset:0;display:grid;place-items:center;
+    font:700 13px/1 'Share Tech Mono',monospace;color:#39d6ff;
+  }
+  .brand h1{font-size:14px;letter-spacing:.06em;font-weight:700;color:#e8f1f8}
+  .brand .sub{font-size:10.5px;color:var(--txt-dim);letter-spacing:.12em;margin-top:2px}
+  .hdr-block{
+    padding:0 16px;height:100%;display:flex;flex-direction:column;justify-content:center;
+    border-right:1px solid var(--line);min-width:0;
+  }
+  .hdr-block .k{font-size:9px;color:var(--txt-dim);letter-spacing:.16em;text-transform:uppercase}
+  .hdr-block .v{font-size:13px;color:var(--txt);margin-top:3px;font-weight:600;white-space:nowrap}
+  .hdr-spacer{flex:1}
+  .clock{padding:0 18px;text-align:right}
+  .clock .t{font-size:22px;font-weight:700;color:#e8f1f8}
+  .clock .d{font-size:10px;color:var(--txt-dim);letter-spacing:.1em;margin-top:2px}
+  .mode-pill{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:5px 12px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:.1em;
+    border:1px solid var(--run-d);background:rgba(33,208,122,.12);color:var(--run);
+    margin-right:16px;
+  }
+  .mode-pill .dot{width:8px;height:8px;border-radius:50%;background:var(--run);box-shadow:0 0 8px var(--run);animation:pulse 2s infinite}
+  /* ===== Nav tabs ===== */
+  nav.tabs{
+    display:flex;background:#0e1318;border-bottom:1px solid #05080b;
+  }
+  nav.tabs button{
+    appearance:none;border:0;cursor:pointer;
+    padding:11px 22px;background:transparent;color:var(--txt-dim);
+    font-size:12.5px;font-weight:600;letter-spacing:.04em;font-family:inherit;
+    border-right:1px solid #05080b;position:relative;transition:.15s;
+  }
+  nav.tabs button:hover{color:var(--txt);background:rgba(57,182,255,.05)}
+  nav.tabs button.active{color:#e8f1f8;background:linear-gradient(180deg,#1a232c,#11171c)}
+  nav.tabs button.active::after{
+    content:"";position:absolute;left:0;right:0;bottom:-1px;height:2px;background:var(--info);box-shadow:0 0 10px var(--info);
+  }
+  nav.tabs .tag{font-size:9px;color:var(--txt-dim);margin-left:7px;font-family:'Share Tech Mono',monospace}
+  /* ===== Alarm banner ===== */
+  .alarm-banner{
+    display:flex;align-items:center;gap:14px;
+    padding:9px 18px;background:#0e1318;border-bottom:1px solid #05080b;
+    min-height:46px;
+  }
+  .alarm-banner.active{
+    background:repeating-linear-gradient(135deg,#3a0c0c 0 14px,#2a0808 14px 28px);
+    animation:alarmflash 1s steps(1) infinite;
+  }
+  @keyframes alarmflash{50%{background:repeating-linear-gradient(135deg,#5e1212 0 14px,#3a0c0c 14px 28px)}}
+  .alarm-banner .ico{
+    width:30px;height:30px;flex:none;border-radius:5px;display:grid;place-items:center;
+    background:var(--steel);color:var(--txt-dim);font-size:16px;font-weight:700;
+  }
+  .alarm-banner.active .ico{background:var(--alarm);color:#fff;animation:pulse 1s infinite}
+  .alarm-banner .msg{flex:1;min-width:0}
+  .alarm-banner .msg .lvl{font-size:9px;letter-spacing:.18em;color:var(--txt-dim);text-transform:uppercase}
+  .alarm-banner.active .msg .lvl{color:#ff8a8a}
+  .alarm-banner .msg .txt{font-size:13.5px;font-weight:600;color:var(--txt);margin-top:2px}
+  .alarm-banner.active .msg .txt{color:#ffd7d7}
+  .alarm-banner.cleared{background:rgba(33,208,122,.08)}
+  .alarm-banner.cleared .ico{background:var(--run-d);color:var(--run)}
+  .alarm-banner.cleared .msg .lvl{color:var(--run)}
+  .ack-btn{
+    appearance:none;cursor:pointer;font-family:inherit;
+    padding:9px 20px;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:.08em;
+    border:1px solid #6a1414;color:#ffcaca;
+    background:linear-gradient(180deg,#7a1818,#4a0d0d);
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.15),0 2px 6px rgba(0,0,0,.4);
+    transition:.12s;white-space:nowrap;
+  }
+  .ack-btn:hover{filter:brightness(1.18)}
+  .ack-btn:active{transform:translateY(1px)}
+  .ack-btn:disabled{opacity:.4;cursor:default;filter:grayscale(.6)}
+  .ack-btn.ok{border-color:var(--run-d);color:#bff7da;background:linear-gradient(180deg,#0f6e42,#0a4429)}
+  /* ===== Main grid ===== */
+  .stage{padding:16px;display:none}
+  .stage.show{display:block}
+  .layout{
+    display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:start;
+  }
+  .panel{
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line);border-radius:8px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.04),0 6px 18px rgba(0,0,0,.35);
+  }
+  .panel-h{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:9px 14px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,#232c35,#1a212a);
+    border-radius:8px 8px 0 0;
+  }
+  .panel-h .ttl{font-size:11.5px;font-weight:700;letter-spacing:.1em;color:#dbe7f0;text-transform:uppercase}
+  .panel-h .ttl small{color:var(--txt-dim);font-weight:500;letter-spacing:.06em;margin-left:8px;text-transform:none}
+  .panel-h .tagid{font:600 10px 'Share Tech Mono',monospace;color:var(--info);
+    border:1px solid var(--line);padding:2px 7px;border-radius:4px;background:rgba(57,182,255,.07)}
+  /* ===== MIMIC SVG ===== */
+  .mimic-wrap{padding:8px;position:relative}
+  svg.mimic{display:block;width:100%;height:auto}
+  .led{filter:drop-shadow(0 0 4px currentColor)}
+  /* ===== PV tiles ===== */
+  .pv-strip{
+    display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:14px;
+  }
+  .pv-tile{
+    background:linear-gradient(180deg,#11171c,#0d1217);
+    border:1px solid var(--line);border-radius:7px;padding:11px 12px;position:relative;overflow:hidden;
+  }
+  .pv-tile::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--info)}
+  .pv-tile.good::before{background:var(--run)}
+  .pv-tile.warn::before{background:var(--warn)}
+  .pv-tile .lbl{font-size:9.5px;color:var(--txt-dim);letter-spacing:.1em;text-transform:uppercase;display:flex;justify-content:space-between}
+  .pv-tile .lbl .tg{font:600 8.5px 'Share Tech Mono',monospace;color:var(--info)}
+  .pv-tile .num{font:700 26px/1 'Share Tech Mono',monospace;color:var(--pv);margin-top:8px;text-shadow:0 0 12px rgba(57,214,255,.3)}
+  .pv-tile.good .num{color:var(--run);text-shadow:0 0 12px rgba(33,208,122,.3)}
+  .pv-tile.warn .num{color:var(--warn);text-shadow:0 0 12px rgba(255,176,32,.3)}
+  .pv-tile .unit{font-size:11px;color:var(--txt-dim);margin-left:3px}
+  .pv-tile .sp{font:600 9px 'Share Tech Mono',monospace;color:var(--sp);margin-top:6px}
+  /* ===== Trend chart ===== */
+  .trend-box{padding:12px 14px 14px}
+  .trend-legend{display:flex;gap:16px;margin-bottom:8px;font-size:10px;color:var(--txt-dim)}
+  .trend-legend span{display:inline-flex;align-items:center;gap:6px}
+  .trend-legend i{width:14px;height:3px;border-radius:2px;display:inline-block}
+  canvas#trend{width:100%;height:200px;display:block;background:
+    linear-gradient(180deg,#0a0f13,#0c1116);border:1px solid var(--grid);border-radius:5px}
+  /* ===== Sidebar setpoints ===== */
+  .sp-list{padding:6px}
+  .sp-row{
+    display:flex;align-items:center;gap:10px;padding:10px 10px;border-radius:6px;
+    border-bottom:1px solid rgba(58,70,84,.4);
+  }
+  .sp-row:last-child{border-bottom:0}
+  .sp-row .area-led{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 7px currentColor}
+  .sp-row .info{flex:1;min-width:0}
+  .sp-row .info .nm{font-size:11.5px;font-weight:600;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .sp-row .info .yr{font:600 9px 'Share Tech Mono',monospace;color:var(--txt-dim);margin-top:2px}
+  .sp-row .val{text-align:right}
+  .sp-row .val .pv{font:700 16px 'Share Tech Mono',monospace;color:var(--pv)}
+  .sp-row .val .un{font-size:9px;color:var(--txt-dim)}
+  /* ===== Alarm list ===== */
+  .alm-list{padding:0;max-height:none}
+  .alm-item{
+    display:grid;grid-template-columns:auto 64px 1fr auto;gap:10px;align-items:center;
+    padding:9px 14px;border-bottom:1px solid rgba(58,70,84,.4);font-size:11.5px;
+  }
+  .alm-item .sev{width:9px;height:9px;border-radius:2px;flex:none}
+  .alm-item .ts{font:600 10px 'Share Tech Mono',monospace;color:var(--txt-dim)}
+  .alm-item .desc{color:var(--txt)}
+  .alm-item .st{font:600 9px 'Share Tech Mono',monospace;padding:2px 8px;border-radius:3px}
+  .st.ALM{color:#ffcaca;background:rgba(255,59,59,.15);border:1px solid #6a1414}
+  .st.ACK{color:#ffe0a8;background:rgba(255,176,32,.12);border:1px solid #5e3e00}
+  .st.RTN{color:#bff7da;background:rgba(33,208,122,.12);border:1px solid var(--run-d)}
+  /* ===== Status footer ===== */
+  footer.statusbar{
+    display:flex;align-items:center;gap:0;background:linear-gradient(180deg,#161c22,#0e1318);
+    border-top:1px solid #05080b;height:30px;font-size:10.5px;
+  }
+  footer.statusbar .seg{padding:0 14px;height:100%;display:flex;align-items:center;gap:7px;
+    border-right:1px solid var(--line);color:var(--txt-dim)}
+  footer.statusbar .seg b{color:var(--txt);font-weight:600}
+  footer.statusbar .seg .l{width:7px;height:7px;border-radius:50%}
+  /* ===== Equipment IO / skills (라인1) ===== */
+  .io-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px;padding:14px}
+  .io-tag{
+    display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:6px;
+    background:linear-gradient(180deg,#11171c,#0d1217);border:1px solid var(--line);
+  }
+  .io-tag .io-led{width:9px;height:9px;border-radius:50%;flex:none;background:var(--run);box-shadow:0 0 6px var(--run)}
+  .io-tag .io-nm{font-size:11px;color:var(--txt);flex:1}
+  .io-tag .io-addr{font:600 8.5px 'Share Tech Mono',monospace;color:var(--info)}
+  /* quality cards */
+  .q-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:14px}
+  .q-card{background:linear-gradient(180deg,#11171c,#0d1217);border:1px solid var(--line);
+    border-radius:8px;padding:16px;text-align:center}
+  .q-card .big{font:700 34px/1 'Share Tech Mono',monospace;color:var(--run);text-shadow:0 0 14px rgba(33,208,122,.3)}
+  .q-card .big.dn{color:var(--alarm);text-shadow:0 0 14px rgba(255,59,59,.3)}
+  .q-card .cap{font-size:11px;color:var(--txt-dim);margin-top:9px;line-height:1.5}
+  .q-card .delta{font:600 10px 'Share Tech Mono',monospace;margin-top:6px;color:var(--info)}
+  /* history rows */
+  .hist{padding:14px}
+  .hist-row{display:grid;grid-template-columns:120px 1fr;gap:16px;padding:14px 0;border-bottom:1px solid rgba(58,70,84,.4)}
+  .hist-row:last-child{border-bottom:0}
+  .hist-row .when{font:700 13px 'Share Tech Mono',monospace;color:var(--sp)}
+  .hist-row .when small{display:block;color:var(--txt-dim);font-weight:500;font-size:10px;margin-top:3px}
+  .hist-row .what .role{font-size:13px;font-weight:700;color:#e8f1f8}
+  .hist-row .what .org{font-size:11px;color:var(--info);margin-top:2px;font-weight:600}
+  .hist-row .what .body{font-size:11.5px;color:var(--txt-dim);margin-top:7px;line-height:1.6}
+  .hist-row .what .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+  .hist-row .chip{font:600 9.5px 'Share Tech Mono',monospace;padding:3px 8px;border-radius:4px;
+    color:var(--run);background:rgba(33,208,122,.1);border:1px solid var(--run-d)}
+  .contact-bar{display:flex;flex-wrap:wrap;gap:18px;padding:14px;align-items:center}
+  .contact-bar a,.contact-bar span{font:600 12px 'Share Tech Mono',monospace;color:var(--txt);text-decoration:none;display:inline-flex;gap:8px;align-items:center}
+  .contact-bar a:hover{color:var(--info)}
+  .contact-bar .ic{color:var(--info)}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  /* ===== KNOWLEDGE PLANT (지식 볼트) ===== */
+  .vault-note{font-size:11px;color:var(--txt-dim);padding:0 14px 12px;line-height:1.6}
+  .vault-note b{color:var(--sp);font-weight:700}
+  .vault-creed{
+    display:flex;align-items:center;gap:12px;margin:0 14px 14px;padding:11px 14px;border-radius:6px;
+    background:linear-gradient(180deg,#11171c,#0d1217);border:1px solid var(--line);border-left:3px solid var(--info);
+  }
+  .vault-creed .ic{font-size:18px;color:var(--info);flex:none}
+  .vault-creed .ct{font-size:11.5px;color:var(--txt);line-height:1.5}
+  .vault-creed .ct .principle{display:block;margin-top:4px;color:var(--sp);font-weight:700;font-size:11px}
+  /* PARA process-area tanks */
+  .para-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:14px}
+  .para-tank{
+    background:linear-gradient(180deg,#11171c,#0d1217);border:1px solid var(--line);border-radius:7px;
+    padding:11px 12px;position:relative;overflow:hidden;
+  }
+  .para-tank .ph{display:flex;justify-content:space-between;align-items:baseline}
+  .para-tank .ph .root{font:700 13px 'Share Tech Mono',monospace;color:var(--info)}
+  .para-tank .ph .nm{font-size:9px;color:var(--txt-dim);letter-spacing:.06em}
+  .para-tank .lvlwrap{height:90px;margin:10px 0 6px;position:relative;border:1px solid var(--line);border-radius:5px;
+    background:#0a0f13;overflow:hidden}
+  .para-tank .lvl{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,#1a9ed0,#0c5a82);opacity:.85;transition:height .8s ease}
+  .para-tank .lvl .wave{position:absolute;left:0;right:0;top:0;height:4px;background:#9be8ff;opacity:.5}
+  .para-tank .cnt{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;
+    font:700 18px 'Share Tech Mono',monospace;color:#fff;text-shadow:0 0 8px rgba(0,0,0,.8)}
+  .para-tank .cap{font-size:9px;color:var(--txt-dim);text-align:center}
+  /* SSOT threshold table */
+  .ssot-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:14px}
+  .ssot-row{display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center;
+    padding:10px 12px;border-radius:6px;background:linear-gradient(180deg,#11171c,#0d1217);border:1px solid var(--line)}
+  .ssot-row .sl{width:11px;height:11px;border-radius:50%;flex:none;box-shadow:0 0 7px currentColor}
+  .ssot-row .nm{font-size:11.5px;color:var(--txt);font-weight:600}
+  .ssot-row .nm small{display:block;font:600 8.5px 'Share Tech Mono',monospace;color:var(--txt-dim);margin-top:2px}
+  .ssot-row .pv{font:700 17px 'Share Tech Mono',monospace;text-align:right}
+  .ssot-row .sp{font:600 9px 'Share Tech Mono',monospace;color:var(--sp);text-align:right;white-space:nowrap}
+  /* knowledge gap queue */
+  .gap-queue{padding:0}
+  .gap-item{display:grid;grid-template-columns:auto 1fr auto auto;gap:12px;align-items:center;
+    padding:10px 14px;border-bottom:1px solid rgba(58,70,84,.4);font-size:11.5px}
+  .gap-item:last-child{border-bottom:0}
+  .gap-item .rk{font:700 11px 'Share Tech Mono',monospace;color:var(--txt-dim);width:22px}
+  .gap-item .lk{color:var(--txt)}
+  .gap-item .lk small{color:var(--txt-dim);font-size:9.5px}
+  .gap-item .dep{font:700 13px 'Share Tech Mono',monospace;color:var(--pv)}
+  .gap-item .qd{font:600 9px 'Share Tech Mono',monospace;color:var(--warn);background:rgba(255,176,32,.12);
+    border:1px solid #5e3e00;padding:2px 7px;border-radius:3px}
+  .gridrow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+  @media(max-width:1100px){.layout{grid-template-columns:1fr}.pv-strip{grid-template-columns:repeat(3,1fr)}.gridrow{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="hmi">
+<div class="bezel">
+<div class="screen">
+
+  <!-- HEADER -->
+  <header class="bar">
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>MIRRORLESS · 통합공정 SCADA</h1>
+        <div class="sub">SUPERVISORY CONTROL &amp; DATA ACQUISITION</div>
+      </div>
+    </div>
+    <div class="hdr-block"><div class="k">Plant</div><div class="v">PY-OPS PLANT</div></div>
+    <div class="hdr-block"><div class="k">Operator</div><div class="v">박양하 · 총괄본부장</div></div>
+    <div class="hdr-block"><div class="k">Shift</div><div class="v">A조 · 주간</div></div>
+    <div class="hdr-spacer"></div>
+    <div class="mode-pill"><span class="dot"></span>AUTO</div>
+    <div class="clock">
+      <div class="t mono" id="clk">--:--:--</div>
+      <div class="d mono" id="date">----.--.--</div>
+    </div>
+  </header>
+
+  <!-- NAV -->
+  <nav class="tabs" id="nav">
+    <button class="active" data-tab="overview">개요 <span class="tag">OVW</span></button>
+    <button data-tab="line1">라인1 <span class="tag">L-01</span></button>
+    <button data-tab="quality">품질 <span class="tag">QC</span></button>
+    <button data-tab="alarms">알람 <span class="tag">ALM</span></button>
+    <button data-tab="history">이력 <span class="tag">HIST</span></button>
+    <button data-tab="vault">지식 볼트 <span class="tag">KP-VLT</span></button>
+  </nav>
+
+  <!-- ALARM BANNER -->
+  <div class="alarm-banner active" id="alarmBanner">
+    <div class="ico" id="almIco">!</div>
+    <div class="msg">
+      <div class="lvl" id="almLvl">HIGH ALARM · 미확인</div>
+      <div class="txt" id="almTxt">용착 불량률 HIGH — PV 15.0% &gt; SP 0.0% · 라인1 용착 STN-03 (DOE 미적용)</div>
+    </div>
+    <button class="ack-btn" id="ackBtn">ACK · DOE 적용</button>
+  </div>
+
+  <!-- ============ OVERVIEW ============ -->
+  <section class="stage show" data-stage="overview">
+    <div class="layout">
+      <div>
+        <!-- MIMIC PANEL -->
+        <div class="panel">
+          <div class="panel-h">
+            <div class="ttl">공정 MIMIC <small>P&amp;ID 감시화면 · 박양하 커리어 = 공정 영역</small></div>
+            <div class="tagid">MIM-001</div>
+          </div>
+          <div class="mimic-wrap">
+            <svg class="mimic" viewBox="0 0 1000 430" preserveAspectRatio="xMidYMid meet">
+              <defs>
+                <linearGradient id="tankG" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#39d6ff"/><stop offset="1" stop-color="#1a78a8"/>
+                </linearGradient>
+                <linearGradient id="tankG2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#21d07a"/><stop offset="1" stop-color="#0c8a4c"/>
+                </linearGradient>
+                <linearGradient id="steelG" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#3a4654"/><stop offset="1" stop-color="#1a212a"/>
+                </linearGradient>
+                <radialGradient id="lampG" cx="35%" cy="30%" r="75%">
+                  <stop offset="0" stop-color="#fff" stop-opacity=".7"/><stop offset="1" stop-color="#fff" stop-opacity="0"/>
+                </radialGradient>
+                <pattern id="flowDash" width="24" height="6" patternUnits="userSpaceOnUse">
+                  <rect width="24" height="6" fill="none"/>
+                  <rect width="12" height="6" fill="#39d6ff" opacity=".85"/>
+                </pattern>
+              </defs>
+
+              <!-- Title strip -->
+              <text x="14" y="22" fill="#7e8c99" font-family="'Share Tech Mono',monospace" font-size="11" letter-spacing="2">LINE OVERVIEW · 4 PROCESS AREAS</text>
+
+              <!-- FLOW LINES (drawn first, behind) -->
+              <g stroke="#2a333d" stroke-width="7" fill="none">
+                <path d="M150 150 H300"/>
+                <path d="M420 150 H560"/>
+                <path d="M680 150 H820"/>
+                <path d="M150 320 H300"/>
+                <path d="M420 320 H560"/>
+                <path d="M680 320 H820"/>
+              </g>
+              <!-- animated product flow -->
+              <g stroke="url(#flowDash)" stroke-width="3" fill="none" class="flow">
+                <path d="M150 150 H300"/><path d="M420 150 H560"/><path d="M680 150 H820"/>
+                <path d="M150 320 H300"/><path d="M420 320 H560"/><path d="M680 320 H820"/>
+              </g>
+
+              <!-- ====== AREA 1 : 은성에스아이티 (TANK TK-01) ====== -->
+              <g transform="translate(60,90)">
+                <rect x="0" y="0" width="90" height="120" rx="10" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
+                <!-- liquid fill -->
+                <clipPath id="clipTk1"><rect x="6" y="6" width="78" height="108" rx="6"/></clipPath>
+                <g clip-path="url(#clipTk1)">
+                  <rect id="tk1fill" x="6" y="60" width="78" height="60" fill="url(#tankG)" opacity=".9"/>
+                  <rect id="tk1wave" x="6" y="58" width="78" height="6" fill="#9be8ff" opacity=".5"/>
+                </g>
+                <rect x="0" y="0" width="90" height="120" rx="10" fill="none" stroke="#46535f" stroke-width="2"/>
+                <text x="45" y="-8" text-anchor="middle" fill="#dbe7f0" font-size="11" font-weight="700">TK-01</text>
+                <text x="45" y="138" text-anchor="middle" fill="#7e8c99" font-size="9">배터리팩 생산관리</text>
+                <text id="tk1pct" x="45" y="65" text-anchor="middle" fill="#fff" font-family="'Share Tech Mono',monospace" font-size="13" font-weight="700">--%</text>
+                <circle cx="78" cy="10" r="5" fill="#21d07a" class="led" stroke="#0c5a36"/>
+              </g>
+
+              <!-- ====== PUMP P-101 ====== -->
+              <g transform="translate(345,150)">
+                <circle r="34" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
+                <g class="pump" id="pump1">
+                  <path d="M0 -22 A22 22 0 0 1 19 11 L0 0 Z" fill="#39d6ff" opacity=".85"/>
+                  <path d="M19 11 A22 22 0 0 1 -19 11 L0 0 Z" fill="#1a9ed0" opacity=".85"/>
+                  <path d="M-19 11 A22 22 0 0 1 0 -22 L0 0 Z" fill="#2ab6e8" opacity=".85"/>
+                </g>
+                <circle r="6" fill="#0c1014" stroke="#46535f"/>
+                <text x="0" y="52" text-anchor="middle" fill="#dbe7f0" font-size="10" font-weight="700">P-101</text>
+                <circle cx="26" cy="-26" r="5" fill="#21d07a" class="led"/>
+              </g>
+
+              <!-- ====== AREA 2 : 이랜텍 (REACTOR / weld station) ====== -->
+              <g transform="translate(560,95)">
+                <rect x="0" y="0" width="120" height="110" rx="8" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
+                <text x="60" y="-8" text-anchor="middle" fill="#dbe7f0" font-size="11" font-weight="700">STN-03 용착</text>
+                <text x="60" y="128" text-anchor="middle" fill="#7e8c99" font-size="9">생산라인 PM · DOE</text>
+                <!-- weld spark / progress bar -->
+                <rect x="14" y="30" width="92" height="14" rx="3" fill="#0c1014" stroke="#3a4654"/>
+                <rect id="weldBar" x="16" y="32" width="20" height="10" rx="2" fill="#ffb020"/>
+                <text x="60" y="66" text-anchor="middle" fill="#7e8c99" font-size="9" font-family="'Share Tech Mono',monospace">C/T</text>
+                <text id="weldCt" x="60" y="84" text-anchor="middle" fill="#39d6ff" font-size="15" font-weight="700" font-family="'Share Tech Mono',monospace">--s</text>
+                <circle id="weldLed" cx="106" cy="10" r="5" fill="#ffb020" class="led"/>
+              </g>
+
+              <!-- ====== VALVE V-203 ====== -->
+              <g transform="translate(750,150)" id="valve1">
+                <rect x="-26" y="-14" width="52" height="28" rx="4" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
+                <path id="valveTri" d="M-14 -10 L0 0 L-14 10 Z M14 -10 L0 0 L14 10 Z" fill="#21d07a"/>
+                <text x="0" y="32" text-anchor="middle" fill="#dbe7f0" font-size="10" font-weight="700">V-203</text>
+                <text x="0" y="-22" text-anchor="middle" fill="#21d07a" font-size="8" font-family="'Share Tech Mono',monospace" id="valveSt">OPEN</text>
+              </g>
+
+              <!-- ====== AREA 3 : 솔라엣지 (DB/Dashboard server + tank) ====== -->
+              <g transform="translate(820,90)">
+                <rect x="0" y="0" width="100" height="120" rx="10" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
+                <clipPath id="clipTk2"><rect x="6" y="6" width="88" height="108" rx="6"/></clipPath>
+                <g clip-path="url(#clipTk2)">
+                  <rect id="tk2fill" x="6" y="80" width="88" height="40" fill="url(#tankG2)" opacity=".9"/>
+                  <rect id="tk2wave" x="6" y="78" width="88" height="6" fill="#a6ffd0" opacity=".5"/>
+                </g>
+                <rect x="0" y="0" width="100" height="120" rx="10" fill="none" stroke="#46535f" stroke-width="2"/>
+                <text x="50" y="-8" text-anchor="middle" fill="#dbe7f0" font-size="11" font-weight="700">DB-09</text>
+                <text x="50" y="138" text-anchor="middle" fill="#7e8c99" font-size="9">공정기술 · MES/대시보드</text>
+                <text id="tk2pct" x="50" y="105" text-anchor="middle" fill="#fff" font-family="'Share Tech Mono',monospace" font-size="13" font-weight="700">--%</text>
+                <circle cx="88" cy="10" r="5" fill="#21d07a" class="led"/>
+              </g>
+
+              <!-- ====== CONVEYOR (bottom row) feeding AREA 4 ====== -->
+              <g transform="translate(60,300)">
+                <rect x="0" y="0" width="240" height="40" rx="6" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
+                <!-- rollers -->
+                <g id="conv" fill="#0c1014" stroke="#46535f" stroke-width="1.5">
+                  <circle cx="22" cy="20" r="11"/><circle cx="60" cy="20" r="11"/><circle cx="98" cy="20" r="11"/>
+                  <circle cx="136" cy="20" r="11"/><circle cx="174" cy="20" r="11"/><circle cx="212" cy="20" r="11"/>
+                </g>
+                <!-- product box moving -->
+                <rect id="convBox" x="0" y="2" width="26" height="16" rx="2" fill="#ffd23f"/>
+                <text x="120" y="58" text-anchor="middle" fill="#7e8c99" font-size="9">CONV-1 · 자동 컨베이어</text>
+                <text x="120" y="-8" text-anchor="middle" fill="#dbe7f0" font-size="10" font-weight="700" font-family="'Share Tech Mono',monospace" id="uph">UPH ----</text>
+              </g>
+
+              <!-- ====== PUMP P-102 (bottom) ====== -->
+              <g transform="translate(345,320)">
+                <circle r="30" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
+                <g class="pump" id="pump2">
+                  <path d="M0 -20 A20 20 0 0 1 17 10 L0 0 Z" fill="#21d07a" opacity=".85"/>
+                  <path d="M17 10 A20 20 0 0 1 -17 10 L0 0 Z" fill="#0e9a58" opacity=".85"/>
+                  <path d="M-17 10 A20 20 0 0 1 0 -20 L0 0 Z" fill="#16b86c" opacity=".85"/>
+                </g>
+                <circle r="5" fill="#0c1014" stroke="#46535f"/>
+                <text x="0" y="48" text-anchor="middle" fill="#dbe7f0" font-size="10" font-weight="700">P-102</text>
+                <circle cx="22" cy="-22" r="5" fill="#21d07a" class="led"/>
+              </g>
+
+              <!-- ====== AREA 4 : 미러리스 (현재 · vessel + cloud) ====== -->
+              <g transform="translate(560,275)">
+                <rect x="0" y="0" width="260" height="90" rx="10" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
+                <text x="130" y="-8" text-anchor="middle" fill="#dbe7f0" font-size="11" font-weight="700">SYS-AX · 미러리스 통합본부</text>
+                <text x="130" y="108" text-anchor="middle" fill="#7e8c99" font-size="9">총괄본부장 · CRM·키오스크·앱 · FastAPI·AWS/GCP·CI/CD · RPA·AI MCP</text>
+                <!-- mini status lamps -->
+                <g font-family="'Share Tech Mono',monospace" font-size="9">
+                  <circle cx="30" cy="30" r="6" fill="#21d07a" class="led"/><text x="44" y="34" fill="#c4d2dd">CRM</text>
+                  <circle cx="100" cy="30" r="6" fill="#21d07a" class="led"/><text x="114" y="34" fill="#c4d2dd">API</text>
+                  <circle cx="165" cy="30" r="6" fill="#21d07a" class="led"/><text x="179" y="34" fill="#c4d2dd">CI/CD</text>
+                  <circle cx="30" cy="58" r="6" fill="#39d6ff" class="led"/><text x="44" y="62" fill="#c4d2dd">AWS</text>
+                  <circle cx="100" cy="58" r="6" fill="#39d6ff" class="led"/><text x="114" y="62" fill="#c4d2dd">GCP</text>
+                  <circle id="axLed" cx="165" cy="58" r="6" fill="#ffb020" class="led"/><text x="179" y="62" fill="#c4d2dd">AI/RPA</text>
+                </g>
+              </g>
+
+            </svg>
+          </div>
+        </div>
+
+        <!-- PV STRIP -->
+        <div class="pv-strip" id="pvStrip"></div>
+
+        <!-- TREND -->
+        <div class="panel" style="margin-top:16px">
+          <div class="panel-h">
+            <div class="ttl">실시간 TREND <small>스트립 차트 레코더 · 60s 윈도우</small></div>
+            <div class="tagid">TRD-101</div>
+          </div>
+          <div class="trend-box">
+            <div class="trend-legend">
+              <span><i style="background:#ff3b3b"></i>용착 불량률 PV (%)</span>
+              <span><i style="background:#39d6ff"></i>가동률 PV (%)</span>
+              <span><i style="background:#ffd23f"></i>SP 목표</span>
+            </div>
+            <canvas id="trend" width="900" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <aside>
+        <div class="panel">
+          <div class="panel-h"><div class="ttl">SETPOINT · 핵심성과 PV</div><div class="tagid">SP-KPI</div></div>
+          <div class="sp-list" id="spList"></div>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <div class="panel-h"><div class="ttl">최근 알람</div><div class="tagid">ALM-LOG</div></div>
+          <div class="alm-list" id="almMini"></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- ============ LINE1 (Equipment IO / skills) ============ -->
+  <section class="stage" data-stage="line1">
+    <div class="panel">
+      <div class="panel-h"><div class="ttl">라인1 장비 IO 목록 <small>설비 태그 · 보유 역량 = I/O 포인트</small></div><div class="tagid">IO-L01</div></div>
+      <div class="io-grid" id="ioGrid"></div>
+    </div>
+    <div class="gridrow">
+      <div class="panel">
+        <div class="panel-h"><div class="ttl">제어 SW 스택</div><div class="tagid">SW-STK</div></div>
+        <div class="io-grid" id="swGrid"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-h"><div class="ttl">현장 엔지니어링</div><div class="tagid">ENG-FLD</div></div>
+        <div class="io-grid" id="engGrid"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ QUALITY ============ -->
+  <section class="stage" data-stage="quality">
+    <div class="panel">
+      <div class="panel-h"><div class="ttl">품질 지표 대시보드 <small>실측 성과 PV</small></div><div class="tagid">QC-001</div></div>
+      <div class="q-grid" id="qGrid"></div>
+    </div>
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-h"><div class="ttl">수율 / 가동 TREND <small>품질 트렌드</small></div><div class="tagid">QC-TRD</div></div>
+      <div class="trend-box">
+        <div class="trend-legend">
+          <span><i style="background:#21d07a"></i>수율 PV (%)</span>
+          <span><i style="background:#39d6ff"></i>가동률 PV (%)</span>
+        </div>
+        <canvas id="trend2" width="900" height="200"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ALARMS ============ -->
+  <section class="stage" data-stage="alarms">
+    <div class="panel">
+      <div class="panel-h"><div class="ttl">알람 &amp; 이벤트 로그 <small>ACK / RTN 상태</small></div><div class="tagid">ALM-FULL</div></div>
+      <div class="alm-list" id="almFull"></div>
+    </div>
+  </section>
+
+  <!-- ============ HISTORY (career timeline) ============ -->
+  <section class="stage" data-stage="history">
+    <div class="panel">
+      <div class="panel-h"><div class="ttl">공정 운전 이력 <small>커리어 = 배치 이력 (Batch History)</small></div><div class="tagid">HIST-001</div></div>
+      <div class="hist" id="histList"></div>
+    </div>
+    <div class="panel" style="margin-top:16px">
+      <div class="panel-h"><div class="ttl">운영자 연락 채널</div><div class="tagid">COMM</div></div>
+      <div class="contact-bar">
+        <a href="mailto:64etuor@gmail.com"><span class="ic">✉</span>64etuor@gmail.com</a>
+        <a href="https://github.com/64etuor" target="_blank"><span class="ic">⌥</span>github.com/64etuor</a>
+        <span><span class="ic">☎</span>010-0000-0000</span>
+        <span><span class="ic">◆</span>생산운영 PM · 공정기술 엔지니어 · 총괄본부장</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ KNOWLEDGE PLANT (지식 볼트) ============ -->
+  <section class="stage" data-stage="vault">
+    <div class="vault-creed">
+      <span class="ic">◎</span>
+      <div class="ct">
+        측정은 자동 / 검토 트리거는 주기적 / 처분은 수동 — <b style="color:#39b6ff">신호는 판결이 아니다.</b>
+        <span class="principle">운영 원칙: "불합리를 방치하지 않는다."</span>
+      </div>
+    </div>
+    <div class="vault-note">
+      <b>지식 볼트 플랜트 (PY-OPS / VAULT-01)</b> — 자신의 Obsidian 지식 베이스를 하나의 공정 플랜트로 운전.
+      손수 작성한 DataviewJS 대시보드(<span class="mono">health.md · knowledge.md</span>)가 <span class="mono">dashboard-metrics.json</span>을 읽어
+      단일 SSOT <span class="mono">HEALTH_THRESHOLDS</span> 기준으로 warn/alarm 카드를 색으로 판정. 공장 밖 데이터에도 같은 시스템 사고를 적용.
+    </div>
+
+    <div class="layout">
+      <div>
+        <!-- PARA process areas -->
+        <div class="panel">
+          <div class="panel-h">
+            <div class="ttl">PARA 공정 영역 <small>지식 루트 000~900 = 탱크 레벨 (노트 수)</small></div>
+            <div class="tagid">VLT-PARA</div>
+          </div>
+          <div class="para-grid" id="paraGrid"></div>
+        </div>
+
+        <!-- Vault PV tiles -->
+        <div class="pv-strip" id="vaultPv"></div>
+
+        <!-- Vault health trend -->
+        <div class="panel" style="margin-top:16px">
+          <div class="panel-h">
+            <div class="ttl">볼트 건전성 TREND <small>스트립 차트 · health.md 신호</small></div>
+            <div class="tagid">TRD-VLT</div>
+          </div>
+          <div class="trend-box">
+            <div class="trend-legend">
+              <span><i style="background:#21d07a"></i>Lint 통과율 PV (%)</span>
+              <span><i style="background:#39d6ff"></i>그래프 건전성 PV (%)</span>
+              <span><i style="background:#ffd23f"></i>SSOT warn 임계</span>
+            </div>
+            <canvas id="trendVault" width="900" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- SIDEBAR -->
+      <aside>
+        <div class="panel">
+          <div class="panel-h"><div class="ttl">HEALTH_THRESHOLDS · SSOT</div><div class="tagid">SP-SSOT</div></div>
+          <div class="ssot-grid" id="ssotGrid"></div>
+        </div>
+        <div class="panel" style="margin-top:16px">
+          <div class="panel-h"><div class="ttl">Knowledge-Gap 큐 <small>끊긴 wikilink → 다음에 쓸 것</small></div><div class="tagid">GAP-Q</div></div>
+          <div class="gap-queue" id="gapQueue"></div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- STATUS BAR -->
+  <footer class="statusbar">
+    <div class="seg"><span class="l" style="background:#21d07a;box-shadow:0 0 6px #21d07a"></span><b>RUN</b></div>
+    <div class="seg">통신: <b style="color:#21d07a">OK</b></div>
+    <div class="seg">스캔주기: <b class="mono">250ms</b></div>
+    <div class="seg">활성알람: <b id="sbAlm" class="mono" style="color:#ff3b3b">1</b></div>
+    <div class="seg">노드: <b class="mono">PY-OPS / SCADA-01</b></div>
+    <div class="seg hdr-spacer" style="border-right:0;justify-content:flex-end;color:#7e8c99">© 박양하 PARK YANGHA · OPERATOR-GRADE HMI</div>
+  </footer>
+
+</div>
+</div>
+</div>
+
+<script>
+"use strict";
+(function(){
+  const $=s=>document.querySelector(s);
+  const $$=s=>Array.from(document.querySelectorAll(s));
+
+  /* ===== CLOCK ===== */
+  function pad(n){return String(n).padStart(2,'0');}
+  function tick(){
+    const d=new Date();
+    $('#clk').textContent=`${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
+    $('#date').textContent=`${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())}`;
+  }
+  tick(); setInterval(tick,1000);
+
+  /* ===== TABS ===== */
+  $('#nav').addEventListener('click',e=>{
+    const b=e.target.closest('button'); if(!b)return;
+    $$('#nav button').forEach(x=>x.classList.toggle('active',x===b));
+    const t=b.dataset.tab;
+    $$('.stage').forEach(s=>s.classList.toggle('show',s.dataset.stage===t));
+  });
+
+  /* ===== Process state ===== */
+  const state={
+    weldDefect:15.0,   // %  (alarm driver)
+    weldSP:0.0,
+    uptime:88.0,       // 가동률
+    yield:97.6,        // 수율
+    cycle:0.86,        // C/T (relative s for animation)
+    acked:false,
+    doeProgress:0,
+  };
+
+  /* ===== PV TILES ===== */
+  const pvDefs=[
+    {lbl:'운영경비 절감', tag:'PV-101', base:85, unit:'%', sp:'SP 80', cls:'good', dir:'down'},
+    {lbl:'표준시간 ST', tag:'PV-102', base:50, unit:'%', sp:'SP 45', cls:'good', dir:'down'},
+    {lbl:'사이클타임 C/T', tag:'PV-103', base:49, unit:'%', sp:'SP 40', cls:'good', dir:'down'},
+    {lbl:'생산성', tag:'PV-104', base:24, unit:'%', sp:'SP 20', cls:'good', dir:'up'},
+    {lbl:'용착 불량률', tag:'PV-105', base:15, unit:'%', sp:'SP 0', cls:'warn', dir:'def', live:'defect'},
+  ];
+  const pvStrip=$('#pvStrip');
+  pvDefs.forEach((p,i)=>{
+    const el=document.createElement('div');
+    el.className='pv-tile '+p.cls;
+    el.innerHTML=`<div class="lbl"><span>${p.lbl}</span><span class="tg">${p.tag}</span></div>
+      <div><span class="num" data-i="${i}">0.0</span><span class="unit">${p.unit}</span></div>
+      <div class="sp">${p.sp} ${p.unit}</div>`;
+    pvStrip.appendChild(el);
+  });
+  const pvNums=$$('#pvStrip .num');
+
+  /* count-up animation for PV tiles */
+  let cuStart=null;
+  function countUp(ts){
+    if(!cuStart)cuStart=ts;
+    const t=Math.min((ts-cuStart)/1400,1);
+    const ease=1-Math.pow(1-t,3);
+    pvDefs.forEach((p,i)=>{
+      if(p.live==='defect'){ pvNums[i].textContent=state.weldDefect.toFixed(1); }
+      else pvNums[i].textContent=(p.base*ease).toFixed(1);
+    });
+    if(t<1)requestAnimationFrame(countUp);
+  }
+  requestAnimationFrame(countUp);
+
+  /* ===== SETPOINT list (career areas) ===== */
+  const spDefs=[
+    {nm:'은성에스아이티 · 배터리팩 총괄', yr:'2020.08–2022.11', pv:'30', un:'단가%↑', c:'#21d07a'},
+    {nm:'이랜텍 · 생산라인 PM/파트장', yr:'2022.11–2023.09', pv:'24', un:'생산성%↑', c:'#39d6ff'},
+    {nm:'솔라엣지 · 공정기술 엔지니어', yr:'2023.09–2024.12', pv:'451', un:'공수분↓/일', c:'#ffd23f'},
+    {nm:'미러리스 · 총괄본부장', yr:'2025.08–현재', pv:'RUN', un:'AX 가동', c:'#21d07a'},
+  ];
+  const spList=$('#spList');
+  spDefs.forEach(s=>{
+    const el=document.createElement('div');
+    el.className='sp-row';
+    el.innerHTML=`<span class="area-led" style="background:${s.c};color:${s.c}"></span>
+      <div class="info"><div class="nm">${s.nm}</div><div class="yr">${s.yr}</div></div>
+      <div class="val"><div class="pv" style="color:${s.c}">${s.pv}</div><div class="un">${s.un}</div></div>`;
+    spList.appendChild(el);
+  });
+
+  /* ===== ALARM data ===== */
+  const baseAlarms=[
+    {sev:'#ff3b3b', ts:'08:14:02', desc:'용착 불량률 HIGH · 15.0% > SP 0%', st:'ALM', key:'main'},
+    {sev:'#ffb020', ts:'07:58:41', desc:'표준시간 ST 편차 경고 · STN-02', st:'ACK'},
+    {sev:'#21d07a', ts:'07:30:10', desc:'사무공수 자동화 정상복귀 · −451분/일', st:'RTN'},
+    {sev:'#21d07a', ts:'06:45:55', desc:'비전검사 불량 0건 달성 · TK-01', st:'RTN'},
+    {sev:'#39b6ff', ts:'06:12:00', desc:'MES 데이터 DB 동기화 완료', st:'RTN'},
+    {sev:'#ffb020', ts:'05:40:33', desc:'운영경비 목표 초과달성 −85% INFO', st:'ACK'},
+    {sev:'#ffb020', ts:'05:02:18', desc:'지식볼트 · LINT MUST 위반 3건 · 검토 필요', st:'ACK'},
+    {sev:'#39b6ff', ts:'04:30:05', desc:'지식볼트 · Dead notes 12건(90일 미접근) · 처분 트리거', st:'RTN'},
+  ];
+  function renderAlarms(){
+    const mk=a=>`<div class="alm-item">
+        <span class="sev" style="background:${a.sev}"></span>
+        <span class="ts">${a.ts}</span>
+        <span class="desc">${a.desc}</span>
+        <span class="st ${a.st}">${a.st}</span></div>`;
+    $('#almMini').innerHTML=baseAlarms.slice(0,4).map(mk).join('');
+    $('#almFull').innerHTML=baseAlarms.map(mk).join('');
+  }
+  renderAlarms();
+
+  /* ===== IO / SKILL grids (라인1) ===== */
+  function fillGrid(id,items){
+    const g=$(id);
+    items.forEach((it,i)=>{
+      const el=document.createElement('div');
+      el.className='io-tag';
+      const addr=`%${it[1]}${String(i).padStart(3,'0')}`;
+      el.innerHTML=`<span class="io-led"></span><span class="io-nm">${it[0]}</span><span class="io-addr">${addr}</span>`;
+      g.appendChild(el);
+    });
+  }
+  fillGrid('#ioGrid',[['Python','I'],['SQL','I'],['FastAPI','Q'],['React','Q'],['TypeScript','I'],
+    ['Electron','Q'],['Rust','I'],['MySQL/RDS','M'],['AWS','Q'],['GCP','Q'],['BI','I'],['ML','M'],
+    ['RPA','Q'],['CI/CD','Q']]);
+  fillGrid('#swGrid',[['ERP','M'],['MES','M'],['CRM','Q'],['대시보드','I'],['키오스크','Q'],['모바일앱','Q'],['AI MCP','M'],['검사성적서 자동발행','Q']]);
+  fillGrid('#engGrid',[['PFMEA/CP/PFD/SOP','I'],['산업용접','I'],['LOB','I'],['Jig개발','Q'],
+    ['기구설계','Q'],['비전검사','I'],['로봇티칭','Q'],['Draftsight','M'],['DOE','M'],['IATF16949','I']]);
+
+  /* ===== Quality cards ===== */
+  const qDefs=[
+    {big:'0', cap:'용착 불량률 (DOE 후)<br>15% → 0%', delta:'DOE OPTIMIZED', dn:false},
+    {big:'−85%', cap:'운영경비 절감<br>은성에스아이티', delta:'COST↓', dn:true},
+    {big:'−49%', cap:'C/T 단축<br>이랜텍 생산라인', delta:'CYCLE↓', dn:true},
+    {big:'+24%', cap:'생산성 향상<br>이랜텍 PM', delta:'OUTPUT↑', dn:false},
+    {big:'−50%', cap:'표준시간 ST 단축<br>솔라엣지 공정기술', delta:'ST↓', dn:true},
+    {big:'−451', cap:'사무공수 절감 (분/일)<br>자동화 RPA', delta:'LABOR↓', dn:true},
+    {big:'+30%', cap:'단가 개선<br>배터리팩 총괄', delta:'PRICE↑', dn:false},
+    {big:'0', cap:'불량 0건<br>비전검사 · IATF16949', delta:'ZERO DEFECT', dn:false},
+  ];
+  const qGrid=$('#qGrid');
+  qDefs.forEach(q=>{
+    const el=document.createElement('div');
+    el.className='q-card';
+    el.innerHTML=`<div class="big ${q.dn?'dn':''}">${q.big}</div><div class="cap">${q.cap}</div><div class="delta">${q.delta}</div>`;
+    qGrid.appendChild(el);
+  });
+
+  /* ===== History ===== */
+  const hist=[
+    {when:'2025.08', sub:'현재', role:'총괄본부장', org:'미러리스',
+     body:'CRM·키오스크·모바일앱 통합 운영. FastAPI 백엔드, AWS/GCP 인프라, CI/CD 파이프라인 구축. RPA·AI MCP 기반 AX(자동화 전환) 추진.',
+     chips:['FastAPI','AWS/GCP','CI/CD','RPA','AI MCP']},
+    {when:'2023.09', sub:'~2024.12', role:'공정기술 엔지니어', org:'솔라엣지',
+     body:'데이터 DB·대시보드 구축으로 ST −50%. 검사성적서 자동발행, MES 도입. 사무공수 −451분/일 절감.',
+     chips:['MES','ST −50%','검사성적서 자동','−451분/일']},
+    {when:'2022.11', sub:'~2023.09', role:'생산라인 PM / 파트장', org:'이랜텍',
+     body:'DOE로 용착불량 15%→0%. C/T −49%, 생산성 +24%. Jig 개발 및 라인 최적화.',
+     chips:['DOE','불량 15%→0%','C/T −49%','생산성 +24%','Jig개발']},
+    {when:'2020.08', sub:'~2022.11', role:'생산관리과장 · 배터리팩 총괄', org:'은성에스아이티',
+     body:'단가 +30%, 운영경비 −85%. 비전검사 도입으로 불량 0건. IATF16949 품질체계 운영.',
+     chips:['단가 +30%','운영경비 −85%','비전검사','불량 0건','IATF16949']},
+  ];
+  const histList=$('#histList');
+  hist.forEach(h=>{
+    const el=document.createElement('div');
+    el.className='hist-row';
+    el.innerHTML=`<div class="when">${h.when}<small>${h.sub}</small></div>
+      <div class="what"><div class="role">${h.role}</div><div class="org">${h.org}</div>
+        <div class="body">${h.body}</div>
+        <div class="chips">${h.chips.map(c=>`<span class="chip">${c}</span>`).join('')}</div></div>`;
+    histList.appendChild(el);
+  });
+
+  /* ===== MIMIC animation (rAF) ===== */
+  const tk1fill=$('#tk1fill'), tk1wave=$('#tk1wave'), tk1pct=$('#tk1pct');
+  const tk2fill=$('#tk2fill'), tk2wave=$('#tk2wave'), tk2pct=$('#tk2pct');
+  const pump1=$('#pump1'), pump2=$('#pump2'), conv=$('#conv'), convBox=$('#convBox');
+  const weldBar=$('#weldBar'), weldCt=$('#weldCt'), uph=$('#uph'), valveTri=$('#valveTri');
+
+  let t0=performance.now();
+  function loop(now){
+    const t=(now-t0)/1000;
+    // pumps spin
+    pump1.setAttribute('transform',`rotate(${(t*220)%360})`);
+    pump2.setAttribute('transform',`rotate(${(-t*180)%360})`);
+    // tank levels (oscillate around target)
+    const lv1=78+Math.sin(t*0.8)*9;             // ~ 70-87
+    const h1=108*(lv1/100);
+    tk1fill.setAttribute('y',6+108-h1); tk1fill.setAttribute('height',h1);
+    tk1wave.setAttribute('y',6+108-h1-2);
+    tk1pct.textContent=Math.round(lv1)+'%';
+    const lv2=62+Math.sin(t*0.6+1)*7;
+    const h2=108*(lv2/100);
+    tk2fill.setAttribute('y',6+108-h2); tk2fill.setAttribute('height',h2);
+    tk2wave.setAttribute('y',6+108-h2-2);
+    tk2pct.textContent=Math.round(lv2)+'%';
+    // conveyor box
+    const bx=((t*60)%266);
+    convBox.setAttribute('x',bx-26);
+    // weld progress bar pulsing
+    const wp=20+((t*40)%90);
+    weldBar.setAttribute('width',Math.min(wp,90));
+    // dynamic readouts
+    weldCt.textContent=(state.cycle*100).toFixed(0)+'s';
+    uph.textContent='UPH '+Math.round(420+Math.sin(t)*18);
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+
+  /* ===== TREND strip charts ===== */
+  function makeTrend(canvasId, series){
+    const cv=document.getElementById(canvasId);
+    const ctx=cv.getContext('2d');
+    const W=cv.width, H=cv.height;
+    const buf=series.map(s=>new Array(120).fill(s.start));
+    function draw(){
+      ctx.clearRect(0,0,W,H);
+      // grid
+      ctx.strokeStyle='rgba(57,182,255,0.07)';ctx.lineWidth=1;
+      for(let x=0;x<=W;x+=W/12){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
+      for(let y=0;y<=H;y+=H/6){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
+      // SP line for first trend (defect target 0)
+      series.forEach((s,si)=>{
+        // shift buffer
+        const b=buf[si];
+        b.shift();
+        s.val += (s.target()-s.val)*0.08 + (Math.random()-0.5)*s.noise;
+        s.val=Math.max(0,Math.min(100,s.val));
+        b.push(s.val);
+        // draw
+        ctx.strokeStyle=s.color;ctx.lineWidth=2;
+        ctx.shadowColor=s.color;ctx.shadowBlur=6;
+        ctx.beginPath();
+        for(let i=0;i<b.length;i++){
+          const x=i*(W/(b.length-1));
+          const y=H-(b[i]/100)*H;
+          i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+        }
+        ctx.stroke();ctx.shadowBlur=0;
+      });
+      // SP marker (yellow dashed at 0 for trend1)
+      if(canvasId==='trend'){
+        ctx.strokeStyle='#ffd23f';ctx.setLineDash([6,5]);ctx.lineWidth=1.4;
+        const y=H-(state.weldSP/100)*H-1;
+        ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();ctx.setLineDash([]);
+      }
+      // SSOT warn threshold marker for vault trend (lint pass% warn @85)
+      if(canvasId==='trendVault'){
+        ctx.strokeStyle='#ffd23f';ctx.setLineDash([6,5]);ctx.lineWidth=1.4;
+        const y=H-(85/100)*H-1;
+        ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();ctx.setLineDash([]);
+      }
+      requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+  }
+  makeTrend('trend',[
+    {color:'#ff3b3b', start:15, val:15, noise:0.6, target:()=>state.weldDefect},
+    {color:'#39d6ff', start:88, val:88, noise:0.8, target:()=>state.uptime},
+  ]);
+  makeTrend('trend2',[
+    {color:'#21d07a', start:97, val:97, noise:0.5, target:()=>state.yield},
+    {color:'#39d6ff', start:88, val:88, noise:0.7, target:()=>state.uptime},
+  ]);
+
+  /* ===== ACK → DOE auto-action delight ===== */
+  const banner=$('#alarmBanner'), ackBtn=$('#ackBtn');
+  const almIco=$('#almIco'), almLvl=$('#almLvl'), almTxt=$('#almTxt'), sbAlm=$('#sbAlm');
+  const weldLed=$('#weldLed'), axLed=$('#axLed');
+  ackBtn.addEventListener('click',()=>{
+    if(state.acked)return;
+    state.acked=true;
+    banner.classList.remove('active');
+    almLvl.textContent='ACK · DOE 자동최적화 진행중…';
+    almTxt.textContent='DOE 실험계획 적용 — 용착 파라미터 보정 중 · PV 하강 추적';
+    almIco.textContent='⟳';
+    ackBtn.disabled=true; ackBtn.textContent='DOE 적용중…';
+    weldLed.setAttribute('fill','#ffb020');
+    // ramp defect 15 -> 0, uptime up, yield up
+    const dur=2600, s0=performance.now();
+    const d0=state.weldDefect;
+    function ramp(now){
+      const k=Math.min((now-s0)/dur,1);
+      const e=1-Math.pow(1-k,3);
+      state.weldDefect=d0*(1-e);
+      state.uptime=88+ (96-88)*e;
+      state.yield=97.6+(99.8-97.6)*e;
+      // update PV tile 5 (defect)
+      pvNums[4].textContent=state.weldDefect.toFixed(1);
+      $$('#pvStrip .pv-tile')[4].classList.toggle('warn',state.weldDefect>1);
+      $$('#pvStrip .pv-tile')[4].classList.toggle('good',state.weldDefect<=1);
+      if(k<1)requestAnimationFrame(ramp);
+      else {
+        // CLEARED
+        banner.classList.add('cleared');
+        almIco.textContent='✓';
+        almLvl.textContent='RTN · 정상복귀 (CLEARED)';
+        almTxt.textContent='용착 불량률 0.0% 도달 · SP 충족 · DOE 최적화 완료 (15% → 0%)';
+        ackBtn.classList.add('ok'); ackBtn.textContent='✓ CLEARED';
+        weldLed.setAttribute('fill','#21d07a');
+        axLed.setAttribute('fill','#21d07a');
+        sbAlm.textContent='0'; sbAlm.style.color='#21d07a';
+        // update alarm log main entry to RTN
+        baseAlarms[0]={sev:'#21d07a', ts:$('#clk').textContent, desc:'용착 불량률 정상복귀 · 0.0% (DOE 적용)', st:'RTN'};
+        renderAlarms();
+      }
+    }
+    requestAnimationFrame(ramp);
+  });
+
+  /* ===== KNOWLEDGE PLANT (지식 볼트) ===== */
+  /* HEALTH_THRESHOLDS — single SSOT governing warn/alarm color判정 */
+  const HEALTH_THRESHOLDS={
+    lint_must:     {warn:1,  alarm:5,  hib:false}, // must 위반 수 (낮을수록 좋음)
+    lint_soft:     {warn:8,  alarm:20, hib:false}, // soft 위반 수
+    dead_notes:    {warn:10, alarm:30, hib:false}, // 90일 미접근
+    status_aging:  {warn:5,  alarm:15, hib:false}, // status aging
+    god_notes:     {warn:2,  alarm:5,  hib:false}, // graph_health: god-notes
+    hub_overload:  {warn:1,  alarm:3,  hib:false}, // graph_health: hub-overload
+    echo_chambers: {warn:2,  alarm:4,  hib:false}, // graph_health: echo-chambers
+    knowledge_gap: {warn:6,  alarm:15, hib:false}, // 끊긴 wikilink 큐 깊이
+  };
+  /* current monitored signals (= dashboard-metrics.json) */
+  const vaultMetrics={
+    lint_must:3, lint_soft:11, dead_notes:12, status_aging:6,
+    god_notes:1, hub_overload:0, echo_chambers:2, knowledge_gap:7,
+  };
+  /* classify a signal against its SSOT threshold */
+  function classify(key,v){
+    const th=HEALTH_THRESHOLDS[key]; if(!th)return 'good';
+    if(v>=th.alarm)return 'alarm';
+    if(v>=th.warn)return 'warn';
+    return 'good';
+  }
+  const sevColor={good:'#21d07a',warn:'#ffb020',alarm:'#ff3b3b'};
+
+  /* PARA roots as process-area tanks (note count = level) */
+  const paraDefs=[
+    {root:'000', nm:'System', cnt:34},
+    {root:'100', nm:'Projects', cnt:128},
+    {root:'200', nm:'Areas', cnt:96},
+    {root:'300', nm:'Resources', cnt:212},
+    {root:'900', nm:'Archive', cnt:74},
+  ];
+  const paraMax=Math.max(...paraDefs.map(p=>p.cnt));
+  const paraGrid=$('#paraGrid');
+  if(paraGrid){
+    paraDefs.forEach(p=>{
+      const pct=Math.round((p.cnt/paraMax)*100);
+      const el=document.createElement('div');
+      el.className='para-tank';
+      el.innerHTML=`<div class="ph"><span class="root">${p.root}</span><span class="nm">${p.nm}</span></div>
+        <div class="lvlwrap"><div class="lvl" style="height:0%"><div class="wave"></div></div>
+          <div class="cnt">${p.cnt}</div></div>
+        <div class="cap">notes · ${pct}% lvl</div>`;
+      paraGrid.appendChild(el);
+      requestAnimationFrame(()=>{ el.querySelector('.lvl').style.height=pct+'%'; });
+    });
+  }
+
+  /* Vault PV tiles */
+  const lintTotal=vaultMetrics.lint_must+vaultMetrics.lint_soft;
+  const lintPass=Math.max(0,100-lintTotal); // pass% proxy
+  const echoIdx=vaultMetrics.echo_chambers;
+  const vaultPvDefs=[
+    {lbl:'LINT 통과율', tag:'PV-V01', val:lintPass.toFixed(0), unit:'%', sp:'SP ≥85', cls: lintPass>=85?'good':'warn'},
+    {lbl:'Dead Notes', tag:'PV-V02', val:vaultMetrics.dead_notes, unit:'건', sp:`SP <${HEALTH_THRESHOLDS.dead_notes.warn}`, cls: classify('dead_notes',vaultMetrics.dead_notes)==='good'?'good':'warn'},
+    {lbl:'Echo-Chamber 지수', tag:'PV-V03', val:echoIdx, unit:'', sp:`SP <${HEALTH_THRESHOLDS.echo_chambers.warn}`, cls: classify('echo_chambers',echoIdx)==='good'?'good':'warn'},
+    {lbl:'Gap 큐 깊이', tag:'PV-V04', val:vaultMetrics.knowledge_gap, unit:'', sp:`SP <${HEALTH_THRESHOLDS.knowledge_gap.warn}`, cls: classify('knowledge_gap',vaultMetrics.knowledge_gap)==='good'?'good':'warn'},
+    {lbl:'총 노트 수', tag:'PV-V05', val:paraDefs.reduce((s,p)=>s+p.cnt,0), unit:'', sp:'PARA 000~900', cls:'good'},
+  ];
+  const vaultPv=$('#vaultPv');
+  if(vaultPv){
+    vaultPvDefs.forEach(p=>{
+      const el=document.createElement('div');
+      el.className='pv-tile '+p.cls;
+      el.innerHTML=`<div class="lbl"><span>${p.lbl}</span><span class="tg">${p.tag}</span></div>
+        <div><span class="num">${p.val}</span><span class="unit">${p.unit}</span></div>
+        <div class="sp">${p.sp}</div>`;
+      vaultPv.appendChild(el);
+    });
+  }
+
+  /* SSOT threshold rows (setpoints w/ live判정) */
+  const ssotLabels={
+    lint_must:['Lint MUST 위반','필수 규칙'],
+    lint_soft:['Lint SOFT 위반','권고 규칙'],
+    dead_notes:['Dead notes','90일 미접근'],
+    status_aging:['Status aging','상태 정체'],
+    god_notes:['God-notes','graph_health'],
+    hub_overload:['Hub-overload','graph_health'],
+    echo_chambers:['Echo-chambers','graph_health'],
+    knowledge_gap:['Knowledge-gap','끊긴 wikilink'],
+  };
+  const ssotGrid=$('#ssotGrid');
+  if(ssotGrid){
+    Object.keys(HEALTH_THRESHOLDS).forEach(key=>{
+      const v=vaultMetrics[key], th=HEALTH_THRESHOLDS[key];
+      const sev=classify(key,v), col=sevColor[sev];
+      const lab=ssotLabels[key];
+      const el=document.createElement('div');
+      el.className='ssot-row';
+      el.innerHTML=`<span class="sl" style="background:${col};color:${col}"></span>
+        <div class="nm">${lab[0]}<small>${lab[1]}</small></div>
+        <div class="pv" style="color:${col}">${v}</div>
+        <div class="sp">W${th.warn} · A${th.alarm}</div>`;
+      ssotGrid.appendChild(el);
+    });
+  }
+
+  /* Knowledge-gap queue (끊긴 wikilink ranking → 다음에 쓸 것) */
+  const gapDefs=[
+    {lk:'[[DOE 표준 절차서]]', sub:'STN-03 용착 파라미터에서 8회 참조', dep:8},
+    {lk:'[[MCP 서버 운영 노트]]', sub:'AX 추진 메모에서 6회 참조', dep:6},
+    {lk:'[[CI/CD 롤백 런북]]', sub:'배포 회고에서 5회 참조', dep:5},
+    {lk:'[[PFMEA 체크리스트]]', sub:'품질체계 노트에서 4회 참조', dep:4},
+    {lk:'[[키오스크 장애 패턴]]', sub:'현장 운영 로그에서 3회 참조', dep:3},
+  ];
+  const gapQueue=$('#gapQueue');
+  if(gapQueue){
+    gapQueue.innerHTML=gapDefs.map((g,i)=>`<div class="gap-item">
+      <span class="rk">#${i+1}</span>
+      <span class="lk">${g.lk}<br><small>${g.sub}</small></span>
+      <span class="dep">${g.dep}</span>
+      <span class="qd">WRITE</span></div>`).join('');
+  }
+
+  /* Vault health trend (reuses makeTrend) */
+  const graphHealthPv=Math.max(0,100-(vaultMetrics.god_notes*6+vaultMetrics.hub_overload*8+vaultMetrics.echo_chambers*5));
+  makeTrend('trendVault',[
+    {color:'#21d07a', start:lintPass, val:lintPass, noise:0.5, target:()=>lintPass},
+    {color:'#39d6ff', start:graphHealthPv, val:graphHealthPv, noise:0.6, target:()=>graphHealthPv},
+  ]);
+
+})();
+</script>
+</body>
+</html>

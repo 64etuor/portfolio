@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P&amp;ID 풀스킴 — 박양하 데이터 플로우 다이어그램</title>
+<style>
+  :root{
+    --paper:#f4f1e8;
+    --paper2:#efe9d8;
+    --ink:#1a1c1a;
+    --ink2:#3a3d39;
+    --line:#23261f;
+    --grid:#cfc8b3;
+    --grid2:#ddd6c0;
+    --accent:#b8341f;     /* drawing red */
+    --accent2:#1f5fb8;    /* electrical blue */
+    --accent3:#2e7d32;    /* software green */
+    --flow:#0a7d8c;       /* process flow cyan */
+    --amber:#c77b14;
+    --trip:#c8170f;
+    --paperbox:#fbf8ef;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:#2b2b28;}
+  body{
+    font-family:"DM Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,"Courier New",monospace;
+    color:var(--ink);
+    word-break:keep-all;
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  .stage{
+    width:1600px;
+    margin:24px auto;
+    background:var(--paper);
+    background-image:
+      linear-gradient(var(--grid2) 1px,transparent 1px),
+      linear-gradient(90deg,var(--grid2) 1px,transparent 1px);
+    background-size:40px 40px;
+    box-shadow:0 24px 80px rgba(0,0,0,.55), inset 0 0 0 1px rgba(0,0,0,.08);
+    position:relative;
+    padding:18px;
+  }
+  /* outer drawing border */
+  .border-outer{position:absolute;inset:10px;border:3px double var(--line);pointer-events:none;}
+  .border-inner{position:absolute;inset:18px;border:1px solid var(--line);pointer-events:none;}
+  .corner{position:absolute;width:30px;height:30px;border:2px solid var(--line);}
+  .corner.tl{top:18px;left:18px;border-right:none;border-bottom:none;}
+  .corner.tr{top:18px;right:18px;border-left:none;border-bottom:none;}
+  .corner.bl{bottom:18px;left:18px;border-right:none;border-top:none;}
+  .corner.br{bottom:18px;right:18px;border-left:none;border-top:none;}
+
+  /* zone rulers */
+  .ruler{position:absolute;font-size:11px;color:var(--ink2);font-weight:700;letter-spacing:1px;pointer-events:none;}
+  .ruler.top{top:20px;left:0;width:100%;display:flex;justify-content:space-around;padding:0 60px;}
+  .ruler.left{left:20px;top:0;height:100%;flex-direction:column;display:flex;justify-content:space-around;padding:60px 0;}
+
+  .content{position:relative;padding:34px 30px 0 30px;}
+
+  header.titlebar{
+    display:flex;justify-content:space-between;align-items:flex-end;
+    border-bottom:2px solid var(--line);
+    padding-bottom:10px;margin-bottom:6px;
+  }
+  .title-main h1{
+    margin:0;font-size:26px;font-weight:800;letter-spacing:1px;
+  }
+  .title-main .sub{font-size:13px;color:var(--accent);font-weight:700;margin-top:3px;letter-spacing:.5px;}
+  .title-meta{text-align:right;font-size:11px;color:var(--ink2);}
+  .title-meta b{color:var(--ink);}
+
+  /* cross-train readout strip */
+  .readouts{
+    display:flex;gap:0;border:1.5px solid var(--line);margin:10px 0 6px 0;
+    background:var(--paperbox);
+  }
+  .ro{
+    flex:1;padding:7px 8px;border-right:1px solid var(--grid);text-align:center;position:relative;
+  }
+  .ro:last-child{border-right:none;}
+  .ro .lab{font-size:9.5px;color:var(--ink2);letter-spacing:.3px;text-transform:uppercase;}
+  .ro .val{font-size:17px;font-weight:800;color:var(--accent);margin-top:2px;font-variant-numeric:tabular-nums;}
+  .ro .val.good{color:var(--accent3);}
+  .ro::before{content:"";position:absolute;top:3px;left:3px;width:5px;height:5px;border-radius:50%;background:var(--accent3);box-shadow:0 0 0 1px rgba(0,0,0,.2);animation:blink 2.2s infinite;}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+  svg{display:block;width:100%;height:auto;}
+  text{font-family:inherit;}
+
+  /* SVG element styling */
+  .pipe{fill:none;stroke:var(--line);stroke-width:3;}
+  .pipe-flow{fill:none;stroke:var(--flow);stroke-width:2.4;stroke-dasharray:9 11;animation:flow 1.1s linear infinite;}
+  .pipe-elec{fill:none;stroke:var(--accent2);stroke-width:1.6;stroke-dasharray:7 5;}
+  .pipe-soft{fill:none;stroke:var(--accent3);stroke-width:1.6;stroke-dasharray:2 4;}
+  .sig-flow{fill:none;stroke:var(--accent2);stroke-width:1.4;stroke-dasharray:6 4;animation:flow 1.6s linear infinite;}
+  @keyframes flow{to{stroke-dashoffset:-40;}}
+
+  .sym{stroke:var(--line);stroke-width:2.2;fill:var(--paperbox);}
+  .sym-fill{fill:var(--paper2);stroke:var(--line);stroke-width:2.2;}
+  .lbl{font-size:11px;font-weight:700;fill:var(--ink);}
+  .lbl-sm{font-size:9px;fill:var(--ink2);}
+  .tag{font-size:10.5px;font-weight:800;fill:var(--ink);text-anchor:middle;}
+  .tagnum{font-size:9px;fill:var(--ink2);text-anchor:middle;}
+
+  .clickable{cursor:pointer;}
+  .clickable:hover .sym,.clickable:hover .sym-fill,.clickable:hover .bubble{stroke:var(--accent);stroke-width:2.8;}
+  .clickable:hover .hit{fill:rgba(184,52,31,.06);}
+  .bubble{fill:var(--paperbox);stroke:var(--line);stroke-width:2;}
+
+  .train-band{fill:rgba(0,0,0,0.018);stroke:var(--grid);stroke-width:1;stroke-dasharray:4 3;}
+  .train-label{font-size:13px;font-weight:800;fill:var(--accent);letter-spacing:1px;}
+  .train-sub{font-size:9.5px;fill:var(--ink2);}
+
+  /* interlock badge */
+  #interlockBadge{cursor:pointer;}
+
+  /* legend + title block grid */
+  .footgrid{display:grid;grid-template-columns:1.3fr 1fr;gap:10px;margin:8px 0 8px 0;}
+  .legend,.titleblock{border:1.5px solid var(--line);background:var(--paperbox);padding:9px 12px;}
+  .legend h3,.titleblock h3{margin:0 0 7px 0;font-size:11px;letter-spacing:1px;border-bottom:1px solid var(--grid);padding-bottom:4px;text-transform:uppercase;}
+  .legrow{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:10.5px;color:var(--ink2);}
+  .legitem{display:flex;align-items:center;gap:6px;}
+  .legitem svg{width:38px;height:14px;flex:0 0 auto;}
+  .tb-grid{display:grid;grid-template-columns:repeat(2,1fr);font-size:10.5px;}
+  .tb-cell{border:1px solid var(--grid);padding:5px 8px;}
+  .tb-cell .k{font-size:8.5px;color:var(--ink2);text-transform:uppercase;letter-spacing:.5px;}
+  .tb-cell .v{font-size:12px;font-weight:700;color:var(--ink);margin-top:1px;}
+  .tb-cell.span{grid-column:1/-1;}
+
+  /* detail panel */
+  #panel{
+    position:fixed;top:0;right:0;height:100%;width:430px;max-width:92vw;
+    background:var(--paperbox);border-left:3px double var(--line);
+    box-shadow:-12px 0 50px rgba(0,0,0,.4);
+    transform:translateX(105%);transition:transform .32s cubic-bezier(.7,0,.2,1);
+    z-index:50;display:flex;flex-direction:column;
+  }
+  #panel.open{transform:translateX(0);}
+  .panel-head{border-bottom:2px solid var(--line);padding:16px 18px 12px;background:var(--paper2);}
+  .panel-head .ptag{font-size:11px;font-weight:800;color:var(--accent);letter-spacing:1px;}
+  .panel-head h2{margin:5px 0 2px;font-size:18px;}
+  .panel-head .ptype{font-size:11px;color:var(--ink2);}
+  .panel-body{padding:16px 18px;overflow:auto;font-size:13px;line-height:1.6;flex:1;}
+  .panel-body .sec{margin-bottom:16px;}
+  .panel-body .sec h4{margin:0 0 6px;font-size:10.5px;letter-spacing:1px;color:var(--accent);text-transform:uppercase;border-bottom:1px dotted var(--grid);padding-bottom:3px;}
+  .panel-body ul{margin:5px 0;padding-left:18px;}
+  .panel-body li{margin:3px 0;}
+  .chip{display:inline-block;border:1px solid var(--line);background:var(--paper2);padding:2px 8px;font-size:10.5px;margin:3px 4px 0 0;border-radius:2px;font-weight:700;}
+  .pclose{position:absolute;top:12px;right:14px;cursor:pointer;border:1.5px solid var(--line);background:var(--paper);width:26px;height:26px;font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;font-weight:800;}
+  .pclose:hover{background:var(--accent);color:#fff;border-color:var(--accent);}
+
+  .hint{font-size:10px;color:var(--ink2);text-align:center;margin:6px 0 0;letter-spacing:.5px;}
+  .footer-contact{text-align:center;font-size:11px;color:var(--ink2);margin:4px 0 2px;}
+  .footer-contact b{color:var(--ink);}
+
+  .ctrl-loop-box{fill:rgba(199,123,20,.06);stroke:var(--amber);stroke-width:1;stroke-dasharray:5 3;}
+</style>
+</head>
+<body>
+<div class="stage" id="stage">
+  <div class="border-outer"></div>
+  <div class="border-inner"></div>
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
+  <div class="ruler top"><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span></div>
+  <div class="ruler left"><span>A</span><span>B</span><span>C</span><span>D</span></div>
+
+  <div class="content">
+    <header class="titlebar">
+      <div class="title-main">
+        <h1>P&amp;ID 풀스킴 — 데이터 플로우 다이어그램</h1>
+        <div class="sub">PIPING &amp; INSTRUMENTATION DIAGRAM · ISA-5.1 · 박양하 SYSTEM PIPELINES</div>
+      </div>
+      <div class="title-meta">
+        <div>박양하 — 공정/데이터 엔지니어 <b>→</b> 풀스택/AI 아키텍트</div>
+        <div>DWG NO. <b>PYH-PID-001</b> · REV. <b>C</b> · SHEET <b>1 of 1</b></div>
+      </div>
+    </header>
+
+    <div class="readouts" id="readouts">
+      <div class="ro"><div class="lab">운영경비</div><div class="val">−85%</div></div>
+      <div class="ro"><div class="lab">S/T</div><div class="val">−50%</div></div>
+      <div class="ro"><div class="lab">C/T</div><div class="val">−49%</div></div>
+      <div class="ro"><div class="lab">용착불량</div><div class="val good" id="weldRO">15%→0%</div></div>
+      <div class="ro"><div class="lab">생산성</div><div class="val good">+24%</div></div>
+      <div class="ro"><div class="lab">사무공수</div><div class="val">−451분/일</div></div>
+      <div class="ro"><div class="lab">불량</div><div class="val good">0건</div></div>
+    </div>
+
+    <!-- ===================== MAIN SCHEME SVG ===================== -->
+    <svg id="scheme" viewBox="0 0 1540 940" preserveAspectRatio="xMidYMid meet" role="img" aria-label="P&ID Scheme">
+      <defs>
+        <marker id="arrow" markerWidth="10" markerHeight="10" refX="7" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L7,3 L0,6 Z" fill="var(--line)"/>
+        </marker>
+        <marker id="arrowFlow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L6,3 L0,6 Z" fill="var(--flow)"/>
+        </marker>
+      </defs>
+
+      <!-- ===== TRAIN BANDS ===== -->
+      <rect class="train-band" x="14" y="30" width="1512" height="270"/>
+      <rect class="train-band" x="14" y="320" width="1512" height="270"/>
+      <rect class="train-band" x="14" y="610" width="1512" height="300"/>
+      <text class="train-label" x="26" y="52">TRAIN A · 솔라엣지 MES ETL</text>
+      <text class="train-sub" x="26" y="66">React18 · Django4.2 DRF · PostgreSQL17 — 검사성적서 자동발행 / S/N 추적성</text>
+      <text class="train-label" x="26" y="342">TRAIN B · MIRRORLESS 키오스크 파이프라인</text>
+      <text class="train-sub" x="26" y="356">Electron 3-process(Main/Renderer/Agent) · WebGL2 GPU · S3 / Aurora MySQL · CloudWatch</text>
+      <text class="train-label" x="26" y="632">TRAIN C · WORK RADAR (Boule Governance)</text>
+      <text class="train-sub" x="26" y="646">Rust core(side-effect 소유) · SQLite 50+ migrations · React presentation · fail-closed autonomy</text>
+
+      <!-- ============================================================ -->
+      <!-- TRAIN A : OPC UA -> OCV/IR -> Vision -> ETL pump -> PG17 -> Report -->
+      <!-- ============================================================ -->
+
+      <!-- OPC UA source vessel -->
+      <g class="clickable" data-id="opcua">
+        <rect class="hit" x="40" y="120" width="120" height="150" fill="transparent"/>
+        <rect class="sym-fill" x="55" y="135" width="90" height="120" rx="4"/>
+        <path d="M55,160 a45,12 0 0 0 90,0" fill="none" class="sym"/>
+        <line x1="55" y1="160" x2="55" y2="135" class="sym"/><line x1="145" y1="160" x2="145" y2="135" class="sym"/>
+        <path d="M55,135 a45,12 0 0 1 90,0" fill="none" class="sym"/>
+        <text class="tag" x="100" y="205">OPC UA</text>
+        <text class="tagnum" x="100" y="220">SRV-A01</text>
+        <text class="lbl-sm" x="100" y="245" text-anchor="middle">서버/태그스트림</text>
+      </g>
+
+      <!-- OCV / IR inspection equipment (heat exchanger style) -->
+      <g class="clickable" data-id="ocvir">
+        <rect class="hit" x="235" y="120" width="130" height="150" fill="transparent"/>
+        <rect class="sym-fill" x="250" y="150" width="100" height="80" rx="3"/>
+        <line x1="250" y1="172" x2="350" y2="172" class="sym"/>
+        <path d="M260,210 q15,-26 30,0 q15,26 30,0 q15,-26 30,0" fill="none" stroke="var(--accent)" stroke-width="2"/>
+        <text class="tag" x="300" y="167">OCV / IR</text>
+        <text class="tagnum" x="300" y="248">검사장비 INS-A02</text>
+      </g>
+
+      <!-- Vision data buffer -->
+      <g class="clickable" data-id="vision">
+        <rect class="hit" x="430" y="120" width="120" height="150" fill="transparent"/>
+        <rect class="sym-fill" x="445" y="150" width="90" height="80" rx="3"/>
+        <line x1="445" y1="150" x2="535" y2="230" class="sym" stroke-width="1.2"/>
+        <line x1="445" y1="230" x2="535" y2="150" class="sym" stroke-width="1.2"/>
+        <text class="tag" x="490" y="145" >VISION</text>
+        <text class="tagnum" x="490" y="248">비전데이터 BUF-A03</text>
+      </g>
+
+      <!-- ETL pump -->
+      <g class="clickable" data-id="etlpump">
+        <rect class="hit" x="615" y="120" width="130" height="150" fill="transparent"/>
+        <circle class="sym" cx="680" cy="190" r="42"/>
+        <path d="M680,190 L712,172 L712,208 Z" fill="var(--accent)" stroke="none"/>
+        <circle cx="680" cy="190" r="6" fill="var(--line)"/>
+        <text class="tag" x="680" y="252">ETL 펌프 P-A04</text>
+        <text class="lbl-sm" x="680" y="146" text-anchor="middle">Extract·Transform·Load</text>
+      </g>
+
+      <!-- PostgreSQL 17 vessel -->
+      <g class="clickable" data-id="pg17">
+        <rect class="hit" x="815" y="105" width="150" height="180" fill="transparent"/>
+        <path d="M835,150 a55,16 0 0 1 110,0 L945,250 a55,16 0 0 1 -110,0 Z" class="sym-fill"/>
+        <path d="M835,150 a55,16 0 0 0 110,0" class="sym" fill="none"/>
+        <path d="M835,185 a55,16 0 0 0 110,0" class="pipe-soft" />
+        <path d="M835,218 a55,16 0 0 0 110,0" class="pipe-soft" />
+        <text class="tag" x="890" y="145">PostgreSQL 17</text>
+        <text class="tagnum" x="890" y="270">VESSEL TK-A05</text>
+      </g>
+
+      <!-- Report issuer -->
+      <g class="clickable" data-id="report">
+        <rect class="hit" x="1035" y="120" width="160" height="150" fill="transparent"/>
+        <rect class="sym-fill" x="1055" y="145" width="120" height="90" rx="2"/>
+        <path d="M1145,145 l0,18 l18,0" fill="none" class="sym"/><path d="M1145,145 l18,18" class="sym"/>
+        <line x1="1070" y1="180" x2="1150" y2="180" class="sym" stroke-width="1.2"/>
+        <line x1="1070" y1="198" x2="1150" y2="198" class="sym" stroke-width="1.2"/>
+        <line x1="1070" y1="216" x2="1130" y2="216" class="sym" stroke-width="1.2"/>
+        <text class="tag" x="1115" y="252">검사성적서 자동발행</text>
+        <text class="tagnum" x="1115" y="138" text-anchor="middle">RPT-A06 · S/N 추적성</text>
+      </g>
+
+      <!-- Train A piping -->
+      <path class="pipe" d="M145,195 H250" marker-end="url(#arrow)"/>
+      <path class="pipe-flow" d="M145,195 H248"/>
+      <path class="pipe" d="M350,190 H445" marker-end="url(#arrow)"/>
+      <path class="pipe-flow" d="M350,190 H443"/>
+      <path class="pipe" d="M535,190 H638" marker-end="url(#arrow)"/>
+      <path class="pipe-flow" d="M535,190 H636"/>
+      <path class="pipe" d="M722,190 H833" marker-end="url(#arrow)"/>
+      <path class="pipe-flow" d="M722,190 H831"/>
+      <path class="pipe" d="M945,200 H1053" marker-end="url(#arrow)"/>
+      <path class="pipe-flow" d="M945,200 H1051"/>
+
+      <!-- Valve on ETL->PG line -->
+      <g class="clickable" data-id="valveA">
+        <rect class="hit" x="760" y="160" width="40" height="60" fill="transparent"/>
+        <path d="M770,178 L790,202 L770,202 L790,178 Z" class="sym" fill="var(--paperbox)"/>
+        <line x1="780" y1="190" x2="780" y2="172" class="sym" stroke-width="1.6"/>
+        <rect x="772" y="166" width="16" height="6" class="sym-fill"/>
+        <text class="tagnum" x="780" y="226">HV-A1</text>
+      </g>
+
+      <!-- Train A instruments (ISA bubbles) -->
+      <!-- FT on opcua->ocv (field) -->
+      <g class="clickable instr" data-id="ft-a101">
+        <line x1="197" y1="195" x2="197" y2="120" class="sig-flow"/>
+        <circle class="bubble" cx="197" cy="105" r="20"/>
+        <text class="tag" x="197" y="101">FT</text><text class="tagnum" x="197" y="114">A101</text>
+      </g>
+      <!-- AI: Cell Grade validation (panel-rear, software) -->
+      <g class="clickable instr" data-id="ai-a102">
+        <line x1="490" y1="150" x2="490" y2="95" class="pipe-soft"/>
+        <circle class="bubble" cx="490" cy="80" r="20"/>
+        <line x1="470" y1="80" x2="510" y2="80" class="sym" stroke-width="1.4"/>
+        <text class="tag" x="490" y="76">AV</text><text class="tagnum" x="490" y="92">A102</text>
+      </g>
+      <!-- QIC: S/N validation on pump -->
+      <g class="clickable instr" data-id="qic-a103">
+        <line x1="680" y1="148" x2="680" y2="92" class="pipe-soft"/>
+        <circle class="bubble" cx="680" cy="78" r="20"/>
+        <line x1="660" y1="78" x2="700" y2="78" class="sym" stroke-width="1.4"/>
+        <text class="tag" x="680" y="74">QIC</text><text class="tagnum" x="680" y="90">A103</text>
+      </g>
+      <!-- LIC on PG vessel -->
+      <g class="clickable instr" data-id="lic-a104">
+        <line x1="890" y1="150" x2="890" y2="92" class="pipe-elec"/>
+        <circle class="bubble" cx="890" cy="78" r="20"/>
+        <text class="tag" x="890" y="74">LIC</text><text class="tagnum" x="890" y="90">A104</text>
+      </g>
+      <!-- HV history validation on report -->
+      <g class="clickable instr" data-id="qv-a105">
+        <line x1="1115" y1="145" x2="1115" y2="110" class="pipe-soft"/>
+        <circle class="bubble" cx="1115" cy="95" r="20"/>
+        <line x1="1095" y1="95" x2="1135" y2="95" class="sym" stroke-width="1.4"/>
+        <text class="tag" x="1115" y="91">QV</text><text class="tagnum" x="1115" y="104">A105</text>
+      </g>
+
+      <!-- ============================================================ -->
+      <!-- TRAIN B : 3-cam -> WebGL2 GPU -> capture -> upload queue (control loop) -> Aurora -->
+      <!-- ============================================================ -->
+
+      <!-- 3 cameras -->
+      <g class="clickable" data-id="cams">
+        <rect class="hit" x="40" y="400" width="120" height="170" fill="transparent"/>
+        <rect class="sym-fill" x="55" y="415" width="70" height="34" rx="2"/><circle class="sym" cx="118" cy="432" r="6"/>
+        <rect class="sym-fill" x="55" y="455" width="70" height="34" rx="2"/><circle class="sym" cx="118" cy="472" r="6"/>
+        <rect class="sym-fill" x="55" y="495" width="70" height="34" rx="2"/><circle class="sym" cx="118" cy="512" r="6"/>
+        <text class="tagnum" x="90" y="437" text-anchor="middle">CAM1 1080p</text>
+        <text class="tagnum" x="90" y="477" text-anchor="middle">CAM2 4K</text>
+        <text class="tagnum" x="90" y="517" text-anchor="middle">CAM3 4K</text>
+        <text class="tag" x="90" y="552">3-CAMERA</text>
+      </g>
+
+      <!-- WebGL2 GPU filter (reactor) -->
+      <g class="clickable" data-id="webgl">
+        <rect class="hit" x="225" y="400" width="150" height="170" fill="transparent"/>
+        <rect class="sym-fill" x="245" y="430" width="110" height="100" rx="6"/>
+        <circle cx="300" cy="480" r="30" fill="none" class="sym" stroke-dasharray="4 3"/>
+        <path d="M285,480 q15,-22 30,0 q-15,22 -30,0Z" fill="var(--accent)" stroke="none" opacity=".8"/>
+        <text class="tag" x="300" y="552">WebGL2 GPU</text>
+        <text class="tagnum" x="300" y="424" text-anchor="middle">bilateral·color·face-warp·LUT</text>
+      </g>
+
+      <!-- Capture (EXIF strip / idempotent) -->
+      <g class="clickable" data-id="capture">
+        <rect class="hit" x="430" y="400" width="120" height="170" fill="transparent"/>
+        <circle class="sym" cx="490" cy="480" r="40"/>
+        <path d="M490,480 L520,464 L520,496 Z" fill="var(--accent2)" stroke="none"/>
+        <circle cx="490" cy="480" r="5" fill="var(--line)"/>
+        <text class="tag" x="490" y="552">캡처 P-B14</text>
+        <text class="tagnum" x="490" y="424" text-anchor="middle">EXIF strip · 멱등</text>
+      </g>
+
+      <!-- ===== Upload queue rendered as a CONTROL LOOP w/ setpoint ===== -->
+      <g id="uploadLoop">
+        <rect class="ctrl-loop-box" x="615" y="395" width="330" height="185" rx="6"/>
+        <text class="train-sub" x="625" y="412" fill="var(--amber)" style="font-weight:800">UPLOAD_QUEUE 제어루프 · SP=COMPLETED</text>
+
+        <!-- queue vessel -->
+        <g class="clickable" data-id="queue">
+          <rect class="hit" x="630" y="430" width="120" height="120" fill="transparent"/>
+          <rect class="sym-fill" x="645" y="450" width="90" height="86" rx="3"/>
+          <!-- fill level animates -->
+          <rect id="queueFill" x="647" y="498" width="86" height="36" fill="rgba(10,125,140,.30)"/>
+          <line id="queueSP" x1="645" y1="470" x2="735" y2="470" stroke="var(--amber)" stroke-width="1.6" stroke-dasharray="4 3"/>
+          <text class="tag" x="690" y="446">QUEUE TK-B15</text>
+          <text class="tagnum" x="690" y="552">상태머신 · exp backoff</text>
+        </g>
+
+        <!-- state machine readout -->
+        <g>
+          <rect class="sym-fill" x="775" y="445" width="155" height="100" rx="3"/>
+          <text class="tagnum" x="852" y="438" text-anchor="middle">STATE MACHINE LIC-B16</text>
+          <text id="smState" x="852" y="478" text-anchor="middle" style="font-size:14px;font-weight:800;fill:var(--accent)">PENDING</text>
+          <text id="smBackoff" x="852" y="500" text-anchor="middle" class="tagnum">backoff: 0ms</text>
+          <text id="smBar" x="852" y="525" text-anchor="middle" class="tagnum" style="letter-spacing:2px">○○○○</text>
+        </g>
+        <!-- controller bubble (LIC) -->
+        <g class="clickable instr" data-id="lic-b16">
+          <circle class="bubble" cx="690" cy="408" r="0" opacity="0"/>
+        </g>
+      </g>
+
+      <!-- Aurora MySQL + CloudWatch -->
+      <g class="clickable" data-id="aurora">
+        <rect class="hit" x="1015" y="395" width="150" height="180" fill="transparent"/>
+        <path d="M1035,440 a52,15 0 0 1 104,0 L1139,535 a52,15 0 0 1 -104,0 Z" class="sym-fill"/>
+        <path d="M1035,440 a52,15 0 0 0 104,0" class="sym" fill="none"/>
+        <path d="M1035,472 a52,15 0 0 0 104,0" class="pipe-soft"/>
+        <path d="M1035,503 a52,15 0 0 0 104,0" class="pipe-soft"/>
+        <text class="tag" x="1087" y="435">Aurora / MySQL</text>
+        <text class="tagnum" x="1087" y="560">VESSEL TK-B17</text>
+      </g>
+
+      <!-- CloudWatch instrument -->
+      <g class="clickable instr" data-id="cw-b18">
+        <line x1="1087" y1="395" x2="1087" y2="360" class="pipe-elec"/>
+        <circle class="bubble" cx="1087" cy="345" r="20"/>
+        <text class="tag" x="1087" y="341">PI</text><text class="tagnum" x="1087" y="354">B18</text>
+      </g>
+
+      <!-- Electron 3-process annotation -->
+      <g class="clickable" data-id="electron">
+        <rect class="hit" x="1230" y="420" width="130" height="120" fill="transparent"/>
+        <rect class="sym-fill" x="1245" y="440" width="100" height="80" rx="3" stroke-dasharray="5 3"/>
+        <text class="tagnum" x="1295" y="462" text-anchor="middle">Electron</text>
+        <text class="tagnum" x="1295" y="478" text-anchor="middle">Main</text>
+        <text class="tagnum" x="1295" y="493" text-anchor="middle">Renderer</text>
+        <text class="tagnum" x="1295" y="508" text-anchor="middle">Agent</text>
+        <text class="tag" x="1295" y="538">3-PROCESS</text>
+      </g>
+
+      <!-- Train B piping -->
+      <path class="pipe" d="M125,480 H242" marker-end="url(#arrow)"/>
+      <path class="pipe-flow" d="M125,480 H240"/>
+      <path class="pipe" d="M355,480 H448" marker-end="url(#arrow)"/>
+      <path class="pipe-flow" d="M355,480 H446"/>
+      <path class="pipe" d="M530,480 H643" marker-end="url(#arrow)"/>
+      <path class="pipe-flow" d="M530,480 H641"/>
+      <path class="pipe" d="M735,490 H775" />
+      <path class="pipe" d="M930,490 H1033" marker-end="url(#arrow)"/>
+      <path id="bUploadPipe" class="pipe-flow" d="M930,490 H1031"/>
+      <path class="pipe-elec" d="M1139,490 H1238"/>
+
+      <!-- Train B instruments -->
+      <g class="clickable instr" data-id="ti-b11">
+        <line x1="90" y1="415" x2="90" y2="378" class="sig-flow"/>
+        <circle class="bubble" cx="90" cy="363" r="20"/>
+        <text class="tag" x="90" y="359">FT</text><text class="tagnum" x="90" y="372">B11</text>
+      </g>
+      <g class="clickable instr" data-id="pi-b12">
+        <line x1="300" y1="430" x2="300" y2="378" class="pipe-elec"/>
+        <circle class="bubble" cx="300" cy="363" r="20"/>
+        <text class="tag" x="300" y="359">PIT</text><text class="tagnum" x="300" y="372">B12</text>
+      </g>
+      <g class="clickable instr" data-id="qt-b13">
+        <line x1="490" y1="440" x2="490" y2="378" class="pipe-soft"/>
+        <circle class="bubble" cx="490" cy="363" r="20"/>
+        <line x1="470" y1="363" x2="510" y2="363" class="sym" stroke-width="1.4"/>
+        <text class="tag" x="490" y="359">QT</text><text class="tagnum" x="490" y="372">B13</text>
+      </g>
+
+      <!-- ============================================================ -->
+      <!-- TRAIN C : integrations -> Rust core -> SQLite -> React + Boule governance -->
+      <!-- ============================================================ -->
+
+      <!-- external integrations (manifold) -->
+      <g class="clickable" data-id="integrations">
+        <rect class="hit" x="40" y="700" width="140" height="170" fill="transparent"/>
+        <rect class="sym-fill" x="55" y="715" width="115" height="26" rx="2"/>
+        <rect class="sym-fill" x="55" y="747" width="115" height="26" rx="2"/>
+        <rect class="sym-fill" x="55" y="779" width="115" height="26" rx="2"/>
+        <rect class="sym-fill" x="55" y="811" width="115" height="26" rx="2"/>
+        <text class="tagnum" x="112" y="733" text-anchor="middle">Calendar</text>
+        <text class="tagnum" x="112" y="765" text-anchor="middle">GitHub</text>
+        <text class="tagnum" x="112" y="797" text-anchor="middle">Notion</text>
+        <text class="tagnum" x="112" y="829" text-anchor="middle">Codex</text>
+        <text class="tag" x="112" y="858">INTEGRATIONS</text>
+      </g>
+
+      <!-- Rust core reactor (owns all side-effects) -->
+      <g class="clickable" data-id="rustcore">
+        <rect class="hit" x="270" y="700" width="170" height="170" fill="transparent"/>
+        <rect class="sym-fill" x="290" y="730" width="130" height="110" rx="8"/>
+        <path d="M310,785 l20,-28 l20,28 l20,-28 l20,28" fill="none" stroke="var(--accent)" stroke-width="2.4"/>
+        <circle cx="355" cy="810" r="6" fill="var(--line)"/>
+        <text class="tag" x="355" y="862">Rust CORE R-C21</text>
+        <text class="tagnum" x="355" y="724" text-anchor="middle">모든 side-effect 소유</text>
+      </g>
+
+      <!-- SQLite vessel -->
+      <g class="clickable" data-id="sqlite">
+        <rect class="hit" x="510" y="700" width="150" height="180" fill="transparent"/>
+        <path d="M530,745 a52,15 0 0 1 104,0 L634,840 a52,15 0 0 1 -104,0 Z" class="sym-fill"/>
+        <path d="M530,745 a52,15 0 0 0 104,0" class="sym" fill="none"/>
+        <path d="M530,777 a52,15 0 0 0 104,0" class="pipe-soft"/>
+        <path d="M530,808 a52,15 0 0 0 104,0" class="pipe-soft"/>
+        <text class="tag" x="582" y="740">SQLite</text>
+        <text class="tagnum" x="582" y="865">TK-C22 · 50+ migrations</text>
+      </g>
+
+      <!-- React presentation -->
+      <g class="clickable" data-id="react">
+        <rect class="hit" x="720" y="700" width="150" height="170" fill="transparent"/>
+        <rect class="sym-fill" x="740" y="740" width="110" height="90" rx="3"/>
+        <ellipse cx="795" cy="785" rx="48" ry="18" fill="none" class="sym" stroke-width="1.6"/>
+        <ellipse cx="795" cy="785" rx="48" ry="18" fill="none" class="sym" stroke-width="1.6" transform="rotate(60 795 785)"/>
+        <ellipse cx="795" cy="785" rx="48" ry="18" fill="none" class="sym" stroke-width="1.6" transform="rotate(120 795 785)"/>
+        <circle cx="795" cy="785" r="6" fill="var(--accent2)"/>
+        <text class="tag" x="795" y="852">React PRESENTATION</text>
+      </g>
+
+      <!-- Boule Governance loop block -->
+      <g class="clickable" data-id="boule">
+        <rect class="hit" x="940" y="690" width="430" height="190" fill="transparent"/>
+        <rect class="ctrl-loop-box" x="950" y="700" width="410" height="170" rx="6" stroke="var(--accent3)"/>
+        <text class="train-sub" x="962" y="718" fill="var(--accent3)" style="font-weight:800">BOULE GOVERNANCE · fail-closed autonomy 분리</text>
+        <!-- pipeline nodes -->
+        <g id="bouleNodes">
+          <rect class="sym-fill" x="962" y="735" width="64" height="36" rx="2"/><text class="tagnum" x="994" y="757" text-anchor="middle">spec</text>
+          <rect class="sym-fill" x="1040" y="735" width="64" height="36" rx="2"/><text class="tagnum" x="1072" y="757" text-anchor="middle">plan</text>
+          <rect class="sym-fill" x="1118" y="735" width="64" height="36" rx="2"/><text class="tagnum" x="1150" y="757" text-anchor="middle">task</text>
+          <rect class="sym-fill" x="1196" y="735" width="74" height="36" rx="2"/><text class="tagnum" x="1233" y="757" text-anchor="middle">session</text>
+          <rect class="sym-fill" x="1284" y="735" width="68" height="36" rx="2"/><text class="tagnum" x="1318" y="757" text-anchor="middle">handoff</text>
+          <line x1="1026" y1="753" x2="1040" y2="753" class="pipe-soft"/>
+          <line x1="1104" y1="753" x2="1118" y2="753" class="pipe-soft"/>
+          <line x1="1182" y1="753" x2="1196" y2="753" class="pipe-soft"/>
+          <line x1="1270" y1="753" x2="1284" y2="753" class="pipe-soft"/>
+        </g>
+        <!-- ticker heartbeat -->
+        <circle id="tickerDot" cx="975" cy="825" r="7" fill="var(--accent3)"/>
+        <text class="tagnum" x="1000" y="830" text-anchor="start">ticker heartbeat</text>
+        <text id="tickerHz" class="tagnum" x="1180" y="830" text-anchor="start" fill="var(--accent3)">1.0 Hz · alive</text>
+      </g>
+
+      <!-- Train C piping -->
+      <path class="pipe" d="M170,785 H288" marker-end="url(#arrow)"/>
+      <path class="pipe-flow" d="M170,785 H286"/>
+      <path class="pipe" d="M420,785 H528" marker-end="url(#arrow)"/>
+      <path class="pipe-flow" d="M420,785 H526"/>
+      <path class="pipe" d="M634,790 H738" marker-end="url(#arrow)"/>
+      <path class="pipe-flow" d="M634,790 H736"/>
+      <path class="pipe-soft" d="M870,785 H948" marker-end="url(#arrow)"/>
+
+      <!-- Train C instruments -->
+      <g class="clickable instr" data-id="fc-c21">
+        <line x1="355" y1="730" x2="355" y2="695" class="pipe-soft"/>
+        <circle class="bubble" cx="355" cy="680" r="20"/>
+        <line x1="335" y1="680" x2="375" y2="680" class="sym" stroke-width="1.4"/>
+        <text class="tag" x="355" y="676">FC</text><text class="tagnum" x="355" y="690">C21</text>
+      </g>
+      <g class="clickable instr" data-id="li-c22">
+        <line x1="582" y1="745" x2="582" y2="695" class="pipe-elec"/>
+        <circle class="bubble" cx="582" cy="680" r="20"/>
+        <text class="tag" x="582" y="676">LI</text><text class="tagnum" x="582" y="690">C22</text>
+      </g>
+
+      <!-- ============================================================ -->
+      <!-- CROSS-TRAIN INTERLOCK: 용착 불량 (weld defect) trips then clears -->
+      <!-- ============================================================ -->
+      <g id="interlockBadge">
+        <rect id="ilBox" class="sym-fill" x="1230" y="120" width="270" height="150" rx="4" stroke="var(--trip)" stroke-width="2.4"/>
+        <text class="tag" x="1365" y="146" style="font-size:12px;fill:var(--trip)">⚠ 용착 불량 INTERLOCK</text>
+        <text class="tagnum" x="1365" y="162">ISL-901 · DOE 개선루프</text>
+        <!-- gauge -->
+        <circle id="ilGaugeBg" cx="1300" cy="210" r="40" fill="none" stroke="var(--grid)" stroke-width="8"/>
+        <circle id="ilGauge" cx="1300" cy="210" r="40" fill="none" stroke="var(--trip)" stroke-width="8"
+                stroke-dasharray="251" stroke-dashoffset="213" transform="rotate(-90 1300 210)" stroke-linecap="round"/>
+        <text id="ilPct" x="1300" y="207" text-anchor="middle" style="font-size:20px;font-weight:800;fill:var(--trip)">15%</text>
+        <text class="tagnum" x="1300" y="223" text-anchor="middle">용착불량</text>
+        <text id="ilStatus" x="1430" y="205" text-anchor="middle" style="font-size:13px;font-weight:800;fill:var(--trip)">TRIPPED</text>
+        <text class="tagnum" x="1430" y="225" text-anchor="middle">클릭=리셋</text>
+        <text class="lbl-sm" x="1365" y="258" text-anchor="middle">DOE 후 자동 클리어 15%→0%</text>
+      </g>
+
+    </svg>
+    <!-- ===================== /SCHEME ===================== -->
+
+    <div class="footgrid">
+      <div class="legend">
+        <h3>RANGE · LEGEND (ISA-5.1)</h3>
+        <div class="legrow">
+          <div class="legitem"><svg viewBox="0 0 38 14"><line x1="0" y1="7" x2="38" y2="7" stroke="var(--line)" stroke-width="3"/></svg> 프로세스 데이터 흐름</div>
+          <div class="legitem"><svg viewBox="0 0 38 14"><line x1="0" y1="7" x2="38" y2="7" stroke="var(--accent2)" stroke-width="1.6" stroke-dasharray="7 5"/></svg> 전기/계측 신호</div>
+          <div class="legitem"><svg viewBox="0 0 38 14"><line x1="0" y1="7" x2="38" y2="7" stroke="var(--accent3)" stroke-width="1.6" stroke-dasharray="2 4"/></svg> 소프트웨어 링크</div>
+          <div class="legitem"><svg viewBox="0 0 38 14"><circle cx="19" cy="7" r="6" fill="none" stroke="var(--line)" stroke-width="2"/></svg> 현장 계측기(field)</div>
+          <div class="legitem"><svg viewBox="0 0 38 14"><circle cx="19" cy="7" r="6" fill="none" stroke="var(--line)" stroke-width="2"/><line x1="13" y1="7" x2="25" y2="7" stroke="var(--line)"/></svg> 패널/SW 계측기</div>
+          <div class="legitem"><svg viewBox="0 0 38 14"><circle cx="19" cy="7" r="6" fill="none" stroke="var(--line)" stroke-width="2"/><path d="M22,4 L26,7 L22,10Z" fill="var(--line)"/></svg> 펌프/프로세서</div>
+          <div class="legitem"><svg viewBox="0 0 38 14"><path d="M11,3 L25,11 L11,11 L25,3 Z" fill="none" stroke="var(--line)" stroke-width="1.6"/></svg> 밸브(valve)</div>
+          <div class="legitem"><svg viewBox="0 0 38 14"><rect x="11" y="2" width="16" height="10" rx="2" fill="none" stroke="var(--line)" stroke-width="1.6"/></svg> 베셀/탱크/데이터스토어</div>
+        </div>
+      </div>
+      <div class="titleblock">
+        <h3>TITLE BLOCK</h3>
+        <div class="tb-grid">
+          <div class="tb-cell"><div class="k">도면명 / TITLE</div><div class="v">데이터 플로우 풀스킴</div></div>
+          <div class="tb-cell"><div class="k">DWG NO.</div><div class="v">PYH-PID-001</div></div>
+          <div class="tb-cell"><div class="k">REV.</div><div class="v">C</div></div>
+          <div class="tb-cell"><div class="k">날짜 / DATE</div><div class="v">2026-06-14</div></div>
+          <div class="tb-cell"><div class="k">설계 / DESIGNED</div><div class="v">박양하</div></div>
+          <div class="tb-cell"><div class="k">SCALE</div><div class="v">N.T.S.</div></div>
+          <div class="tb-cell span"><div class="k">연락처 / CONTACT</div><div class="v" style="font-size:11px">64etuor@gmail.com · github.com/64etuor · 010-0000-0000</div></div>
+        </div>
+      </div>
+    </div>
+    <p class="hint">▷ 계측기(bubble)·베셀·펌프를 클릭하면 실제 프로젝트/스택 상세가 열립니다. · ⚠ 용착 불량 인터록을 클릭하면 DOE 개선 시퀀스(15%→0%)가 작동합니다.</p>
+    <p class="footer-contact">박양하 · <b>64etuor@gmail.com</b> · <b>github.com/64etuor</b> · <b>010-0000-0000</b></p>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div id="panel" role="dialog" aria-modal="true">
+  <button class="pclose" id="pclose" aria-label="close">✕</button>
+  <div class="panel-head">
+    <div class="ptag" id="pTag">TAG</div>
+    <h2 id="pTitle">제목</h2>
+    <div class="ptype" id="pType">type</div>
+  </div>
+  <div class="panel-body" id="pBody"></div>
+</div>
+
+<script>
+"use strict";
+/* ===================== DETAIL DATA ===================== */
+const DATA = {
+  // TRAIN A
+  opcua:{tag:"SRV-A01 · 소스 베셀",title:"OPC UA 서버",type:"Train A · 데이터 소스 / 태그 스트림",
+    body:`<div class="sec"><h4>역할</h4><p>솔라엣지 MES 라인 설비의 OPC UA 서버에서 실시간 태그 스트림을 구독해 ETL 파이프라인의 1차 소스로 공급.</p></div>
+    <div class="sec"><h4>흐름</h4><p>설비 PLC/장비 → OPC UA Subscription → 정규화 버퍼 → ETL 펌프.</p></div>
+    <div class="sec"><h4>스택</h4><span class="chip">OPC UA</span><span class="chip">실시간 구독</span><span class="chip">Django DRF 수집</span></div>`},
+  ocvir:{tag:"INS-A02 · 검사장비",title:"OCV / IR 검사장비",type:"Train A · 인라인 측정",
+    body:`<div class="sec"><h4>역할</h4><p>OCV(개방전압)·IR(내부저항) 검사장비의 측정값을 셀 단위로 수집. 열교환기형 인라인 측정 노드로 표현.</p></div>
+    <div class="sec"><h4>측정</h4><ul><li>OCV / IR raw 측정</li><li>측정 타임스탬프 · 설비 식별</li><li>S/N 매핑</li></ul></div>
+    <div class="sec"><h4>스택</h4><span class="chip">OCV/IR</span><span class="chip">인라인 수집</span></div>`},
+  vision:{tag:"BUF-A03 · 비전버퍼",title:"비전 데이터",type:"Train A · 이미지/검사 데이터",
+    body:`<div class="sec"><h4>역할</h4><p>비전 검사 이미지·판정 결과를 버퍼링하여 ETL이 일괄 변환·적재할 수 있도록 스테이징.</p></div>
+    <div class="sec"><h4>스택</h4><span class="chip">Vision</span><span class="chip">staging buffer</span></div>`},
+  etlpump:{tag:"P-A04 · ETL 펌프",title:"ETL 펌프 (Extract·Transform·Load)",type:"Train A · 프로세서",
+    body:`<div class="sec"><h4>역할</h4><p>OPC UA / OCV·IR / 비전 데이터를 추출·변환·정합하여 PostgreSQL 17 베셀로 적재하는 핵심 처리 펌프.</p></div>
+    <div class="sec"><h4>변환</h4><ul><li>S/N 기준 다중 소스 조인</li><li>Cell Grade 산출</li><li>공정 이력 타임라인 구성</li></ul></div>
+    <div class="sec"><h4>스택</h4><span class="chip">Django 4.2</span><span class="chip">DRF</span><span class="chip">ETL</span></div>`},
+  pg17:{tag:"TK-A05 · 베셀",title:"PostgreSQL 17",type:"Train A · 데이터스토어",
+    body:`<div class="sec"><h4>역할</h4><p>검사·공정 데이터의 단일 진실원천(SSOT) 베셀. 검사성적서 발행과 S/N 추적성의 기반.</p></div>
+    <div class="sec"><h4>특징</h4><ul><li>S/N 추적성 인덱싱</li><li>공정 이력 관계 모델</li><li>성적서 발행 쿼리 최적화</li></ul></div>
+    <div class="sec"><h4>스택</h4><span class="chip">PostgreSQL 17</span><span class="chip">React 18</span><span class="chip">Django 4.2 DRF</span></div>`},
+  report:{tag:"RPT-A06 · 발행",title:"검사성적서 자동발행",type:"Train A · 출력 / 추적성",
+    body:`<div class="sec"><h4>역할</h4><p>적재된 검사 데이터로 검사성적서를 자동 발행하고 S/N 단위 추적성을 보장.</p></div>
+    <div class="sec"><h4>성과</h4><ul><li>사무공수 −451분/일</li><li>S/N 추적성 100%</li><li>성적서 수기 작성 제거</li></ul></div>
+    <div class="sec"><h4>스택</h4><span class="chip">자동발행</span><span class="chip">S/N 추적성</span></div>`},
+  valveA:{tag:"HV-A1 · 수동밸브",title:"적재 라인 차단 밸브",type:"Train A · 밸브",
+    body:`<div class="sec"><h4>역할</h4><p>ETL 펌프 → PostgreSQL 적재 라인의 수동 차단 밸브. 마이그레이션·점검 시 흐름 격리.</p></div>`},
+  "ft-a101":{tag:"FT-A101 · 현장",title:"플로우 측정 — 소스 처리량",type:"계측기 · 현장(field)",
+    body:`<div class="sec"><h4>측정</h4><p>OPC UA → 검사장비 구간 데이터 처리량(throughput) 모니터링.</p></div>`},
+  "ai-a102":{tag:"AV-A102 · 검증",title:"Cell Grade 검증",type:"계측기 · 소프트웨어 분석",
+    body:`<div class="sec"><h4>검증</h4><p>비전·OCV/IR 데이터 기반 Cell Grade 산출값의 유효성 검증. 등급 이상치 트랩.</p></div>
+    <div class="sec"><h4>스택</h4><span class="chip">Cell Grade</span><span class="chip">validation</span></div>`},
+  "qic-a103":{tag:"QIC-A103 · 검증제어",title:"S/N 유효성 검증",type:"계측기 · 품질 인디케이팅 컨트롤",
+    body:`<div class="sec"><h4>검증</h4><p>ETL 펌프 입력의 S/N 형식·중복·매핑 유효성을 실시간 검증하고 부적합 레코드를 차단.</p></div>
+    <div class="sec"><h4>스택</h4><span class="chip">S/N 유효성검증</span></div>`},
+  "lic-a104":{tag:"LIC-A104 · 레벨제어",title:"베셀 적재 레벨 인디케이터",type:"계측기 · 레벨 제어",
+    body:`<div class="sec"><h4>측정</h4><p>PostgreSQL 적재 베셀의 처리 백로그 레벨을 표시·제어.</p></div>`},
+  "qv-a105":{tag:"QV-A105 · 이력검증",title:"공정이력 검증",type:"계측기 · 품질 검증",
+    body:`<div class="sec"><h4>검증</h4><p>성적서 발행 직전 공정 이력 완전성(단계 누락·순서 위반)을 검증.</p></div>
+    <div class="sec"><h4>스택</h4><span class="chip">공정이력 검증</span></div>`},
+
+  // TRAIN B
+  cams:{tag:"CAM1-3 · 소스",title:"3-카메라 (1080p / 4K×2)",type:"Train B · 입력 소스",
+    body:`<div class="sec"><h4>역할</h4><p>키오스크 3-카메라 입력(1080p + 4K×2)을 실시간 프리뷰 파이프라인으로 공급.</p></div>
+    <div class="sec"><h4>스택</h4><span class="chip">1080p</span><span class="chip">4K</span><span class="chip">multi-cam</span></div>`},
+  webgl:{tag:"R-B13 · GPU 리액터",title:"WebGL2 GPU 필터",type:"Train B · 실시간 처리",
+    body:`<div class="sec"><h4>역할</h4><p>GPU 셰이더로 실시간 영상 처리. 프리뷰 P95 레이턴시 목표 관리.</p></div>
+    <div class="sec"><h4>필터</h4><ul><li>bilateral (노이즈/스무딩)</li><li>color grade</li><li>face-warp</li><li>LUT</li></ul></div>
+    <div class="sec"><h4>스택</h4><span class="chip">WebGL2</span><span class="chip">GPU shader</span></div>`},
+  capture:{tag:"P-B14 · 캡처",title:"캡처 (EXIF strip · 멱등)",type:"Train B · 프로세서",
+    body:`<div class="sec"><h4>역할</h4><p>최종 프레임 캡처. EXIF 메타데이터 제거 및 멱등(idempotent) 처리로 중복 캡처 방지.</p></div>
+    <div class="sec"><h4>스택</h4><span class="chip">EXIF strip</span><span class="chip">idempotent</span></div>`},
+  queue:{tag:"TK-B15 · 큐 베셀",title:"S3 presigned 업로드 큐",type:"Train B · 제어 루프 베셀",
+    body:`<div class="sec"><h4>역할</h4><p>업로드 큐를 <b>setpoint=COMPLETED</b> 제어 루프로 운용. presigned URL로 S3 업로드.</p></div>
+    <div class="sec"><h4>상태머신</h4><p>PENDING → UPLOADING → VERIFYING → COMPLETED, 실패 시 exponential backoff 재시도.</p></div>
+    <div class="sec"><h4>스택</h4><span class="chip">S3 presigned</span><span class="chip">state machine</span><span class="chip">exp backoff</span></div>`},
+  aurora:{tag:"TK-B17 · 베셀",title:"RDS Aurora / MySQL",type:"Train B · 데이터스토어",
+    body:`<div class="sec"><h4>역할</h4><p>업로드 완료 결과·세션 메타데이터의 영속 저장. CloudWatch로 운영 가시성 확보.</p></div>
+    <div class="sec"><h4>스택</h4><span class="chip">Aurora</span><span class="chip">MySQL</span><span class="chip">CloudWatch</span></div>`},
+  electron:{tag:"3-PROCESS · 런타임",title:"Electron Main / Renderer / Agent",type:"Train B · 런타임 아키텍처",
+    body:`<div class="sec"><h4>역할</h4><p>Electron 3-프로세스 구조로 책임 분리: Main(수명/권한), Renderer(UI/프리뷰), Agent(백그라운드 업로드/자가점검).</p></div>
+    <div class="sec"><h4>안정성</h4><ul><li>self-test rollback &lt; 2min</li><li>프로세스 격리</li></ul></div>`},
+  "ti-b11":{tag:"FT-B11 · 현장",title:"카메라 프레임 처리량",type:"계측기 · 현장(field)",
+    body:`<div class="sec"><h4>측정</h4><p>3-카메라 입력 프레임 처리량 모니터링.</p></div>`},
+  "pi-b12":{tag:"PIT-B12 · 레이턴시",title:"preview P95 latency",type:"계측기 · 압력(레이턴시) 트랜스미터",
+    body:`<div class="sec"><h4>측정</h4><p>WebGL2 프리뷰 파이프라인의 P95 레이턴시를 압력 게이지로 모니터링.</p></div>
+    <div class="sec"><h4>스택</h4><span class="chip">P95 latency</span></div>`},
+  "qt-b13":{tag:"QT-B13 · 무결성",title:"캡처 무결성 검증",type:"계측기 · 품질 트랜스미터",
+    body:`<div class="sec"><h4>검증</h4><p>멱등 키·EXIF 제거 검증으로 캡처 무결성 보장.</p></div>`},
+  "lic-b16":{tag:"LIC-B16 · 큐 컨트롤러",title:"업로드 큐 상태머신 컨트롤러",type:"계측기 · 레벨 인디케이팅 컨트롤",
+    body:`<div class="sec"><h4>제어</h4><p>큐 레벨을 setpoint(COMPLETED)로 수렴시키는 컨트롤러. exp backoff 재시도 로직 내장.</p></div>`},
+  "cw-b18":{tag:"PI-B18 · CloudWatch",title:"CloudWatch 운영 인디케이터",type:"계측기 · 프로세스 인디케이터",
+    body:`<div class="sec"><h4>측정</h4><p>Aurora/업로드 파이프라인 운영 지표를 CloudWatch로 수집·표시.</p></div>`},
+
+  // TRAIN C
+  integrations:{tag:"MANIFOLD · 외부",title:"외부 Integrations",type:"Train C · 외부 소스 매니폴드",
+    body:`<div class="sec"><h4>역할</h4><p>Calendar / GitHub / Notion / Codex 외부 통합을 단일 매니폴드로 Rust core에 공급.</p></div>
+    <div class="sec"><h4>스택</h4><span class="chip">Calendar</span><span class="chip">GitHub</span><span class="chip">Notion</span><span class="chip">Codex</span></div>`},
+  rustcore:{tag:"R-C21 · 코어 리액터",title:"Rust Core",type:"Train C · 코어 프로세서",
+    body:`<div class="sec"><h4>역할</h4><p>모든 side-effect를 단독 소유하는 Rust 코어. 외부 통합·DB 쓰기·governance 전이를 중앙 집중.</p></div>
+    <div class="sec"><h4>원칙</h4><ul><li>side-effect 단일 소유</li><li>fail-closed 기본값</li><li>presentation과 격리</li></ul></div>
+    <div class="sec"><h4>스택</h4><span class="chip">Rust</span><span class="chip">side-effect owner</span></div>`},
+  sqlite:{tag:"TK-C22 · 베셀",title:"SQLite (50+ migrations)",type:"Train C · 데이터스토어",
+    body:`<div class="sec"><h4>역할</h4><p>로컬 영속 베셀. 50개 이상의 마이그레이션으로 스키마 진화 관리.</p></div>
+    <div class="sec"><h4>스택</h4><span class="chip">SQLite</span><span class="chip">50+ migrations</span></div>`},
+  react:{tag:"PRESENTATION · UI",title:"React Presentation",type:"Train C · 프레젠테이션",
+    body:`<div class="sec"><h4>역할</h4><p>Rust core 상태를 구독·표시하는 순수 프레젠테이션 레이어. side-effect 없음.</p></div>
+    <div class="sec"><h4>스택</h4><span class="chip">React</span><span class="chip">presentation-only</span></div>`},
+  boule:{tag:"GOV · Boule",title:"Boule Governance",type:"Train C · 거버넌스 제어 루프",
+    body:`<div class="sec"><h4>역할</h4><p>spec → plan → task → session → handoff 파이프라인. ticker heartbeat로 살아있음을 보장하고 autonomy를 fail-closed로 분리.</p></div>
+    <div class="sec"><h4>제어</h4><ul><li>단계별 게이트</li><li>ticker heartbeat 감시</li><li>autonomy 분리 (fail-closed)</li></ul></div>
+    <div class="sec"><h4>스택</h4><span class="chip">spec→plan→task→session→handoff</span><span class="chip">fail-closed</span></div>`},
+  "fc-c21":{tag:"FC-C21 · 흐름제어",title:"통합 흐름 제어",type:"계측기 · 플로우 컨트롤",
+    body:`<div class="sec"><h4>제어</h4><p>외부 통합 → Rust core 데이터 흐름을 제어. fail-closed로 차단 우선.</p></div>`},
+  "li-c22":{tag:"LI-C22 · 레벨",title:"마이그레이션 레벨",type:"계측기 · 레벨 인디케이터",
+    body:`<div class="sec"><h4>측정</h4><p>SQLite 스키마 마이그레이션 적용 레벨(50+)을 표시.</p></div>`},
+};
+
+/* ===================== PANEL ===================== */
+const panel=document.getElementById('panel');
+function openPanel(id){
+  const d=DATA[id]; if(!d) return;
+  document.getElementById('pTag').textContent=d.tag;
+  document.getElementById('pTitle').textContent=d.title;
+  document.getElementById('pType').textContent=d.type;
+  document.getElementById('pBody').innerHTML=d.body;
+  panel.classList.add('open');
+}
+function closePanel(){panel.classList.remove('open');}
+document.getElementById('pclose').addEventListener('click',closePanel);
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closePanel();});
+document.querySelectorAll('.clickable').forEach(el=>{
+  el.addEventListener('click',()=>{const id=el.getAttribute('data-id'); if(id) openPanel(id);});
+});
+
+/* ===================== UPLOAD QUEUE CONTROL LOOP ===================== */
+(function uploadLoop(){
+  const states=["PENDING","UPLOADING","VERIFYING","COMPLETED"];
+  const bars=["○○○○","●○○○","●●○○","●●●●"];
+  const colors=["#c77b14","#1f5fb8","#8a5db8","#2e7d32"];
+  const fillH=[10,40,70,100];
+  let i=0, backoff=0;
+  const elState=document.getElementById('smState');
+  const elBackoff=document.getElementById('smBackoff');
+  const elBar=document.getElementById('smBar');
+  const fill=document.getElementById('queueFill');
+  function step(){
+    // occasional simulated failure -> backoff before COMPLETED
+    if(i===2 && Math.random()<0.32){
+      backoff = backoff? Math.min(backoff*2,3200) : 200;
+      elState.textContent="RETRY";
+      elState.style.fill=colors[0];
+      elBackoff.textContent="backoff: "+backoff+"ms";
+      elBar.textContent="●●⟳○";
+      i=1; // fall back to UPLOADING
+    }else{
+      const s=states[i];
+      elState.textContent=s;
+      elState.style.fill=colors[i];
+      elBackoff.textContent="backoff: "+backoff+"ms";
+      elBar.textContent=bars[i];
+      // animate fill to setpoint
+      const h=fillH[i]*0.34; const y=534-h;
+      fill.setAttribute('y',y); fill.setAttribute('height',h);
+      if(i===3){ backoff=0; }
+      i=(i+1)%4;
+    }
+  }
+  step();
+  setInterval(step,1100);
+})();
+
+/* ===================== TICKER HEARTBEAT (Boule) ===================== */
+(function ticker(){
+  const dot=document.getElementById('tickerDot');
+  let on=true;
+  setInterval(()=>{ on=!on; dot.setAttribute('opacity',on?'1':'0.2'); dot.setAttribute('r',on?'7':'5'); },700);
+})();
+
+/* ===================== WELD-DEFECT INTERLOCK (trip -> DOE -> clear) ===================== */
+(function interlock(){
+  const badge=document.getElementById('interlockBadge');
+  const gauge=document.getElementById('ilGauge');
+  const pct=document.getElementById('ilPct');
+  const status=document.getElementById('ilStatus');
+  const box=document.getElementById('ilBox');
+  const weldRO=document.getElementById('weldRO');
+  const C=251; // circumference
+  let busy=false;
+  function setGauge(p){ // p 0..15
+    const frac=p/15;
+    gauge.setAttribute('stroke-dashoffset', C-(C*frac));
+    pct.textContent=Math.round(p*10)/10+"%";
+  }
+  function tripped(){
+    setGauge(15);
+    gauge.setAttribute('stroke','var(--trip)'); pct.setAttribute('fill','var(--trip)');
+    box.setAttribute('stroke','var(--trip)');
+    status.textContent="TRIPPED"; status.setAttribute('fill','var(--trip)');
+    weldRO.textContent="15% (TRIP)"; weldRO.classList.remove('good'); weldRO.style.color="var(--trip)";
+  }
+  function runDOE(){
+    if(busy) return; busy=true;
+    status.textContent="DOE 진행…"; status.setAttribute('fill','var(--amber)');
+    gauge.setAttribute('stroke','var(--amber)'); pct.setAttribute('fill','var(--amber)');
+    box.setAttribute('stroke','var(--amber)');
+    let p=15;
+    const t=setInterval(()=>{
+      p-=0.6;
+      if(p<=0){ p=0; clearInterval(t);
+        setGauge(0);
+        gauge.setAttribute('stroke','var(--accent3)'); pct.setAttribute('fill','var(--accent3)');
+        box.setAttribute('stroke','var(--accent3)');
+        status.textContent="CLEARED ✓"; status.setAttribute('fill','var(--accent3)');
+        weldRO.textContent="15%→0%"; weldRO.style.color="var(--accent3)"; weldRO.classList.add('good');
+        busy=false;
+        return;
+      }
+      setGauge(p);
+    },70);
+  }
+  tripped(); // first paint shows tripped state
+  badge.addEventListener('click',(e)=>{
+    e.stopPropagation();
+    if(status.textContent.indexOf("CLEARED")>-1){ tripped(); } // toggle back
+    else { runDOE(); }
+  });
+})();
+
+/* ===================== font readiness (for headless PDF) ===================== */
+if(document.fonts && document.fonts.ready){ document.fonts.ready.then(()=>{ document.documentElement.classList.add('fonts-ready'); }); }
+</script>
+</body>
+</html>

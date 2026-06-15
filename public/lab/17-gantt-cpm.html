@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>박양하 · 커리어 간트 + 크리티컬 패스 + 임팩트 스코어카드</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+:root{
+  --paper:#f4f5f2;
+  --paper-2:#fbfbf9;
+  --board:#ffffff;
+  --ink:#16191d;
+  --ink-2:#525964;
+  --ink-3:#8a93a0;
+  --line:#e2e4df;
+  --line-2:#d2d5cf;
+  --grid:#ececea;
+  --rule:#c9ccc4;
+  --crit:#e23b3b;          /* critical path red */
+  --crit-soft:#fbe6e6;
+  --today:#1357d6;
+  --good:#1f9d6b;
+  --good-soft:#e3f4ec;
+  --warn:#c8821a;
+  --ink-accent:#0f1419;
+  /* company palette */
+  --c-eun:#c0563d;   /* 은성에스아이티 */
+  --c-elen:#2f7d8c;  /* 이랜텍 */
+  --c-sol:#3a63b5;   /* 솔라엣지 */
+  --c-mir:#6b48b8;   /* 미러리스 */
+  --c-bridge:#7a8290;/* 역량전환 */
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --sans:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:
+    radial-gradient(1400px 700px at 12% -8%, #ffffff 0%, transparent 55%),
+    radial-gradient(1100px 800px at 110% 4%, #eef0ec 0%, transparent 50%),
+    var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  word-break:keep-all;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+::selection{background:rgba(226,59,59,.20)}
+.mono{font-family:var(--mono)}
+
+/* ============ shell ============ */
+#app{max-width:1680px;margin:0 auto;padding:26px 30px 60px}
+@media (max-width:1340px){#app{padding:20px 18px 50px}}
+
+/* ============ masthead ============ */
+.mast{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:24px;
+  border-bottom:2px solid var(--ink);padding-bottom:16px;margin-bottom:4px;
+}
+.mast-l{display:flex;flex-direction:column;gap:8px}
+.kicker{font-family:var(--mono);font-size:10.5px;letter-spacing:.34em;color:var(--ink-3);text-transform:uppercase}
+.mast h1{font-size:30px;font-weight:800;letter-spacing:-.018em;line-height:1.02}
+.mast h1 .nm{color:var(--ink)}
+.mast h1 .sub{color:var(--ink-3);font-weight:700}
+.role-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.role-pill{font-family:var(--mono);font-size:10.5px;letter-spacing:.04em;color:var(--ink-2);
+  border:1px solid var(--line-2);border-radius:999px;padding:3px 10px;background:var(--paper-2)}
+.role-pill.lead{border-color:var(--ink);color:var(--ink);font-weight:700;background:#fff}
+.mast-r{display:flex;flex-direction:column;align-items:flex-end;gap:7px;text-align:right}
+.legend{display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.lg{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-2)}
+.lg .sw{width:16px;height:9px;border-radius:2px}
+.lg .swl{width:18px;height:0;border-top:2px solid var(--crit)}
+.lg .swl.t{border-top:2px dashed var(--today)}
+.lg .swd{width:14px;height:14px;transform:rotate(45deg);border:1.6px solid var(--ink)}
+.contact{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.02em}
+.contact a{color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(--line-2)}
+.contact a:hover{color:var(--crit)}
+
+/* ============ control bar ============ */
+.controls{display:flex;align-items:center;justify-content:space-between;gap:16px;margin:18px 0 14px;flex-wrap:wrap}
+.ctl-l{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.toggle{
+  display:inline-flex;align-items:center;gap:9px;cursor:pointer;user-select:none;
+  border:1.4px solid var(--crit);background:#fff;color:var(--crit);
+  font-weight:700;font-size:12.5px;letter-spacing:.01em;border-radius:8px;padding:8px 14px;
+  transition:all .18s ease;
+}
+.toggle .dot{width:9px;height:9px;border-radius:50%;background:var(--crit);box-shadow:0 0 0 0 rgba(226,59,59,.5)}
+.toggle.on{background:var(--crit);color:#fff}
+.toggle.on .dot{background:#fff;animation:pulse 1.6s infinite}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,255,255,.55)}70%{box-shadow:0 0 0 7px rgba(255,255,255,0)}100%{box-shadow:0 0 0 0 rgba(255,255,255,0)}}
+.toggle.ghost{border-color:var(--line-2);color:var(--ink-2)}
+.toggle.ghost.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.toggle.ghost.on .dot{background:#fff;animation:none}
+.toggle.ghost .dot{background:var(--ink-3)}
+.hint{font-size:11.5px;color:var(--ink-3)}
+.cp-note{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.02em}
+.cp-note b{color:var(--crit)}
+
+/* ============ main grid ============ */
+.layout{display:grid;grid-template-columns:1fr 372px;gap:22px;align-items:start}
+@media (max-width:1280px){.layout{grid-template-columns:1fr 330px}}
+@media (max-width:1080px){.layout{grid-template-columns:1fr}}
+
+/* ============ gantt board ============ */
+.board{
+  background:var(--board);border:1px solid var(--line);border-radius:14px;
+  box-shadow:0 1px 0 #fff inset,0 18px 40px -28px rgba(20,25,30,.4);
+  overflow:hidden;position:relative;
+}
+.board-hd{display:flex;align-items:center;justify-content:space-between;padding:13px 18px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,#fafbf8)}
+.board-hd h2{font-size:13.5px;font-weight:800;letter-spacing:.01em;display:flex;align-items:center;gap:9px}
+.board-hd h2 .ix{font-family:var(--mono);font-size:10px;color:#fff;background:var(--ink);border-radius:5px;padding:2px 7px;letter-spacing:.06em}
+.board-meta{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.04em}
+#gantt{display:block;width:100%}
+
+/* ============ scorecard rail ============ */
+.rail{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--board);border:1px solid var(--line);border-radius:14px;
+  box-shadow:0 14px 34px -28px rgba(20,25,30,.4);overflow:hidden}
+.card-hd{display:flex;align-items:center;justify-content:space-between;padding:11px 15px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,#fafbf8)}
+.card-hd .t{font-size:12px;font-weight:800;letter-spacing:.02em}
+.card-hd .b{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.1em;text-transform:uppercase}
+
+/* big impact hero */
+.hero{padding:16px 15px 14px}
+.hero .lbl{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.14em;text-transform:uppercase}
+.hero .big{display:flex;align-items:baseline;gap:6px;margin-top:4px}
+.hero .big .num{font-family:var(--mono);font-size:46px;font-weight:800;letter-spacing:-.03em;line-height:1;color:var(--ink)}
+.hero .big .unit{font-size:15px;font-weight:700;color:var(--ink-2)}
+.hero .sub{font-size:11.5px;color:var(--ink-2);margin-top:7px;line-height:1.5}
+.hero .est{display:inline-block;margin-top:8px;font-family:var(--mono);font-size:9.5px;color:var(--warn);
+  border:1px solid #ecd9b6;background:#fbf3e1;border-radius:5px;padding:2px 7px;letter-spacing:.04em}
+
+/* kpi grid */
+.kpis{padding:6px 13px 13px;display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.kpi{border:1px solid var(--line);border-radius:10px;padding:10px 11px;background:var(--paper-2);position:relative;overflow:hidden;cursor:default;transition:border-color .15s,transform .15s}
+.kpi:hover{border-color:var(--line-2);transform:translateY(-1px)}
+.kpi .cat{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.kpi .v{display:flex;align-items:baseline;gap:3px;margin-top:3px}
+.kpi .v .n{font-family:var(--mono);font-size:23px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.kpi .v .u{font-size:11px;font-weight:700;color:var(--ink-2)}
+.kpi .nm{font-size:11px;color:var(--ink-2);margin-top:4px;line-height:1.35}
+.kpi .spark{position:absolute;right:8px;top:8px;opacity:.9}
+.kpi.dn .v .n{color:var(--good)}
+.kpi.up .v .n{color:var(--good)}
+.kpi .delta{font-family:var(--mono);font-size:9.5px;font-weight:700;margin-top:5px;display:inline-flex;align-items:center;gap:3px}
+.kpi.dn .delta,.kpi.up .delta{color:var(--good)}
+.kpi .barbg{height:4px;border-radius:3px;background:var(--grid);margin-top:7px;overflow:hidden}
+.kpi .barfg{height:100%;border-radius:3px;background:var(--good)}
+
+/* category legend strip */
+.catstrip{display:flex;gap:6px;flex-wrap:wrap;padding:0 13px 13px}
+.cattag{font-family:var(--mono);font-size:9px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);
+  border:1px solid var(--line);border-radius:999px;padding:3px 9px;background:#fff;display:flex;align-items:center;gap:5px}
+.cattag .d{width:7px;height:7px;border-radius:2px}
+
+/* derived framings */
+.derived{padding:4px 15px 15px;display:flex;flex-direction:column;gap:10px}
+.dframe{border:1px solid var(--line);border-left:3px solid var(--ink);border-radius:8px;padding:10px 12px;background:var(--paper-2)}
+.dframe.est-l{border-left-color:var(--warn)}
+.dframe .h{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.dframe .h .t{font-size:11.5px;font-weight:800}
+.dframe .h .v{font-family:var(--mono);font-size:16px;font-weight:800;color:var(--ink)}
+.dframe .d{font-size:10.5px;color:var(--ink-2);margin-top:4px;line-height:1.5}
+.dframe .tag{font-family:var(--mono);font-size:8.5px;color:var(--warn);letter-spacing:.08em;margin-left:6px}
+
+/* skills cloud */
+.skills{padding:4px 15px 16px;display:flex;flex-wrap:wrap;gap:5px}
+.sk{font-family:var(--mono);font-size:10px;color:var(--ink-2);border:1px solid var(--line);border-radius:5px;padding:2px 7px;background:#fff}
+.sk.core{border-color:var(--ink);color:var(--ink);font-weight:700}
+
+/* ============ detail panel (task click) ============ */
+.detail{
+  position:fixed;right:24px;bottom:24px;width:430px;max-width:calc(100vw - 48px);
+  background:var(--board);border:1px solid var(--line-2);border-radius:14px;
+  box-shadow:0 30px 70px -30px rgba(20,25,30,.55);
+  transform:translateY(18px);opacity:0;pointer-events:none;transition:all .26s cubic-bezier(.2,.7,.2,1);z-index:60;
+  overflow:hidden;
+}
+.detail.show{transform:translateY(0);opacity:1;pointer-events:auto}
+.detail-bar{height:5px;width:100%}
+.detail-hd{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;padding:14px 16px 6px}
+.detail-hd .co{font-family:var(--mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.detail-hd .ti{font-size:16px;font-weight:800;margin-top:3px;letter-spacing:-.01em}
+.detail-hd .pd{font-family:var(--mono);font-size:10.5px;color:var(--ink-2);margin-top:3px}
+.detail-x{cursor:pointer;border:1px solid var(--line);border-radius:7px;width:26px;height:26px;display:flex;align-items:center;justify-content:center;color:var(--ink-3);background:#fff;flex:0 0 auto}
+.detail-x:hover{border-color:var(--crit);color:var(--crit)}
+.detail-crit{display:inline-flex;align-items:center;gap:5px;margin:0 16px 8px;font-family:var(--mono);font-size:9.5px;font-weight:700;
+  color:var(--crit);border:1px solid #f0c2c2;background:var(--crit-soft);border-radius:5px;padding:3px 8px;letter-spacing:.04em}
+.detail-crit.off{color:var(--ink-3);border-color:var(--line);background:var(--paper-2)}
+.detail-body{padding:4px 16px 16px}
+.detail-body .desc{font-size:12px;color:var(--ink-2);line-height:1.6;margin-bottom:12px}
+.dmetrics{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.dm{border:1px solid var(--line);border-radius:9px;padding:9px 10px;background:var(--paper-2)}
+.dm .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.dm .vv{font-family:var(--mono);font-size:18px;font-weight:800;margin-top:3px}
+.dm .vv.g{color:var(--good)}
+.dm .cc{font-size:10px;color:var(--ink-2);margin-top:2px}
+.detail-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 16px;border-top:1px solid var(--line);background:var(--paper-2)}
+.detail-foot .sl{font-family:var(--mono);font-size:10px;color:var(--ink-2)}
+.detail-foot .sl b{color:var(--ink)}
+.detail-stack{display:flex;gap:4px;flex-wrap:wrap;max-width:230px;justify-content:flex-end}
+.detail-stack .s{font-family:var(--mono);font-size:9px;color:var(--ink-2);border:1px solid var(--line);border-radius:4px;padding:1px 5px;background:#fff}
+
+/* tooltip */
+.tip{position:fixed;pointer-events:none;z-index:70;background:var(--ink-accent);color:#f4f5f2;
+  border-radius:9px;padding:9px 11px;font-size:11px;line-height:1.45;max-width:250px;
+  box-shadow:0 16px 36px -16px rgba(0,0,0,.5);opacity:0;transform:translateY(4px);transition:opacity .14s,transform .14s}
+.tip.show{opacity:1;transform:translateY(0)}
+.tip .h{font-weight:800;font-size:11.5px;margin-bottom:3px}
+.tip .m{font-family:var(--mono);font-size:10px;color:#ffd9d9}
+.tip .row{color:#c8cdd6}
+
+footer{margin-top:22px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+  border-top:1px solid var(--line);padding-top:14px;flex-wrap:wrap}
+footer .l{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.04em}
+footer .r{display:flex;gap:14px;font-family:var(--mono);font-size:10.5px}
+footer .r a{color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(--line-2)}
+footer .r a:hover{color:var(--crit)}
+
+.dim-others #gantt.cp .nc{opacity:.16;transition:opacity .35s}
+
+/* ============ self-ops section ============ */
+.selfops{margin-top:24px}
+.selfops-hd{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;
+  border-top:2px solid var(--ink);padding-top:14px;margin-bottom:14px;flex-wrap:wrap}
+.selfops-hd .l{display:flex;flex-direction:column;gap:5px}
+.selfops-hd h2{font-size:19px;font-weight:800;letter-spacing:-.014em;line-height:1.05}
+.selfops-hd h2 .en{color:var(--ink-3);font-weight:700}
+.selfops-cap{font-size:11.5px;color:var(--ink-2);line-height:1.55;max-width:560px}
+.selfops-cap b{color:var(--ink)}
+.selfops-badge{font-family:var(--mono);font-size:9.5px;color:var(--warn);
+  border:1px solid #ecd9b6;background:#fbf3e1;border-radius:5px;padding:3px 8px;letter-spacing:.03em;white-space:nowrap}
+.selfops-grid{display:grid;grid-template-columns:1.32fr 1fr;gap:22px;align-items:start}
+@media (max-width:1080px){.selfops-grid{grid-template-columns:1fr}}
+
+/* momentum panel */
+.mom-top{display:flex;flex-wrap:wrap;gap:9px;padding:14px 15px 4px}
+.mom-stat{flex:1 1 0;min-width:96px;border:1px solid var(--line);border-radius:10px;
+  padding:9px 11px;background:var(--paper-2)}
+.mom-stat .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
+.mom-stat .v{display:flex;align-items:baseline;gap:3px;margin-top:3px}
+.mom-stat .v .n{font-family:var(--mono);font-size:21px;font-weight:800;letter-spacing:-.02em;line-height:1}
+.mom-stat .v .u{font-size:10.5px;font-weight:700;color:var(--ink-2)}
+.mom-stat .c{font-size:10px;color:var(--ink-2);margin-top:3px;line-height:1.35}
+#momChart{display:block;width:100%}
+.mom-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:9px 15px 13px;flex-wrap:wrap}
+.mom-foot .lg{display:flex;gap:13px;flex-wrap:wrap}
+.mom-foot .lg .i{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--ink-2)}
+.mom-foot .lg .i .sw{width:14px;height:8px;border-radius:2px}
+.mom-foot .lg .i .swl{width:16px;height:0;border-top:2px solid var(--c-mir)}
+.mom-foot .note{font-family:var(--mono);font-size:9px;color:var(--ink-3);letter-spacing:.02em}
+.mom-log{margin:0 15px 14px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.mom-log .lhd{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding:7px 11px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,#fafbf8)}
+.mom-log .lhd .t{font-size:10.5px;font-weight:800}
+.mom-log .lhd .b{font-family:var(--mono);font-size:8.5px;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase}
+.mom-log table{width:100%;border-collapse:collapse;font-size:10px}
+.mom-log th{font-family:var(--mono);font-size:8px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);
+  text-align:left;padding:5px 9px;border-bottom:1px solid var(--line);font-weight:700}
+.mom-log td{padding:5px 9px;border-bottom:1px solid var(--grid);color:var(--ink-2);vertical-align:top}
+.mom-log tr:last-child td{border-bottom:none}
+.mom-log td.tk{color:var(--ink);font-weight:600}
+.mom-log td.dur{font-family:var(--mono);text-align:right;color:var(--ink);white-space:nowrap}
+.mom-log .schema{font-family:var(--mono);font-size:8.5px;color:var(--ink-3);padding:6px 11px;background:var(--paper-2);letter-spacing:.01em}
+
+/* life wheel panel */
+.lw-wrap{padding:12px 15px 6px;display:flex;justify-content:center}
+#wheel{display:block;max-width:340px;width:100%}
+.lw-legend{display:flex;gap:16px;justify-content:center;padding:2px 15px 8px;flex-wrap:wrap}
+.lw-legend .i{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--ink-2)}
+.lw-legend .i .sw{width:14px;height:9px;border-radius:2px}
+.lw-axes{padding:2px 15px 12px;display:flex;flex-wrap:wrap;gap:5px}
+.lw-axis{font-family:var(--mono);font-size:9px;letter-spacing:.02em;color:var(--ink-2);
+  border:1px solid var(--line);border-radius:999px;padding:3px 9px;background:#fff;display:flex;align-items:center;gap:6px}
+.lw-axis .gap{color:var(--warn);font-weight:700}
+.lw-axis .grp{color:var(--ink-3)}
+.lw-princ{margin:0 15px 14px;border:1px solid var(--line);border-left:3px solid var(--warn);
+  border-radius:8px;padding:9px 12px;background:var(--paper-2)}
+.lw-princ .t{font-size:10.5px;font-weight:800}
+.lw-princ .d{font-size:10px;color:var(--ink-2);margin-top:3px;line-height:1.5}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- masthead -->
+  <header class="mast">
+    <div class="mast-l">
+      <div class="kicker">PROJECT PLAN · CRITICAL PATH METHOD · EXECUTIVE SCORECARD</div>
+      <h1><span class="nm">박양하</span> &nbsp;<span class="sub">커리어 간트 &amp; 임팩트 보드</span></h1>
+      <div class="role-row">
+        <span class="role-pill lead">생산운영 PM</span>
+        <span class="role-pill">공정기술 엔지니어</span>
+        <span class="role-pill lead">총괄본부장</span>
+        <span class="role-pill">제조 → SW · 데이터 · AI</span>
+      </div>
+    </div>
+    <div class="mast-r">
+      <div class="legend">
+        <span class="lg"><span class="sw" style="background:var(--c-eun)"></span>은성</span>
+        <span class="lg"><span class="sw" style="background:var(--c-elen)"></span>이랜텍</span>
+        <span class="lg"><span class="sw" style="background:var(--c-sol)"></span>솔라엣지</span>
+        <span class="lg"><span class="sw" style="background:var(--c-mir)"></span>미러리스</span>
+        <span class="lg"><span class="swl"></span>크리티컬 패스</span>
+        <span class="lg"><span class="swl t"></span>Today</span>
+        <span class="lg"><span class="swd"></span>마일스톤</span>
+      </div>
+      <div class="contact mono">64etuor@gmail.com · <a href="https://github.com/64etuor" target="_blank" rel="noopener">github.com/64etuor</a> · 010-0000-0000</div>
+    </div>
+  </header>
+
+  <!-- controls -->
+  <div class="controls">
+    <div class="ctl-l">
+      <div class="toggle on" id="cpToggle" role="button" tabindex="0" aria-pressed="true">
+        <span class="dot"></span>크리티컬 패스 강조
+      </div>
+      <div class="toggle ghost on" id="dimToggle" role="button" tabindex="0" aria-pressed="true">
+        <span class="dot"></span>비핵심 태스크 디밍
+      </div>
+      <span class="hint">막대를 클릭하면 역할 상세 + 비즈니스 임팩트가 열립니다.</span>
+    </div>
+    <div class="cp-note mono">최장 의존 체인 <b>5단계</b> · 제조 현장 → 데이터/AX 총괄까지 단절 없이 연결</div>
+  </div>
+
+  <!-- main layout -->
+  <div class="layout">
+
+    <!-- GANTT -->
+    <section class="board" id="boardWrap">
+      <div class="board-hd">
+        <h2><span class="ix">GANTT</span> 커리어 타임라인 · 의존성 · 진척률 · 마일스톤</h2>
+        <div class="board-meta mono">2020 Q3 → 2026 Q2 · FS 의존 · Today 2026.06</div>
+      </div>
+      <svg id="gantt" role="img" aria-label="커리어 간트 차트"></svg>
+    </section>
+
+    <!-- SCORECARD RAIL -->
+    <aside class="rail">
+
+      <div class="card">
+        <div class="card-hd"><span class="t">누적 임팩트</span><span class="b">CUMULATIVE</span></div>
+        <div class="hero">
+          <div class="lbl">대표 운영 성과 — 운영경비 절감</div>
+          <div class="big"><span class="num" id="heroNum">0</span><span class="unit">% OPEX ↓</span></div>
+          <div class="sub">배터리팩 총괄 시절 운영경비 <b>−85%</b>, 동시에 조달단가 <b>+30%</b> 재협상 — 비용·마진 양방향 개선.</div>
+          <span class="est">집계: 직접 측정치 (실적 기준)</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><span class="t">임원 KPI 스코어카드</span><span class="b">SCORECARD</span></div>
+        <div class="catstrip">
+          <span class="cattag"><span class="d" style="background:var(--c-eun)"></span>원가</span>
+          <span class="cattag"><span class="d" style="background:var(--good)"></span>품질</span>
+          <span class="cattag"><span class="d" style="background:var(--c-elen)"></span>생산성</span>
+          <span class="cattag"><span class="d" style="background:var(--c-mir)"></span>자동화</span>
+        </div>
+        <div class="kpis" id="kpis"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><span class="t">파생 비즈니스 프레이밍</span><span class="b">DERIVED</span></div>
+        <div class="derived" id="derived"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd"><span class="t">역량 스택</span><span class="b">CAPABILITY</span></div>
+        <div class="skills" id="skills"></div>
+      </div>
+
+    </aside>
+  </div>
+
+  <!-- ============ SELF-OPS ============ -->
+  <section class="selfops" id="selfops">
+    <div class="selfops-hd">
+      <div class="l">
+        <div class="kicker">SELF-OPS · 운영을 자기 자신에게도 적용</div>
+        <h2>자기 운영 계측 &nbsp;<span class="en">Self-Instrumentation</span></h2>
+        <div class="selfops-cap">엔지니어링 계측을 자기 자신에게 — <b>주간 회고 cadence</b> · <b>다축 정렬 점수</b> · <b>작업단위 텔레메트리</b>.
+          현장에서 쓰던 instrument&nbsp;→&nbsp;measure&nbsp;→&nbsp;retro&nbsp;→&nbsp;iterate 루프를 음주·루틴·결제 같은 개인 영역까지 데이터 문제로 자가실험한다.</div>
+      </div>
+      <span class="selfops-badge">종단 수치는 실제 기록 포맷 기준의 대표값</span>
+    </div>
+
+    <div class="selfops-grid">
+
+      <!-- momentum panel -->
+      <div class="card">
+        <div class="card-hd"><span class="t">주간 Momentum 대시보드 · 12주 연속</span><span class="b">VELOCITY</span></div>
+        <div class="mom-top" id="momTop"></div>
+        <svg id="momChart" role="img" aria-label="주간 모멘텀 12주 시계열"></svg>
+        <div class="mom-foot">
+          <div class="lg">
+            <span class="i"><span class="sw" style="background:#cdd1e6"></span>총 배치시간 (h)</span>
+            <span class="i"><span class="sw" style="background:var(--c-mir)"></span>작업 세션 수</span>
+            <span class="i"><span class="swl"></span>프로젝트 velocity</span>
+          </div>
+          <span class="note">My Momentum Dashboard · 250505 → 250713 · 매 ~7일</span>
+        </div>
+        <div class="mom-log">
+          <div class="lhd"><span class="t">작업단위 텔레메트리 — 원시 시간기록</span><span class="b">RAW LOG</span></div>
+          <table>
+            <thead><tr><th>plan</th><th>task</th><th>started_at</th><th style="text-align:right">duration</th></tr></thead>
+            <tbody id="momLog"></tbody>
+          </table>
+          <div class="schema">schema: todo → plan → task → started_at → duration_min</div>
+        </div>
+      </div>
+
+      <!-- life wheel panel -->
+      <div class="card">
+        <div class="card-hd"><span class="t">Life Wheel · LYT Epic Life Audit</span><span class="b">ALIGNMENT</span></div>
+        <div class="lw-wrap"><svg id="wheel" role="img" aria-label="라이프 휠 — Current vs Ideal 정렬 레이더"></svg></div>
+        <div class="lw-legend">
+          <span class="i"><span class="sw" style="background:rgba(107,72,184,.55)"></span>Current</span>
+          <span class="i"><span class="sw" style="background:rgba(31,157,107,.22);border:1.4px dashed #1f9d6b"></span>Ideal</span>
+        </div>
+        <div class="lw-axes" id="lwAxes"></div>
+        <div class="lw-princ">
+          <div class="t">원칙 — 결과가 아니라 정렬(alignment)에 점수</div>
+          <div class="d">Lived Experience(Recreation·Environment·Body) / Relationships(Soul·Partnership·Family·Friends) / Work 를 Current vs Ideal로 채점. 큰 갭이 다음 분기 액션의 우선순위가 된다.</div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <div class="l mono">PARK YANGHA · CAREER GANTT v17 · CPM HIGHLIGHT · BOARD-ROOM SCORECARD</div>
+    <div class="r mono">
+      <a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a>
+      <a href="https://github.com/64etuor" target="_blank" rel="noopener">github.com/64etuor</a>
+      <span>010-0000-0000</span>
+    </div>
+  </footer>
+</div>
+
+<!-- detail panel -->
+<div class="detail" id="detail" aria-live="polite">
+  <div class="detail-bar" id="dBar"></div>
+  <div class="detail-hd">
+    <div>
+      <div class="co" id="dCo"></div>
+      <div class="ti" id="dTi"></div>
+      <div class="pd mono" id="dPd"></div>
+    </div>
+    <div class="detail-x" id="dX" role="button" aria-label="닫기">✕</div>
+  </div>
+  <div class="detail-crit" id="dCrit"></div>
+  <div class="detail-body">
+    <div class="desc" id="dDesc"></div>
+    <div class="dmetrics" id="dMetrics"></div>
+  </div>
+  <div class="detail-foot">
+    <div class="sl mono" id="dSlack"></div>
+    <div class="detail-stack" id="dStack"></div>
+  </div>
+</div>
+
+<div class="tip" id="tip"></div>
+
+<script>
+/* ============================================================
+   DATA — real career, modeled as a CPM project plan
+   time axis: 2020-07 .. 2026-07
+============================================================ */
+const COLORS = {
+  eun:'#c0563d', elen:'#2f7d8c', sol:'#3a63b5', mir:'#6b48b8', bridge:'#7a8290'
+};
+const T0 = new Date(2020,6,1);   // 2020-07
+const T1 = new Date(2026,6,1);   // 2026-07
+const TODAY = new Date(2026,5,15); // 2026-06-15
+
+function ym(y,m){return new Date(y,m-1,1);}
+
+// Tasks. crit=on the critical path. deps = finish-to-start predecessors (ids).
+const TASKS = [
+  { id:'eun', co:'은성에스아이티', color:COLORS.eun, role:'생산관리과장 · 배터리팩 총괄',
+    start:ym(2020,8), end:ym(2022,11), pct:100, crit:true, deps:[], slack:0,
+    desc:'배터리팩 생산 전반을 총괄. 조달단가 재협상으로 마진을 끌어올리고, 라인 운영구조를 재설계해 운영경비를 대폭 절감. 비전검사 도입으로 출하 품질을 0불량 수준으로 안정화하고 IATF16949 체계를 운영.',
+    metrics:[
+      {k:'운영경비', v:'−85%', cls:'g', c:'라인 운영구조 재설계'},
+      {k:'조달단가', v:'+30%', cls:'g', c:'공급단가 재협상(마진)'},
+      {k:'필드불량', v:'0건', cls:'g', c:'비전검사 도입 후'},
+      {k:'품질체계', v:'IATF16949', cls:'', c:'자동차 품질 표준 운영'}
+    ],
+    stack:['PFMEA','CP/PFD','SOP','비전검사','IATF16949','ERP'] },
+
+  { id:'elen', co:'이랜텍', color:COLORS.elen, role:'생산라인 PM · 파트장',
+    start:ym(2022,11), end:ym(2023,9), pct:100, crit:true, deps:['eun'], slack:0,
+    desc:'생산라인 PM으로 용착 공정 불량을 DOE 기반으로 근본 개선. Jig를 직접 개발해 사이클타임을 단축하고 LOB 분석으로 라인 생산성을 끌어올림.',
+    metrics:[
+      {k:'용착불량', v:'15%→0%', cls:'g', c:'DOE 인자 최적화'},
+      {k:'C/T', v:'−49%', cls:'g', c:'Jig 개발·공정 재배치'},
+      {k:'생산성(LOB)', v:'+24%', cls:'g', c:'라인밸런싱 개선'},
+      {k:'설비', v:'Jig 개발', cls:'', c:'기구설계·로봇티칭'}
+    ],
+    stack:['DOE','LOB','Jig개발','기구설계','산업용접','로봇티칭'] },
+
+  { id:'sol', co:'솔라엣지', color:COLORS.sol, role:'공정기술 엔지니어',
+    start:ym(2023,9), end:ym(2024,12), pct:100, crit:true, deps:['elen'], slack:0,
+    desc:'공정 데이터를 DB로 통합하고 대시보드를 구축. 검사성적서 자동발행과 MES 연계로 사무공수를 대폭 절감하고 셋업타임을 절반으로 단축 — 현장 엔지니어링에서 데이터 엔지니어링으로의 전환점.',
+    metrics:[
+      {k:'ST(셋업)', v:'−50%', cls:'g', c:'표준화·자동화'},
+      {k:'사무공수', v:'−451분/일', cls:'g', c:'성적서 자동발행'},
+      {k:'데이터', v:'DB·대시보드', cls:'', c:'공정 데이터 통합'},
+      {k:'시스템', v:'MES 연계', cls:'', c:'실시간 생산 추적'}
+    ],
+    stack:['Python','SQL','MySQL','BI','MES','대시보드'] },
+
+  { id:'bridge', co:'역량전환', color:COLORS.bridge, role:'한화시스템 Beyond SW + 데이터분석 부트캠프 (병행)',
+    start:ym(2024,12), end:ym(2025,8), pct:100, crit:true, deps:['sol'], slack:0,
+    desc:'제조 도메인 위에 SW·데이터·AI 역량을 정식으로 쌓은 브리지 구간. 두 부트캠프를 병행 이수해 현장 문제를 코드와 모델로 푸는 풀스택 운영 리더로 전환.',
+    metrics:[
+      {k:'트랙', v:'2개 병행', cls:'', c:'Beyond SW + 데이터분석'},
+      {k:'전환', v:'제조→SW/AI', cls:'g', c:'도메인+엔지니어링'},
+      {k:'스택', v:'Full-Stack', cls:'', c:'React·FastAPI·ML'},
+      {k:'기간', v:'8개월', cls:'', c:'집중 부트캠프'}
+    ],
+    stack:['Python','React','TypeScript','FastAPI','ML','데이터분석'] },
+
+  { id:'mir', co:'미러리스', color:COLORS.mir, role:'총괄본부장',
+    start:ym(2025,8), end:ym(2026,7), pct:62, crit:true, deps:['bridge'], slack:0, ongoing:true,
+    desc:'총괄본부장으로 CRM·키오스크·앱 제품군을 총괄. FastAPI 백엔드와 AWS/GCP 인프라, CI/CD 파이프라인을 운영하며 RPA와 AI(MCP) 기반 AX로 조직 업무를 자동 전환.',
+    metrics:[
+      {k:'제품', v:'CRM·키오스크·앱', cls:'', c:'엔드투엔드 총괄'},
+      {k:'인프라', v:'AWS·GCP·CI/CD', cls:'', c:'클라우드 운영'},
+      {k:'백엔드', v:'FastAPI', cls:'', c:'서비스 아키텍처'},
+      {k:'전환', v:'RPA · AI MCP AX', cls:'g', c:'업무 자동화'}
+    ],
+    stack:['FastAPI','React','TypeScript','Electron','Rust','AWS','GCP','RPA','AI MCP','CI/CD'] },
+
+  // parallel non-critical initiatives (have float)
+  { id:'vision', co:'은성에스아이티', color:COLORS.eun, role:'비전검사 도입 이니셔티브',
+    start:ym(2021,3), end:ym(2021,11), pct:100, crit:false, deps:['eun'], slack:8,
+    desc:'배터리팩 외관·치수 검사를 비전검사로 자동화한 병렬 이니셔티브. 출하 불량을 0건으로 끌어내린 품질 기반.',
+    metrics:[
+      {k:'불량', v:'0건', cls:'g', c:'출하·필드'},
+      {k:'검사', v:'자동화', cls:'', c:'외관·치수'}
+    ],
+    stack:['비전검사','PFMEA','CP'] },
+
+  { id:'doe', co:'이랜텍', color:COLORS.elen, role:'DOE 용착 최적화',
+    start:ym(2022,12), end:ym(2023,5), pct:100, crit:false, deps:['eun'], slack:5,
+    desc:'용착 공정 인자를 DOE로 설계·검증해 불량률을 15%에서 0%로 제거한 병렬 품질 프로젝트.',
+    metrics:[
+      {k:'불량', v:'15%→0%', cls:'g', c:'용착 공정'},
+      {k:'방법', v:'DOE', cls:'', c:'실험계획법'}
+    ],
+    stack:['DOE','산업용접','SOP'] },
+
+  { id:'auto', co:'솔라엣지', color:COLORS.sol, role:'성적서 자동발행 · RPA',
+    start:ym(2024,1), end:ym(2024,11), pct:100, crit:false, deps:['sol'], slack:6,
+    desc:'검사성적서 발행을 자동화해 일일 사무공수 451분을 제거한 병렬 자동화 트랙 — 노동생산성 개선의 핵심.',
+    metrics:[
+      {k:'공수', v:'−451분/일', cls:'g', c:'성적서 자동발행'},
+      {k:'환산', v:'연 1,800h+', cls:'g', c:'추정·연환산'}
+    ],
+    stack:['Python','SQL','RPA','BI'] },
+];
+
+// MILESTONES (diamonds)
+const MILES = [
+  { at:ym(2022,11), label:'IATF16949 운영 · 0불량', row:'eun' },
+  { at:ym(2023,9),  label:'C/T −49% · LOB +24%', row:'elen' },
+  { at:ym(2024,12), label:'데이터/MES 전환', row:'sol' },
+  { at:ym(2025,8),  label:'제조→SW/AI 브리지 완료', row:'bridge' },
+];
+
+// Scorecard KPIs (selected & framed)
+const KPIS = [
+  { cat:'원가', cls:'dn', n:'−85', u:'%', nm:'운영경비 OPEX', delta:'라인 재설계', spark:[80,72,60,48,34,22,15], color:COLORS.eun, bar:85 },
+  { cat:'마진', cls:'up', n:'+30', u:'%', nm:'조달단가 재협상', delta:'공급 협상력', spark:[100,108,116,124,130], color:COLORS.eun, bar:30 },
+  { cat:'품질', cls:'dn', n:'0', u:'건', nm:'필드/출하 불량', delta:'PPM→0', spark:[14,9,5,2,0.6,0], color:'#1f9d6b', bar:100 },
+  { cat:'품질', cls:'dn', n:'15→0', u:'%', nm:'용착 불량(DOE)', delta:'근본 제거', spark:[15,11,7,3,1,0], color:'#1f9d6b', bar:100 },
+  { cat:'생산성', cls:'dn', n:'−49', u:'%', nm:'공정 사이클타임', delta:'Jig·재배치', spark:[100,86,70,58,51], color:COLORS.elen, bar:49 },
+  { cat:'생산성', cls:'up', n:'+24', u:'%', nm:'라인 생산성 LOB', delta:'밸런싱', spark:[100,108,115,121,124], color:COLORS.elen, bar:24 },
+  { cat:'생산성', cls:'dn', n:'−50', u:'%', nm:'셋업타임 ST', delta:'표준·자동', spark:[100,84,70,60,50], color:COLORS.sol, bar:50 },
+  { cat:'자동화', cls:'dn', n:'−451', u:'분/일', nm:'사무공수', delta:'성적서 자동발행', spark:[451,360,260,150,60,0], color:COLORS.mir, bar:90 },
+];
+
+const DERIVED = [
+  { t:'노동생산성 연환산', v:'≈ 1,800h+', tag:'추정·환산',
+    d:'사무공수 −451분/일 × 240 근무일 ≈ 108,240분 ≈ 연 1,804시간 절감. 1인 연근무(약 1,900h)에 근접 — 인력 1명분의 반복업무 제거.', est:true },
+  { t:'비용·마진 동시개선', v:'양방향', tag:'',
+    d:'OPEX −85%(비용)와 조달단가 +30%(마진)을 같은 임기에 동시 달성 — 손익 양쪽 레버를 함께 움직인 보기 드문 사례.', est:false },
+  { t:'자동화 도입 ROI 등급', v:'A', tag:'정성평가',
+    d:'비전검사·MES·RPA·AI MCP를 단계적으로 도입해 품질·공수·운영을 동시 개선. 정량 환산 일부는 추정이나, 도입 폭과 지속성 기준 최상위 등급.', est:true },
+];
+
+const SKILLS = [
+  ['Python',1],['SQL',1],['FastAPI',1],['React',1],['TypeScript',1],['Electron',0],['Rust',0],
+  ['MySQL/RDS',0],['AWS',1],['GCP',1],['BI',0],['ML',0],['RPA',1],['CI/CD',0],
+  ['PFMEA',0],['CP/PFD',0],['SOP',0],['산업용접',0],['LOB',0],['Jig개발',0],['기구설계',0],
+  ['비전검사',1],['로봇티칭',0],['ERP',0],['MES',1],['IATF16949',0],['AI MCP',1]
+];
+
+/* ============================================================
+   GANTT RENDER (SVG)
+============================================================ */
+const NS='http://www.w3.org/2000/svg';
+const svg = document.getElementById('gantt');
+let geom = {};
+
+function el(tag,attrs={},parent){
+  const e=document.createElementNS(NS,tag);
+  for(const k in attrs) e.setAttribute(k,attrs[k]);
+  if(parent) parent.appendChild(e);
+  return e;
+}
+function span(d){return (d-T0)/(T1-T0);} // 0..1
+
+function buildGantt(){
+  while(svg.firstChild) svg.removeChild(svg.firstChild);
+  const W = svg.clientWidth || boardWrap.clientWidth;
+  const padL=178, padR=22, padT=46, rowH=40, gap=9;
+  const rows = TASKS.length;
+  const plotW = W - padL - padR;
+  const H = padT + rows*(rowH+gap) + 30;
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+  svg.setAttribute('height',H);
+  geom={W,H,padL,padR,padT,rowH,gap,plotW};
+
+  const x = d => padL + span(d)*plotW;
+  const rowY = i => padT + i*(rowH+gap);
+
+  // defs: arrow markers
+  const defs=el('defs',{},svg);
+  function marker(id,color){
+    const m=el('marker',{id,markerWidth:8,markerHeight:8,refX:6.5,refY:3.2,orient:'auto',markerUnits:'userSpaceOnUse'},defs);
+    el('path',{d:'M0,0 L7,3.2 L0,6.4 Z',fill:color},m);
+  }
+  marker('arrCrit','#e23b3b'); marker('arrNorm','#a9b0a3');
+
+  // ---- year/quarter grid ----
+  const gridG=el('g',{},svg);
+  for(let y=2020;y<=2026;y++){
+    for(let q=1;q<=4;q++){
+      const month=(q-1)*3 + (y===2020?7:1);
+      // build quarter starts; only within range
+      let mm=(q-1)*3+1;
+      const qd=new Date(y,mm-1,1);
+      if(qd<T0||qd>T1) continue;
+      const gx=x(qd);
+      el('line',{x1:gx,y1:padT-10,x2:gx,y2:H-22,stroke:'var(--grid)','stroke-width':1},gridG);
+      // quarter label
+      const ql=el('text',{x:gx+4,y:padT-16,fill:'var(--ink-3)','font-size':9,'font-family':'var(--mono)','letter-spacing':'.05em'},gridG);
+      ql.textContent=`Q${q}`;
+    }
+    // year start bold line + label
+    const yd=new Date(y, (y===2020?6:0),1);
+    if(yd<T0) continue;
+    const yx=x(yd);
+    el('line',{x1:yx,y1:padT-26,x2:yx,y2:H-22,stroke:'var(--rule)','stroke-width':1.4},gridG);
+    const yl=el('text',{x:yx+5,y:padT-30,fill:'var(--ink)','font-size':12,'font-weight':800,'letter-spacing':'-.01em'},gridG);
+    yl.textContent=y;
+  }
+  // left header rule
+  el('line',{x1:padL,y1:padT-26,x2:padL,y2:H-22,stroke:'var(--rule)','stroke-width':1.4},gridG);
+
+  // store bar boxes for dependency drawing & interaction
+  const boxes={};
+
+  // ---- task rows ----
+  const rowsG=el('g',{},svg);
+  TASKS.forEach((t,i)=>{
+    const y0=rowY(i);
+    const cy=y0+rowH/2;
+    const bx=x(t.start), bx2=x(t.end), bw=Math.max(8,bx2-bx);
+    boxes[t.id]={x:bx,x2:bx2,y:y0,cy,w:bw,h:rowH};
+
+    const g=el('g',{class: t.crit?'task crit':'task nc', 'data-id':t.id, style:'cursor:pointer'},rowsG);
+
+    // row hover background
+    const rb=el('rect',{x:0,y:y0-gap/2,width:W,height:rowH+gap,fill:'transparent'},g);
+
+    // left label
+    const lblG=el('g',{},g);
+    const swatch=el('rect',{x:14,y:cy-8,width:4,height:16,rx:1.5,fill:t.color},lblG);
+    const co=el('text',{x:24,y:cy-2,fill:'var(--ink)','font-size':11.5,'font-weight':800},lblG);
+    co.textContent=t.co;
+    const rl=el('text',{x:24,y:cy+11,fill:'var(--ink-3)','font-size':9.3,'font-family':'var(--mono)'},lblG);
+    rl.textContent = t.role.length>26 ? t.role.slice(0,25)+'…' : t.role;
+
+    // bar track (light)
+    el('rect',{x:bx,y:cy-9,width:bw,height:18,rx:5,fill:'#f0f1ed',stroke:'var(--line-2)','stroke-width':1},g);
+    // bar fill (% complete)
+    const fw=bw*(t.pct/100);
+    const grad=`grad-${t.id}`;
+    const lg=el('linearGradient',{id:grad,x1:0,y1:0,x2:1,y2:0},defs);
+    el('stop',{offset:'0%','stop-color':t.color,'stop-opacity':0.92},lg);
+    el('stop',{offset:'100%','stop-color':t.color,'stop-opacity':0.74},lg);
+    const fill=el('rect',{x:bx,y:cy-9,width:0,height:18,rx:5,fill:`url(#${grad})`},g);
+    // animate width on load
+    fill.dataset.target=fw;
+    // pct label
+    const pl=el('text',{x:bx+8,y:cy+3.6,fill:'#fff','font-size':9.5,'font-weight':800,'font-family':'var(--mono)','pointer-events':'none'},g);
+    pl.textContent = t.ongoing? `${t.pct}% · 진행중` : `${t.pct}%`;
+    // remaining hatch for ongoing
+    if(t.pct<100){
+      el('rect',{x:bx+fw,y:cy-9,width:bw-fw,height:18,rx:0,fill:'none'},g);
+    }
+    // critical outline
+    if(t.crit){
+      el('rect',{x:bx-1.5,y:cy-10.5,width:bw+3,height:21,rx:6,fill:'none',stroke:'#e23b3b','stroke-width':1.6,'stroke-opacity':.85,class:'critline'},g);
+    }
+    // slack/float tail (non-crit) — light dashed bar after end
+    if(t.slack>0){
+      const sx=x(t.end);
+      const slackD = new Date(t.end); slackD.setMonth(slackD.getMonth()+t.slack);
+      const sx2=x(slackD>T1?T1:slackD);
+      el('rect',{x:sx,y:cy-4,width:Math.max(0,sx2-sx),height:8,rx:3,fill:t.color,'fill-opacity':.14,stroke:t.color,'stroke-opacity':.4,'stroke-dasharray':'2 3','stroke-width':1},g);
+    }
+
+    // interaction
+    g.addEventListener('click',()=>openDetail(t));
+    g.addEventListener('mousemove',(e)=>showTip(e,t));
+    g.addEventListener('mouseleave',hideTip);
+  });
+
+  // ---- dependency arrows (finish-to-start) ----
+  const depG=el('g',{class:'deps'},svg);
+  TASKS.forEach(t=>{
+    t.deps.forEach(pid=>{
+      const a=boxes[pid], b=boxes[t.id];
+      if(!a||!b) return;
+      const isCrit = t.crit && TASKS.find(x=>x.id===pid)?.crit;
+      const sx=a.x2, sy=a.cy, ex=b.x, ey=b.cy;
+      // elbow path FS: out right, down/up, into left
+      const midx = Math.max(sx+14, ex-14);
+      const d = `M ${sx} ${sy} L ${sx+12} ${sy} L ${sx+12} ${ey} L ${ex-7} ${ey}`;
+      el('path',{d, fill:'none',
+        stroke: isCrit?'#e23b3b':'#a9b0a3',
+        'stroke-width': isCrit?2:1.3,
+        'stroke-opacity': isCrit?.95:.6,
+        'marker-end': isCrit?'url(#arrCrit)':'url(#arrNorm)',
+        class: isCrit?'dep critdep':'dep nc'},depG);
+    });
+  });
+
+  // ---- milestones (diamonds) ----
+  const milG=el('g',{},svg);
+  MILES.forEach(m=>{
+    const ri=TASKS.findIndex(t=>t.id===m.row);
+    const cy=rowY(ri)+rowH/2;
+    const mx=x(m.at);
+    const s=7;
+    const dia=el('path',{d:`M ${mx} ${cy-s-13} L ${mx+s} ${cy-13} L ${mx} ${cy+s-13} L ${mx-s} ${cy-13} Z`,
+      fill:'var(--ink)',stroke:'#fff','stroke-width':1.4},milG);
+    const ml=el('text',{x:mx+s+4,y:cy-9,fill:'var(--ink-2)','font-size':9,'font-family':'var(--mono)'},milG);
+    ml.textContent=m.label;
+  });
+
+  // ---- TODAY line ----
+  const tx=x(TODAY);
+  const todayG=el('g',{},svg);
+  el('line',{x1:tx,y1:padT-26,x2:tx,y2:H-22,stroke:'var(--today)','stroke-width':1.6,'stroke-dasharray':'4 3'},todayG);
+  const tflag=el('g',{},todayG);
+  el('rect',{x:tx-26,y:padT-44,width:52,height:15,rx:3,fill:'var(--today)'},tflag);
+  const tt=el('text',{x:tx,y:padT-33,fill:'#fff','font-size':9,'font-weight':800,'text-anchor':'middle','font-family':'var(--mono)','letter-spacing':'.06em'},tflag);
+  tt.textContent='TODAY';
+
+  // animate fills
+  requestAnimationFrame(()=>{
+    svg.querySelectorAll('rect[data-target]').forEach((r,idx)=>{
+      const tgt=+r.dataset.target;
+      r.style.transition='width 1s cubic-bezier(.2,.8,.2,1)';
+      setTimeout(()=>{ r.setAttribute('width',tgt); }, 120+idx*70);
+    });
+  });
+
+  applyCP();
+}
+
+/* ============================================================
+   Critical path toggle / dim
+============================================================ */
+let cpOn=true, dimOn=true;
+function applyCP(){
+  svg.classList.toggle('cp', cpOn);
+  document.body.classList.toggle('dim-others', cpOn && dimOn);
+  // when CP off: normalize all dep + critline opacity
+  svg.querySelectorAll('.critline').forEach(e=>e.style.opacity = cpOn?'1':'0');
+  svg.querySelectorAll('.dep.critdep').forEach(e=>{
+    e.setAttribute('stroke', cpOn?'#e23b3b':'#a9b0a3');
+    e.setAttribute('stroke-width', cpOn?2:1.3);
+    e.setAttribute('marker-end', cpOn?'url(#arrCrit)':'url(#arrNorm)');
+    e.setAttribute('stroke-opacity', cpOn?.95:.6);
+  });
+  // non-crit dimming handled by CSS .dim-others #gantt.cp .nc
+  if(!(cpOn&&dimOn)){
+    svg.querySelectorAll('.nc').forEach(e=>e.style.opacity='1');
+  } else {
+    svg.querySelectorAll('.task.nc, .dep.nc').forEach(e=>e.style.opacity='');
+  }
+}
+
+const cpToggle=document.getElementById('cpToggle');
+const dimToggle=document.getElementById('dimToggle');
+function setTog(elm,on){elm.classList.toggle('on',on);elm.setAttribute('aria-pressed',on);}
+cpToggle.addEventListener('click',()=>{cpOn=!cpOn;setTog(cpToggle,cpOn);applyCP();});
+dimToggle.addEventListener('click',()=>{dimOn=!dimOn;setTog(dimToggle,dimOn);applyCP();});
+[cpToggle,dimToggle].forEach(b=>b.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();b.click();}}));
+
+/* dim non-crit via CSS class on group */
+const styleDim=document.createElement('style');
+styleDim.textContent=`#gantt.cp .task.nc{opacity:.34;transition:opacity .4s} #gantt.cp .dep.nc{opacity:.3;transition:opacity .4s}
+body:not(.dim-others) #gantt .task.nc, body:not(.dim-others) #gantt .dep.nc{opacity:1}`;
+document.head.appendChild(styleDim);
+
+/* ============================================================
+   Detail panel
+============================================================ */
+const detail=document.getElementById('detail');
+function openDetail(t){
+  document.getElementById('dBar').style.background=t.color;
+  document.getElementById('dCo').textContent=t.co;
+  document.getElementById('dTi').textContent=t.role;
+  const f=d=>`${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,'0')}`;
+  document.getElementById('dPd').textContent=`${f(t.start)} – ${t.ongoing?'현재':f(t.end)} · 진척 ${t.pct}%`;
+  const crit=document.getElementById('dCrit');
+  if(t.crit){crit.className='detail-crit';crit.innerHTML='● CRITICAL PATH · 이 역할은 커리어 핵심 의존 체인 위에 있습니다 (Slack 0)';}
+  else{crit.className='detail-crit off';crit.innerHTML=`○ 병렬 이니셔티브 · 여유(Float) ${t.slack}개월`;}
+  document.getElementById('dDesc').textContent=t.desc;
+  const mg=document.getElementById('dMetrics');mg.innerHTML='';
+  t.metrics.forEach(m=>{
+    const d=document.createElement('div');d.className='dm';
+    d.innerHTML=`<div class="k">${m.k}</div><div class="vv ${m.cls||''}">${m.v}</div><div class="cc">${m.c}</div>`;
+    mg.appendChild(d);
+  });
+  document.getElementById('dSlack').innerHTML = t.crit
+    ? `Slack <b>0</b> · 임기 지연 시 전체 커리어 타임라인 영향`
+    : `Float <b>${t.slack}mo</b> · 본선 일정에 여유 기여`;
+  const ds=document.getElementById('dStack');ds.innerHTML='';
+  t.stack.forEach(s=>{const e=document.createElement('span');e.className='s';e.textContent=s;ds.appendChild(e);});
+  detail.classList.add('show');
+}
+document.getElementById('dX').addEventListener('click',()=>detail.classList.remove('show'));
+document.addEventListener('keydown',e=>{if(e.key==='Escape')detail.classList.remove('show');});
+
+/* ============================================================
+   Tooltip (hover business impact)
+============================================================ */
+const tip=document.getElementById('tip');
+function showTip(e,t){
+  const top=t.metrics[0], second=t.metrics[1];
+  tip.innerHTML=`<div class="h">${t.co} · ${t.role}</div>
+    <div class="m">${top.k}: ${top.v}${second?' · '+second.k+': '+second.v:''}</div>
+    <div class="row">${t.crit?'크리티컬 패스':'병렬 (Float '+t.slack+'mo)'} · 클릭하여 상세</div>`;
+  tip.classList.add('show');
+  positionTip(e);
+}
+function positionTip(e){
+  const pad=14;let x=e.clientX+16,y=e.clientY+16;
+  const r=tip.getBoundingClientRect();
+  if(x+r.width>innerWidth-pad)x=e.clientX-r.width-16;
+  if(y+r.height>innerHeight-pad)y=e.clientY-r.height-16;
+  tip.style.left=x+'px';tip.style.top=y+'px';
+}
+function hideTip(){tip.classList.remove('show');}
+
+/* ============================================================
+   Sparkline helper
+============================================================ */
+function sparkSVG(data,color,w=46,h=16){
+  const min=Math.min(...data),max=Math.max(...data),rng=(max-min)||1;
+  const pts=data.map((d,i)=>{
+    const px=(i/(data.length-1))*(w-2)+1;
+    const py=h-1-((d-min)/rng)*(h-2);
+    return `${px.toFixed(1)},${py.toFixed(1)}`;
+  }).join(' ');
+  const last=data[data.length-1];
+  const lx=(w-2)+1, ly=h-1-((last-min)/rng)*(h-2);
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
+    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>
+    <circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="1.8" fill="${color}"/></svg>`;
+}
+
+/* ============================================================
+   Render scorecard
+============================================================ */
+function renderKPIs(){
+  const wrap=document.getElementById('kpis');wrap.innerHTML='';
+  KPIS.forEach(k=>{
+    const d=document.createElement('div');
+    d.className=`kpi ${k.cls}`;
+    const arrow = k.cls==='dn' ? '▼' : '▲';
+    d.innerHTML=`
+      <div class="cat">${k.cat}</div>
+      <div class="spark">${sparkSVG(k.spark,k.color)}</div>
+      <div class="v"><span class="n">${k.n}</span><span class="u">${k.u}</span></div>
+      <div class="nm">${k.nm}</div>
+      <div class="delta">${arrow} ${k.delta}</div>
+      <div class="barbg"><div class="barfg" style="width:0%;background:${k.color}"></div></div>`;
+    wrap.appendChild(d);
+    requestAnimationFrame(()=>{setTimeout(()=>{d.querySelector('.barfg').style.transition='width .9s cubic-bezier(.2,.8,.2,1)';d.querySelector('.barfg').style.width=k.bar+'%';},200);});
+  });
+}
+function renderDerived(){
+  const wrap=document.getElementById('derived');wrap.innerHTML='';
+  DERIVED.forEach(x=>{
+    const d=document.createElement('div');
+    d.className='dframe'+(x.est?' est-l':'');
+    d.innerHTML=`<div class="h"><div class="t">${x.t}${x.tag?'<span class="tag">'+x.tag+'</span>':''}</div><div class="v">${x.v}</div></div>
+      <div class="d">${x.d}</div>`;
+    wrap.appendChild(d);
+  });
+}
+function renderSkills(){
+  const wrap=document.getElementById('skills');wrap.innerHTML='';
+  SKILLS.forEach(([s,core])=>{
+    const e=document.createElement('span');e.className='sk'+(core?' core':'');e.textContent=s;wrap.appendChild(e);
+  });
+}
+
+/* count-up hero */
+function countUp(elm,target,dur=1100){
+  elm.textContent='−'+target; // final value first → headless/PDF always shows correct number
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce) return;
+  const start=performance.now();
+  function tick(now){
+    const p=Math.min(1,(now-start)/dur);
+    const ease=1-Math.pow(1-p,3);
+    elm.textContent='−'+Math.round(target*ease);
+    if(p<1)requestAnimationFrame(tick);
+    else elm.textContent='−'+target;
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ============================================================
+   SELF-OPS DATA  (real format; longitudinal values representative)
+   - 12 weekly "My Momentum Dashboard" snapshots (250505..250713)
+   - anchored to the real raw log slice: ~89 sessions / 169h over ~3 wk,
+     ~114min avg session — weekly figures derived from that cadence.
+============================================================ */
+const MOM = [
+  // wk label = dashboard date (yymmdd) · hours batched · task sessions · velocity (plans shipped)
+  {wk:'250505', h:38, n:24, v:14},
+  {wk:'250511', h:52, n:33, v:21},
+  {wk:'250519', h:57, n:30, v:23},
+  {wk:'250526', h:61, n:35, v:25},
+  {wk:'250601', h:49, n:28, v:19},
+  {wk:'250608', h:54, n:31, v:22},
+  {wk:'250615', h:46, n:27, v:18},
+  {wk:'250622', h:58, n:34, v:24},
+  {wk:'250629', h:51, n:29, v:20},
+  {wk:'250706', h:44, n:25, v:17},
+  {wk:'250713', h:56, n:32, v:23},
+  {wk:'250720', h:60, n:36, v:26},
+];
+// real rows lifted from the raw time-log CSV (todo→plan→task→started_at→duration_min)
+const MOM_LOG = [
+  {p:'Bean 중복 등록 문제 해결', t:'Bean 중복 등록 문제 해결(Qualifier 설정)', at:'5.19 07:40', d:60},
+  {p:'채팅 도메인 초기 설정', t:'웹소켓·STOMP 엔드포인트·핸들러 구현', at:'5.17 20:50', d:75},
+  {p:'AI 채팅·감정 분석 기능 구현', t:'AI 채팅·감정 분석 기능 구현', at:'5.18 15:25', d:217},
+  {p:'Husky·Lint-staged 컨벤션 자동화', t:'Husky·Lint-staged 등 컨벤션 자동화', at:'5.19 14:00', d:280},
+  {p:'레디스 캐싱 처리', t:'레디스 캐싱 처리·팀원 협업', at:'5.22 14:53', d:219},
+  {p:'CI/CD 테스트', t:'CI/CD 테스트 · Jenkins · ArgoCD', at:'5.27 10:00', d:140},
+];
+// Life Wheel — LYT axes; scores are "alignment" 0..10 (Current vs Ideal)
+const WHEEL = [
+  {grp:'Lived Exp.', ax:'Recreation', cur:4, ide:8},
+  {grp:'Lived Exp.', ax:'Environment', cur:6, ide:8},
+  {grp:'Lived Exp.', ax:'Body', cur:5, ide:9},
+  {grp:'Relations', ax:'Soul', cur:6, ide:8},
+  {grp:'Relations', ax:'Partnership', cur:5, ide:8},
+  {grp:'Relations', ax:'Family', cur:7, ide:9},
+  {grp:'Relations', ax:'Friends', cur:5, ide:7},
+  {grp:'Work', ax:'Work', cur:8, ide:9},
+];
+
+/* ---- momentum top stats (from real aggregate) ---- */
+function renderMomTop(){
+  const wrap=document.getElementById('momTop');if(!wrap)return;wrap.innerHTML='';
+  const totH=MOM.reduce((a,b)=>a+b.h,0), totN=MOM.reduce((a,b)=>a+b.n,0);
+  const stats=[
+    {k:'주차',v:MOM.length,u:'주 연속',c:'250505 → 250720 cadence'},
+    {k:'누적 배치시간',v:totH.toLocaleString(),u:'h',c:'12주 합산'},
+    {k:'작업 세션',v:totN.toLocaleString(),u:'건',c:'단일 작업단위 로깅'},
+    {k:'평균 세션',v:'≈114',u:'min',c:'원시 로그 기준'},
+  ];
+  stats.forEach(s=>{
+    const d=document.createElement('div');d.className='mom-stat';
+    d.innerHTML=`<div class="k">${s.k}</div><div class="v"><span class="n">${s.v}</span><span class="u">${s.u}</span></div><div class="c">${s.c}</div>`;
+    wrap.appendChild(d);
+  });
+}
+
+/* ---- momentum chart: bars (hours) + bars (sessions) + velocity line ---- */
+function buildMomChart(){
+  const s=document.getElementById('momChart');if(!s)return;
+  while(s.firstChild)s.removeChild(s.firstChild);
+  const W=s.clientWidth||640, H=190;
+  const padL=34,padR=34,padT=14,padB=26;
+  const plotW=W-padL-padR, plotH=H-padT-padB;
+  s.setAttribute('viewBox',`0 0 ${W} ${H}`);s.setAttribute('height',H);
+  const maxH=Math.max(...MOM.map(d=>d.h)), maxN=Math.max(...MOM.map(d=>d.n)), maxV=Math.max(...MOM.map(d=>d.v));
+  const slot=plotW/MOM.length;
+  const bw=Math.min(20,slot*0.62);
+  const yH=v=>padT+plotH-(v/maxH)*plotH;
+  const yV=v=>padT+plotH-(v/(maxV*1.18))*plotH;
+  // baseline grid
+  [0.25,0.5,0.75,1].forEach(f=>{
+    const gy=padT+plotH-f*plotH;
+    el('line',{x1:padL,y1:gy,x2:W-padR,y2:gy,stroke:'var(--grid)','stroke-width':1},s);
+  });
+  el('line',{x1:padL,y1:padT+plotH,x2:W-padR,y2:padT+plotH,stroke:'var(--line-2)','stroke-width':1.2},s);
+  // bars
+  MOM.forEach((d,i)=>{
+    const cx=padL+slot*i+slot/2;
+    // hours bar (light) — full width behind
+    const hh=(d.h/maxH)*plotH;
+    el('rect',{x:cx-bw/2,y:yH(d.h),width:bw,height:hh,rx:3,fill:'#cdd1e6'},s);
+    // sessions bar (mir) — slim overlay scaled to its own max
+    const sh=(d.n/maxN)*plotH*0.92, sw=bw*0.46;
+    el('rect',{x:cx-sw/2,y:padT+plotH-sh,width:sw,height:sh,rx:2,fill:'var(--c-mir)','fill-opacity':.88},s);
+    // x label (last 2 digits = MMDD short → show MM/DD)
+    const lbl=el('text',{x:cx,y:H-9,fill:'var(--ink-3)','font-size':8,'font-family':'var(--mono)','text-anchor':'middle'},s);
+    lbl.textContent=d.wk.slice(2);
+  });
+  // velocity sparkline (over the bars)
+  const pts=MOM.map((d,i)=>{const cx=padL+slot*i+slot/2;return `${cx.toFixed(1)},${yV(d.v).toFixed(1)}`;}).join(' ');
+  el('polyline',{points:pts,fill:'none',stroke:'var(--c-mir)','stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round','stroke-opacity':.95},s);
+  MOM.forEach((d,i)=>{const cx=padL+slot*i+slot/2;el('circle',{cx,cy:yV(d.v),r:2.4,fill:'#fff',stroke:'var(--c-mir)','stroke-width':1.6},s);});
+}
+
+/* ---- raw log rows ---- */
+function renderMomLog(){
+  const tb=document.getElementById('momLog');if(!tb)return;tb.innerHTML='';
+  MOM_LOG.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${r.p}</td><td class="tk">${r.t}</td><td class="mono">${r.at}</td><td class="dur">${r.d}min</td>`;
+    tb.appendChild(tr);
+  });
+}
+
+/* ---- life wheel radar (Current vs Ideal) ---- */
+function buildWheel(){
+  const s=document.getElementById('wheel');if(!s)return;
+  while(s.firstChild)s.removeChild(s.firstChild);
+  const SZ=320, cx=SZ/2, cy=SZ/2+6, R=108, maxScore=10;
+  s.setAttribute('viewBox',`0 0 ${SZ} ${SZ}`);
+  const N=WHEEL.length;
+  const ang=i=>(-Math.PI/2)+(i/N)*Math.PI*2;
+  const pt=(i,r)=>[cx+Math.cos(ang(i))*r, cy+Math.sin(ang(i))*r];
+  // rings
+  [0.25,0.5,0.75,1].forEach(f=>{
+    const ring=WHEEL.map((_,i)=>pt(i,R*f).map(v=>v.toFixed(1)).join(',')).join(' ');
+    el('polygon',{points:ring,fill:'none',stroke:'var(--grid)','stroke-width':1},s);
+  });
+  // spokes + labels
+  WHEEL.forEach((d,i)=>{
+    const [ex,ey]=pt(i,R);
+    el('line',{x1:cx,y1:cy,x2:ex,y2:ey,stroke:'var(--line)','stroke-width':1},s);
+    const [lx,ly]=pt(i,R+16);
+    const anchor = Math.abs(lx-cx)<6 ? 'middle' : (lx>cx?'start':'end');
+    const tx=el('text',{x:lx,y:ly+3,fill:'var(--ink-2)','font-size':8.5,'font-weight':700,'text-anchor':anchor,'font-family':'var(--mono)'},s);
+    tx.textContent=d.ax;
+  });
+  // ideal polygon (dashed green)
+  const idP=WHEEL.map((d,i)=>pt(i,R*d.ide/maxScore).map(v=>v.toFixed(1)).join(',')).join(' ');
+  el('polygon',{points:idP,fill:'rgba(31,157,107,.10)',stroke:'#1f9d6b','stroke-width':1.5,'stroke-dasharray':'4 3','stroke-opacity':.9},s);
+  // current polygon (purple) — animate scale-in
+  const curP=WHEEL.map((d,i)=>pt(i,R*d.cur/maxScore).map(v=>v.toFixed(1)).join(',')).join(' ');
+  const curPoly=el('polygon',{points:curP,fill:'rgba(107,72,184,.20)',stroke:'var(--c-mir)','stroke-width':2,
+    'transform-origin':`${cx}px ${cy}px`},s);
+  WHEEL.forEach((d,i)=>{const [px,py]=pt(i,R*d.cur/maxScore);el('circle',{cx:px,cy:py,r:2.6,fill:'var(--c-mir)'},s);});
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(!reduce){
+    curPoly.style.transition='transform .8s cubic-bezier(.2,.8,.2,1),opacity .8s';
+    curPoly.style.opacity='0';curPoly.style.transform='scale(.6)';
+    requestAnimationFrame(()=>setTimeout(()=>{curPoly.style.opacity='1';curPoly.style.transform='scale(1)';},160));
+  }
+}
+
+/* ---- life wheel axis chips (sorted by alignment gap) ---- */
+function renderWheelAxes(){
+  const wrap=document.getElementById('lwAxes');if(!wrap)return;wrap.innerHTML='';
+  [...WHEEL].sort((a,b)=>(b.ide-b.cur)-(a.ide-a.cur)).forEach(d=>{
+    const gap=d.ide-d.cur;
+    const e=document.createElement('span');e.className='lw-axis';
+    e.innerHTML=`<span class="grp">${d.grp}</span>${d.ax} <b>${d.cur}/${d.ide}</b>${gap>0?`<span class="gap">▲${gap}</span>`:''}`;
+    wrap.appendChild(e);
+  });
+}
+
+/* ============================================================
+   Init (await fonts for headless PDF)
+============================================================ */
+const boardWrap=document.getElementById('boardWrap');
+function init(){
+  buildGantt();
+  renderKPIs();
+  renderDerived();
+  renderSkills();
+  countUp(document.getElementById('heroNum'),85);
+  renderMomTop();
+  buildMomChart();
+  renderMomLog();
+  buildWheel();
+  renderWheelAxes();
+}
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(init);
+  // fallback in case fonts hang
+  setTimeout(()=>{ if(!svg.childNodes.length) init(); },1200);
+} else { init(); }
+
+let rt;
+window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{buildGantt();buildMomChart();},180);});
+</script>
+</body>
+</html>

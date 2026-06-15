@@ -525,6 +525,31 @@ body{
 }
 .hx-cap b{color:var(--ink)}
 
+/* ===== execution log panel ===== */
+.execlog{
+  grid-column:2;grid-row:2;
+  /* sits inside the lcd-body as an overlay strip at the bottom */
+}
+.log-strip{
+  position:absolute;bottom:0;left:0;right:300px;height:64px;
+  overflow:hidden;pointer-events:none;
+  background:linear-gradient(0deg,rgba(4,16,10,.95) 55%,transparent 100%);
+  padding:4px 10px 5px;
+  display:flex;flex-direction:column;justify-content:flex-end;gap:1px;
+  z-index:4;
+}
+.log-line{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.04em;
+  color:var(--ink-dim);line-height:1.4;
+  animation:logfade 8s forwards;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.log-line.ev-reach{color:#3ce67a}
+.log-line.ev-io{color:var(--cyan)}
+.log-line.ev-warn{color:var(--amber)}
+.log-line.ev-move{color:var(--ink-dim)}
+@keyframes logfade{0%{opacity:1}70%{opacity:.7}100%{opacity:.18}}
+
 /* toast */
 #toast{position:absolute;left:50%;bottom:130px;transform:translateX(-50%) translateY(10px);
   background:#0c1410;border:1px solid #2f6644;color:var(--ink);
@@ -687,11 +712,12 @@ body{
           <span class="sp">100% <span class="pct" id="lt-ovr">OVR</span></span>
           <span id="lt-state" style="color:#3ce67a;font-weight:700">▶ RUNNING</span>
         </div>
-        <div class="lcd-body">
+        <div class="lcd-body" style="position:relative">
           <div class="prog">
             <div class="prog-scroll" id="progScroll"></div>
           </div>
           <div class="detail" id="detail"><!-- filled by JS --></div>
+          <div class="log-strip" id="logStrip"></div>
         </div>
         <div class="lcd-status">
           <div class="seg">TOOL <b id="st-tool">UT:1 [PICK-TCP]</b></div>
@@ -862,7 +888,10 @@ const S = {
   jogOff:{x:0,y:0,z:0},
   weldFx:0,          // weld defect re-teach animation 0..1 progress flag
   weldDone:false,
-  playTimer:null,
+  // rAF-based auto-run state (replaces setInterval)
+  autoPlay:false,
+  dwellLeft:0,       // ms remaining at current waypoint before advancing
+  arrived:false,     // arm reached target threshold this waypoint
 };
 
 /* ============================================================
@@ -951,6 +980,8 @@ function setRunLine(i){
 function gotoLine(i){
   if(i<0) i=0; if(i>=WAYPOINTS.length) i=WAYPOINTS.length-1;
   S.running = i;
+  S.arrived = false;
+  S.dwellLeft = 0;
   setRunLine(i);
   selectLine(i,false);
   $("mi-cur").textContent = `P[${WAYPOINTS[i].id}]`;
@@ -958,40 +989,94 @@ function gotoLine(i){
   if(WAYPOINTS[i].weld && !S.weldDone){ startWeldReteach(); }
 }
 
+/* rAF-driven auto-play: called from loop() each frame */
+function tickAutoPlay(dt){
+  if(!S.autoPlay || S.mode!=="PLAY" || S.estop) return;
+
+  const wp = WAYPOINTS[S.running];
+  // check arm arrival: sum of absolute joint errors < threshold
+  let err=0;
+  for(let i=0;i<6;i++) err+=Math.abs(S.jntCur[i]-S.jntTgt[i]);
+  const threshold = 1.2;
+
+  if(!S.arrived && err < threshold){
+    // just arrived — fire log event and start dwell
+    S.arrived = true;
+    const dwellMs = 520 + (wp.motn==="FINE"?280:80);
+    S.dwellLeft = dwellMs;
+    pushLog(`P[${wp.id}] REACHED · ${wp.company} · ${wp.motn}`);
+    if(wp.motn==="FINE") pushLog(`FINE STOP: I/O CHK DO[${wp.id+10}] = ON`);
+    else pushLog(`CNT BLEND: 통과 — 감속 없음`);
+  }
+
+  if(S.arrived){
+    S.dwellLeft -= dt;
+    if(S.dwellLeft <= 0){
+      // advance to next waypoint
+      if(S.running >= WAYPOINTS.length-1){
+        // cycle complete
+        $("lt-state").textContent="■ CYCLE DONE";
+        $("lt-state").style.color="var(--cyan)";
+        toast("CYCLE COMPLETE · 4/4 WAYPOINTS");
+        S.cycle++; $("mi-cyc").textContent=String(S.cycle).padStart(6,"0");
+        WAYPOINTS.forEach((_,idx)=>{
+          const el=progScroll.querySelector(`.pline[data-idx="${idx}"]`);
+          if(el) el.classList.add("done");
+        });
+        pushLog(`CYCLE #${S.cycle} COMPLETE · RESTART`);
+        S.autoPlay = false;
+        // auto-restart
+        setTimeout(()=>{
+          if(S.estop) return;
+          S.weldDone = false;
+          WAYPOINTS.forEach((_,idx)=>{
+            const el=progScroll.querySelector(`.pline[data-idx="${idx}"]`);
+            if(el) el.classList.remove("done");
+          });
+          S.running = -1;
+          play();
+        }, 900);
+      } else {
+        const next = S.running+1;
+        pushLog(`MOVE → P[${WAYPOINTS[next].id}] ${WAYPOINTS[next].code[0][1]}${WAYPOINTS[next].code[2][1]}`);
+        gotoLine(next);
+      }
+    }
+  }
+}
+
 function play(){
   if(S.estop){ toast("E-STOP 해제 필요",true); return; }
   setMode("PLAY");
-  clearInterval(S.playTimer);
-  // if at end, rewind
+  // if at end, rewind to start
   if(S.running >= WAYPOINTS.length-1){ S.running = -1; }
-  S.playTimer = setInterval(()=>{
-    if(S.mode!=="PLAY"){ clearInterval(S.playTimer); return; }
-    if(S.running >= WAYPOINTS.length-1){
-      clearInterval(S.playTimer);
-      $("lt-state").textContent="■ CYCLE DONE";
-      $("lt-state").style.color="var(--cyan)";
-      toast("CYCLE COMPLETE · 4/4 WAYPOINTS");
-      S.cycle++; $("mi-cyc").textContent=String(S.cycle).padStart(6,"0");
-      // mark all done
-      WAYPOINTS.forEach((w,idx)=>{const el=progScroll.querySelector(`.pline[data-idx="${idx}"]`);if(el)el.classList.add("done");});
-      // auto-restart: rewind then play again
-      setTimeout(()=>{
-        if(S.estop) return;
-        S.weldDone = false;
-        WAYPOINTS.forEach((w,idx)=>{const el=progScroll.querySelector(`.pline[data-idx="${idx}"]`);if(el)el.classList.remove("done");});
-        S.running = -1;
-        play();
-      }, 1800);
-      return;
-    }
-    gotoLine(S.running+1);
-  }, 2400);
-  // immediate first step
-  gotoLine(Math.max(0,S.running+1));
+  const next = Math.max(0, S.running+1);
+  pushLog(`PROG[SKILL] START · P[${WAYPOINTS[next].id}] 이동`);
+  gotoLine(next);
+  S.autoPlay = true;
 }
-function pause(){ setMode("PAUSED"); clearInterval(S.playTimer); }
-function stepFwd(){ pause(); gotoLine(S.running+1); toast(`STEP → P[${WAYPOINTS[Math.min(S.running,WAYPOINTS.length-1)].id}]`); }
-function rewind(){ pause(); WAYPOINTS.forEach((w,idx)=>{const el=progScroll.querySelector(`.pline[data-idx="${idx}"]`);if(el)el.classList.remove("done");}); gotoLine(0); toast("REWIND → P[1]"); }
+function pause(){
+  setMode("PAUSED");
+  S.autoPlay = false;
+  pushLog("HOLD — 피드 홀드");
+}
+function stepFwd(){
+  pause();
+  const ni = Math.min(S.running+1, WAYPOINTS.length-1);
+  gotoLine(ni);
+  toast(`STEP → P[${WAYPOINTS[ni].id}]`);
+  pushLog(`STEP FWD → P[${WAYPOINTS[ni].id}]`);
+}
+function rewind(){
+  pause();
+  WAYPOINTS.forEach((_,idx)=>{
+    const el=progScroll.querySelector(`.pline[data-idx="${idx}"]`);
+    if(el) el.classList.remove("done");
+  });
+  gotoLine(0);
+  toast("REWIND → P[1]");
+  pushLog("REWIND — P[1] 복귀");
+}
 
 function setMode(m){
   S.mode = m;
@@ -1013,6 +1098,7 @@ function startWeldReteach(){
   S.weldFx = 1;            // engage spark fx in canvas
   $("st-msg").textContent = "비전 검사 트리거 — CAM 위치 교정 중";
   toast("! 위치 편차 검출 — 재교시(RE-TEACH) 실행", true);
+  pushLog("! P[2] 위치 편차 검출 — RE-TEACH 시작", "ev-warn");
   let pct = 15;
   const t = setInterval(()=>{
     pct -= 3;
@@ -1021,8 +1107,10 @@ function startWeldReteach(){
       S.weldFx = 0; S.weldDone = true;
       $("st-msg").textContent = "RE-TEACH 완료 · 비전 인터록 수렴";
       toast("P[2] 재교시 완료 — 비전 판정 정상");
+      pushLog("RE-TEACH DONE · 편차 0.00mm · 비전 PASS", "ev-reach");
     } else {
       $("st-msg").textContent = `CAM 위치 교정 중… 편차 ${(pct/100).toFixed(2)}mm`;
+      pushLog(`CAM CORR ${(pct/100).toFixed(2)}mm 수렴 중`, "ev-warn");
     }
   }, 320);
 }
@@ -1049,6 +1137,58 @@ function jog(dir){
   $("vp-st").textContent = `JOG ${dir} · ${S.coord}`;
 }
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+
+/* ============================================================
+   EXECUTION LOG  — live streaming into log-strip
+   ============================================================ */
+const logStrip = ()=>$("logStrip");
+const LOG_MAX = 4;
+
+// Fake background I/O events that fire independently
+const BG_EVENTS = [
+  {cls:"ev-io",  t:"I/O DO[14]=ON · 그리퍼 열림"},
+  {cls:"ev-io",  t:"I/O DI[22] CHK · 부품 검출"},
+  {cls:"ev-reach",t:"VISION OK · 판정 PASS"},
+  {cls:"ev-io",  t:"I/O DO[15]=OFF · 그리퍼 닫힘"},
+  {cls:"ev-warn", t:"SPD OVR 100% · 속도 상한"},
+  {cls:"ev-io",  t:"I/O DO[11]=ON · 컨베이어 정지"},
+  {cls:"ev-reach",t:"INSPECT CHK — NG 0 / OK 1"},
+  {cls:"ev-io",  t:"I/O DI[30] READY · 다음 부품"},
+  {cls:"ev-warn", t:"PAYLOAD 12.0kg CHK OK"},
+  {cls:"ev-io",  t:"TOOL CHK UT:1 VALID"},
+  {cls:"ev-reach",t:"TCP ERR < 0.05mm OK"},
+  {cls:"ev-io",  t:"CAM TRIG · 촬영 완료"},
+  {cls:"ev-warn", t:"CYCLE TIME 4.8s < TAKT OK"},
+  {cls:"ev-io",  t:"I/O DO[20]=ON · 배출 컨베이어"},
+];
+let bgEvIdx = 0;
+let bgEvNext = 1800; // ms until next bg event
+
+function pushLog(msg, cls){
+  const strip = logStrip();
+  if(!strip) return;
+  cls = cls || "ev-move";
+  const el = document.createElement("div");
+  el.className = "log-line " + cls;
+  // timestamp HH:MM:SS.mmm style (fake but always advancing)
+  const now = new Date();
+  const ts = now.toTimeString().slice(0,8)+"."+String(now.getMilliseconds()).padStart(3,"0");
+  el.textContent = `[${ts}]  ${msg}`;
+  strip.appendChild(el);
+  // trim to max lines
+  while(strip.children.length > LOG_MAX) strip.removeChild(strip.firstChild);
+}
+
+function tickBgEvents(dt){
+  if(S.estop) return;
+  bgEvNext -= dt;
+  if(bgEvNext <= 0){
+    const ev = BG_EVENTS[bgEvIdx % BG_EVENTS.length];
+    bgEvIdx++;
+    pushLog(ev.t, ev.cls);
+    bgEvNext = 1100 + Math.random()*1400;
+  }
+}
 
 /* ============================================================
    TOAST
@@ -1157,7 +1297,8 @@ function joint(p,r,col){
 }
 
 let sparkParts=[];
-function drawArm(){
+function drawArm(dt){
+  dt = dt||16;
   const wp = WAYPOINTS[Math.min(S.selected,WAYPOINTS.length-1)];
   const accent = S.estop ? "#ff4d52" : (S.mode==="FAULT"?"#ff4d52": COMPANY[wp.co].color);
   const {pts, base, tcpAng} = fk(S.jntCur);
@@ -1230,11 +1371,12 @@ function drawArm(){
     ctx.fillStyle=wg; ctx.beginPath(); ctx.arc(tcp.x,tcp.y,26,0,7); ctx.fill();
     ctx.restore();
   }
-  // update + draw sparks
+  // update + draw sparks (dt-normalized: base rate at 16ms)
   ctx.save();
+  const dtScale = dt/16;
   sparkParts = sparkParts.filter(p=>p.life>0);
   sparkParts.forEach(p=>{
-    p.x+=p.vx; p.y+=p.vy; p.vy+=0.25; p.life-=0.04;
+    p.x+=p.vx*dtScale; p.y+=p.vy*dtScale; p.vy+=0.25*dtScale; p.life-=0.04*dtScale;
     ctx.globalAlpha=Math.max(0,p.life);
     ctx.fillStyle = p.life>0.6?"#fff8e0":"#ffb43c";
     ctx.fillRect(p.x,p.y,2,2);
@@ -1267,9 +1409,13 @@ function loop(t){
   for(let i=0;i<6;i++){
     S.jntCur[i] += (S.jntTgt[i]-S.jntCur[i]) * Math.min(1,spd*(dt/16));
   }
+  // rAF-driven auto-play logic
+  tickAutoPlay(dt);
+  // background I/O event streaming
+  tickBgEvents(dt);
   ctx.clearRect(0,0,CW,CH);
   drawGrid();
-  const tcp = drawArm();
+  const tcp = drawArm(dt);
   updateDRO(tcp);
   requestAnimationFrame(loop);
 }
@@ -1474,6 +1620,11 @@ function init(){
   $("lt-state").style.color="var(--amber)";
   $("mi-cyc").textContent=String(S.cycle).padStart(6,"0");
   requestAnimationFrame(loop);
+  // seed initial log lines so strip is not empty
+  setTimeout(()=>{
+    pushLog("PROG[SKILL] LOADED · 4 WAYPOINTS", "ev-reach");
+    pushLog("SERVO ON · R-30iB+ READY", "ev-io");
+  }, 200);
   // auto-start: begin waypoint traversal after layout settles
   setTimeout(()=>{ play(); }, 800);
 }

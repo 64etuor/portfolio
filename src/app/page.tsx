@@ -2,10 +2,12 @@ import Link from 'next/link'
 import { PROFILE } from '@content/index'
 import { SECTIONS, scenesBySection } from '@/scenes/registry'
 import { COMPOSITIONS } from '@/compositions'
+import { IntroGate } from '@/components/intro/IntroGate'
 
 export default function Home() {
   const { identity, metrics } = PROFILE
   return (
+    <IntroGate>
     <main className="mx-auto max-w-6xl px-6 py-16 md:px-10 md:py-24">
       {/* Hero / identity (SSOT) */}
       <section>
@@ -81,5 +83,6 @@ export default function Home() {
         ))}
       </section>
     </main>
+    </IntroGate>
   )
 }

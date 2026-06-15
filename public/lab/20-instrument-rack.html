@@ -672,6 +672,20 @@
 (function(){
   "use strict";
 
+  /* ===== 공용 rAF 루프 (단일 루프, dt 클램프) ===== */
+  var RAF_CBS = [];
+  var _lastRaf = 0;
+  function rafLoop(now){
+    var dt = Math.min((now - _lastRaf) / 1000, 0.1); // 최대 100ms 클램프
+    _lastRaf = now;
+    for(var _i=0;_i<RAF_CBS.length;_i++) RAF_CBS[_i](dt, now);
+    requestAnimationFrame(rafLoop);
+  }
+  requestAnimationFrame(function(now){ _lastRaf=now; requestAnimationFrame(rafLoop); });
+
+  /* ===== 노이즈 유틸 ===== */
+  function rnd(){ return Math.random()*2-1; } // -1..1
+
   /* ---------- DMM function selector ---------- */
   var METRICS = [
     {fn:"DC %",   nm:"라인 운영경비 절감",   val:-85.00, unit:"%",  pct:0.85, ann:["PCT"]},
@@ -691,14 +705,30 @@
   var dialPtr = document.getElementById("dialPtr");
   var dialMarks = document.getElementById("dialMarks");
   var annunEls = Array.prototype.slice.call(document.querySelectorAll("#annun .an"));
-  var curIdx = 0, rolling = false;
+  var curIdx = 0;
+
+  // DMM 상태 (rAF 루프용)
+  var dmm = {
+    cur: -85.00,      // 현재 표시값 (보간 중)
+    target: -85.00,   // 목표값
+    unit: "%",
+    rolling: false,
+    rollFrom: -85.00,
+    rollT0: 0,
+    rollDur: 520,
+    // 정착 후 미세 떨림
+    jitterAmp: 0.0,   // 정착 후 ±amp 변동
+    jitterPhase: 0,
+    // 다이얼 포인터 현재 각도 (보간)
+    dialCur: -135,
+    dialTarget: -135,
+  };
 
   // dial marks
   (function(){
     var svgns="http://www.w3.org/2000/svg", N=METRICS.length, span=270, start=-135;
     for(var i=0;i<N;i++){
       var a=(start + span*(i/(N-1)))*Math.PI/180;
-      var x1=60+Math.cos(a-Math.PI/2)*0, y1=60+Math.sin(a-Math.PI/2)*0;
       var r1=44,r2=50;
       var mx1=60+Math.cos(a-Math.PI/2)*r1, my1=60+Math.sin(a-Math.PI/2)*r1;
       var mx2=60+Math.cos(a-Math.PI/2)*r2, my2=60+Math.sin(a-Math.PI/2)*r2;
@@ -710,12 +740,6 @@
     }
   })();
   function dialAngle(i){var N=METRICS.length;return -135 + 270*(i/(N-1));}
-
-  function fmtVal(m){
-    if(m.unit==="건") return m.val.toFixed(0);
-    var s=(m.val>0?"+":(m.val<0?"−":""))+Math.abs(m.val).toFixed(2);
-    return s;
-  }
 
   // build selector buttons
   METRICS.forEach(function(m,i){
@@ -730,33 +754,15 @@
   function setAnnun(list){
     annunEls.forEach(function(el){
       var key=el.getAttribute("data-an");
-      var keep = (key==="REC"||key==="AUTO");
-      if(key==="AUTO"){ el.classList.add("on"); return; }
-      if(key==="REC"){ el.classList.add("on"); return; }
+      if(key==="AUTO"||key==="REC"){ el.classList.add("on"); return; }
       if(list.indexOf(key)>=0) el.classList.add("on"); else el.classList.remove("on");
     });
   }
 
-  function rollTo(target, unit){
-    // digit-roll animation toward target value
-    if(rolling) return;
-    rolling=true;
-    var cur=parseFloat((dmmDigits.textContent||"0").replace("−","-").replace(/[^0-9.\-]/g,""))||0;
-    var t0=performance.now(), dur=480, from=cur;
-    function frame(now){
-      var p=Math.min(1,(now-t0)/dur);
-      var e=1-Math.pow(1-p,3);
-      var v=from+(target-from)*e;
-      var jitter = p<1 ? (Math.random()-0.5)*Math.abs(target-from)*0.04*(1-p) : 0;
-      renderDigits(v+jitter, unit, target);
-      if(p<1) requestAnimationFrame(frame);
-      else { renderDigits(target, unit, target); rolling=false; }
-    }
-    requestAnimationFrame(frame);
-  }
   function renderDigits(v, unit, target){
     var txt;
     if(unit==="건"){ txt=Math.abs(Math.round(v)).toFixed(0); }
+    else if(unit==="V"){ txt=(target>=0?"+":"−")+Math.abs(v).toFixed(3); }
     else { txt=(target>0?"+":(target<0?"−":""))+Math.abs(v).toFixed(2); }
     dmmDigits.textContent=txt;
   }
@@ -766,19 +772,62 @@
     var m=METRICS[i];
     selButtonEls.forEach(function(el,j){el.classList.toggle("active",j===i);});
     dialFn.innerHTML = m.fn.replace(" ","&nbsp;");
-    dialPtr.setAttribute("transform","rotate("+dialAngle(i).toFixed(1)+" 60 60)");
     dmmUnit.textContent=m.unit;
     dmmName.innerHTML="측정항목 · <b>"+m.nm+"</b>";
     setAnnun(m.ann);
     dmmBar.style.width=(Math.max(4,m.pct*100)).toFixed(0)+"%";
-    rollTo(m.val, m.unit);
+    // 롤 시작
+    dmm.rollFrom = dmm.cur;
+    dmm.target = m.val;
+    dmm.unit = m.unit;
+    dmm.rolling = true;
+    dmm.rollT0 = performance.now();
+    dmm.rollDur = 520;
+    dmm.jitterAmp = 0;
+    // 다이얼 목표 각도
+    dmm.dialTarget = dialAngle(i);
   }
-  // initial render (powered, no interaction)
+
+  // DMM rAF 업데이트
+  RAF_CBS.push(function(dt, now){
+    // 다이얼 포인터 부드러운 보간 (스프링 느낌)
+    var daDiff = dmm.dialTarget - dmm.dialCur;
+    dmm.dialCur += daDiff * Math.min(1, dt * 8);
+    // 미세 떨림 (±0.4도)
+    var dialWobble = Math.sin(now * 0.003) * 0.4 + Math.cos(now * 0.007) * 0.2;
+    dialPtr.setAttribute("transform","rotate("+(dmm.dialCur + dialWobble).toFixed(2)+" 60 60)");
+
+    if(dmm.rolling){
+      var p = Math.min(1, (now - dmm.rollT0) / dmm.rollDur);
+      var e = 1 - Math.pow(1-p, 3); // ease-out cubic
+      var jitter = p < 0.95 ? rnd() * Math.abs(dmm.target - dmm.rollFrom) * 0.025 * (1-p) : 0;
+      dmm.cur = dmm.rollFrom + (dmm.target - dmm.rollFrom) * e;
+      renderDigits(dmm.cur + jitter, dmm.unit, dmm.target);
+      if(p >= 1){
+        dmm.rolling = false;
+        dmm.cur = dmm.target;
+        // 정착 후 마지막 자리 미세변동 설정
+        dmm.jitterAmp = (dmm.unit==="건") ? 0 : (Math.abs(dmm.target) > 10 ? 0.03 : 0.002);
+        dmm.jitterPhase = Math.random()*Math.PI*2;
+      }
+    } else {
+      // 정착 후 미세 변동 (퍼린 느낌 2개 사인 합성)
+      if(dmm.jitterAmp > 0){
+        var j = Math.sin(now*0.00087 + dmm.jitterPhase)*dmm.jitterAmp
+              + Math.sin(now*0.00213 + dmm.jitterPhase*1.7)*dmm.jitterAmp*0.4;
+        renderDigits(dmm.cur + j, dmm.unit, dmm.target);
+      }
+    }
+  });
+
+  // initial render
+  dmm.dialCur = dialAngle(0);
+  dmm.dialTarget = dialAngle(0);
   dialPtr.setAttribute("transform","rotate("+dialAngle(0).toFixed(1)+" 60 60)");
   dmmBar.style.width="85%";
   selectMetric(0);
 
-  /* ---------- CAL routine (delight) ---------- */
+  /* ---------- CAL routine ---------- */
   var calBtn=document.getElementById("calBtn");
   var calRead=document.getElementById("calRead");
   var calBox=document.getElementById("calBox");
@@ -786,6 +835,27 @@
   var calVerdict=document.getElementById("calVerdict");
   var calSteps=Array.prototype.slice.call(document.querySelectorAll("#calSteps .step"));
   var calBusy=false, calState="fail";
+
+  // CAL 수치 tween 상태
+  var cal = { cur:-30.0, target:-30.0, tweening:false, t0:0, dur:400, from:-30.0 };
+
+  RAF_CBS.push(function(dt, now){
+    if(!cal.tweening) return;
+    var p = Math.min(1,(now-cal.t0)/cal.dur);
+    var e = p<0.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2; // ease-in-out quad
+    cal.cur = cal.from + (cal.target - cal.from)*e;
+    var sign = cal.cur>=0 ? "+" : "";
+    calRead.innerHTML = sign+cal.cur.toFixed(1)+'<span style="font-size:.6em"> %</span>';
+    if(cal.cur >= 0) calRead.style.color="var(--vfd)"; else calRead.style.color="";
+    if(p>=1){ cal.tweening=false; cal.cur=cal.target; }
+  });
+
+  function calTweenTo(v, delay_ms){
+    setTimeout(function(){
+      cal.from = cal.cur; cal.target = v;
+      cal.t0 = performance.now(); cal.tweening = true;
+    }, delay_ms||0);
+  }
 
   function beep(freq,dur){
     try{
@@ -803,52 +873,127 @@
 
   function runCal(){
     if(calBusy) return; calBusy=true; calBtn.disabled=true;
-    // reset to OUT-OF-SPEC
     calState="fail";
     calBox.classList.remove("pass"); calLamp.classList.remove("pass");
     calVerdict.classList.remove("pass"); calVerdict.textContent="OUT-OF-SPEC";
-    calRead.innerHTML='-30.0<span style="font-size:.6em"> %</span>';
+    calRead.style.color="";
+    // 초기화 tween: 현재값 → -30
+    calTweenTo(-30.0, 0);
+    cal.dur=300;
     calSteps.forEach(function(s){s.classList.remove("done");});
+
+    var seq=[-30.0,-18.5,-8.2,+30.0];
     var i=0;
     function step(){
       if(i<calSteps.length){
         calSteps[i].classList.add("done");
         beep(660+i*120,0.05);
-        // 단가 편차 수렴 (OUT-OF-SPEC → 협상 완료)
-        var seq=[-30.0,-18.5,-8.2,+30.0];
-        var v=seq[i];
-        calRead.innerHTML=(v>0?"+":"")+v.toFixed(1)+'<span style="font-size:.6em"> %</span>';
-        if(v>=0){ calRead.style.color="var(--vfd)"; }
+        cal.dur=380;
+        calTweenTo(seq[i], 60);
         i++; setTimeout(step,520);
       } else {
-        // 협상 타결 + PASS
         beep(990,0.04); setTimeout(function(){beep(1320,0.12);},60);
         calBox.classList.add("pass"); calLamp.classList.add("pass");
-        calVerdict.classList.add("pass"); calVerdict.textContent="IN-SPEC ✓";
-        calRead.style.color="";
-        calRead.innerHTML='+30.0<span style="font-size:.6em"> %</span>';
+        calVerdict.classList.add("pass"); calVerdict.textContent="IN-SPEC";
         calState="pass";
         calBusy=false; calBtn.disabled=false;
       }
     }
-    step();
+    setTimeout(step, 350);
   }
   calBtn.addEventListener("click",runCal);
 
-  /* ---------- OPC UA telemetry ticker ---------- */
+  /* ---------- OPC 텔레메트리 (rAF 통합) ---------- */
   var opcSeq=document.getElementById("opcSeq"), opcTime=document.getElementById("opcTime");
-  var seq=1, secs=0;
-  function tickOpc(){
-    secs=(secs+1)%300;
-    var mm=String(Math.floor(secs/60)).padStart(2,"0"), ss=String(secs%60).padStart(2,"0");
+  var _opcSeq=1, _opcElapsed=0, _lastOpcSec=-1;
+  RAF_CBS.push(function(dt){
+    _opcElapsed += dt;
+    var totalSec = Math.floor(_opcElapsed) % 300;
+    if(totalSec === _lastOpcSec) return;
+    _lastOpcSec = totalSec;
+    var mm=String(Math.floor(totalSec/60)).padStart(2,"0"), ss=String(totalSec%60).padStart(2,"0");
     opcTime.textContent=mm+":"+ss;
-    if(secs%5===0){ seq++; opcSeq.textContent="seq "+String(seq).padStart(4,"0"); }
-  }
-  setInterval(tickOpc,1000);
+    if(totalSec%5===0){ _opcSeq++; opcSeq.textContent="seq "+String(_opcSeq).padStart(4,"0"); }
+  });
+
+  /* ---------- 항목 리스트 이벤트 로그 스트리밍 ---------- */
+  (function(){
+    var LOG_ITEMS = [
+      {tag:"OPEX",  col:"var(--green)", msgs:["운영경비 계측 완료","절감율 −85% 확인","라인 경비 정상","비용 구조 분석 OK","운영경비 목표 달성"]},
+      {tag:"UNIT",  col:"var(--amber)", msgs:["단가 인상 관철 +30%","협력사 계약 갱신","단가 편차 0.1% 이내","재협상 타결 확인","단가 기준선 갱신"]},
+      {tag:"QC",    col:"var(--cyan)",  msgs:["불량 0건 유지","비전검사 Pass","역방향 삽입 0건","셀 OCV 정상","IR > 500MΩ 확인"]},
+      {tag:"OCV",   col:"var(--green)", msgs:["OCV 3.642V 측정","셀 전압 범위 IN","OCV 편차 <0.5mV","배터리 셀 정상","OCV Pass"]},
+      {tag:"IR",    col:"var(--cyan)",  msgs:["IR > 500MΩ 측정","절연 저항 정상","IR 측정 완료","절연 Pass","IR 기준 충족"]},
+      {tag:"IATF",  col:"var(--amber)", msgs:["IATF 16949 적합","감사 기록 갱신","인증 상태 정상","SQ/ISO 확인","품질 기준 충족"]},
+      {tag:"ERP",   col:"var(--blue)",  msgs:["ERP 데이터 동기화","생산현황 갱신","자재현황 업데이트","배치 처리 완료","ERP 연결 정상"]}
+    ];
+
+    // 로그 컨테이너 생성
+    var logWrap = document.createElement("div");
+    logWrap.style.cssText="margin-top:10px;padding:8px 10px;background:#0a0d0f;border:1px solid #1a2228;border-radius:6px;overflow:hidden;height:96px;position:relative;";
+    var logInner = document.createElement("div");
+    logInner.style.cssText="display:flex;flex-direction:column;gap:3px;";
+    logWrap.appendChild(logInner);
+    // fade top/bottom
+    var fadeTop=document.createElement("div");
+    fadeTop.style.cssText="position:absolute;top:0;left:0;right:0;height:22px;background:linear-gradient(to bottom,#0a0d0f,transparent);pointer-events:none;z-index:1;";
+    var fadeBtm=document.createElement("div");
+    fadeBtm.style.cssText="position:absolute;bottom:0;left:0;right:0;height:22px;background:linear-gradient(to top,#0a0d0f,transparent);pointer-events:none;z-index:1;";
+    logWrap.appendChild(fadeTop); logWrap.appendChild(fadeBtm);
+
+    // 삽입 위치: DMM 유닛 섹션 하단 (jacks 위)
+    var jacksEl = document.querySelector(".jacks");
+    if(jacksEl && jacksEl.parentNode){
+      jacksEl.parentNode.insertBefore(logWrap, jacksEl);
+    }
+
+    var logLines=[];
+    var ts = { h:9, m:14, s:0 };
+
+    function tsStr(){
+      return String(ts.h).padStart(2,"0")+":"+String(ts.m).padStart(2,"0")+":"+String(ts.s).padStart(2,"0");
+    }
+    function tickTs(){
+      ts.s = (ts.s+1)%60;
+      if(ts.s===0){ ts.m=(ts.m+1)%60; if(ts.m===0) ts.h=(ts.h+1)%24; }
+    }
+
+    function addLog(){
+      var item = LOG_ITEMS[Math.floor(Math.random()*LOG_ITEMS.length)];
+      var msg = item.msgs[Math.floor(Math.random()*item.msgs.length)];
+      tickTs();
+      var line = document.createElement("div");
+      line.style.cssText="display:flex;gap:6px;align-items:center;font-family:'DM Mono',monospace;font-size:9px;opacity:0;transition:opacity .35s;white-space:nowrap;";
+      line.innerHTML=
+        '<span style="color:#3a454e;flex:0 0 auto">'+tsStr()+'</span>'+
+        '<span style="color:'+item.col+';font-weight:700;flex:0 0 auto;background:rgba(0,0,0,.4);border-radius:3px;padding:0 4px">'+item.tag+'</span>'+
+        '<span style="color:#5a6a62;overflow:hidden;text-overflow:ellipsis">'+msg+'</span>';
+      logInner.appendChild(line);
+      logLines.push(line);
+      requestAnimationFrame(function(){ line.style.opacity="1"; });
+
+      // 최대 8줄 유지
+      if(logLines.length > 8){
+        var old = logLines.shift();
+        old.style.opacity="0";
+        setTimeout(function(){ if(old.parentNode) old.parentNode.removeChild(old); }, 380);
+      }
+    }
+
+    // 초기 3줄 즉시 채우기
+    addLog(); addLog(); addLog();
+
+    // 불규칙 스트리밍 (1.2~3.5초 간격)
+    function scheduleLog(){
+      var delay = 1200 + Math.random()*2300;
+      setTimeout(function(){ addLog(); scheduleLog(); }, delay);
+    }
+    scheduleLog();
+  })();
 
   /* ---------- CRT scope (OCV / IR waveform) ---------- */
   var cv=document.getElementById("scopeCv"), ctx=cv.getContext("2d");
-  var W=cv.width, H=cv.height, t=0;
+  var W=cv.width, H=cv.height, scopeT=0;
   function drawGrid(){
     ctx.clearRect(0,0,W,H);
     var g=ctx.createLinearGradient(0,0,0,H);
@@ -858,31 +1003,30 @@
     var dx=W/10, dy=H/6;
     for(var x=0;x<=W+1;x+=dx){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
     for(var y=0;y<=H+1;y+=dy){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-    // center axes brighter
     ctx.strokeStyle="rgba(57,255,138,.22)";
     ctx.beginPath();ctx.moveTo(0,H/2);ctx.lineTo(W,H/2);ctx.stroke();
     ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.stroke();
-    // tick marks on center axis
     ctx.strokeStyle="rgba(57,255,138,.3)";
     for(var xx=0;xx<=W;xx+=dx/5){ctx.beginPath();ctx.moveTo(xx,H/2-3);ctx.lineTo(xx,H/2+3);ctx.stroke();}
   }
-  function wave(){
+  RAF_CBS.push(function(dt){
+    scopeT += dt * 1.0; // dt 기반 속도
     drawGrid();
-    // CH1 OCV: clean settling sine (charge curve flavor)
+    // CH1 OCV
     ctx.lineWidth=2.2;ctx.strokeStyle="#39ff8a";ctx.shadowBlur=10;ctx.shadowColor="rgba(57,255,138,.7)";
     ctx.beginPath();
     for(var x=0;x<=W;x++){
-      var ph=(x/W)*Math.PI*4 + t;
+      var ph=(x/W)*Math.PI*4 + scopeT;
       var env=0.55*(1-Math.exp(-(x/W)*3));
-      var y=H/2 - (env*Math.sin(ph)*H*0.30) - (0.06*H*Math.sin(t*0.6));
+      var y=H/2 - (env*Math.sin(ph)*H*0.30) - (0.06*H*Math.sin(scopeT*0.6));
       x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
     }
     ctx.stroke();
-    // CH2 IR: amber square-ish pulse (insulation test)
+    // CH2 IR
     ctx.strokeStyle="#ffb01f";ctx.shadowColor="rgba(255,176,31,.6)";ctx.lineWidth=1.8;
     ctx.beginPath();
     for(var x2=0;x2<=W;x2++){
-      var ph2=(x2/W)*Math.PI*6 + t*0.7;
+      var ph2=(x2/W)*Math.PI*6 + scopeT*0.7;
       var sq=Math.tanh(Math.sin(ph2)*3)*0.5;
       var y2=H*0.74 - sq*H*0.14;
       x2===0?ctx.moveTo(x2,y2):ctx.lineTo(x2,y2);
@@ -890,19 +1034,14 @@
     ctx.stroke();
     ctx.shadowBlur=0;
     // sweep dot
-    var sx=((t*40)%W);
+    var sx=((scopeT*40)%W);
     ctx.fillStyle="rgba(57,255,138,.9)";
     ctx.beginPath();ctx.arc(sx,H/2,2.5,0,Math.PI*2);ctx.fill();
-    t+=0.05;
-    requestAnimationFrame(wave);
-  }
-  // ensure first paint shows a populated waveform
+  });
   drawGrid();
-  requestAnimationFrame(wave);
 
   /* ---------- OBS observability module ---------- */
   (function(){
-    // arc gauge builder (semicircle)
     function gauge(parent, label, sub, val, klass){
       var ns="http://www.w3.org/2000/svg";
       var wrap=document.createElement("div"); wrap.className="gauge";
@@ -926,6 +1065,7 @@
       var k=document.createElement("div"); k.className="gk"; k.textContent=label; wrap.appendChild(k);
       var v=document.createElement("div"); v.className="gv "+(klass||""); v.textContent=sub; wrap.appendChild(v);
       parent.appendChild(wrap);
+      return {svg:svg, frac:frac, stroke:stroke, cx:cx, cy:cy, r:r, arc:arc};
     }
     var red=document.getElementById("redGauges");
     if(red){
@@ -975,21 +1115,25 @@
       });
     }
 
-    // gentle drilldown cycle across the 3 tiers (metric->trace->log)
+    // drilldown cycle
     var tiers=Array.prototype.slice.call(document.querySelectorAll(".tier"));
     var anomEl=document.getElementById("obsAnom"), labels=["−85%","+30%","0건"];
     var di=0;
     if(tiers.length){
-      setInterval(function(){
+      // rAF 기반 타이머 (setInterval 대신)
+      var drillAcc=0;
+      RAF_CBS.push(function(dt){
+        drillAcc+=dt;
+        if(drillAcc < 2.4) return;
+        drillAcc=0;
         di=(di+1)%tiers.length;
         tiers.forEach(function(el,j){el.classList.toggle("act",j===di);});
         if(anomEl) anomEl.textContent=labels[di];
-      },2400);
+      });
     }
   })();
 
-  /* fonts: re-draw once loaded so headless capture is crisp */
-  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(function(){ /* layout already live */ }); }
+  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(function(){}); }
 })();
 </script>
 </body>

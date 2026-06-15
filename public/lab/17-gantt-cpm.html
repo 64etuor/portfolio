@@ -32,6 +32,9 @@
   --c-bridge:#8fa0b4;/* 역량전환 */
   --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
   --sans:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
+  --mir-glow:rgba(148,112,224,.55);
+  --today-glow:rgba(74,128,240,.6);
+  --crit-glow:rgba(240,85,85,.5);
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -222,6 +225,31 @@ footer .r a{color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(
 footer .r a:hover{color:var(--crit)}
 
 .dim-others #gantt.cp .nc{opacity:.16;transition:opacity .35s}
+
+/* ---- sustained motion ---- */
+@keyframes todayPulse{
+  0%,100%{opacity:1;filter:drop-shadow(0 0 0px var(--today-glow))}
+  50%{opacity:.7;filter:drop-shadow(0 0 7px var(--today-glow))}
+}
+@keyframes critGlow{
+  0%,100%{stroke-opacity:.85;filter:drop-shadow(0 0 0px var(--crit-glow))}
+  50%{stroke-opacity:1;filter:drop-shadow(0 0 6px var(--crit-glow))}
+}
+@keyframes mirShimmer{
+  0%,100%{stop-opacity:.74}
+  50%{stop-opacity:.92}
+}
+@keyframes heroMicro{
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-1px)}
+}
+@keyframes ongoingEdgePulse{
+  0%,100%{opacity:.3;stroke-width:2}
+  50%{opacity:1;stroke-width:3.5}
+}
+.today-group{animation:todayPulse 2.6s ease-in-out infinite}
+.critline-animated{animation:critGlow 2.8s ease-in-out infinite}
+#heroNum{display:inline-block;animation:heroMicro 3.2s ease-in-out infinite}
 
 </style>
 </head>
@@ -582,7 +610,8 @@ function buildGantt(){
     const grad=`grad-${t.id}`;
     const lg=el('linearGradient',{id:grad,x1:0,y1:0,x2:1,y2:0},defs);
     el('stop',{offset:'0%','stop-color':t.color,'stop-opacity':0.92},lg);
-    el('stop',{offset:'100%','stop-color':t.color,'stop-opacity':0.74},lg);
+    const stopEnd=el('stop',{offset:'100%','stop-color':t.color,'stop-opacity':0.74},lg);
+    if(t.ongoing) stopEnd.style.animation='mirShimmer 2.4s ease-in-out infinite';
     const fill=el('rect',{x:bx,y:cy-9,width:0,height:18,rx:5,fill:`url(#${grad})`},g);
     // animate width on load
     fill.dataset.target=fw;
@@ -606,13 +635,21 @@ function buildGantt(){
       'pointer-events':'none'
     },g);
     pdl.textContent=periodStr;
-    // remaining hatch for ongoing
+    // remaining hatch for ongoing + leading-edge shimmer pulse
     if(t.pct<100){
       el('rect',{x:bx+fw,y:cy-9,width:bw-fw,height:18,rx:0,fill:'none'},g);
+      // pulse line at the progress edge — sustained shimmer
+      const edgeX=bx+fw;
+      const pulseLine=el('line',{
+        x1:edgeX,y1:cy-9,x2:edgeX,y2:cy+9,
+        stroke:t.color,'stroke-width':2.5,'stroke-linecap':'round',
+        class:'ongoing-edge','data-color':t.color
+      },g);
+      pulseLine.style.animation='ongoingEdgePulse 1.8s ease-in-out infinite';
     }
     // critical outline
     if(t.crit){
-      el('rect',{x:bx-1.5,y:cy-10.5,width:bw+3,height:21,rx:6,fill:'none',stroke:'#f05555','stroke-width':1.6,'stroke-opacity':.85,class:'critline'},g);
+      el('rect',{x:bx-1.5,y:cy-10.5,width:bw+3,height:21,rx:6,fill:'none',stroke:'#f05555','stroke-width':1.6,'stroke-opacity':.85,class:'critline critline-animated'},g);
     }
     // slack/float tail (non-crit) — light dashed bar after end
     if(t.slack>0){
@@ -663,21 +700,37 @@ function buildGantt(){
 
   // ---- TODAY line ----
   const tx=x(TODAY);
-  const todayG=el('g',{},svg);
+  const todayG=el('g',{class:'today-group'},svg);
   el('line',{x1:tx,y1:padT-26,x2:tx,y2:H-22,stroke:'var(--today)','stroke-width':1.6,'stroke-dasharray':'4 3'},todayG);
   const tflag=el('g',{},todayG);
   el('rect',{x:tx-26,y:padT-44,width:52,height:15,rx:3,fill:'var(--today)'},tflag);
   const tt=el('text',{x:tx,y:padT-33,fill:'#fff','font-size':9,'font-weight':800,'text-anchor':'middle','font-family':'var(--mono)','letter-spacing':'.06em'},tflag);
   tt.textContent='TODAY';
 
-  // animate fills
-  requestAnimationFrame(()=>{
-    svg.querySelectorAll('rect[data-target]').forEach((r,idx)=>{
-      const tgt=+r.dataset.target;
-      r.style.transition='width 1s cubic-bezier(.2,.8,.2,1)';
-      setTimeout(()=>{ r.setAttribute('width',tgt); }, 120+idx*70);
-    });
-  });
+  // animate fills — dt-based rAF, easeInOutCubic, staggered per bar
+  {
+    const fills=[...svg.querySelectorAll('rect[data-target]')];
+    const DUR=1000; // ms per bar
+    const STAGGER=80; // ms between bars
+    const eio=t=>t<.5?4*t*t*t:(t-1)*(2*t-2)*(2*t-2)+1;
+    let started=null;
+    function tickBars(now){
+      if(!started) started=now;
+      const elapsed=now-started;
+      let anyRunning=false;
+      fills.forEach((r,idx)=>{
+        const delay=idx*STAGGER;
+        const local=Math.max(0,elapsed-delay);
+        const p=Math.min(1,local/DUR);
+        const tgt=+r.dataset.target;
+        r.setAttribute('width', tgt*eio(p));
+        if(p<1) anyRunning=true;
+      });
+      if(anyRunning) requestAnimationFrame(tickBars);
+      else fills.forEach(r=>r.setAttribute('width',+r.dataset.target));
+    }
+    requestAnimationFrame(tickBars);
+  }
 
   applyCP();
 }
@@ -803,7 +856,22 @@ function renderKPIs(){
       <div class="delta">${arrow} ${k.delta}</div>
       <div class="barbg"><div class="barfg" style="width:0%;background:${k.color}"></div></div>`;
     wrap.appendChild(d);
-    requestAnimationFrame(()=>{setTimeout(()=>{d.querySelector('.barfg').style.transition='width .9s cubic-bezier(.2,.8,.2,1)';d.querySelector('.barfg').style.width=k.bar+'%';},200);});
+    // dt-based bar fill
+    {
+      const bar=d.querySelector('.barfg');
+      const target=k.bar;
+      const DUR=950;
+      const eio=t=>t<.5?4*t*t*t:(t-1)*(2*t-2)*(2*t-2)+1;
+      let s=null;
+      function tickBar(now){
+        if(!s) s=now;
+        const p=Math.min(1,(now-s)/DUR);
+        bar.style.width=(target*eio(p))+'%';
+        if(p<1) requestAnimationFrame(tickBar);
+        else bar.style.width=target+'%';
+      }
+      setTimeout(()=>requestAnimationFrame(tickBar), 300);
+    }
   });
 }
 function renderDerived(){
@@ -823,18 +891,29 @@ function renderSkills(){
   });
 }
 
-/* count-up hero */
+/* count-up hero + sustained micro-oscillation after arrival */
 function countUp(elm,target,dur=1100,sign='+'){
   elm.textContent=sign+target; // final value first → headless/PDF always shows correct number
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if(reduce) return;
-  const start=performance.now();
+  const startT=performance.now();
   function tick(now){
-    const p=Math.min(1,(now-start)/dur);
+    const dt=Math.min(now-startT, dur+16); // clamp dt
+    const p=Math.min(1,dt/dur);
     const ease=1-Math.pow(1-p,3);
     elm.textContent=sign+Math.round(target*ease);
-    if(p<1)requestAnimationFrame(tick);
-    else elm.textContent=sign+target;
+    if(p<1){ requestAnimationFrame(tick); return; }
+    elm.textContent=sign+target;
+    // micro-oscillation: ±1 digit wobble at low frequency
+    let microT=null;
+    function microTick(now2){
+      if(!microT) microT=now2;
+      const s=Math.sin((now2-microT)/900*Math.PI*2);
+      const wobble=Math.round(s*0.8); // max ±1
+      elm.textContent=sign+(target+wobble);
+      requestAnimationFrame(microTick);
+    }
+    requestAnimationFrame(microTick);
   }
   requestAnimationFrame(tick);
 }

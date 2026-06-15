@@ -650,14 +650,25 @@
     if(doeRowY>=0){ doeRowY+=scrolledBy; }
   }
 
+  /* ============ LERP STATE ============ */
+  // smooth readout values
+  let ampSmooth=42, trigSmooth=300;
+  const LERP_SPEED=0.06; // fraction per frame at 60fps
+
   /* ============ MAIN LOOP ============ */
   let last=performance.now();
-  let acc=0;
-  const ROW_INTERVAL=22; // ms between new rows
-  let scrollAccum=0;
+  // dt-based scroll accumulator: fractional sub-pixel scroll budget
+  let scrollBudget=0;
+  // rows per ms at target speed (1 device-px per ROW_INTERVAL ms)
+  const ROW_MS=22; // target: push 1 row every 22ms
+
+  // event log auto-fire timer
+  let lastEvtMs=0;
+  const EVT_INTERVAL=2200; // ms between auto log entries
 
   function frame(now){
-    const dt=now-last; last=now;
+    const rawDt=now-last; last=now;
+    const dt=Math.min(rawDt,100); // clamp dt: ignore stalls >100ms
     const t=now-t0;
 
     // advance weld story
@@ -673,23 +684,35 @@
     if(weldPhase>=DOE_AT){ weldRo.textContent="CLEARED"; weldRo.className="n teal"; }
     else { weldRo.textContent="HOT"; weldRo.className="n hot"; }
 
-    acc+=dt;
+    // dt-based scroll: accumulate fractional rows then push integer count
+    scrollBudget+=dt/ROW_MS;
     let pushed=0;
-    while(acc>=ROW_INTERVAL){
-      acc-=ROW_INTERVAL;
+    while(scrollBudget>=1){
+      scrollBudget-=1;
       pushRow(t);
       pushed++;
-      if(pushed>4) {acc=0;break;}  // catch-up cap
+      if(pushed>=4){ scrollBudget=0; break; } // cap catch-up
     }
 
-    // HUD readouts — 실제 초음파 용착 파라미터 단위로 표현
-    const ampVal=(25+Math.round(30*noise(3,t,0.18))); // 25–55 μm 범위
+    // smooth lerp readouts toward target values
+    const ampTarget=25+30*noise(3,t,0.18);      // 25–55 μm float
+    const trigTarget=280+40*noise(9.1,t,0.25);  // 280–320 N float
+    const lf=1-Math.pow(1-LERP_SPEED, dt/16.67); // dt-scaled lerp factor
+    ampSmooth+=(ampTarget-ampSmooth)*lf;
+    trigSmooth+=(trigTarget-trigSmooth)*lf;
+
+    const ampVal=Math.round(ampSmooth);
     document.getElementById("gainv").textContent=ampVal+" μm";
     const ampRoEl=document.getElementById("ampro");
     if(ampRoEl) ampRoEl.textContent=ampVal+" μm";
-    const trigVal=(280+Math.round(40*noise(9.1,t,0.25))).toFixed(0);
-    document.getElementById("snr").textContent=trigVal+" N";
+    document.getElementById("snr").textContent=Math.round(trigSmooth)+" N";
     document.getElementById("sweep").textContent=((t/1000)%600).toFixed(1)+" s";
+
+    // auto-stream DOE event log entries
+    if(t-lastEvtMs>EVT_INTERVAL){
+      lastEvtMs=t;
+      logEvent("evt");
+    }
 
     requestAnimationFrame(frame);
   }
@@ -744,31 +767,58 @@
     ['cy','CH1','AMP L1=25μm · 에너지 밀도 저 · 미용착 위험 구간 진입'],
     ['ok','CH1','AMP L2=40μm · 혼 진동 안정 · 브로드밴드 정상'],
     ['wn','CH1','AMP L3=55μm · 수지 과용융 플래시 발생 · 상한 초과'],
+    ['er','CH1','AMP 55μm 지속 · 플래시 검출 · 수준 강제 롤백'],
+    ['ok','CH1','AMP 40μm 복귀 · 스펙트럼 안정 · 런 계속'],
     ['ok','CH2','FORCE 1,800N · 다운스피드 정상 · 트리거 300N 확인'],
     ['wn','CH2','FORCE 2,500N 상한 · 케이스 크랙 위험 · 감시'],
     ['ok','CH2','FORCE 1,000N 하한 · 접합면 미착 가능성 · 재확인'],
+    ['er','CH2','A×B 교호작용 이상 · 붕괴량 0.61mm 상한 초과'],
+    ['ok','CH2','FORCE 1,800N 재설정 · 붕괴량 0.42mm 복귀 · 정상'],
     ['cy','CH3','Energy 70J · Hold 0.4s · 붕괴량 0.42mm 정상'],
     ['wn','CH3','Energy 100J 과잉 · 용착 깊이 초과 · 케이스 변형 플래그'],
     ['ok','CH3','Time 0.35s · Hold 0.4s · 수지 고화 완료 · 조건 유효'],
+    ['er','CH3','Energy 100J × FORCE 2,500N · 복합 과잉 · 폐기 위험'],
+    ['cy','CH3','Hold 0.5s 연장 시험 · 냉각 충분 · 변형 없음'],
+    ['ok','CH3','Energy 70J 복귀 · 붕괴량 안정 · 조건 채택'],
     ['ok','CH4','A×B 교호작용 유의 · 최적 영역: AMP 40μm × FORCE 1,800N'],
     ['wn','CH4','불량율 12 % 감지 · DOE 런 #7 · 조건 재조정 중'],
+    ['er','CH4','불량율 15 % 피크 · 전 채널 경보 · DOE 분석 개시'],
     ['ok','CH4','재작업 공수 절감 확인 · 임율 6.3원/초 기준 집계'],
+    ['wn','CH4','런 #11 완료 · 반응면 피팅 중 · 최적점 수렴 대기'],
+    ['cy','CH4','반응면 모델 R²=0.97 · 최적 조건 후보 확정'],
+    ['ok','CH1','런 #12 브로드밴드 에너지 정상 · AMP 40μm 채택'],
+    ['ok','CH2','런 #12 FORCE 1,800N · 단계 펄스 안정'],
+    ['ok','CH3','런 #12 Energy 70J · Hold 0.4s · 고화 완료'],
+    ['ok','CH4','런 #12 불량율 0 % · 최적 조건 검증 완료'],
+    ['cy','ALL','폐기 절감 연 3,600만 원 · 재작업 절감 연 3,200만 원 집계'],
   ];
   let evi=0;
+
+  // add CSS fade for old entries (via inline opacity)
+  const MAX_LINES=18;
   function logEvent(kind){
     let cls,tag,msg;
     if(kind==="doe"){
-      cls="er";tag="CH4";msg="◆ 최적 확정 AMP 40μm · FORCE 1,800N · 70J · Hold 0.4s → 불량율 0 %대";
+      cls="er";tag="CH4";msg="◆ 최적 확정 AMP 40μm · FORCE 1,800N · 70J · Hold 0.4s → 불량율 0%대";
     }else{
       const e=evPool[evi%evPool.length];evi++;
       cls=e[0];tag=e[1];msg=e[2];
     }
+    // rolling timestamp: current time minus random jitter so log looks live
     const tstr=new Date().toLocaleTimeString('en-GB');
     const ln=document.createElement("div");
     ln.className="ln";
+    ln.style.transition="opacity 1.2s";
+    ln.style.opacity="1";
     ln.innerHTML='<span class="t">'+tstr+'</span> <span class="'+cls+'">['+tag+']</span> '+msg;
     feed.insertBefore(ln,feed.firstChild);
-    while(feed.childNodes.length>16) feed.removeChild(feed.lastChild);
+    // fade + remove old entries
+    const kids=feed.childNodes;
+    for(let i=0;i<kids.length;i++){
+      const age=i/(MAX_LINES-1);
+      kids[i].style.opacity=Math.max(0,1-age*1.1).toFixed(2);
+    }
+    while(feed.childNodes.length>MAX_LINES) feed.removeChild(feed.lastChild);
   }
 
   /* ============ PRIME + START (works in headless first paint) ============ */

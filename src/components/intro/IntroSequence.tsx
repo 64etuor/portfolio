@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react'
 import { Reel } from './Reel'
+import { TvStatic } from './TvStatic'
 import reelData from '@content/reel.json'
 
 type Phase = 'boot' | 'static' | 'off' | 'type' | 'reel'
@@ -9,7 +10,7 @@ type Phase = 'boot' | 'static' | 'off' | 'type' | 'reel'
 const TEXT = '시대는 빠르게 변하고 있습니다.'
 const BOOT_VISIBLE_MS = 3200 // 부팅 화면이 "로드된 뒤" 보이는 시간 (에셋 로딩과 동기)
 const BOOT_MAX_MS = 7000 // 로드 이벤트가 안 와도 강제 진행
-const STATIC_MS = 1500 // TV 지지직 (더 길게)
+const STATIC_MS = 1800 // TV 지지직 (더 길게)
 const OFF_MS = 950 // TV 전원 꺼짐
 const TYPE_BASE = 105 // 글자당 기본 속도
 const TYPE_HOLD = 950 // 타이핑 후 잠깐
@@ -96,7 +97,7 @@ export function IntroSequence({ onComplete }: { onComplete: () => void }) {
             onLoad={onBootLoaded}
             style={{ width: '100%', height: '100%', border: 0, display: 'block', pointerEvents: 'none' }}
           />
-          {phase === 'static' && <div className="pf-static" style={{ position: 'absolute', inset: 0, mixBlendMode: 'screen' }} />}
+          {(phase === 'static' || phase === 'off') && <TvStatic />}
         </div>
       )}
 

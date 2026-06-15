@@ -3,26 +3,25 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>박양하 · 디지털 트윈 — 조작 가능한 아이소메트릭 3D 공장</title>
+<title>박양하 · 디지털 트윈 — 크로스도메인 융합 플랜트</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
 :root{
   --bg:#070a0f;
   --bg-2:#0a0e15;
-  --panel:rgba(11,15,22,.82);
+  --panel:rgba(11,15,22,.88);
   --panel-solid:#0c1019;
   --line:#1c2333;
   --line-soft:#151b27;
   --ink:#e8edf6;
   --ink-2:#9aa6bd;
   --ink-3:#5d6a82;
-  --signal:#46e6b0;       /* AI / 가동 */
-  --amber:#ffb454;        /* andon warn */
+  --signal:#46e6b0;
+  --amber:#ffb454;
   --red:#ff6b7a;
-  --c-mfg:#ff7a8a;        /* 은성 제조 */
-  --c-batt:#ffb454;       /* 이랜텍 용착 */
-  --c-data:#6fb4ff;       /* 솔라엣지 데이터 */
-  --c-dev:#c9a3ff;        /* 미러리스 개발/AX */
+  --c-mfg:#ff7a8a;
+  --c-dev:#6fb4ff;
+  --c-ai:#c9a3ff;
   --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
   --sans:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
 }
@@ -36,11 +35,10 @@ body{
   -webkit-font-smoothing:antialiased;
 }
 ::selection{background:rgba(70,230,176,.28);color:#fff}
-
 #app{position:fixed;inset:0}
 canvas{display:block;outline:none}
 
-/* ── boot / loading ── */
+/* boot */
 #boot{
   position:fixed;inset:0;z-index:60;background:var(--bg);
   display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;
@@ -49,10 +47,11 @@ canvas{display:block;outline:none}
 #boot.hide{opacity:0;pointer-events:none}
 .boot-mark{font-family:var(--mono);font-size:11px;letter-spacing:.32em;color:var(--ink-3);text-transform:uppercase}
 .boot-title{font-size:15px;font-weight:700;color:var(--ink);letter-spacing:.02em}
-.boot-bar{width:220px;height:3px;border-radius:3px;background:var(--line);overflow:hidden}
-.boot-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--signal),var(--c-data));transition:width .3s ease}
+.boot-sub{font-size:11px;color:var(--ink-3);text-align:center;max-width:320px;line-height:1.55}
+.boot-bar{width:220px;height:3px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:4px}
+.boot-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--c-mfg),var(--c-dev),var(--c-ai));transition:width .3s ease}
 
-/* ── HUD chrome (CSS overlays, fixed) ── */
+/* HUD chrome */
 .hud{position:fixed;z-index:20;pointer-events:none}
 .hud *{pointer-events:auto}
 
@@ -60,7 +59,7 @@ canvas{display:block;outline:none}
 #topbar{
   top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;
   padding:14px 20px;gap:16px;
-  background:linear-gradient(180deg,rgba(7,10,15,.92),rgba(7,10,15,0));
+  background:linear-gradient(180deg,rgba(7,10,15,.94),rgba(7,10,15,0));
 }
 .brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
 .brand .nm{font-size:16px;font-weight:800;letter-spacing:-.01em}
@@ -75,7 +74,7 @@ canvas{display:block;outline:none}
 .top-right{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-2)}
 .top-right .clock{font-family:var(--mono);color:var(--ink);font-size:11.5px}
 
-/* SCADA KPI strip */
+/* KPI strip */
 #kpis{
   top:54px;left:0;right:0;display:flex;gap:8px;padding:6px 20px;overflow-x:auto;
   scrollbar-width:none;
@@ -88,11 +87,13 @@ canvas{display:block;outline:none}
 .kpi .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--ink-3);text-transform:uppercase}
 .kpi .v{font-family:var(--mono);font-size:15px;font-weight:700;margin-top:2px;color:var(--signal)}
 .kpi .v.amber{color:var(--amber)}
-.kpi .v.data{color:var(--c-data)}
+.kpi .v.dev{color:var(--c-dev)}
+.kpi .v.ai{color:var(--c-ai)}
+.kpi .v.mfg{color:var(--c-mfg)}
 
-/* control panel */
+/* layer legend panel (left) */
 #control{
-  left:20px;bottom:20px;width:248px;background:var(--panel);border:1px solid var(--line);
+  left:20px;bottom:20px;width:256px;background:var(--panel);border:1px solid var(--line);
   border-radius:14px;backdrop-filter:blur(10px);overflow:hidden;
   box-shadow:0 18px 50px rgba(0,0,0,.5);
 }
@@ -105,15 +106,15 @@ canvas{display:block;outline:none}
 .row .lab b{color:var(--ink);font-weight:700}
 .switch{position:relative;width:46px;height:25px;border-radius:25px;background:var(--line);
   border:1px solid var(--line);cursor:pointer;transition:background .25s;flex:0 0 auto}
-.switch.on{background:linear-gradient(90deg,var(--signal-dim,#1d7a60),var(--signal))}
+.switch.on{background:linear-gradient(90deg,#1d7a60,var(--signal))}
 .switch .knob{position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;
   background:#fff;transition:left .25s;box-shadow:0 2px 6px rgba(0,0,0,.4)}
 .switch.on .knob{left:23px}
 .slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;border-radius:4px;
   background:var(--line);outline:none;cursor:pointer}
 .slider::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
-  background:var(--c-data);box-shadow:0 0 8px rgba(111,180,255,.6);cursor:pointer}
-.slider::-moz-range-thumb{width:15px;height:15px;border:0;border-radius:50%;background:var(--c-data);cursor:pointer}
+  background:var(--c-dev);box-shadow:0 0 8px rgba(111,180,255,.6);cursor:pointer}
+.slider::-moz-range-thumb{width:15px;height:15px;border:0;border-radius:50%;background:var(--c-dev);cursor:pointer}
 .btn{
   width:100%;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.18em;
   text-transform:uppercase;color:var(--ink);background:rgba(255,255,255,.03);
@@ -121,12 +122,15 @@ canvas{display:block;outline:none}
   transition:border-color .15s,color .15s,background .15s;
 }
 .btn:hover{border-color:var(--signal);color:var(--signal);background:rgba(70,230,176,.06)}
-.btn.delight{border-color:rgba(201,163,255,.4);color:var(--c-dev)}
-.btn.delight:hover{border-color:var(--c-dev);background:rgba(201,163,255,.08)}
 .legend{display:flex;flex-direction:column;gap:5px;margin-top:2px}
-.legend .li{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-2);cursor:pointer}
+.legend .li{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-2);cursor:pointer;padding:3px 0}
 .legend .li:hover{color:var(--ink)}
 .legend .sw{width:9px;height:9px;border-radius:2px;flex:0 0 auto}
+.divider{height:1px;background:var(--line-soft);margin:2px 0}
+.layer-row{display:flex;align-items:center;gap:7px;padding:4px 0}
+.layer-dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+.layer-label{font-size:11px;font-weight:700}
+.layer-sub{font-size:9.5px;color:var(--ink-3);margin-top:1px}
 
 /* hint */
 #hint{
@@ -135,91 +139,57 @@ canvas{display:block;outline:none}
 }
 #hint b{color:var(--ink-2)}
 
-/* detail panel */
-#detail{
-  position:fixed;z-index:30;top:0;right:-460px;width:440px;max-width:92vw;height:100%;
-  background:linear-gradient(180deg,var(--panel-solid),#080b12);
-  border-left:1px solid var(--line);box-shadow:-30px 0 80px rgba(0,0,0,.6);
-  transition:right .42s cubic-bezier(.22,.61,.36,1);overflow-y:auto;
-  display:flex;flex-direction:column;
-}
-#detail.open{right:0}
-.dt-head{position:relative;padding:24px 24px 20px;border-bottom:1px solid var(--line-soft);overflow:hidden}
-.dt-head .accentbar{position:absolute;top:0;left:0;width:4px;height:100%}
-.dt-close{position:absolute;top:16px;right:18px;width:30px;height:30px;border-radius:8px;
-  border:1px solid var(--line);background:rgba(255,255,255,.02);color:var(--ink-2);cursor:pointer;
-  font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.dt-close:hover{color:var(--ink);border-color:var(--ink-3)}
-.dt-station{font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:var(--ink-3)}
-.dt-co{font-size:22px;font-weight:800;margin-top:7px;letter-spacing:-.01em}
-.dt-role{font-size:12.5px;color:var(--ink-2);margin-top:5px}
-.dt-period{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);margin-top:9px}
-.dt-status{display:inline-flex;align-items:center;gap:7px;margin-top:12px;font-family:var(--mono);
-  font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;padding:4px 9px;border-radius:20px;
-  border:1px solid var(--line)}
-.dt-status .lamp{width:7px;height:7px;border-radius:50%}
-.dt-body{padding:20px 24px 40px;display:flex;flex-direction:column;gap:20px}
-.dt-sec .h{font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink-3);margin-bottom:10px}
-.dt-metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px}
-.metric{border:1px solid var(--line);border-radius:10px;padding:11px 12px;background:rgba(255,255,255,.015)}
-.metric .mv{font-family:var(--mono);font-size:19px;font-weight:700;line-height:1}
-.metric .ml{font-size:10.5px;color:var(--ink-2);margin-top:6px}
-.dt-list{display:flex;flex-direction:column;gap:9px}
-.dt-list .it{display:flex;gap:10px;font-size:12.5px;color:var(--ink-2);line-height:1.55}
-.dt-list .it::before{content:"";flex:0 0 auto;width:6px;height:6px;border-radius:2px;margin-top:7px;background:var(--ink-3)}
-.dt-list .it b{color:var(--ink);font-weight:700}
-.chips{display:flex;flex-wrap:wrap;gap:6px}
-.chip{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:var(--ink-2);
-  border:1px solid var(--line);border-radius:6px;padding:4px 8px;background:rgba(255,255,255,.015)}
-.dt-foot{margin-top:auto;padding:16px 24px;border-top:1px solid var(--line-soft);
-  font-family:var(--mono);font-size:10.5px;color:var(--ink-3);display:flex;flex-direction:column;gap:5px}
-.dt-foot a{color:var(--ink-2);text-decoration:none}
-.dt-foot a:hover{color:var(--signal)}
-
-/* ── LOCAL-FIRST SYNC panel ── */
-#lfsync{
-  right:20px;top:96px;width:268px;background:var(--panel);border:1px solid var(--line);
+/* cross-domain sync panel (right) */
+#xdpanel{
+  right:20px;top:96px;width:278px;background:var(--panel);border:1px solid var(--line);
   border-radius:14px;backdrop-filter:blur(10px);overflow:hidden;
   box-shadow:0 18px 50px rgba(0,0,0,.5);
 }
-.lf-h{padding:11px 14px;border-bottom:1px solid var(--line-soft)}
-.lf-h .t{font-size:12px;font-weight:700;display:flex;align-items:center;gap:7px}
-.lf-h .t .src{font-family:var(--mono);font-size:8px;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase}
-.lf-h .sub{font-family:var(--mono);font-size:8.5px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;margin-top:4px}
-.lf-body{padding:12px 14px;display:flex;flex-direction:column;gap:12px}
-/* mirror diagram: LOCAL <-> CLOUD */
-.lf-mirror{display:flex;align-items:stretch;gap:8px}
-.lf-node{flex:1;border:1px solid var(--line);border-radius:9px;padding:9px 10px;background:rgba(255,255,255,.015)}
-.lf-node .nlab{font-family:var(--mono);font-size:8px;letter-spacing:.14em;color:var(--ink-3);text-transform:uppercase}
-.lf-node .nv{font-size:11px;font-weight:700;margin-top:3px;line-height:1.25}
-.lf-node .nsub{font-size:9px;color:var(--ink-2);margin-top:3px;line-height:1.3}
-.lf-node.local{border-color:rgba(70,230,176,.35)}
-.lf-node.local .nv{color:var(--signal)}
-.lf-node.cloud{border-color:rgba(111,180,255,.35)}
-.lf-node.cloud .nv{color:var(--c-data)}
-.lf-link{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;width:30px;flex:0 0 auto}
-.lf-link .arr{font-family:var(--mono);font-size:11px;color:var(--ink-3);transition:color .2s,text-shadow .2s}
-.lf-link.syncing .arr{color:var(--signal);text-shadow:0 0 8px var(--signal)}
-.lf-link .dlab{font-family:var(--mono);font-size:7px;letter-spacing:.1em;color:var(--ink-3);text-transform:uppercase;text-align:center}
-.lf-cap{font-size:10.5px;color:var(--ink-2);line-height:1.5;border-left:2px solid var(--signal);padding-left:9px}
-.lf-cap b{color:var(--ink);font-weight:700}
-.lf-req .rqh{font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;margin-bottom:7px}
-.lf-req .it{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-2);line-height:1.4;margin-bottom:6px}
-.lf-req .it:last-child{margin-bottom:0}
-.lf-req .it .ck{width:15px;height:15px;flex:0 0 auto;border-radius:4px;border:1px solid var(--signal);
-  display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--signal);
-  background:rgba(70,230,176,.08)}
-.lf-req .it b{color:var(--ink);font-weight:700}
-.lf-state{display:flex;align-items:center;justify-content:space-between;gap:8px;
-  font-family:var(--mono);font-size:9px;letter-spacing:.04em;padding-top:2px}
-.lf-state .lbl{color:var(--ink-3);text-transform:uppercase;letter-spacing:.14em}
-.lf-state .val{color:var(--signal);transition:color .2s}
-.lf-state .val.optim{color:var(--amber)}
-.lf-port{font-family:var(--mono);font-size:9px;color:var(--ink-3);line-height:1.55;border-top:1px solid var(--line-soft);padding-top:9px}
-.lf-port b{color:var(--ink-2);font-weight:700}
-.lf-port .ph{color:var(--c-dev)}
+.xd-h{padding:11px 14px;border-bottom:1px solid var(--line-soft)}
+.xd-h .t{font-size:12px;font-weight:700;display:flex;align-items:center;gap:7px}
+.xd-h .t .badge{font-family:var(--mono);font-size:8px;letter-spacing:.14em;color:var(--c-ai);
+  border:1px solid rgba(201,163,255,.3);border-radius:4px;padding:2px 6px;text-transform:uppercase}
+.xd-h .sub{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase;margin-top:4px}
+.xd-body{padding:12px 14px;display:flex;flex-direction:column;gap:11px}
 
-@media (max-width:980px){ #lfsync{display:none} }
+/* 3-layer fusion diagram */
+.fusion{display:flex;flex-direction:column;gap:5px}
+.fusion-layer{border-radius:9px;padding:8px 10px;border:1px solid;display:flex;align-items:center;gap:9px}
+.fusion-layer.mfg{border-color:rgba(255,122,138,.35);background:rgba(255,122,138,.05)}
+.fusion-layer.dev{border-color:rgba(111,180,255,.35);background:rgba(111,180,255,.05)}
+.fusion-layer.ai{border-color:rgba(201,163,255,.35);background:rgba(201,163,255,.05)}
+.fl-icon{font-size:15px;flex:0 0 auto}
+.fl-info{flex:1;min-width:0}
+.fl-label{font-size:11px;font-weight:700}
+.fl-label.mfg{color:var(--c-mfg)}
+.fl-label.dev{color:var(--c-dev)}
+.fl-label.ai{color:var(--c-ai)}
+.fl-sub{font-size:9px;color:var(--ink-3);margin-top:2px;line-height:1.4}
+.fl-val{font-family:var(--mono);font-size:11px;font-weight:700;flex:0 0 auto}
+.fl-val.mfg{color:var(--c-mfg)}
+.fl-val.dev{color:var(--c-dev)}
+.fl-val.ai{color:var(--c-ai)}
+
+.xd-cap{font-size:10.5px;color:var(--ink-2);line-height:1.55;border-left:2px solid var(--c-ai);padding-left:9px}
+.xd-cap b{color:var(--ink)}
+
+/* sync stream */
+.xd-stream{display:flex;flex-direction:column;gap:5px}
+.xd-stream .rqh{font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;margin-bottom:6px}
+.stream-row{display:flex;align-items:center;gap:7px;font-size:10.5px;color:var(--ink-2);padding:2px 0}
+.stream-row .sc{width:6px;height:6px;border-radius:50%;flex:0 0 auto}
+.stream-row b{color:var(--ink);font-weight:600}
+.xd-state{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.04em;padding-top:2px;border-top:1px solid var(--line-soft);padding-top:8px}
+.xd-state .lbl{color:var(--ink-3);text-transform:uppercase;letter-spacing:.14em}
+.xd-state .val{color:var(--signal);transition:color .2s}
+.xd-state .val.pend{color:var(--amber)}
+.xd-state .val.ai{color:var(--c-ai)}
+.xd-port{font-family:var(--mono);font-size:9px;color:var(--ink-3);line-height:1.55;border-top:1px solid var(--line-soft);padding-top:9px}
+.xd-port b{color:var(--ink-2);font-weight:700}
+.xd-port .ph{color:var(--c-ai)}
+
+@media (max-width:980px){ #xdpanel{display:none} }
 @media (max-width:640px){
   #control{width:calc(100vw - 40px)}
   #kpis{top:50px}
@@ -232,8 +202,9 @@ canvas{display:block;outline:none}
 
 <!-- boot -->
 <div id="boot">
-  <div class="boot-mark">Digital Twin · Industrial Mirror</div>
-  <div class="boot-title">디지털 트윈 공장 동기화 중…</div>
+  <div class="boot-mark">Digital Twin · Cross-Domain Fusion</div>
+  <div class="boot-title">도메인 융합 플랜트 동기화 중</div>
+  <div class="boot-sub">제조 현장 + 개발/데이터 + AI — 세 도메인이 한 화면에서 실시간 융합됩니다</div>
   <div class="boot-bar"><div class="boot-fill" id="bootFill"></div></div>
 </div>
 
@@ -241,11 +212,11 @@ canvas{display:block;outline:none}
 <div class="hud" id="topbar">
   <div class="brand">
     <span class="nm">박양하 · Park Yangha</span>
-    <span class="role">생산운영 PM · 공정기술 엔지니어 · 총괄본부장</span>
-    <span class="tw"><span class="dot"></span>DIGITAL TWIN · LIVE</span>
+    <span class="role">제조 현장 + 개발 + AI · 크로스도메인</span>
+    <span class="tw"><span class="dot"></span>DIGITAL TWIN · CROSS-DOMAIN LIVE</span>
   </div>
   <div class="top-right">
-    <span>플랜트 동기화</span>
+    <span>3-Layer Fusion</span>
     <span class="clock" id="clock">--:--:--</span>
   </div>
 </div>
@@ -253,22 +224,50 @@ canvas{display:block;outline:none}
 <!-- KPI strip -->
 <div class="hud" id="kpis"></div>
 
-<!-- control panel -->
+<!-- layer legend + control panel (left) -->
 <div class="hud" id="control">
   <div class="ctl-h">
-    <span class="t">SCADA 제어반</span>
-    <span class="sub">Plant Control</span>
+    <span class="t">레이어 제어반</span>
+    <span class="sub">3-Domain Overlay</span>
   </div>
   <div class="ctl-body">
+    <!-- 3-layer legend -->
+    <div>
+      <div style="font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;margin-bottom:8px">Domain Layers</div>
+      <div class="layer-row">
+        <div class="layer-dot" style="background:var(--c-mfg);box-shadow:0 0 7px var(--c-mfg)"></div>
+        <div>
+          <div class="layer-label" style="color:var(--c-mfg)">제조 현장</div>
+          <div class="layer-sub">설비 · 공정 · OEE · 물류</div>
+        </div>
+      </div>
+      <div class="layer-row">
+        <div class="layer-dot" style="background:var(--c-dev);box-shadow:0 0 7px var(--c-dev)"></div>
+        <div>
+          <div class="layer-label" style="color:var(--c-dev)">개발 / 데이터</div>
+          <div class="layer-sub">MES · 파이프라인 · SSOT · 대시보드</div>
+        </div>
+      </div>
+      <div class="layer-row">
+        <div class="layer-dot" style="background:var(--c-ai);box-shadow:0 0 7px var(--c-ai)"></div>
+        <div>
+          <div class="layer-label" style="color:var(--c-ai)">AI 에이전트</div>
+          <div class="layer-sub">예측 · 이상탐지 · 의사결정 보조</div>
+        </div>
+      </div>
+    </div>
+    <div class="divider"></div>
     <div class="row">
       <span class="lab">라인 가동 <b id="lineState">ON</b></span>
       <div class="switch on" id="swLine"><div class="knob"></div></div>
     </div>
     <div class="row">
-      <span class="lab">라인 속도 <b id="spdVal">1.0×</b></span>
+      <span class="lab">라인 속도 <b id="spdVal">1.0x</b></span>
     </div>
     <input type="range" class="slider" id="spd" min="0" max="200" value="100" />
-    <button class="btn delight" id="syncBtn">⟳ 디지털 트윈 동기화 펄스</button>
+    <button class="btn" id="syncBtn">Sync Pulse : 3-Domain</button>
+    <div class="divider"></div>
+    <div style="font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px">Stations</div>
     <div class="legend" id="legend"></div>
   </div>
 </div>
@@ -279,80 +278,62 @@ canvas{display:block;outline:none}
   <div><b>머신 클릭</b> 포커스 + 상세</div>
 </div>
 
-<!-- LOCAL-FIRST SYNC panel : 디지털 트윈 = 로컬 미러 -->
-<div class="hud" id="lfsync">
-  <div class="lf-h">
-    <div class="t">LOCAL-FIRST SYNC <span class="src">디지털 트윈 = 로컬 미러</span></div>
-    <div class="sub">Linear-style local-first architecture</div>
+<!-- cross-domain sync panel (right) -->
+<div class="hud" id="xdpanel">
+  <div class="xd-h">
+    <div class="t">Cross-Domain Fusion <span class="badge">LIVE</span></div>
+    <div class="sub">Manufacturing + Dev + AI</div>
   </div>
-  <div class="lf-body">
-    <div class="lf-mirror">
-      <div class="lf-node local">
-        <div class="nlab">Local Mirror</div>
-        <div class="nv">디지털 트윈</div>
-        <div class="nsub">즉시성 · 낙관적 쓰기</div>
+  <div class="xd-body">
+    <!-- 3-layer fusion diagram -->
+    <div class="fusion">
+      <div class="fusion-layer mfg">
+        <div class="fl-icon">🏭</div>
+        <div class="fl-info">
+          <div class="fl-label mfg">제조 현장</div>
+          <div class="fl-sub">OEE · Takt · 안돈 · 물류 흐름</div>
+        </div>
+        <div class="fl-val mfg" id="flMfg">92.4%</div>
       </div>
-      <div class="lf-link" id="lfLink">
-        <div class="arr">⇄</div>
-        <div class="dlab" id="lfDelta">delta<br>sync</div>
+      <div class="fusion-layer dev">
+        <div class="fl-icon">💻</div>
+        <div class="fl-info">
+          <div class="fl-label dev">개발 / 데이터</div>
+          <div class="fl-sub">MES · SSOT · 파이프라인 · BI</div>
+        </div>
+        <div class="fl-val dev" id="flDev">LIVE</div>
       </div>
-      <div class="lf-node cloud">
-        <div class="nlab">Source of Truth</div>
-        <div class="nv">클라우드</div>
-        <div class="nsub">정확성 · 동기화 대상</div>
+      <div class="fusion-layer ai">
+        <div class="fl-icon">🤖</div>
+        <div class="fl-info">
+          <div class="fl-label ai">AI 에이전트</div>
+          <div class="fl-sub">예측 · 이상탐지 · 의사결정 보조</div>
+        </div>
+        <div class="fl-val ai" id="flAi">ON</div>
       </div>
     </div>
-    <div class="lf-cap">
-      대기(latency)를 빠르게 만들기보다, 인터랙션 루프 <b>밖으로 제거</b>한다.
-      서버는 정확성의 출처이자 <b>동기화 대상</b>으로 낮추고, 즉시성은 클라이언트 로컬이 책임진다.
-    </div>
-    <div class="lf-req">
-      <div class="rqh">로컬DB만으로는 부족 — 셋이 다 있어야</div>
-      <div class="it"><span class="ck">✓</span><span><b>로컬 DB</b> · IndexedDB</span></div>
-      <div class="it"><span class="ck">✓</span><span><b>낙관적 쓰기</b> · optimistic write</span></div>
-      <div class="it"><span class="ck">✓</span><span><b>필드단위 observable</b> · MobX</span></div>
-    </div>
-    <div class="lf-state">
-      <span class="lbl">Twin State</span>
-      <span class="val" id="lfState">SYNCED</span>
-    </div>
-    <div class="lf-port">
-      <b>이식 (cross-domain):</b> 웹앱 → <span class="ph">에이전트 하네스 · 동기화형 CLI · Obsidian 보조도구</span>.
-      원칙: "관성에 따라 일하지 않는다."
-    </div>
-  </div>
-</div>
 
-<!-- detail panel -->
-<div id="detail">
-  <div class="dt-head">
-    <div class="accentbar" id="dtAccent"></div>
-    <button class="dt-close" id="dtClose">✕</button>
-    <div class="dt-station" id="dtStation">STATION 01</div>
-    <div class="dt-co" id="dtCo">—</div>
-    <div class="dt-role" id="dtRole">—</div>
-    <div class="dt-period" id="dtPeriod">—</div>
-    <div class="dt-status" id="dtStatus"><span class="lamp"></span><span class="txt">RUNNING</span></div>
-  </div>
-  <div class="dt-body">
-    <div class="dt-sec">
-      <div class="h">Live Metrics · 라인 성과지표</div>
-      <div class="dt-metrics" id="dtMetrics"></div>
+    <div class="xd-cap">
+      현장을 아는 사람이 개발과 AI를 다룰 때,<br>
+      <b>도메인 지식이 결정적 레버</b>가 된다.
     </div>
-    <div class="dt-sec">
-      <div class="h">Process Log · 주요 성과</div>
-      <div class="dt-list" id="dtList"></div>
+
+    <!-- live sync stream -->
+    <div class="xd-stream">
+      <div class="rqh">Domain Sync Stream</div>
+      <div class="stream-row"><span class="sc" style="background:var(--c-mfg)"></span><span><b>현장</b> Takt 42s — 라인밸런스 96%</span></div>
+      <div class="stream-row"><span class="sc" style="background:var(--c-dev)"></span><span><b>MES</b> WIP 14ea — 파이프라인 OK</span></div>
+      <div class="stream-row"><span class="sc" style="background:var(--c-ai)"></span><span><b>AI</b> 예측 정확도 94.1%</span></div>
+      <div class="stream-row"><span class="sc" style="background:var(--signal)"></span><span><b>SSOT</b> 동기화 지연 &lt;40ms</span></div>
     </div>
-    <div class="dt-sec">
-      <div class="h">Tooling · 적용 기술</div>
-      <div class="chips" id="dtChips"></div>
+
+    <div class="xd-state">
+      <span class="lbl">Fusion State</span>
+      <span class="val" id="xdState">SYNCED</span>
     </div>
-  </div>
-  <div class="dt-foot">
-    <span>박양하 · Park Yangha — Industrial Digital Twin</span>
-    <a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a>
-    <a href="https://github.com/64etuor" target="_blank">github.com/64etuor</a>
-    <span>010-0000-0000</span>
+    <div class="xd-port">
+      <b>관점:</b> 현장의 문제는 숫자만으로 안 보이고,<br>감으로만 풀 수도 없다. <span class="ph">관찰 + 구조화 + 실행</span>이 세 도메인을 잇는다.
+    </div>
   </div>
 </div>
 
@@ -361,96 +342,104 @@ import * as THREE from "https://esm.sh/three@0.184.0";
 import { OrbitControls } from "https://esm.sh/three@0.184.0/examples/jsm/controls/OrbitControls.js";
 import { CSS2DRenderer, CSS2DObject } from "https://esm.sh/three@0.184.0/examples/jsm/renderers/CSS2DRenderer.js";
 
-/* ───────────────────── DATA: 역할 → 머신 ───────────────────── */
+/* ───────────────────── DATA: 3-layer cross-domain stations ───────────────────── */
 const STATIONS = [
   {
-    id:"eunseong", station:"STATION 01", co:"은성에스아이티", color:0xff7a8a, css:"--c-mfg",
-    role:"생산관리과장 · 2차전지 배터리팩 총괄", period:"2020.08 – 2022.11",
-    kind:"machine", // 기계 가공 셀
+    id:"mfg-cell", station:"MFG CELL 01", label:"제조 현장", color:0xff7a8a, css:"--c-mfg", layer:"mfg",
+    role:"설비 · 공정 · 품질 레이어", period:"공정기술 / 생산운영 PM",
+    kind:"machine",
     metrics:[
-      {v:"−85%", l:"운영경비 절감"},
-      {v:"+30%", l:"단가 재협상"},
-      {v:"0건", l:"불량"},
-      {v:"100%", l:"비전검사 도입"},
+      {v:"OEE 92%", l:"종합설비효율"},
+      {v:"Takt 42s", l:"표준 사이클타임"},
+      {v:"WIP 14ea", l:"재공품 재고"},
+      {v:"GREEN", l:"안돈 상태"},
     ],
     log:[
-      "원가분석 기반 <b>단가 30%+ 재협상</b>으로 직접원가 구조 개선",
-      "라인 운영경비 <b>85%+ 절감</b> — 공정 표준화·인원 재배치",
-      "<b>비전검사 도입</b>으로 출하 <b>불량 0건</b> 달성",
-      "ERP·IATF16949 체계 운영 및 배터리팩 양산 총괄",
+      "설비 <b>OEE 92.4%</b> — 가동률 98.1% 유지",
+      "<b>Takt Time 42s</b> 기반 라인밸런싱 최적화",
+      "안돈(Andon) 이상 시 <b>AI 에이전트 즉시 알람</b>",
+      "물류 흐름 시각화 — WIP 재공 실시간 추적",
+      "공정 변수 전 수기 → <b>디지털 수집으로 전환</b>",
     ],
-    chips:["ERP","IATF16949","비전검사","원가분석","2차전지 배터리팩","PFMEA/CP"],
+    chips:["OEE","Andon","Takt Time","WIP","LOB","공정표준화","PFMEA/CP"],
+    kpis:[{k:"OEE",v:"92.4%",c:"mfg"},{k:"Takt",v:"42s",c:""},{k:"가동률",v:"98.1%",c:""}],
   },
   {
-    id:"elentec", station:"STATION 02", co:"이랜텍", color:0xffb454, css:"--c-batt",
-    role:"생산라인 PM / 파트장", period:"2022.11 – 2023.09",
-    kind:"weld", // 용착 셀 — 딜라이트
+    id:"dev-cell", station:"DEV CELL 02", label:"개발 / 데이터", color:0x6fb4ff, css:"--c-dev", layer:"dev",
+    role:"MES · 파이프라인 · SSOT 레이어", period:"데이터 엔지니어링 / 시스템 구축",
+    kind:"data",
     metrics:[
-      {v:"DOE", l:"용착 공정 최적화"},
-      {v:"PASS", l:"용착 품질 안정"},
-      {v:"Jig", l:"전용 치공구 개발"},
-      {v:"SOP", l:"표준작업 정립"},
+      {v:"MES", l:"생산실행시스템"},
+      {v:"SSOT", l:"단일 진실 출처"},
+      {v:"CI/CD", l:"배포 파이프라인"},
+      {v:"BI Live", l:"실시간 대시보드"},
     ],
     log:[
-      "<b>DOE</b> 실험계획으로 용착 공정 파라미터 근본 원인 제거",
-      "<b>Jig·치공구 개발</b>로 작업 편차·재현성 개선",
-      "라인 사이클·생산성 안정화 및 표준작업(SOP) 정립",
-      "PM/파트장으로 라인 안정화 및 인원 운영 주도",
+      "<b>MES 구축</b> — 수기 기록 제거, 공정 데이터 SSOT화",
+      "검사성적서 <b>자동발행</b> 파이프라인 설계",
+      "<b>BI 대시보드</b>로 현장 지표 실시간 가시화",
+      "<b>SQL · DB</b> 기반 공정 데이터 구조화 및 조회 자동화",
+      "API 파이프라인 — 현장 → 클라우드 <b>실시간 동기화</b>",
     ],
-    chips:["DOE","Jig개발","기구설계","산업용접","C/T 최적화","SOP"],
+    chips:["MES","SQL","BI 대시보드","FastAPI","CI/CD","SSOT","데이터 DB","LOB분석"],
+    kpis:[{k:"파이프라인",v:"OK",c:"dev"},{k:"SSOT",v:"LIVE",c:"dev"},{k:"동기화",v:"<40ms",c:"amber"}],
   },
   {
-    id:"solaredge", station:"STATION 03", co:"솔라엣지", color:0x6fb4ff, css:"--c-data",
-    role:"공정기술 엔지니어", period:"2023.09 – 2024.12",
-    kind:"data", // 데이터/서버 셀
+    id:"ai-cell", station:"AI CELL 03", label:"AI 에이전트", color:0xc9a3ff, css:"--c-ai", layer:"ai",
+    role:"예측 · 이상탐지 · 의사결정 보조 레이어", period:"AI 전환 / AX 추진",
+    kind:"ax",
     metrics:[
-      {v:"−50%", l:"ST 표준시간"},
-      {v:"−451분", l:"사무공수 / 일"},
-      {v:"MES", l:"시스템 구축"},
-      {v:"Auto", l:"검사성적서 발행"},
+      {v:"94.1%", l:"AI 예측 정확도"},
+      {v:"<2s", l:"이상탐지 반응"},
+      {v:"RPA", l:"반복업무 자동화"},
+      {v:"MCP", l:"AI 에이전트 하네스"},
     ],
     log:[
-      "데이터 <b>DB·대시보드</b> 구축으로 공정 가시성 확보",
-      "<b>LOB 분석</b> 기반 라인 밸런싱 — <b>ST 50% 단축</b>",
-      "<b>검사성적서 자동발행</b> + <b>MES 구축</b>",
-      "사무 자동화로 <b>일 451분</b> 공수 절감",
+      "<b>AI 에이전트</b> 기반 설비 이상 사전 탐지",
+      "예측 모델 — 공정 변수로 <b>품질 불량 예측</b>",
+      "<b>RPA</b>로 반복 행정업무 자동화 (전사 AX)",
+      "<b>MCP 하네스</b> — 현장 데이터 컨텍스트 주입 AI",
+      "의사결정 보조: 현장 감이 AI 판단의 <b>검증 레이어</b>",
     ],
-    chips:["MES","BI 대시보드","SQL","LOB","검사성적서 자동화","데이터 DB"],
+    chips:["AI MCP","RPA","이상탐지","예측모델","Claude API","에이전트 하네스","AX"],
+    kpis:[{k:"AI 정확도",v:"94.1%",c:"ai"},{k:"이상탐지",v:"<2s",c:"ai"},{k:"RPA",v:"ON",c:""}],
   },
   {
-    id:"mirrorless", station:"STATION 04", co:"미러리스", color:0xc9a3ff, css:"--c-dev",
-    role:"총괄본부장", period:"2025.08 – 현재",
-    kind:"ax", // AX / 로봇암 + 클라우드
+    id:"fusion-hub", station:"FUSION HUB", label:"크로스도메인 허브", color:0x46e6b0, css:"--signal", layer:"hub",
+    role:"3-Domain Convergence · 도메인 융합 허브", period:"현장 + 개발 + AI 통합 운영",
+    kind:"hub",
     metrics:[
-      {v:"CRM", l:"키오스크·앱 통합"},
-      {v:"FastAPI", l:"백엔드 아키텍처"},
-      {v:"CI/CD", l:"AWS · GCP"},
-      {v:"AI MCP", l:"RPA 기반 AX"},
+      {v:"3", l:"융합 도메인"},
+      {v:"LIVE", l:"실시간 동기화"},
+      {v:"SSOT", l:"단일 진실 출처"},
+      {v:"OK", l:"전 레이어 정상"},
     ],
     log:[
-      "<b>CRM·키오스크·앱</b> 통합 제품 라인 총괄",
-      "<b>FastAPI</b> 백엔드 · <b>AWS/GCP</b> 인프라 설계",
-      "<b>CI/CD</b> 파이프라인으로 배포 자동화",
-      "<b>RPA·AI MCP</b> 기반 전사 <b>AX(AI Transformation)</b> 추진",
+      "제조 현장 → 개발/데이터 → AI — <b>3 도메인 실시간 융합</b>",
+      "현장 문제는 숫자만으로 안 보이고 <b>감으로만 풀 수도 없다</b>",
+      "관찰 · 구조화 · 실행 — <b>크로스도메인 문제해결 루프</b>",
+      "특정 도구가 아닌 <b>현장 문제 중심</b> 수단 선택",
+      "도메인 지식이 AI 시대의 <b>결정적 레버</b>가 된다",
     ],
-    chips:["FastAPI","React","TypeScript","Electron","Rust","AWS","GCP","CI/CD","RPA","AI MCP"],
+    chips:["크로스도메인","현장 이해","구조화","도메인 지식","AI 활용","실행력","관찰"],
+    kpis:[{k:"Fusion",v:"LIVE",c:""},{k:"레이어",v:"3/3",c:""},{k:"상태",v:"SYNCED",c:""}],
   },
 ];
 
-// SCADA HUD strip = live plant process variables (PVs), not career KPIs.
-// (career numbers live in each station's detail panel; this strip mirrors the twin.)
 const PLANT_KPIS = [
-  {k:"OEE",v:"92.4%",c:""},
-  {k:"가동률",v:"98.1%",c:"data"},
+  {k:"OEE",v:"92.4%",c:"mfg"},
   {k:"Takt",v:"42s",c:""},
   {k:"WIP",v:"14ea",c:"amber"},
-  {k:"처리량",v:"180/h",c:""},
-  {k:"라인밸런스",v:"96%",c:"data"},
+  {k:"라인밸런스",v:"96%",c:"dev"},
+  {k:"AI 정확도",v:"94.1%",c:"ai"},
+  {k:"이상탐지",v:"<2s",c:"ai"},
   {k:"동기화 지연",v:"<40ms",c:"amber"},
+  {k:"파이프라인",v:"OK",c:"dev"},
   {k:"안돈",v:"GREEN",c:""},
+  {k:"Fusion",v:"LIVE",c:""},
 ];
 
-/* ───────────────────── boot HUD: KPI strip + legend ───────────────────── */
+/* ───────────────────── HUD build ───────────────────── */
 (function buildHUD(){
   const kpiWrap = document.getElementById("kpis");
   PLANT_KPIS.forEach(k=>{
@@ -462,7 +451,7 @@ const PLANT_KPIS = [
   STATIONS.forEach((s,i)=>{
     const li=document.createElement("div");li.className="li";
     const hex="#"+s.color.toString(16).padStart(6,"0");
-    li.innerHTML=`<span class="sw" style="background:${hex}"></span>${i+1} · ${s.co}`;
+    li.innerHTML=`<span class="sw" style="background:${hex}"></span>${s.station}`;
     li.addEventListener("click",()=>focusStation(i));
     leg.appendChild(li);
   });
@@ -472,7 +461,7 @@ const PLANT_KPIS = [
 const app = document.getElementById("app");
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x070a0f);
-scene.fog = new THREE.Fog(0x070a0f, 38, 96);
+scene.fog = new THREE.Fog(0x070a0f, 42, 100);
 
 const camera = new THREE.PerspectiveCamera(38, innerWidth/innerHeight, 0.1, 400);
 camera.position.set(34, 30, 34);
@@ -485,7 +474,6 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 app.appendChild(renderer.domElement);
 
-// CSS2D overlay for SCADA labels
 const labelRenderer = new CSS2DRenderer();
 labelRenderer.setSize(innerWidth, innerHeight);
 labelRenderer.domElement.style.position = "fixed";
@@ -500,7 +488,7 @@ controls.enableDamping = true;
 controls.dampingFactor = 0.08;
 controls.target.set(0, 1.5, 0);
 controls.minDistance = 16;
-controls.maxDistance = 78;
+controls.maxDistance = 80;
 controls.maxPolarAngle = Math.PI*0.49;
 controls.minPolarAngle = Math.PI*0.12;
 controls.rotateSpeed = 0.7;
@@ -536,9 +524,6 @@ grid.position.y = 0.02;
 grid.material.transparent = true; grid.material.opacity = 0.5;
 scene.add(grid);
 
-// painted floor lane (the conveyor path footprint)
-const laneMat = new THREE.MeshStandardMaterial({ color:0x141b29, roughness:0.8, emissive:0x0a1018, emissiveIntensity:0.4 });
-
 /* ───────────────────── helpers ───────────────────── */
 function box(w,h,d,color,opts={}){
   const m = new THREE.MeshStandardMaterial({
@@ -559,23 +544,85 @@ function cyl(rt,rb,h,seg,color,opts={}){
   return mesh;
 }
 
-/* ───────────────────── plant layout ───────────────────── */
-// stations placed in an L / U flow; conveyor connects them in order then loops
+/* ───────────────────── station positions (diamond layout) ───────────────────── */
 const STATION_POS = [
-  new THREE.Vector3(-15, 0, -8),
-  new THREE.Vector3(-5, 0, 8),
-  new THREE.Vector3(8, 0, 4),
-  new THREE.Vector3(16, 0, -10),
+  new THREE.Vector3(-13, 0, -6),   // MFG - top-left
+  new THREE.Vector3(-4,  0, 8),    // DEV - bottom-left
+  new THREE.Vector3(10,  0, 6),    // AI  - bottom-right
+  new THREE.Vector3(14,  0, -10),  // HUB - top-right
 ];
 
-const machineGroups = [];     // selectable groups
-const andonLamps = [];        // {mesh,mat,base}
-const pulsers = [];           // meshes that pulse with throughput
-const robotArms = [];         // {pivot, fore}
-const stackFans = [];         // rotating fans
-const weldCells = [];         // for spark delight
+const machineGroups = [];
+const andonLamps = [];
+const pulsers = [];
+const robotArms = [];
+const stackFans = [];
 
-/* build one station */
+/* ───────────────────── 3-layer domain glow rings (ground) ───────────────────── */
+// Each station gets a colored ground ring to visualize domain layer
+const layerRingColors = [0xff7a8a, 0x6fb4ff, 0xc9a3ff, 0x46e6b0];
+const layerRings = [];
+STATION_POS.forEach((pos, i)=>{
+  const ringGeo = new THREE.RingGeometry(4.2, 4.8, 64);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: layerRingColors[i], transparent: true, opacity: 0.12, side: THREE.DoubleSide
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = -Math.PI/2;
+  ring.position.set(pos.x, 0.04, pos.z);
+  scene.add(ring);
+  layerRings.push({mesh:ring, mat:ringMat, base:0.12});
+});
+
+/* ───────────────────── inter-domain data flow lines ───────────────────── */
+// Animated particles flow along lines between stations = data sync visualization
+const flowLines = [];
+const pairs = [[0,1],[1,2],[2,3],[0,3],[1,3]]; // domain connections
+pairs.forEach(([a,b])=>{
+  const pa = STATION_POS[a].clone().setY(2.5);
+  const pb = STATION_POS[b].clone().setY(2.5);
+  const pts = [];
+  for(let t=0;t<=1;t+=0.05){
+    pts.push(new THREE.Vector3().lerpVectors(pa,pb,t));
+  }
+  const geo = new THREE.BufferGeometry().setFromPoints(pts);
+  const mat = new THREE.LineBasicMaterial({
+    color: layerRingColors[a], transparent: true, opacity: 0.18
+  });
+  const line = new THREE.Line(geo, mat);
+  scene.add(line);
+
+  // flow particle
+  const pGeo = new THREE.SphereGeometry(0.12, 8, 8);
+  const pMat = new THREE.MeshBasicMaterial({color: layerRingColors[a], transparent:true, opacity:0.9});
+  const particle = new THREE.Mesh(pGeo, pMat);
+  scene.add(particle);
+  flowLines.push({pa, pb, particle, t: a*0.2, speed: 0.18+Math.random()*0.08, mat});
+});
+
+/* ───────────────────── sync ripple ───────────────────── */
+const ripple = new THREE.Mesh(
+  new THREE.RingGeometry(0.5, 0.7, 64),
+  new THREE.MeshBasicMaterial({color:0x46e6b0, transparent:true, opacity:0, side:THREE.DoubleSide})
+);
+ripple.rotation.x = -Math.PI/2;
+ripple.position.y = 0.06;
+scene.add(ripple);
+let rippleT = -1;
+
+/* ───────────────────── AI pulse rings (3 expanding rings at AI cell) ───────────────────── */
+const aiRings = [];
+for(let r=0;r<3;r++){
+  const rGeo = new THREE.RingGeometry(0.3, 0.5, 48);
+  const rMat = new THREE.MeshBasicMaterial({color:0xc9a3ff, transparent:true, opacity:0, side:THREE.DoubleSide});
+  const rm = new THREE.Mesh(rGeo, rMat);
+  rm.rotation.x = -Math.PI/2;
+  rm.position.set(STATION_POS[2].x, 0.05, STATION_POS[2].z);
+  scene.add(rm);
+  aiRings.push({mesh:rm, mat:rMat, offset: r/3});
+}
+
+/* ───────────────────── build each station ───────────────────── */
 STATIONS.forEach((st, i)=>{
   const g = new THREE.Group();
   g.position.copy(STATION_POS[i]);
@@ -594,11 +641,9 @@ STATIONS.forEach((st, i)=>{
   const body = box(4.2, 3.2, 3.4, 0x2b3242, {metal:0.55, rough:0.45});
   body.position.y = 0.5 + 1.6;
   g.add(body);
-  // signal stripe
   const stripe = box(4.3, 0.5, 3.5, st.color, {emissive:st.color, emi:0.7, metal:0.2, cast:false});
   stripe.position.y = 0.5 + 2.7;
   g.add(stripe);
-  // control box
   const ctlbox = box(1.1, 1.3, 0.25, 0x10151f, {metal:0.4, rough:0.5});
   ctlbox.position.set(0, 1.7, 1.75);
   const screen = box(0.85, 0.85, 0.04, st.color, {emissive:st.color, emi:0.9, cast:false});
@@ -606,7 +651,7 @@ STATIONS.forEach((st, i)=>{
   pulsers.push(screen);
   g.add(ctlbox, screen);
 
-  // andon stack light (3 lamps)
+  // andon stack light
   const pole = cyl(0.07,0.07,2.0,8,0x222836,{metal:0.6});
   pole.position.set(-1.7, 0.5+1.0+2.0, -1.4);
   g.add(pole);
@@ -619,16 +664,15 @@ STATIONS.forEach((st, i)=>{
     lamp.castShadow=true;
     g.add(lamp);
   }
-  // primary andon = green/amber (signal lamp)
-  const andonMat = new THREE.MeshStandardMaterial({color:0x46e6b0,emissive:0x46e6b0,emissiveIntensity:1.2,roughness:0.3});
+  const andonMat = new THREE.MeshStandardMaterial({color:st.color, emissive:st.color, emissiveIntensity:1.2, roughness:0.3});
   const andon = new THREE.Mesh(new THREE.SphereGeometry(0.26,16,16), andonMat);
   andon.position.set(-1.7, lampY[2]+0.6+0.45, -1.4);
   g.add(andon);
-  andonLamps.push({mesh:andon, mat:andonMat, base:i});
+  andonLamps.push({mesh:andon, mat:andonMat, color:st.color});
 
-  // KIND-specific machine flavor
+  // KIND-specific geometry
   if(st.kind==="machine"){
-    // stacks/exhaust + vision camera arm
+    // exhaust stacks + vision camera (MFG)
     for(let s=0;s<2;s++){
       const stack = cyl(0.28,0.34,2.4,12,0x39414f,{metal:0.6});
       stack.position.set(1.0+s*0.9, 0.5+3.2+1.2, -1.0);
@@ -637,31 +681,13 @@ STATIONS.forEach((st, i)=>{
       cap.position.set(1.0+s*0.9, 0.5+3.2+2.4, -1.0);
       g.add(cap);
     }
-    // vision camera (delight: vision inspection)
     const cam = box(0.5,0.5,0.7,0x14181f,{metal:0.5});
     cam.position.set(1.4,1.9,1.4);
     const lens = cyl(0.18,0.18,0.2,16,st.color,{emissive:st.color,emi:0.8});
     lens.rotation.x=Math.PI/2; lens.position.set(1.4,1.9,1.85);
     g.add(cam,lens);
-  } else if(st.kind==="weld"){
-    // weld robot arm + spark anchor
-    const armBase = cyl(0.55,0.7,0.6,16,0x2a3140,{metal:0.6});
-    armBase.position.set(1.2,0.5+0.3,1.0);
-    g.add(armBase);
-    const pivot = new THREE.Group(); pivot.position.set(1.2,0.5+0.6,1.0); g.add(pivot);
-    const upper = box(0.32,2.0,0.32,st.color,{emissive:st.color,emi:0.25,metal:0.4});
-    upper.position.y=1.0; pivot.add(upper);
-    const elbow = new THREE.Group(); elbow.position.y=2.0; pivot.add(elbow);
-    const fore = box(0.26,1.5,0.26,0x39414f,{metal:0.5});
-    fore.position.y=0.75; elbow.add(fore);
-    const torch = cyl(0.05,0.12,0.5,10,0xff7a4a,{emissive:0xff5a2a,emi:0.6});
-    torch.position.y=1.55; elbow.add(torch);
-    robotArms.push({pivot, elbow, kind:"weld"});
-    // spark origin (world updated each frame)
-    const sparkAnchor = new THREE.Object3D(); sparkAnchor.position.y=1.75; elbow.add(sparkAnchor);
-    weldCells.push({group:g, anchor:sparkAnchor, station:st});
   } else if(st.kind==="data"){
-    // server racks + spinning dashboards
+    // server racks (DEV/DATA)
     for(let r=0;r<3;r++){
       const rack = box(0.9,2.6,1.4,0x161d2a,{metal:0.4,rough:0.5});
       rack.position.set(-1.4+r*1.1, 0.5+1.3, 0.7);
@@ -673,13 +699,13 @@ STATIONS.forEach((st, i)=>{
         g.add(led);
       }
     }
-    // floating dashboard panel
+    // floating dashboard
     const dash = box(2.4,1.5,0.08, 0x0c1320,{emissive:st.color,emi:0.18,metal:0.2});
     dash.position.set(0,0.5+4.4,0); dash.rotation.x=-0.12;
     g.add(dash);
-    stackFans.push({mesh:dash, axis:"none"});
+    stackFans.push({mesh:dash, axis:"none", baseY:0.5+4.4});
   } else if(st.kind==="ax"){
-    // cloud node ring + robot arm (AX)
+    // robot arm (AI cell)
     const armBase = cyl(0.55,0.7,0.6,16,0x2a3140,{metal:0.6});
     armBase.position.set(-1.2,0.5+0.3,1.0);
     g.add(armBase);
@@ -691,9 +717,10 @@ STATIONS.forEach((st, i)=>{
     fore.position.y=0.7; elbow.add(fore);
     const grip = box(0.4,0.2,0.4,st.color,{emissive:st.color,emi:0.6});
     grip.position.y=1.45; elbow.add(grip);
-    robotArms.push({pivot, elbow, kind:"ax"});
-    // orbiting cloud nodes (MCP / services)
+    robotArms.push({pivot, elbow, kind:"ax", idx:i});
+    // orbiting AI nodes
     const ring = new THREE.Group(); ring.position.set(0,0.5+4.3,0); g.add(ring);
+    const nodeLabels = ["MES","RPA","AI","API","BI","ML"];
     for(let n=0;n<6;n++){
       const a=n/6*Math.PI*2;
       const node = new THREE.Mesh(new THREE.IcosahedronGeometry(0.26,0),
@@ -702,38 +729,62 @@ STATIONS.forEach((st, i)=>{
       ring.add(node);
     }
     stackFans.push({mesh:ring, axis:"y", speed:0.4});
+  } else if(st.kind==="hub"){
+    // fusion hub: central core + 3-domain rings
+    const core = new THREE.Mesh(
+      new THREE.OctahedronGeometry(1.2, 0),
+      new THREE.MeshStandardMaterial({color:st.color, emissive:st.color, emissiveIntensity:0.5, roughness:0.3, metalness:0.4})
+    );
+    core.position.y = 0.5+3.0;
+    g.add(core);
+    pulsers.push(core);
+    // 3 rotating rings = 3 domains
+    const ringColors = [0xff7a8a, 0x6fb4ff, 0xc9a3ff];
+    for(let r=0;r<3;r++){
+      const rMesh = new THREE.Mesh(
+        new THREE.TorusGeometry(1.6+r*0.5, 0.05, 8, 48),
+        new THREE.MeshStandardMaterial({color:ringColors[r], emissive:ringColors[r], emissiveIntensity:0.6, roughness:0.3})
+      );
+      rMesh.position.y = 0.5+3.0;
+      rMesh.rotation.x = (r/3)*Math.PI;
+      rMesh.rotation.z = (r/3)*Math.PI*0.5;
+      g.add(rMesh);
+      stackFans.push({mesh:rMesh, axis:"hub", idx:r, speed: 0.3+r*0.15});
+    }
   }
 
-  // station number plate (floor)
+  // floor plate
   const plate = box(1.6,0.05,0.9, 0x0a0e15,{emissive:st.color,emi:0.15,cast:false});
   plate.position.set(0,0.07,2.8);
   g.add(plate);
 
-  // ── SCADA HUD card (CSS2D, floats above machine) ──
+  // ── SCADA HUD label (CSS2D) ──
   const hud = document.createElement("div");
   hud.className = "scada";
-  hud.style.cssText = `
-    transform:translate(-50%,-100%);background:rgba(10,14,21,.86);
-    border:1px solid rgba(255,255,255,.10);border-left:3px solid #${st.color.toString(16).padStart(6,"0")};
-    border-radius:9px;padding:8px 10px;min-width:150px;backdrop-filter:blur(8px);
-    box-shadow:0 12px 30px rgba(0,0,0,.5);font-family:var(--sans);user-select:none;cursor:pointer;`;
   const hex = "#"+st.color.toString(16).padStart(6,"0");
+  const layerTag = {mfg:"MFG", dev:"DEV", ai:"AI", hub:"HUB"}[st.layer];
+  hud.style.cssText = `
+    transform:translate(-50%,-100%);background:rgba(10,14,21,.88);
+    border:1px solid rgba(255,255,255,.10);border-left:3px solid ${hex};
+    border-radius:9px;padding:8px 11px;min-width:160px;backdrop-filter:blur(8px);
+    box-shadow:0 12px 30px rgba(0,0,0,.5);font-family:var(--sans);user-select:none;cursor:pointer;`;
   hud.innerHTML = `
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
       <span style="width:7px;height:7px;border-radius:50%;background:${hex};box-shadow:0 0 8px ${hex}"></span>
       <span style="font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:#5d6a82">${st.station}</span>
+      <span style="font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:${hex};border:1px solid ${hex}33;border-radius:3px;padding:1px 5px">${layerTag}</span>
     </div>
-    <div style="font-size:12px;font-weight:800;color:#e8edf6;line-height:1.15">${st.co}</div>
+    <div style="font-size:12px;font-weight:800;color:#e8edf6;line-height:1.15">${st.label}</div>
     <div style="font-size:9.5px;color:#9aa6bd;margin-top:2px">${st.role}</div>
     <div style="display:flex;gap:8px;margin-top:7px">
-      <div><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:${hex}" data-m0>${st.metrics[0].v}</div>
+      <div><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${hex}" data-m0>${st.metrics[0].v}</div>
         <div style="font-size:8px;color:#5d6a82">${st.metrics[0].l}</div></div>
-      <div><div style="font-family:var(--mono);font-size:13px;font-weight:700;color:#e8edf6" data-thr>—</div>
+      <div><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#e8edf6" data-thr>--</div>
         <div style="font-size:8px;color:#5d6a82">throughput/h</div></div>
     </div>`;
   hud.addEventListener("click",()=>focusStation(i));
   const hudObj = new CSS2DObject(hud);
-  hudObj.position.set(0, 0.5+5.4, 0);
+  hudObj.position.set(0, 0.5+5.8, 0);
   g.add(hudObj);
   g.userData.hud = hud;
 
@@ -741,24 +792,20 @@ STATIONS.forEach((st, i)=>{
   machineGroups.push(g);
 });
 
-/* ───────────────────── conveyors between stations ───────────────────── */
-// build a closed path through all stations (then back to start)
+/* ───────────────────── conveyors (domain data flow paths) ───────────────────── */
 const pathPts = [];
 STATION_POS.forEach(p=>pathPts.push(new THREE.Vector3(p.x, 0.55, p.z)));
-pathPts.push(STATION_POS[0].clone().setY(0.55)); // loop back
+pathPts.push(STATION_POS[0].clone().setY(0.55));
 const curve = new THREE.CatmullRomCurve3(pathPts, true, "catmullrom", 0.4);
 
-// conveyor belt geometry (tube-ish flat ribbon via segments)
 const convCount = 220;
 const convPts = curve.getSpacedPoints(convCount);
 const convGroup = new THREE.Group();
 const convMat = new THREE.MeshStandardMaterial({color:0x161d2b, roughness:0.7, metalness:0.3});
-const railMat = new THREE.MeshStandardMaterial({color:0x2a3344, roughness:0.5, metalness:0.5});
-// instanced belt segments
 const segGeo = new THREE.BoxGeometry(1.1, 0.18, 1.0);
 const segInst = new THREE.InstancedMesh(segGeo, convMat, convCount);
 segInst.castShadow=true; segInst.receiveShadow=true;
-const _m = new THREE.Matrix4(), _q=new THREE.Quaternion(), _up=new THREE.Vector3(0,1,0), _s=new THREE.Vector3(1,1,1);
+const _m=new THREE.Matrix4(), _q=new THREE.Quaternion(), _s=new THREE.Vector3(1,1,1);
 for(let i=0;i<convCount;i++){
   const p = convPts[i];
   const p2 = convPts[(i+1)%convCount];
@@ -769,8 +816,6 @@ for(let i=0;i<convCount;i++){
 }
 segInst.instanceMatrix.needsUpdate=true;
 convGroup.add(segInst);
-
-// support legs every N segments
 for(let i=0;i<convCount;i+=10){
   const p=convPts[i];
   const leg=cyl(0.08,0.1,0.55,6,0x222a38,{metal:0.5});
@@ -779,14 +824,14 @@ for(let i=0;i<convCount;i+=10){
 }
 scene.add(convGroup);
 
-/* ───────────────────── WIP tokens traveling the belt ───────────────────── */
-const WIP_N = 14;
-const wipColors = [0xff7a8a,0xffb454,0x6fb4ff,0xc9a3ff,0x46e6b0];
+/* ───────────────────── WIP tokens (cross-domain data parcels) ───────────────────── */
+const WIP_N = 16;
+const wipColors = [0xff7a8a,0x6fb4ff,0xc9a3ff,0x46e6b0,0xffb454];
 const wips = [];
 const wipGeo = new THREE.BoxGeometry(0.6,0.55,0.6);
 for(let i=0;i<WIP_N;i++){
   const c = wipColors[i%wipColors.length];
-  const mat = new THREE.MeshStandardMaterial({color:c, emissive:c, emissiveIntensity:0.25, roughness:0.5, metalness:0.2});
+  const mat = new THREE.MeshStandardMaterial({color:c, emissive:c, emissiveIntensity:0.28, roughness:0.5, metalness:0.2});
   const m = new THREE.Mesh(wipGeo, mat);
   m.castShadow=true;
   const t = i/WIP_N;
@@ -794,57 +839,93 @@ for(let i=0;i<WIP_N;i++){
   wips.push({mesh:m, t, mat});
 }
 
-/* ───────────────────── digital-twin sync ripple ring ───────────────────── */
-const ripple = new THREE.Mesh(
-  new THREE.RingGeometry(0.5, 0.7, 64),
-  new THREE.MeshBasicMaterial({color:0x46e6b0, transparent:true, opacity:0, side:THREE.DoubleSide})
-);
-ripple.rotation.x = -Math.PI/2;
-ripple.position.y = 0.06;
-scene.add(ripple);
-let rippleT = -1; // inactive
-
-/* ───────────────────── spark system (weld delight) ───────────────────── */
-const sparkGeo = new THREE.BufferGeometry();
-const SPARK_N = 80;
-const sparkPos = new Float32Array(SPARK_N*3);
-const sparkVel = [];
-for(let i=0;i<SPARK_N;i++){ sparkVel.push(new THREE.Vector3()); }
-sparkGeo.setAttribute("position", new THREE.BufferAttribute(sparkPos,3));
-const sparkMat = new THREE.PointsMaterial({color:0xffd27a, size:0.14, transparent:true, opacity:0, blending:THREE.AdditiveBlending, depthWrite:false});
-const sparks = new THREE.Points(sparkGeo, sparkMat);
-scene.add(sparks);
-let sparkT = 0, sparkOrigin = new THREE.Vector3();
-
-function triggerWeldDelight(){
-  // weld delight: spark burst + HUD weld-quality readout pulses to PASS
-  const cell = weldCells[0];
-  if(cell){
-    cell.anchor.getWorldPosition(sparkOrigin);
-    sparkT = 1.0;
-    for(let i=0;i<SPARK_N;i++){
-      sparkVel[i].set((Math.random()-0.5)*6,(Math.random())*7+2,(Math.random()-0.5)*6);
-      sparkPos[i*3]=sparkOrigin.x; sparkPos[i*3+1]=sparkOrigin.y; sparkPos[i*3+2]=sparkOrigin.z;
-    }
-    sparkGeo.attributes.position.needsUpdate=true;
-    // pulse the weld-quality readout: DOE → … → PASS (no career number duplicated)
-    const hud = machineGroups[1].userData.hud;
-    const m0 = hud.querySelector("[data-m0]");
-    if(m0){
-      const frames = ["DOE","···","OPT","PASS"];
-      let k = 0;
-      const iv = setInterval(()=>{
-        m0.textContent = frames[k++];
-        if(k>=frames.length){ clearInterval(iv); setTimeout(()=>{m0.textContent="DOE";},700); }
-      }, 180);
-    }
-  }
+/* ───────────────────── detail panel (right slide-in) ───────────────────── */
+// inject detail panel CSS inline (self-contained)
+const dpStyle = document.createElement("style");
+dpStyle.textContent = `
+#detail{
+  position:fixed;z-index:30;top:0;right:-460px;width:440px;max-width:92vw;height:100%;
+  background:linear-gradient(180deg,#0c1019,#080b12);
+  border-left:1px solid #1c2333;box-shadow:-30px 0 80px rgba(0,0,0,.6);
+  transition:right .42s cubic-bezier(.22,.61,.36,1);overflow-y:auto;
+  display:flex;flex-direction:column;
 }
+#detail.open{right:0}
+.dt-head{position:relative;padding:24px 24px 20px;border-bottom:1px solid #151b27;overflow:hidden}
+.dt-head .accentbar{position:absolute;top:0;left:0;width:4px;height:100%}
+.dt-close{position:absolute;top:16px;right:18px;width:30px;height:30px;border-radius:8px;
+  border:1px solid #1c2333;background:rgba(255,255,255,.02);color:#9aa6bd;cursor:pointer;
+  font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.dt-close:hover{color:#e8edf6;border-color:#5d6a82}
+.dt-station{font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:#5d6a82}
+.dt-co{font-size:22px;font-weight:800;margin-top:7px;letter-spacing:-.01em}
+.dt-role{font-size:12.5px;color:#9aa6bd;margin-top:5px}
+.dt-period{font-family:var(--mono);font-size:10.5px;color:#5d6a82;margin-top:9px}
+.dt-status{display:inline-flex;align-items:center;gap:7px;margin-top:12px;font-family:var(--mono);
+  font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;padding:4px 9px;border-radius:20px;
+  border:1px solid #1c2333}
+.dt-status .lamp{width:7px;height:7px;border-radius:50%}
+.dt-body{padding:20px 24px 40px;display:flex;flex-direction:column;gap:20px}
+.dt-sec .h{font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#5d6a82;margin-bottom:10px}
+.dt-metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.metric{border:1px solid #1c2333;border-radius:10px;padding:11px 12px;background:rgba(255,255,255,.015)}
+.metric .mv{font-family:var(--mono);font-size:17px;font-weight:700;line-height:1}
+.metric .ml{font-size:10.5px;color:#9aa6bd;margin-top:6px}
+.dt-list{display:flex;flex-direction:column;gap:9px}
+.dt-list .it{display:flex;gap:10px;font-size:12.5px;color:#9aa6bd;line-height:1.55}
+.dt-list .it::before{content:"";flex:0 0 auto;width:6px;height:6px;border-radius:2px;margin-top:7px;background:#5d6a82}
+.dt-list .it b{color:#e8edf6;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:#9aa6bd;
+  border:1px solid #1c2333;border-radius:6px;padding:4px 8px;background:rgba(255,255,255,.015)}
+.dt-foot{margin-top:auto;padding:16px 24px;border-top:1px solid #151b27;
+  font-family:var(--mono);font-size:10.5px;color:#5d6a82;display:flex;flex-direction:column;gap:5px}
+.dt-foot a{color:#9aa6bd;text-decoration:none}
+.dt-foot a:hover{color:#46e6b0}
+`;
+document.head.appendChild(dpStyle);
+
+const detailEl = document.createElement("div");
+detailEl.id = "detail";
+detailEl.innerHTML = `
+  <div class="dt-head">
+    <div class="accentbar" id="dtAccent"></div>
+    <button class="dt-close" id="dtClose">x</button>
+    <div class="dt-station" id="dtStation">STATION 01</div>
+    <div class="dt-co" id="dtCo">--</div>
+    <div class="dt-role" id="dtRole">--</div>
+    <div class="dt-period" id="dtPeriod">--</div>
+    <div class="dt-status" id="dtStatus"><span class="lamp"></span><span class="txt">RUNNING</span></div>
+  </div>
+  <div class="dt-body">
+    <div class="dt-sec">
+      <div class="h">Layer Metrics</div>
+      <div class="dt-metrics" id="dtMetrics"></div>
+    </div>
+    <div class="dt-sec">
+      <div class="h">Domain Log</div>
+      <div class="dt-list" id="dtList"></div>
+    </div>
+    <div class="dt-sec">
+      <div class="h">Tooling</div>
+      <div class="chips" id="dtChips"></div>
+    </div>
+  </div>
+  <div class="dt-foot">
+    <span>박양하 · Park Yangha -- Cross-Domain Digital Twin</span>
+    <a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a>
+    <a href="https://github.com/64etuor" target="_blank">github.com/64etuor</a>
+  </div>
+`;
+document.body.appendChild(detailEl);
 
 /* ───────────────────── interaction: raycaster ───────────────────── */
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let hovered = -1;
+let activeIdx = -1;
+let lineOn = true;
+let speed = 1.0;
 
 function setPointerFromEvent(e){
   const r = renderer.domElement.getBoundingClientRect();
@@ -857,13 +938,13 @@ renderer.domElement.addEventListener("pointermove",(e)=>{
   const hits = raycaster.intersectObjects(machineGroups, true);
   let idx=-1;
   if(hits.length){
-    let o = hits[0].object;
+    let o=hits[0].object;
     while(o && o.userData.index===undefined) o=o.parent;
     if(o) idx=o.userData.index;
   }
   if(idx!==hovered){
     hovered=idx;
-    renderer.domElement.style.cursor = idx>=0 ? "pointer" : "default";
+    renderer.domElement.style.cursor = idx>=0?"pointer":"default";
   }
 });
 let downXY=null;
@@ -872,7 +953,7 @@ renderer.domElement.addEventListener("pointerup",(e)=>{
   if(!downXY) return;
   const moved = Math.hypot(e.clientX-downXY[0], e.clientY-downXY[1]);
   downXY=null;
-  if(moved>6) return; // was a drag
+  if(moved>6) return;
   setPointerFromEvent(e);
   raycaster.setFromCamera(mouse,camera);
   const hits = raycaster.intersectObjects(machineGroups, true);
@@ -884,20 +965,14 @@ renderer.domElement.addEventListener("pointerup",(e)=>{
 
 /* ───────────────────── camera focus + detail panel ───────────────────── */
 let camTween = null;
-let activeIdx = -1;
 function focusStation(i){
   const st = STATIONS[i]; const pos = STATION_POS[i];
   activeIdx = i;
-  // camera target -> machine; position offset
   const tgt = new THREE.Vector3(pos.x, 2.2, pos.z);
   const off = new THREE.Vector3(9, 9, 9);
   const camTo = tgt.clone().add(off);
   camTween = { fromT: controls.target.clone(), toT: tgt, fromP: camera.position.clone(), toP: camTo, t:0 };
-  // delight: weld cell triggers spark + tick
-  if(st.kind==="weld") triggerWeldDelight();
-  // local-first: focusing a machine = an optimistic local edit on the twin,
-  // applied instantly; the cloud reconciles a beat later via delta sync.
-  optimisticWrite(st.co);
+  triggerCrossDomainPulse(i);
   openDetail(st);
 }
 
@@ -905,90 +980,103 @@ function openDetail(st){
   const hex = "#"+st.color.toString(16).padStart(6,"0");
   document.getElementById("dtAccent").style.background = hex;
   document.getElementById("dtStation").textContent = st.station;
-  document.getElementById("dtCo").textContent = st.co;
+  document.getElementById("dtCo").textContent = st.label;
   document.getElementById("dtRole").textContent = st.role;
   document.getElementById("dtPeriod").textContent = st.period;
-  const status = document.getElementById("dtStatus");
-  const on = lineOn;
-  status.querySelector(".lamp").style.background = on?"#46e6b0":"#ffb454";
-  status.querySelector(".lamp").style.boxShadow = on?"0 0 8px #46e6b0":"0 0 8px #ffb454";
-  status.querySelector(".txt").textContent = on?"RUNNING":"IDLE · STANDBY";
-  status.style.color = on?"#46e6b0":"#ffb454";
-  // metrics
+  const statusEl = document.getElementById("dtStatus");
+  statusEl.querySelector(".lamp").style.background = lineOn?"#46e6b0":"#ffb454";
+  statusEl.querySelector(".lamp").style.boxShadow = lineOn?"0 0 8px #46e6b0":"0 0 8px #ffb454";
+  statusEl.querySelector(".txt").textContent = lineOn?"RUNNING":"IDLE";
+  statusEl.style.color = lineOn?"#46e6b0":"#ffb454";
   const mw = document.getElementById("dtMetrics"); mw.innerHTML="";
   st.metrics.forEach(m=>{
-    const d=document.createElement("div");d.className="metric";
+    const d=document.createElement("div"); d.className="metric";
     d.innerHTML=`<div class="mv" style="color:${hex}">${m.v}</div><div class="ml">${m.l}</div>`;
     mw.appendChild(d);
   });
-  // log
-  const lw=document.getElementById("dtList"); lw.innerHTML="";
+  const lw = document.getElementById("dtList"); lw.innerHTML="";
   st.log.forEach(t=>{const d=document.createElement("div");d.className="it";d.innerHTML=`<span>${t}</span>`;lw.appendChild(d);});
-  // chips
-  const cw=document.getElementById("dtChips"); cw.innerHTML="";
+  const cw = document.getElementById("dtChips"); cw.innerHTML="";
   st.chips.forEach(c=>{const d=document.createElement("div");d.className="chip";d.textContent=c;cw.appendChild(d);});
   document.getElementById("detail").classList.add("open");
 }
 document.getElementById("dtClose").addEventListener("click",()=>{
   document.getElementById("detail").classList.remove("open");
   activeIdx=-1;
-  // ease camera back to overview
   camTween = { fromT: controls.target.clone(), toT: new THREE.Vector3(0,1.5,0),
                fromP: camera.position.clone(), toP: new THREE.Vector3(34,30,34), t:0 };
 });
 
-/* ───────────────────── controls: line on/off, speed, sync ───────────────────── */
-let lineOn = true;
-let speed = 1.0;
+/* ───────────────────── cross-domain sync pulse ───────────────────── */
+let xdSyncT = -1;
+const xdStateEl = document.getElementById("xdState");
+
+function triggerCrossDomainPulse(stationIdx){
+  rippleT = 0;
+  xdSyncT = 0.8;
+  xdStateEl.textContent = "SYNCING...";
+  xdStateEl.classList.add("pend");
+  xdStateEl.classList.remove("ai");
+  // pulse flow lines
+  flowLines.forEach(fl=>{ fl.mat.opacity = 0.6; });
+  // animate layer values
+  const labels = ["MES","RPA","AI","API","BI","ML"];
+  const flAiEl = document.getElementById("flAi");
+  const frames = ["INFER","PRED","SYNC","OK"];
+  let k=0;
+  const iv = setInterval(()=>{
+    if(flAiEl) flAiEl.textContent = frames[k++]||"ON";
+    if(k>=frames.length){ clearInterval(iv); }
+  }, 180);
+}
+
+function reconcileXD(){
+  xdSyncT = -1;
+  xdStateEl.textContent = "SYNCED";
+  xdStateEl.classList.remove("pend");
+  xdStateEl.classList.add("ai");
+  // fade flow lines back
+  flowLines.forEach(fl=>{ fl.mat.opacity = 0.18; });
+  const flAiEl = document.getElementById("flAi");
+  if(flAiEl) flAiEl.textContent = "ON";
+}
+
+/* ───────────────────── controls ───────────────────── */
 const swLine = document.getElementById("swLine");
 const lineStateEl = document.getElementById("lineState");
 swLine.addEventListener("click",()=>{
   lineOn=!lineOn;
   swLine.classList.toggle("on",lineOn);
   lineStateEl.textContent = lineOn?"ON":"OFF";
-  if(activeIdx>=0) openDetail(STATIONS[activeIdx]); // refresh status lamp
+  if(activeIdx>=0) openDetail(STATIONS[activeIdx]);
 });
 const spd = document.getElementById("spd");
 const spdVal = document.getElementById("spdVal");
 spd.addEventListener("input",()=>{
   speed = spd.value/100;
-  spdVal.textContent = speed.toFixed(1)+"×";
+  spdVal.textContent = speed.toFixed(1)+"x";
 });
 document.getElementById("syncBtn").addEventListener("click",()=>{
-  rippleT = 0; // start ripple from center
-  reconcileTwin();   // sync pulse = reconcile any optimistic local edits with cloud
+  rippleT = 0;
+  triggerCrossDomainPulse(-1);
 });
 
-/* ─── local-first: optimistic write → delta-sync reconcile ─── */
-// The twin is the LOCAL mirror: a local edit applies INSTANTLY (optimistic),
-// then a sync tick confirms it against the CLOUD source-of-truth.
-const lfStateEl = document.getElementById("lfState");
-const lfLinkEl  = document.getElementById("lfLink");
-let twinDirty = false;       // true = local edit pending cloud confirmation
-let twinSyncT = -1;          // reconcile animation timer
-
-function optimisticWrite(label){
-  // local apply: immediate, no waiting for the server (latency out of the loop)
-  twinDirty = true;
-  lfStateEl.textContent = "LOCAL ✎ " + (label||"EDIT");
-  lfStateEl.classList.add("optim");
-  lfLinkEl.classList.add("syncing");
-  // schedule reconcile (delta sync) — mirror catches up to truth shortly after
-  clearTimeout(window.__lfRecTO);
-  window.__lfRecTO = setTimeout(reconcileTwin, 900);
+/* ───────────────────── live KPI ticker (auto-fluctuation) ───────────────────── */
+const kpiEls = document.querySelectorAll("#kpis .kpi .v");
+const kpiBase = [92.4, 42, 14, 96, 94.1, 1.8, 38, null, null, null];
+function tickKpis(){
+  kpiEls.forEach((el, i)=>{
+    if(kpiBase[i]===null) return;
+    const base = kpiBase[i];
+    const jitter = (Math.random()-0.5)*0.6;
+    const val = (base + jitter).toFixed(1);
+    if(i===2) el.textContent = Math.round(base+jitter*3)+"ea";
+    else if(i===5) el.textContent = (base+jitter).toFixed(1)+"s";
+    else if(i===6) el.textContent = "<"+Math.round(base+jitter*5)+"ms";
+    else el.textContent = val+"%";
+  });
 }
-function reconcileTwin(){
-  if(!twinDirty){
-    // even with no pending edit, a sync pulse re-affirms the mirror
-    lfLinkEl.classList.add("syncing");
-    lfStateEl.textContent = "DELTA SYNC…";
-    twinSyncT = 0.45;
-    return;
-  }
-  twinDirty = false;
-  twinSyncT = 0.6;            // brief "syncing" window
-  lfStateEl.textContent = "DELTA SYNC…";
-}
+setInterval(tickKpis, 3200);
 
 /* ───────────────────── clock ───────────────────── */
 const clockEl = document.getElementById("clock");
@@ -996,11 +1084,18 @@ function tickClock(){
   const d=new Date();
   clockEl.textContent = [d.getHours(),d.getMinutes(),d.getSeconds()].map(n=>String(n).padStart(2,"0")).join(":");
 }
-setInterval(tickClock,1000); tickClock();
+setInterval(tickClock,1000);
+tickClock();
+
+/* ───────────────────── auto-cycle focus (no click needed) ───────────────────── */
+let autoCycleT = 0;
+let autoCycleIdx = 0;
+let autoCycleEnabled = true;
+// User interaction disables auto-cycle
+renderer.domElement.addEventListener("pointerdown",()=>{ autoCycleEnabled=false; });
 
 /* ───────────────────── animation loop ───────────────────── */
 const clock = new THREE.Clock();
-let throughputAccum = STATIONS.map(()=>0);
 let throughputShown = STATIONS.map(()=>0);
 
 function animate(){
@@ -1011,120 +1106,124 @@ function animate(){
 
   // WIP tokens travel
   wips.forEach((w,i)=>{
-    w.t = (w.t + dt*0.045*eff) % 1;
+    w.t = (w.t + dt*0.044*eff) % 1;
     const p = curve.getPointAt(w.t);
     w.mesh.position.set(p.x, p.y+0.4, p.z);
     w.mesh.rotation.y += dt*1.5*eff;
-    w.mesh.position.y += Math.sin(time*3+i)*0.02;
+    w.mesh.position.y += Math.sin(time*3+i)*0.022;
   });
 
-  // belt segment scroll (emissive shimmer pulse along belt)
-  // (visual: pulse screens + leds)
+  // pulser emissive shimmer
   pulsers.forEach((m,i)=>{
     const base = 0.5;
-    m.material.emissiveIntensity = base + (lineOn? (0.4*Math.abs(Math.sin(time*3*speed + i*0.6))) : 0);
+    m.material.emissiveIntensity = base + (lineOn? (0.42*Math.abs(Math.sin(time*3*speed + i*0.6))) : 0);
   });
 
-  // andon lamps: green when running, amber blink when idle / occasionally
+  // andon lamps: domain color breathing
   andonLamps.forEach((a,i)=>{
     if(lineOn){
-      a.mat.color.setHex(0x46e6b0); a.mat.emissive.setHex(0x46e6b0);
+      a.mat.color.setHex(a.color); a.mat.emissive.setHex(a.color);
       a.mat.emissiveIntensity = 0.9 + 0.5*Math.abs(Math.sin(time*2 + i));
     } else {
       const blink = Math.sin(time*5)>0;
       a.mat.color.setHex(0xffb454); a.mat.emissive.setHex(0xffb454);
-      a.mat.emissiveIntensity = blink? 1.4 : 0.15;
+      a.mat.emissiveIntensity = blink?1.4:0.15;
     }
   });
 
-  // robot arms sway / weld motion
+  // robot arms
   robotArms.forEach((r,i)=>{
-    const s = lineOn? 1:0.05;
+    const s = lineOn?1:0.05;
     r.pivot.rotation.z = Math.sin(time*1.2*speed + i)*0.25*s;
-    r.elbow.rotation.z = Math.sin(time*1.8*speed + i + 1)*0.4*s + (r.kind==="weld"? -0.3:0);
-    if(r.kind==="weld"){
-      r.pivot.rotation.y = Math.sin(time*0.7*speed)*0.3*s;
+    r.elbow.rotation.z = Math.sin(time*1.8*speed + i + 1)*0.4*s;
+    r.pivot.rotation.y = Math.sin(time*0.5*speed + i)*0.5*s;
+  });
+
+  // stack fans / rings
+  stackFans.forEach((f,i)=>{
+    if(f.axis==="y") f.mesh.rotation.y += dt*(f.speed||0.5)*(0.3+eff);
+    else if(f.axis==="hub"){
+      f.mesh.rotation.x += dt*f.speed*(lineOn?1:0.1);
+      f.mesh.rotation.z += dt*f.speed*0.7*(lineOn?1:0.1);
     } else {
-      r.pivot.rotation.y = Math.sin(time*0.5*speed + i)*0.5*s;
+      // float dashboard bob
+      f.mesh.position.y = (f.baseY||5.0) + Math.sin(time*1.5+i)*0.12;
+      f.mesh.rotation.y = Math.sin(time*0.4)*0.15;
     }
   });
 
-  // spinning rings/fans
-  stackFans.forEach(f=>{
-    if(f.axis==="y") f.mesh.rotation.y += dt*(f.speed||0.5)*(0.3+eff);
-    else f.mesh.position.y += 0; // dashboards bob below
-  });
-  // dashboard bob (data station)
-  stackFans.filter(f=>f.axis==="none").forEach((f,i)=>{
-    f.mesh.position.y = (0.5+4.4) + Math.sin(time*1.5+i)*0.12;
-    f.mesh.rotation.y = Math.sin(time*0.4)*0.15;
+  // domain layer rings pulse
+  layerRings.forEach((lr,i)=>{
+    const pulse = lr.base + 0.08*Math.abs(Math.sin(time*1.2 + i*1.1));
+    lr.mat.opacity = lineOn ? pulse : lr.base*0.4;
   });
 
-  // throughput readouts (per station) — derived from WIP passing + speed
+  // AI rings expand (persistent, auto)
+  aiRings.forEach((ar,i)=>{
+    const t = ((time*0.5 + ar.offset) % 1);
+    ar.mesh.scale.setScalar(1 + t*6);
+    ar.mat.opacity = (1-t)*0.35*(lineOn?1:0.2);
+  });
+
+  // inter-domain flow particles
+  flowLines.forEach((fl,i)=>{
+    fl.t = (fl.t + dt*fl.speed) % 1;
+    fl.particle.position.lerpVectors(fl.pa, fl.pb, fl.t<0.5? fl.t*2 : 2-fl.t*2);
+    fl.particle.scale.setScalar(lineOn?1:0.2);
+  });
+
+  // throughput readouts
   STATIONS.forEach((st,i)=>{
-    const target = lineOn ? Math.round((180 + i*40) * speed) : 0;
+    const target = lineOn ? Math.round((160 + i*45)*speed) : 0;
     throughputShown[i] += (target - throughputShown[i]) * Math.min(1, dt*3);
-    const hud = machineGroups[i].userData.hud;
-    const thr = hud.querySelector("[data-thr]");
+    const hudEl = machineGroups[i].userData.hud;
+    const thr = hudEl.querySelector("[data-thr]");
     if(thr) thr.textContent = Math.round(throughputShown[i]);
   });
 
-  // machine subtle pulse (breathing) keyed to throughput
+  // machine scale breathing
   machineGroups.forEach((g,i)=>{
     const pulse = lineOn ? (1 + 0.012*Math.sin(time*3*speed + i)) : 1;
     g.scale.setScalar(pulse);
-    // highlight hovered/active
-    const isActive = (i===activeIdx);
-    const isHover = (i===hovered);
-    g.position.y = STATION_POS[i].y + (isHover && !isActive ? 0.15 : 0);
+    const isHover = (i===hovered) && i!==activeIdx;
+    g.position.y = STATION_POS[i].y + (isHover ? 0.15 : 0);
   });
 
   // sync ripple expand
   if(rippleT>=0){
-    rippleT += dt*0.7;
-    const r = rippleT * 60;
-    ripple.scale.setScalar(r/0.6);
+    rippleT += dt*0.65;
+    const rr = rippleT*60;
+    ripple.scale.setScalar(rr/0.6);
     ripple.material.opacity = Math.max(0, 0.55*(1-rippleT));
-    // ripple briefly pulses every machine emissive as wavefront passes
-    machineGroups.forEach((g,i)=>{
-      const d = STATION_POS[i].length();
-      const wf = Math.abs(d - r);
-      if(wf<3){ g.scale.setScalar(1.05); }
-    });
     if(rippleT>=1){ rippleT=-1; ripple.material.opacity=0; }
   }
 
-  // local-first reconcile: after a brief delta-sync window, the local mirror
-  // is confirmed against the cloud source-of-truth -> back to SYNCED.
-  if(twinSyncT>=0){
-    twinSyncT -= dt;
-    if(twinSyncT<=0){
-      twinSyncT = -1;
-      twinDirty = false;
-      lfStateEl.textContent = "SYNCED";
-      lfStateEl.classList.remove("optim");
-      lfLinkEl.classList.remove("syncing");
-    }
+  // xd sync timer
+  if(xdSyncT>0){
+    xdSyncT -= dt;
+    if(xdSyncT<=0) reconcileXD();
   }
 
-  // sparks (weld delight)
-  if(sparkT>0){
-    sparkT -= dt*1.6;
-    for(let i=0;i<SPARK_N;i++){
-      sparkVel[i].y -= 16*dt; // gravity
-      sparkPos[i*3]   += sparkVel[i].x*dt;
-      sparkPos[i*3+1] += sparkVel[i].y*dt;
-      sparkPos[i*3+2] += sparkVel[i].z*dt;
+  // auto-cycle focus (orbit through stations if user has not interacted)
+  if(autoCycleEnabled){
+    autoCycleT += dt;
+    if(autoCycleT > 6.0){
+      autoCycleT = 0;
+      autoCycleIdx = (autoCycleIdx+1) % STATIONS.length;
+      const pos = STATION_POS[autoCycleIdx];
+      const tgt = new THREE.Vector3(pos.x, 2.2, pos.z);
+      const off = new THREE.Vector3(9, 9, 9);
+      const camTo = tgt.clone().add(off);
+      camTween = { fromT: controls.target.clone(), toT: tgt, fromP: camera.position.clone(), toP: camTo, t:0 };
+      triggerCrossDomainPulse(autoCycleIdx);
     }
-    sparkGeo.attributes.position.needsUpdate=true;
-    sparkMat.opacity = Math.max(0, sparkT);
   }
 
   // camera tween
   if(camTween){
-    camTween.t += dt*1.6;
+    camTween.t += dt*1.5;
     const k = Math.min(1, camTween.t);
-    const e = 1 - Math.pow(1-k, 3); // easeOutCubic
+    const e = 1 - Math.pow(1-k, 3);
     controls.target.lerpVectors(camTween.fromT, camTween.toT, e);
     camera.position.lerpVectors(camTween.fromP, camTween.toP, e);
     if(k>=1) camTween=null;
@@ -1143,30 +1242,33 @@ addEventListener("resize",()=>{
   labelRenderer.setSize(innerWidth, innerHeight);
 });
 
-/* ───────────────────── boot sequence (await fonts, fade) ───────────────────── */
+/* ───────────────────── boot sequence ───────────────────── */
 const bootFill = document.getElementById("bootFill");
 let bootP = 0;
-const bootIv = setInterval(()=>{ bootP=Math.min(96, bootP+ Math.random()*22); bootFill.style.width=bootP+"%"; }, 120);
+const bootIv = setInterval(()=>{ bootP=Math.min(96, bootP+Math.random()*22); bootFill.style.width=bootP+"%"; }, 120);
 
 async function start(){
   try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch(e){}
-  // render one frame immediately so headless first-paint shows the plant
   controls.update();
-  renderer.render(scene,camera);
-  labelRenderer.render(scene,camera);
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+  // rAF loop start
   animate();
-  // finish boot
   clearInterval(bootIv);
   bootFill.style.width="100%";
+  // layout gate: fade boot after fonts settle
   setTimeout(()=>{
     document.getElementById("boot").classList.add("hide");
-    // delight on entry: gentle sync ripple to introduce the twin
+    // intro sync ripple
     rippleT = 0;
-  }, 420);
+    // start auto-cycle after brief delay
+    setTimeout(()=>{
+      autoCycleT = 4.5; // first auto-focus fires at ~1.5s
+    }, 1500);
+  }, 480);
 }
 start();
 
-// expose for debugging / headless checks
 window.__twin = { scene, camera, renderer, STATIONS, focusStation };
 </script>
 </body>

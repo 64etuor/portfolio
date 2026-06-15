@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>박양하 · 오실로스코프 / 제어 시스템 콘솔</title>
+<title>박양하 · 품질 검사 콘솔 / 파형 이상 감지</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -19,10 +19,10 @@
     --ink:#dfe7e2;
     --muted:#7d8a85;
     --amber:#ffb300;
-    --ch1:#3df5c4; /* 은성 - teal phosphor */
-    --ch2:#ffd23f; /* 이랜텍 - amber */
-    --ch3:#5cc8ff; /* 솔라엣지 - cyan-blue */
-    --ch4:#ff6bd6; /* 미러리스 - magenta */
+    --ch1:#3df5c4; /* 원칙 - teal phosphor */
+    --ch2:#ffd23f; /* 기준선 - amber */
+    --ch3:#5cc8ff; /* 검사 신호 - cyan-blue */
+    --ch4:#ff6bd6; /* 이상 감지 - magenta */
     --grid:#0e3a2c;
     --gridminor:#0a241c;
     --phos:#39ff8a;
@@ -238,12 +238,12 @@
           </svg>
         </div>
         <div>
-          <h1>박양하 — 생산운영 PM · 공정기술 엔지니어</h1>
-          <div class="model">PARK YANGHA · MODEL <b>DSO-2025</b> · DIGITAL STORAGE OSCILLOSCOPE</div>
+          <h1>박양하 — 품질과 타협하지 않는다</h1>
+          <div class="model">PARK YANGHA · MODEL <b>QA-INSP</b> · QUALITY ANOMALY DETECTOR</div>
         </div>
       </div>
       <div class="topmeta">
-        <span class="pill"><span class="dot run" id="acqDot"></span><span id="acqState">RUN · ACQUIRE</span></span>
+        <span class="pill"><span class="dot run" id="acqDot"></span><span id="acqState">RUN · INSPECT</span></span>
         <span class="pill">TRIG'D <span class="dot"></span></span>
         <span class="pill mono" id="clock">--:--:--</span>
       </div>
@@ -254,7 +254,7 @@
       <!-- LEFT: screen + sub panels -->
       <div class="leftcol">
         <div class="crtwrap">
-          <span class="screenlabel">CH1·CH2·CH3·CH4 — CAREER WAVEFORMS — 4ch / phosphor</span>
+          <span class="screenlabel">CH1·CH2·CH3·CH4 — QUALITY LIMIT / ANOMALY DETECT — 4ch / phosphor</span>
           <canvas id="scope" width="1100" height="560"></canvas>
           <div class="scanlines"></div>
           <div class="glassglare"></div>
@@ -264,22 +264,22 @@
         <div class="subgrid">
           <!-- control loop block diagram -->
           <div class="panel">
-            <div class="hd"><span>제어 루프 · 스텝 응답</span><span class="k" id="loopStat">SETTLING…</span></div>
+            <div class="hd"><span>지도카 루프 · 이상 감지 응답</span><span class="k" id="loopStat">SETTLING…</span></div>
             <div class="bd" style="padding:8px">
               <canvas id="loop" class="ctrlcanvas" width="640" height="300"></canvas>
             </div>
           </div>
           <!-- measurements -->
           <div class="panel">
-            <div class="hd"><span>MEASURE · 성과 측정</span><span class="k">auto</span></div>
+            <div class="hd"><span>MEASURE · 기준 준수 진단</span><span class="k">auto</span></div>
             <div class="bd" style="padding:8px 11px">
               <table class="meas">
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>제품 ST 단축</td><td class="num delta">−50%</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>ST Vpp (개선 전)</td><td class="num">100.0%</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>ST Vpp (개선 후)</td><td class="num"><span id="mDefect">50.0</span>%</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>제어 오차 err</td><td class="num">≈0</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>정착시간 settle</td><td class="num delta">−62%</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch1)"></span>공정 정상도</td><td class="num">IN-CTRL</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>이상 신호 잔류</td><td class="num delta"><span id="mDefect">100.0</span>%</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>임계선 (limit)</td><td class="num">±규격</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>트리거 감도</td><td class="num">MAX</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>검출 오차 err</td><td class="num">≈0</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>정지 응답시간</td><td class="num delta">즉시</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch1)"></span>공정 상태</td><td class="num">IN-CTRL</td></tr>
               </table>
             </div>
           </div>
@@ -288,11 +288,11 @@
         <!-- bottom: FFT + Lissajous -->
         <div class="bottom">
           <div class="panel">
-            <div class="hd"><span>FFT · 스펙트럼 (역량 주파수)</span><span class="k">dBm</span></div>
+            <div class="hd"><span>FFT · 이상 주파수 스펙트럼</span><span class="k">dBm</span></div>
             <div class="bd" style="padding:8px"><canvas id="fft" class="fftcanvas" width="640" height="220"></canvas></div>
           </div>
           <div class="panel">
-            <div class="hd"><span>X-Y · 리사주 (공정 정상도)</span><span class="k" id="xyStat">IN-CTRL</span></div>
+            <div class="hd"><span>X-Y · 리사주 (품질 안정도)</span><span class="k" id="xyStat">IN-CTRL</span></div>
             <div class="bd" style="padding:8px"><canvas id="xy" class="xycanvas" width="300" height="220"></canvas></div>
           </div>
         </div>
@@ -302,28 +302,28 @@
       <div class="rack">
         <!-- vertical: channels -->
         <div class="group">
-          <h3>VERTICAL · 채널 (경력)</h3>
+          <h3>VERTICAL · 채널 (품질 원칙)</h3>
           <div class="chrow">
             <button class="chbtn" data-ch="0" data-on="1" style="color:var(--ch1)">1</button>
-            <div class="chmeta"><div class="co" style="color:var(--ch1)">은성에스아이티</div><div class="yr">2020.08–2022.11 · 2차전지 팩 총괄 · <b>IATF16949</b></div></div>
+            <div class="chmeta"><div class="co" style="color:var(--ch1)">불타협 기준선</div><div class="yr">규격 이탈 = 즉시 정지 · <b>지도카</b></div></div>
           </div>
           <div class="chrow">
             <button class="chbtn" data-ch="1" data-on="1" style="color:var(--ch2)">2</button>
-            <div class="chmeta"><div class="co" style="color:var(--ch2)">이랜텍</div><div class="yr">2022.11–2023.09 · 생산라인 PM · <b>DOE</b></div></div>
+            <div class="chmeta"><div class="co" style="color:var(--ch2)">이상 신호 (noise)</div><div class="yr">근거 없는 "괜찮겠지" 거부 · <b>회의주의</b></div></div>
           </div>
           <div class="chrow">
             <button class="chbtn" data-ch="2" data-on="1" style="color:var(--ch3)">3</button>
-            <div class="chmeta"><div class="co" style="color:var(--ch3)">솔라엣지</div><div class="yr">2023.09–2024.12 · 공정기술 · <b>MES·BI</b></div></div>
+            <div class="chmeta"><div class="co" style="color:var(--ch3)">검사 신호 (현지현물)</div><div class="yr">현장 직접 확인 · <b>MES·BI 데이터</b></div></div>
           </div>
           <div class="chrow">
             <button class="chbtn" data-ch="3" data-on="1" style="color:var(--ch4)">4</button>
-            <div class="chmeta"><div class="co" style="color:var(--ch4)">미러리스</div><div class="yr">2025.08–현재 · 총괄본부장 · <b>AI·AX</b></div></div>
+            <div class="chmeta"><div class="co" style="color:var(--ch4)">일탈 정상화 경계</div><div class="yr">한 번의 타협이 기준을 흐림 · <b>원칙</b></div></div>
           </div>
         </div>
 
         <!-- horizontal/vertical knobs -->
         <div class="group">
-          <h3>SWEEP · 스케일</h3>
+          <h3>SWEEP · 검사 스케일</h3>
           <div class="knobs">
             <div class="knob"><div class="dial" id="kTime"></div><div class="lab">TIME / DIV</div><div class="val" id="vTime">2 ms</div></div>
             <div class="knob"><div class="dial" id="kVolt"></div><div class="lab">VOLTS / DIV</div><div class="val" id="vVolt">1.0 V</div></div>
@@ -332,7 +332,7 @@
 
         <!-- trigger -->
         <div class="group">
-          <h3>TRIGGER · 트리거</h3>
+          <h3>TRIGGER · 이상 감지 트리거</h3>
           <div class="trig">
             <div class="seg" id="edgeSeg">
               <button data-edge="rise" aria-pressed="true">▲ RISE</button>
@@ -347,24 +347,24 @@
 
         <!-- actions -->
         <div class="group">
-          <h3>ACQUIRE · 제어</h3>
+          <h3>ACQUIRE · 검사 제어</h3>
           <div class="btns">
-            <button class="ab run" id="runBtn" data-state="run">RUN / STOP<small id="runSub">획득 중</small></button>
-            <button class="ab hot" id="doeBtn" data-on="0">DOE 적용<small>ST −50% 튜닝</small></button>
+            <button class="ab run" id="runBtn" data-state="run">RUN / STOP<small id="runSub">검사 중</small></button>
+            <button class="ab hot" id="doeBtn" data-on="0">지도카 발동<small>이상 감지 → 즉시 정지</small></button>
           </div>
         </div>
       </div>
     </div>
 
     <div class="hint">
-      <b>DOE 적용</b> 버튼 = 그가 한 일. 노이즈투성이 파형이 평탄해지고 제품 표준작업시간(ST)이 절반으로 붕괴하며, 제어 루프 오차가 사라지고 리사주가 완벽한 원으로 잠긴다 ·
-      노브를 위/아래로 드래그하면 TIME/VOLTS·DIV 변경 · 채널 1–4 토글
+      <b>지도카 발동</b> = 이상 신호가 임계선을 넘는 순간, 라인이 스스로 멈춘다. 노이즈가 사라지고 파형이 규격 안에 안착하며, 리사주가 완벽한 원으로 잠긴다 · 규격 벗어난 결과를 한 번 허용하면 그게 정상으로 보이기 시작한다 ·
+      노브 위/아래 드래그로 TIME/VOLTS·DIV 변경 · 채널 1-4 토글
     </div>
 
     <!-- FOOTER -->
     <div class="footstrip">
       <div class="skills">
-        <span class="chip hi">Python</span><span class="chip hi">SQL</span><span class="chip hi">FastAPI</span><span class="chip">React</span><span class="chip">TypeScript</span><span class="chip">Electron</span><span class="chip">Rust</span><span class="chip">MySQL/RDS</span><span class="chip">AWS</span><span class="chip">GCP</span><span class="chip">BI</span><span class="chip">ML</span><span class="chip hi">RPA</span><span class="chip">CI/CD</span><span class="chip">PFMEA/CP/PFD</span><span class="chip">산업용접</span><span class="chip hi">LOB</span><span class="chip">Jig개발</span><span class="chip">기구설계</span><span class="chip">비전검사</span><span class="chip">로봇티칭</span><span class="chip">Draftsight</span><span class="chip">ERP</span><span class="chip">MES</span><span class="chip">IATF16949</span>
+        <span class="chip hi">품질 불타협</span><span class="chip hi">지도카</span><span class="chip hi">현지현물</span><span class="chip">PFMEA/CP/PFD</span><span class="chip">IATF16949</span><span class="chip">스팟용접 검사</span><span class="chip hi">이상 즉시 정지</span><span class="chip">일탈 정상화 경계</span><span class="chip">합리적 회의주의</span><span class="chip hi">MES·BI</span><span class="chip">비전검사</span><span class="chip">DOE</span><span class="chip hi">Python</span><span class="chip hi">SQL</span><span class="chip">FastAPI</span><span class="chip">React</span><span class="chip hi">RPA</span><span class="chip">AWS</span><span class="chip hi">LOB</span><span class="chip">ERP</span><span class="chip">MES</span><span class="chip">Jig개발</span><span class="chip">로봇티칭</span>
       </div>
       <div class="contact">
         <span class="who">박양하 · Park Yangha</span>
@@ -392,14 +392,14 @@
   };
 
   const channels = [
-    // CH1 은성 — clean sine, foundational. metric: 운영경비 -85%, 단가 +30%
-    {name:'CH1 은성', color:COL.ch1, on:true, off:1.6, amp:1.0, freq:1.0, type:'sine', noise:0.0},
-    // CH2 이랜텍 — square wave, DOE/defect. carries the defect noise that DOE kills
-    {name:'CH2 이랜텍', color:COL.ch2, on:true, off:0.45, amp:0.85, freq:1.6, type:'square', noise:0.42},
-    // CH3 솔라엣지 — composite (sine+harmonic), data systems. ST -50%
-    {name:'CH3 솔라엣지', color:COL.ch3, on:true, off:-0.55, amp:0.9, freq:2.2, type:'composite', noise:0.05},
-    // CH4 미러리스 — high-freq rich signal, AI. newest, most complex
-    {name:'CH4 미러리스', color:COL.ch4, on:true, off:-1.65, amp:0.75, freq:3.1, type:'rich', noise:0.04},
+    // CH1 불타협 기준선 — clean sine, the unwavering quality limit
+    {name:'CH1 불타협 기준선', color:COL.ch1, on:true, off:1.6, amp:1.0, freq:1.0, type:'sine', noise:0.0},
+    // CH2 이상 신호 — square wave, noisy anomaly signal that jidoka collapses
+    {name:'CH2 이상 신호', color:COL.ch2, on:true, off:0.45, amp:0.85, freq:1.6, type:'square', noise:0.42},
+    // CH3 검사 신호 (현지현물) — composite, on-site data verification
+    {name:'CH3 검사 신호', color:COL.ch3, on:true, off:-0.55, amp:0.9, freq:2.2, type:'composite', noise:0.05},
+    // CH4 일탈 정상화 경계 — high-freq rich signal, vigilance against normalization of deviation
+    {name:'CH4 일탈 경계', color:COL.ch4, on:true, off:-1.65, amp:0.75, freq:3.1, type:'rich', noise:0.04},
   ];
 
   // ---------- global control state ----------
@@ -588,12 +588,12 @@
     sx.fillStyle=state.running?COL.phos:COL.red;
     sx.fillText(state.running?'● RUN':'■ STOP', 430, SH-7);
     sx.fillStyle = state.doe>0.5?COL.phos:'#5a6a64';
-    sx.fillText(`DOE ${(state.doe*100|0)}%`, 520, SH-7);
-    // top-right Vpp readout that responds to DOE — 제품 ST 변동폭
+    sx.fillText(`JIDOKA ${(state.doe*100|0)}%`, 520, SH-7);
+    // top-right anomaly residual readout — 이상 신호 잔류율
     sx.textAlign='right';
     sx.fillStyle=COL.ch3;
-    const stNow = 100 - state.doe*50;
-    sx.fillText(`ST ${stNow.toFixed(1)}%`, SW-10, 18);
+    const stNow = 100 - state.doe*100;
+    sx.fillText(`ANOM ${stNow.toFixed(1)}%`, SW-10, 18);
     sx.textAlign='left';
     sx.restore();
   }
@@ -677,10 +677,10 @@
 
     // --- block diagram (top) ---
     const by=18, bh=42;
-    box(14, by, 86, bh, 'Setpoint', '목표 ST', false);
-    box(132, by, 96, bh, 'Controller', 'PID (그)', state.doe>0.05);
-    box(262, by, 96, bh, 'Plant', '공정', true);
-    box(392, by, 96, bh, 'Sensor', '검사', true);
+    box(14, by, 86, bh, 'Standard', '품질 기준', false);
+    box(132, by, 96, bh, 'Inspect', '현지현물', state.doe>0.05);
+    box(262, by, 96, bh, 'Detect', '이상 감지', true);
+    box(392, by, 96, bh, 'Jidoka', '즉시 정지', true);
     arrow(100, by+bh/2, 132, by+bh/2, 0.0);
     arrow(228, by+bh/2, 262, by+bh/2, 0.33);
     arrow(358, by+bh/2, 392, by+bh/2, 0.66);
@@ -697,7 +697,7 @@
     lx.beginPath(); lx.arc(fx, by+bh+22, 2.2,0,Math.PI*2); lx.fill();
     lx.restore();
     lx.fillStyle='#6f857c'; lx.font='9px ui-monospace,monospace'; lx.textAlign='center';
-    lx.fillText('feedback (−)', 248, by+bh+34);
+    lx.fillText('feedback: 원인 추적 (−)', 248, by+bh+34);
 
     // --- step response plot (bottom) ---
     const px0=20, py0=LH-18, pw=LW-40, ph=LH-110;
@@ -713,7 +713,7 @@
     lx.beginPath(); lx.moveTo(px0,ysp); lx.lineTo(px0+pw,ysp); lx.stroke();
     lx.setLineDash([]); lx.globalAlpha=1;
     lx.fillStyle=COL.amber; lx.font='9px ui-monospace,monospace'; lx.textAlign='left';
-    lx.fillText('Setpoint (목표: ST 최소)', px0+4, ysp-4);
+    lx.fillText('Limit (임계선: 품질 기준)', px0+4, ysp-4);
 
     // response curve — error = (1-resp) maps to defect height
     const win=2.6; // seconds shown
@@ -738,8 +738,8 @@
 
     // settle status text
     const settledErr=Math.abs(1-stepResp(2.4));
-    if(state.doe>0.5){ loopStat.textContent='SETTLED · err≈0'; loopStat.style.color=COL.phos; }
-    else { loopStat.textContent='RINGING · overshoot'; loopStat.style.color=COL.amber; }
+    if(state.doe>0.5){ loopStat.textContent='CONTAINED · err=0'; loopStat.style.color=COL.phos; }
+    else { loopStat.textContent='ANOMALY · 임계 초과'; loopStat.style.color=COL.amber; }
   }
 
   // ====================================================================
@@ -749,9 +749,9 @@
   const fx = fft.getContext('2d');
   const FW=fft.width, FH=fft.height;
   const skillBins = [
-    {l:'Py', h:.92},{l:'SQL',h:.84},{l:'API',h:.88},{l:'AWS',h:.7},{l:'GCP',h:.62},
-    {l:'BI',h:.78},{l:'ML',h:.66},{l:'RPA',h:.74},{l:'DOE',h:.95},{l:'LOB',h:.82},
-    {l:'MES',h:.8},{l:'CI',h:.6},{l:'Jig',h:.55},{l:'Wld',h:.5},{l:'Vis',h:.68}
+    {l:'기준', h:.95},{l:'임계선',h:.90},{l:'지도카',h:.92},{l:'현물',h:.88},{l:'감지',h:.85},
+    {l:'정지',h:.91},{l:'원인',h:.80},{l:'회의',h:.78},{l:'PFMEA',h:.82},{l:'IATF',h:.76},
+    {l:'MES',h:.84},{l:'BI',h:.79},{l:'DOE',h:.87},{l:'용접',h:.72},{l:'비전',h:.68}
   ];
   function renderFFT(){
     fx.clearRect(0,0,FW,FH); fx.fillStyle='#06100b'; fx.fillRect(0,0,FW,FH);
@@ -774,7 +774,7 @@
     }
     // peak marker on DOE bin (index 8)
     fx.fillStyle=COL.amber; fx.font='9px ui-monospace,monospace'; fx.textAlign='left';
-    fx.fillText('▲ peak: DOE', 8, 13);
+    fx.fillText('▲ peak: 품질 기준 불타협', 8, 13);
   }
 
   // ====================================================================
@@ -834,8 +834,8 @@
     }
     // ease DOE
     state.doe += (state.doeTarget - state.doe) * Math.min(dt*3.2,1);
-    // ST Vpp readout: 100% (개선 전) → 50% (제품 ST −50%)
-    document.getElementById('mDefect').textContent = (100 - state.doe*50).toFixed(1);
+    // 이상 신호 잔류율: 100% (초기) → 0% (지도카 발동 후 완전 격리)
+    document.getElementById('mDefect').textContent = (100 - state.doe*100).toFixed(1);
 
     renderScope();
     renderLoop();
@@ -908,9 +908,9 @@
   runBtn.addEventListener('click',()=>{
     state.running=!state.running;
     runBtn.dataset.state=state.running?'run':'stop';
-    runSub.textContent=state.running?'획득 중':'정지됨';
+    runSub.textContent=state.running?'검사 중':'정지됨';
     acqDot.className='dot '+(state.running?'run':'stop');
-    acqState.textContent=state.running?'RUN · ACQUIRE':'STOP · HOLD';
+    acqState.textContent=state.running?'RUN · INSPECT':'STOP · HOLD';
   });
 
   // DOE delight button
@@ -919,7 +919,7 @@
     const on=doeBtn.dataset.on==='1';
     doeBtn.dataset.on=on?'0':'1';
     state.doeTarget=on?0:1;
-    doeBtn.querySelector('small').textContent= on?'ST −50% 튜닝':'튜닝 완료 · err=0';
+    doeBtn.querySelector('small').textContent= on?'이상 감지 → 즉시 정지':'이상 격리 완료 · err=0';
     if(!on) loopT=0;  // restart step response to show the improved settle
   });
 

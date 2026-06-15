@@ -196,7 +196,7 @@ tr.freeze td.rowhdr{z-index:7}
 @keyframes antsglow{from{box-shadow:inset 0 0 0 30px rgba(59,130,246,.20)}to{box-shadow:inset 0 0 0 0 rgba(59,130,246,0)}}
 
 /* recalc sweep flash */
-.sheet td.recalcing{animation:recalcflash .5s ease}
+.sheet td.recalcing{animation:recalcflash .45s ease}
 @keyframes recalcflash{
   0%{background:rgba(251,191,36,.28)}
   60%{background:rgba(52,211,153,.15)}
@@ -299,7 +299,7 @@ tr.freeze td.rowhdr{z-index:7}
   <div class="titlebar">
     <span class="traffic"><i class="r"></i><i class="y"></i><i class="g"></i></span>
     <span class="logo">박</span>
-    <span class="doc">코딩의_기원_박양하.xlsx <small>— 엑셀 자동화에서 개발자로</small></span>
+    <span class="doc">코딩의_기원_박양하.xlsx <small>-- 엑셀 자동화에서 개발자로</small></span>
     <span class="who">
       마지막 재계산 <b id="lastcalc">--</b>
       <span class="avatar">YH</span>
@@ -355,11 +355,10 @@ tr.freeze td.rowhdr{z-index:7}
 <script type="module">
 import * as echarts from "https://esm.sh/echarts@5.5.0?bundle";
 
-/* ─────────────────────────────────────────────────────────────────────
+/* -----------------------------------------------------------------
    DATA MODEL  -- 코딩의 기원 (엑셀 -> 코드 전환 서사)
-   ───────────────────────────────────────────────────────────────────── */
+   ----------------------------------------------------------------- */
 
-// 전환 단계: 수기 -> 엑셀 -> VBA/매크로 -> SQL/DB -> 코드
 const JOURNEY = [
   {phase:"수기 반복",  period:"현장 초기",  tool:"종이·수기 집계",
    trigger:"같은 숫자를 하루 수십 번 옮겨 적다가 - 왜 이걸 사람이 해야 하지?",
@@ -378,7 +377,6 @@ const JOURNEY = [
    next:"현재: 현장+개발 통합", pain:5},
 ];
 
-// 관성 거부 원칙 데이터
 const PRINCIPLES = [
   {k:"원칙",       v:"관성에 따라 일하지 않는다",              note:"현장에서 체득한 제1원칙"},
   {k:"방법",       v:"불합리를 방치하지 않는다",               note:"도구를 만들어서라도 바꾼다"},
@@ -387,7 +385,6 @@ const PRINCIPLES = [
   {k:"역량 재계산", v:"부트캠프: 백/프론트/DevOps/데이터분석",   note:"필요하면 처음부터 다시 배운다"},
 ];
 
-// 도구 진화 히스토리
 const TOOLS = [
   {era:"0단계", name:"수기/종이",      kind:"아날로그", power:5,  unlock:"패턴 인식"},
   {era:"1단계", name:"Excel 함수",    kind:"자동화 기초", power:30, unlock:"시간 단축 체감"},
@@ -406,7 +403,7 @@ const CAT_COLOR = {
   "풀스택/인프라":"#059669",
 };
 
-/* helpers ----------------------------------------------------------------- */
+/* ----------------------------------------------------------------- helpers */
 const $ = s => document.querySelector(s);
 const COLNAME = n => { let s=""; n++; while(n>0){ s=String.fromCharCode(65+(n-1)%26)+s; n=Math.floor((n-1)/26);} return s; };
 
@@ -417,10 +414,9 @@ function regCell(el, ref, opts={}){
   return el;
 }
 
-/* ─────────────────────────────────────────────────────────────────────
+/* -----------------------------------------------------------------
    SHEET BUILDERS
-   ───────────────────────────────────────────────────────────────────── */
-
+   ----------------------------------------------------------------- */
 function tableShell(cols){
   const t = document.createElement("table"); t.className="sheet";
   const cg = document.createElement("colgroup");
@@ -467,10 +463,10 @@ function buildJourney(){
     regCell(painCell, `E${rownum}`, {
       formula:`=PAIN_INDEX(${j.phase})`,
       explain:`고통지수 ${j.pain} -- 값이 낮아질수록 자동화가 해결한 것`,
-      isFormula:true, recalc:()=>j.pain
+      isFormula:true, recalc:()=>j.pain,
+      basePain:j.pain
     });
   });
-  // summary
   const sr=addRow(tb,7);
   cell(sr,"<b>=DELTA()</b>","title formula");
   cell(sr,"현재","muted");
@@ -518,6 +514,11 @@ function buildPrinciples(){
 
 /* ---- 도구진화 sheet : grid + pivot chart ---- */
 let chart=null;
+// lerp targets for chart bars (smooth animation)
+let chartDisplayVals = TOOLS.map(t=>t.power);
+let chartTargetVals  = TOOLS.map(t=>t.power);
+let chartRafId = null;
+
 function buildTools(){
   const pane=document.createElement("div"); pane.className="sheetpane"; pane.dataset.sheet="tools";
   const wrap=document.createElement("div"); wrap.className="metricwrap";
@@ -542,7 +543,6 @@ function buildTools(){
       isFormula:true, recalc:()=>tool.power, tool
     });
   });
-  // final row
   const sr=addRow(tb, TOOLS.length+2);
   regCell(cell(sr,"<b>=UNLOCK()</b>","title formula"),`A${TOOLS.length+2}`);
   const cY=cell(sr,"계산중...","formula heat");
@@ -562,7 +562,6 @@ function buildTools(){
   });
   gridcol.appendChild(t);
 
-  // pivot side
   const piv=document.createElement("div"); piv.className="pivot";
   piv.innerHTML=`
     <h4>피벗 -- 도구 단계별 역량 성장</h4>
@@ -625,9 +624,9 @@ function buildContact(){
   pane.appendChild(t); return pane;
 }
 
-/* ─────────────────────────────────────────────────────────────────────
+/* -----------------------------------------------------------------
    MOUNT
-   ───────────────────────────────────────────────────────────────────── */
+   ----------------------------------------------------------------- */
 const SHEETS=[
   {id:"journey",    name:"전환경로",  color:"#1e6b3f", build:buildJourney},
   {id:"principles", name:"원칙",      color:"#7c3aed", build:buildPrinciples},
@@ -654,7 +653,7 @@ function activateSheet(id, opts={}){
   if(!opts.silent) recalcSweep(id, opts.thenSelect);
 }
 
-/* ── cell selection / formula bar / trace ── */
+/* ---- cell selection / formula bar / trace ---- */
 function clearHighlights(){
   document.querySelectorAll(".hl-active,.hl-precedent,.col-band,.row-band").forEach(el=>{
     el.classList.remove("hl-active","hl-precedent","col-band","row-band");
@@ -695,7 +694,7 @@ gw.addEventListener("click",e=>{
   selectCell(td.dataset.ref);
 });
 
-/* ── hover tooltip ── */
+/* ---- hover tooltip ---- */
 const tip=$("#celltip");
 gw.addEventListener("mousemove",e=>{
   const td=e.target.closest("td[data-ref]");
@@ -709,33 +708,238 @@ gw.addEventListener("mousemove",e=>{
 });
 gw.addEventListener("mouseleave",()=>tip.classList.remove("show"));
 
-/* ── recalculation sweep ── */
-const led=$("#led"), recalcMsg=$("#recalcMsg"), sbReady=$("#sbReady");
+/* -----------------------------------------------------------------
+   DT-BASED RECALCULATION SWEEP
+   Cells advance on an accumulated time budget (MS_PER_CELL).
+   rAF loop keeps running while sweep is in progress.
+   ----------------------------------------------------------------- */
+const MS_PER_CELL = 72;  // ms between cell highlights (target interval)
+const DT_CLAMP    = 80;  // max dt to accept (caps spiral on tab-switch)
+
+let sweepState = null;   // null when idle
+
 function recalcSweep(sheetId, thenSelect, onDone){
+  // cancel any in-flight sweep
+  if(sweepState){ sweepState.cancelled=true; sweepState=null; }
+
   const pane=panes[sheetId];
-  const formulaCells=[...pane.querySelectorAll("td.formula, td.heat")].filter(td=>td.dataset.ref&&CELLS[td.dataset.ref]&&CELLS[td.dataset.ref].isFormula);
+  const formulaCells=[...pane.querySelectorAll("td.formula, td.heat")]
+    .filter(td=>td.dataset.ref&&CELLS[td.dataset.ref]&&CELLS[td.dataset.ref].isFormula);
+
+  const led=$("#led"), recalcMsg=$("#recalcMsg"), sbReady=$("#sbReady");
   led.className="recalc-led busy"; recalcMsg.textContent="재계산 중..."; sbReady.textContent="계산 중";
-  let i=0;
-  const step=()=>{
-    if(i>=formulaCells.length){
+
+  sweepState = {
+    cells: formulaCells,
+    idx: 0,
+    acc: 0,            // accumulated dt budget
+    thenSelect,
+    onDone,
+    cancelled: false,
+    lastTs: null,
+  };
+
+  // start/ensure rAF loop running
+  if(!rafRunning) startRAF();
+}
+
+/* -----------------------------------------------------------------
+   FAKE LIVE FORMULA LOG STREAM
+   Continuously scrolls fake =RECALC / =SUM / cell-eval events
+   through the recalcMsg span so the engine looks alive even between
+   sweeps.
+   ----------------------------------------------------------------- */
+const FAKE_EVENTS = [
+  "=RECALC(E2)...",  "=SUM(D2:D7)=351",  "=IF(pain>50, 재계산)",
+  "=PAIN_INDEX 평가", "=VLOOKUP(단계,A:E)", "셀 D4 갱신 중",
+  "=YIELD_FROM 실행", "=COUNTA(원칙)=5",   "=SKILL_POWER 연산",
+  "=UNLOCK 해제 확인", "=CODE(불합리) OK",  "=SUM(역량)=351",
+  "D7 -> 개발자",     "E3 -> 35",          "=DELTA() 완료",
+  "=CONCAT 결합중",   "=HYPERLINK 확인",   "B7 재평가",
+  "참조: D2:D7",      "수식 그래프 탐색",   "의존관계 해소",
+];
+let fakeIdx = 0;
+let fakeAccMs = 0;
+const FAKE_INTERVAL_MS = 820; // how often to rotate the log message
+
+/* -----------------------------------------------------------------
+   PAIN CELL MICRO-JITTER
+   Adds tiny +-1 noise to displayed pain values to keep cells alive.
+   Runs at low frequency via rAF accumulated timer.
+   ----------------------------------------------------------------- */
+const PAIN_JITTER_MS = 1400;
+let painJitterAcc = 0;
+
+function tickPainJitter(dt){
+  painJitterAcc += dt;
+  if(painJitterAcc < PAIN_JITTER_MS) return;
+  painJitterAcc -= PAIN_JITTER_MS;
+
+  // pick one random E-column journey cell and nudge its displayed value
+  const idx = Math.floor(Math.random()*JOURNEY.length);
+  const rn = idx+2;
+  const cellObj = CELLS[`E${rn}`];
+  if(!cellObj||!cellObj.el) return;
+  const v = cellObj.el.querySelector(".v");
+  if(!v) return;
+  const base = JOURNEY[idx].pain;
+  // jitter: +-1 around base, keep at minimum 1
+  const jitter = Math.round((Math.random()-0.5)*2);
+  const next = Math.max(1, base + jitter);
+  v.textContent = next;
+}
+
+/* -----------------------------------------------------------------
+   CHART LERP LOOP
+   chartDisplayVals lerp toward chartTargetVals each frame.
+   ----------------------------------------------------------------- */
+const CHART_LERP_SPEED = 4.5; // per-second factor (exponential approach)
+
+function tickChartLerp(dt){
+  if(!chart) return;
+  const sec = dt/1000;
+  const factor = 1 - Math.exp(-CHART_LERP_SPEED * sec);
+  let changed = false;
+  for(let i=0;i<chartDisplayVals.length;i++){
+    const diff = chartTargetVals[i] - chartDisplayVals[i];
+    if(Math.abs(diff) > 0.05){
+      chartDisplayVals[i] += diff * factor;
+      changed = true;
+    } else if(diff !== 0){
+      chartDisplayVals[i] = chartTargetVals[i];
+      changed = true;
+    }
+  }
+  if(changed && activeSheet==="tools"){
+    chart.setOption({
+      series:[{ data: chartDisplayVals.map((v,i)=>({
+        value: Math.round(v),
+        itemStyle:{ color:CAT_COLOR[TOOLS[i].kind]||"#1e6b3f", borderRadius:[0,4,4,0] }
+      }))}]
+    }, false);
+  }
+}
+
+/* -----------------------------------------------------------------
+   CURSOR WALK
+   While no sweep is running, a cursor walks through formula cells
+   of the active sheet one-by-one every ~2.2 s, keeping things alive.
+   ----------------------------------------------------------------- */
+const CURSOR_WALK_MS = 2200;
+let cursorAcc = 0;
+let cursorSequences = {};  // sheetId -> array of refs
+let cursorIdxMap = {};     // sheetId -> current index
+
+function buildCursorSequence(sheetId){
+  const pane = panes[sheetId];
+  const refs = [...pane.querySelectorAll("td[data-ref]")]
+    .filter(td=>{const c=CELLS[td.dataset.ref]; return c&&c.isFormula;})
+    .map(td=>td.dataset.ref);
+  cursorSequences[sheetId] = refs;
+  cursorIdxMap[sheetId] = 0;
+}
+
+function tickCursorWalk(dt){
+  if(!activeSheet) return;
+  if(sweepState) return;  // sweep handles cursor during recalc
+
+  cursorAcc += dt;
+  if(cursorAcc < CURSOR_WALK_MS) return;
+  cursorAcc -= CURSOR_WALK_MS;
+
+  const seq = cursorSequences[activeSheet];
+  if(!seq||seq.length===0) return;
+  const idx = cursorIdxMap[activeSheet] || 0;
+  const ref = seq[idx % seq.length];
+  cursorIdxMap[activeSheet] = (idx+1) % seq.length;
+
+  // only auto-walk if user hasn't manually clicked
+  if(apActive) selectCell(ref);
+}
+
+/* -----------------------------------------------------------------
+   MAIN rAF LOOP
+   Drives sweep, fake log, jitter, chart lerp, cursor walk.
+   ----------------------------------------------------------------- */
+let rafRunning = false;
+let rafId = null;
+let rafLastTs = null;
+
+function startRAF(){
+  if(rafRunning) return;
+  rafRunning = true;
+  rafLastTs = null;
+  rafId = requestAnimationFrame(rafLoop);
+}
+
+function rafLoop(ts){
+  if(!rafRunning){ rafId=null; return; }
+
+  if(rafLastTs===null) rafLastTs=ts;
+  let dt = ts - rafLastTs;
+  rafLastTs = ts;
+  // clamp dt -- cap large gaps (tab hidden, etc.)
+  if(dt>DT_CLAMP) dt=DT_CLAMP;
+
+  // ---- fake log stream ----
+  fakeAccMs += dt;
+  if(fakeAccMs >= FAKE_INTERVAL_MS){
+    fakeAccMs -= FAKE_INTERVAL_MS;
+    // only show fake events when NOT doing a real sweep and not "done" state
+    const led=$("#led");
+    if(led&&!led.classList.contains("busy")){
+      const msg = FAKE_EVENTS[fakeIdx % FAKE_EVENTS.length];
+      fakeIdx++;
+      const recalcMsg=$("#recalcMsg");
+      if(recalcMsg) recalcMsg.textContent=msg;
+      // briefly flip led to busy and back to simulate activity
+      led.className="recalc-led busy";
+      setTimeout(()=>{ if(led) led.className="recalc-led done"; }, 160);
+    }
+  }
+
+  // ---- sweep tick ----
+  if(sweepState && !sweepState.cancelled){
+    sweepState.acc += dt;
+    while(sweepState.acc >= MS_PER_CELL && sweepState.idx < sweepState.cells.length){
+      sweepState.acc -= MS_PER_CELL;
+      const td = sweepState.cells[sweepState.idx++];
+      const c = CELLS[td.dataset.ref];
+      td.classList.add("recalcing");
+      if(c.recalc){ try{ c.recalc(); }catch(_){} td.classList.add("justset"); setTimeout(()=>td.classList.remove("justset"),650); }
+      setTimeout(()=>td.classList.remove("recalcing"),450);
+
+      // move cursor to the cell being evaluated
+      if(apActive) selectCell(td.dataset.ref);
+    }
+
+    // check sweep completion
+    if(sweepState.idx >= sweepState.cells.length){
+      const led=$("#led"), recalcMsg=$("#recalcMsg"), sbReady=$("#sbReady");
       led.className="recalc-led done"; recalcMsg.textContent="계산 완료";
       sbReady.innerHTML='<span class="ready">준비</span>';
       const now=new Date();
-      $("#lastcalc").textContent=now.toLocaleTimeString("ko-KR",{hour12:false});
-      if(thenSelect){ selectCell(thenSelect); }
+      const lastcalc=$("#lastcalc"); if(lastcalc) lastcalc.textContent=now.toLocaleTimeString("ko-KR",{hour12:false});
+      const { thenSelect, onDone } = sweepState;
+      sweepState = null;
+      if(thenSelect) selectCell(thenSelect);
       if(onDone) onDone();
-      return;
     }
-    const td=formulaCells[i++]; const c=CELLS[td.dataset.ref];
-    td.classList.add("recalcing");
-    if(c.recalc){ try{ c.recalc(); }catch(_){} td.classList.add("justset"); setTimeout(()=>td.classList.remove("justset"),700); }
-    setTimeout(()=>td.classList.remove("recalcing"),500);
-    setTimeout(step, 75);
-  };
-  step();
+  }
+
+  // ---- pain jitter (only on journey sheet for perf) ----
+  if(activeSheet==="journey") tickPainJitter(dt);
+
+  // ---- chart lerp ----
+  tickChartLerp(dt);
+
+  // ---- cursor walk ----
+  tickCursorWalk(dt);
+
+  rafId = requestAnimationFrame(rafLoop);
 }
 
-/* ── Excel/Code 토글 ── */
+/* ---- Excel/Code toggle ---- */
 function wireToggle(){
   const tg=$("#excelToggle"); if(!tg) return;
   const knob=tg.querySelector(".knob"), rows=$("#daxRows"), note=$("#pvNote");
@@ -746,10 +950,13 @@ function wireToggle(){
       knob.textContent="Code";
       rows.style.color="var(--good)"; rows.textContent="-> 코드 1파일로 관리";
       note.innerHTML=`<b>Code:</b> SQL 쿼리 한 줄, Python 스크립트 하나가 VBA 200줄과 엑셀 50개 시트를 대체. 구조를 먼저 바꾸면 데이터는 자동으로 쌓인다.`;
+      // shift chart targets up slightly for code mode
+      chartTargetVals = TOOLS.map(t=>Math.min(100, t.power+5));
       drawChart(true);
     }else{
       knob.textContent="Excel VBA"; rows.style.color="var(--ink-3)"; rows.textContent="-> 수기 100% 의존";
       note.innerHTML=`<b>Excel 시절:</b> 보고서마다 함수를 새로 짜고, 시트가 깨질 때마다 처음부터. "더 나은 방법이 있어야 한다"는 확신이 SQL로, 그리고 코드로 이어졌다.`;
+      chartTargetVals = TOOLS.map(t=>t.power);
       drawChart(false);
     }
   };
@@ -757,13 +964,13 @@ function wireToggle(){
   tg.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();flip();}});
 }
 
-/* ── PIVOT CHART ── */
+/* ---- PIVOT CHART ---- */
 function drawChart(codeMode=false){
   const el=$("#chart"); if(!el) return;
   if(!chart){ chart=echarts.init(el,null,{renderer:"canvas"}); }
   const data=TOOLS.map(t=>({name:t.name, value:t.power, kind:t.kind}));
   chart.setOption({
-    animationDuration:700, animationEasing:"cubicOut",
+    animationDuration:600, animationEasing:"cubicOut",
     backgroundColor:"transparent",
     grid:{left:8,right:18,top:10,bottom:6,containLabel:true},
     tooltip:{trigger:"axis",axisPointer:{type:"shadow"},
@@ -780,12 +987,15 @@ function drawChart(codeMode=false){
       label:{show:true,position:"right",color:"#8999ad",fontFamily:"monospace",fontWeight:"bold",fontSize:11,formatter:p=>p.value}
     }]
   });
+  // sync lerp targets to match chart
+  chartTargetVals = TOOLS.map(t=>codeMode?Math.min(100,t.power+5):t.power);
+  chartDisplayVals = [...chartTargetVals]; // snap immediately on direct draw
   const lg=$("#chartLegend");
   if(lg){ lg.innerHTML=data.map(d=>`<span><i style="background:${CAT_COLOR[d.kind]||'#1e6b3f'}"></i>${d.kind}</span>`).join(""); }
 }
 window.addEventListener("resize",()=>{ if(chart) chart.resize(); });
 
-/* ── ribbon buttons ── */
+/* ---- ribbon buttons ---- */
 $("#btnRecalc").addEventListener("click",()=>{ stopAutoplay(); recalcSweep(activeSheet, activeRef); });
 $("#btnTrace").addEventListener("click",()=>{ $("#btnTrace").classList.toggle("on"); if(activeRef) selectCell(activeRef); });
 $("#btnHeat").addEventListener("click",()=>{
@@ -793,9 +1003,9 @@ $("#btnHeat").addEventListener("click",()=>{
   document.querySelectorAll(".databar").forEach(b=>b.style.display=on?"":"none");
 });
 
-/* ─────────────────────────────────────────────────────────────────────
-   AUTO-PLAY  (스크롤/클릭 없이 자동 반복 재계산 스윕)
-   ───────────────────────────────────────────────────────────────────── */
+/* -----------------------------------------------------------------
+   AUTO-PLAY  (sheet cycling)
+   ----------------------------------------------------------------- */
 const AUTOPLAY_SHEETS=["journey","principles","tools","contact"];
 let apIdx=0, apTimer=null, apActive=true;
 
@@ -803,7 +1013,6 @@ function autoplayStep(){
   if(!apActive) return;
   const sheetId=AUTOPLAY_SHEETS[apIdx % AUTOPLAY_SHEETS.length];
   activateSheet(sheetId, {silent:true});
-  // pick a meaningful default cell per sheet
   const defaultCells={journey:"E2", principles:"B2", tools:"D4", contact:"B2"};
   const sel=defaultCells[sheetId];
   recalcSweep(sheetId, sel, ()=>{
@@ -812,7 +1021,7 @@ function autoplayStep(){
       if(!apActive) return;
       apIdx++;
       apTimer=setTimeout(autoplayStep, 400);
-    }, 2800);
+    }, 2600);
   });
 }
 
@@ -821,14 +1030,17 @@ function stopAutoplay(){
   if(apTimer){ clearTimeout(apTimer); apTimer=null; }
 }
 
-/* ─────────────────────────────────────────────────────────────────────
+/* -----------------------------------------------------------------
    FIRST PAINT
-   ───────────────────────────────────────────────────────────────────── */
+   ----------------------------------------------------------------- */
 async function boot(){
   if(document.fonts&&document.fonts.ready){ try{ await document.fonts.ready; }catch(_){} }
 
   // pre-fill formula cells synchronously
   Object.values(CELLS).forEach(c=>{ if(c.recalc){ try{ c.recalc(); }catch(_){} }});
+
+  // build cursor walk sequences for all sheets
+  SHEETS.forEach(s=>buildCursorSequence(s.id));
 
   // show first sheet immediately (silent, no recalc yet)
   activateSheet("journey", {silent:true});
@@ -845,6 +1057,9 @@ async function boot(){
     drawChart(false);
     panes.tools.classList.toggle("active", wasActive==="tools");
   }, 100);
+
+  // start rAF loop immediately -- drives fake log, jitter, etc.
+  startRAF();
 
   // layout gate: give layout time to settle before autoplay
   setTimeout(()=>{

@@ -42,7 +42,7 @@ body{
 }
 .wrap{max-width:1680px;margin:0 auto;padding:34px clamp(20px,3.4vw,56px) 80px}
 
-/* ── masthead ─────────────────────────────── */
+/* masthead */
 .masthead{display:flex;justify-content:space-between;align-items:flex-end;gap:24px;
   border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:26px}
 .brand .kicker{font-family:var(--mono);font-size:11px;letter-spacing:.32em;text-transform:uppercase;color:var(--accent2);font-weight:700}
@@ -54,7 +54,7 @@ body{
 .spec .v{color:var(--ink2)}
 .spec .tag{display:inline-block;border:1px solid var(--line2);border-radius:5px;padding:2px 7px;color:var(--accent2);margin-top:8px}
 
-/* ── layout ───────────────────────────────── */
+/* layout */
 .deck{display:grid;grid-template-columns:minmax(0,1.18fr) minmax(0,1fr);gap:22px;align-items:start}
 @media (max-width:1180px){.deck{grid-template-columns:1fr}}
 
@@ -64,7 +64,7 @@ body{
 .panel-h .n{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:var(--faint)}
 .panel-b{padding:18px}
 
-/* ── input / presets ──────────────────────── */
+/* input / presets */
 .req-label{font-size:11px;letter-spacing:.06em;color:var(--muted);font-weight:600;margin-bottom:8px;display:block}
 .req-input{width:100%;background:#0c0e13;border:1px solid var(--line2);border-radius:11px;color:var(--ink);
   font-family:inherit;font-size:17px;font-weight:600;padding:15px 16px;letter-spacing:-.01em;outline:none;transition:border-color .15s,box-shadow .15s}
@@ -79,7 +79,7 @@ body{
 .amb-readout .lab{font-size:12px;color:var(--muted)}
 .amb-readout .val{font-family:var(--mono);font-weight:800;font-size:15px}
 
-/* ── receipt ─────────────────────────────── */
+/* receipt */
 .receipt{background:repeating-linear-gradient(0deg,#0c0e13,#0c0e13 27px,#0d1016 27px,#0d1016 28px);
   border:1px solid var(--line2);border-radius:12px;padding:0;overflow:hidden}
 .receipt-top{padding:14px 18px 12px;border-bottom:1px dashed var(--line2);display:flex;justify-content:space-between;align-items:flex-end}
@@ -101,7 +101,7 @@ body{
 .cur.ai .cur-amt{color:var(--accent2)}
 .cur.human .cur-amt{color:var(--accent)}
 .bar-track{height:7px;background:#080a0d;border-radius:4px;overflow:hidden;border:1px solid rgba(255,255,255,.04)}
-.bar-fill{height:100%;border-radius:4px;width:0;transition:width .55s cubic-bezier(.22,1,.36,1)}
+.bar-fill{height:100%;border-radius:4px;width:0}
 .lane.ai .bar-fill{background:linear-gradient(90deg,#2d6e9e,var(--accent2))}
 .lane.human .bar-fill{background:linear-gradient(90deg,#9e4d39,var(--accent))}
 .lane-total{margin-top:16px;padding-top:13px;border-top:1px solid var(--line);display:flex;justify-content:space-between;align-items:baseline}
@@ -117,7 +117,7 @@ body{
 .stamp.mid{color:var(--warn);border-color:rgba(224,177,95,.5);background:rgba(224,177,95,.08)}
 .stamp.low{color:var(--good);border-color:rgba(127,209,168,.5);background:rgba(127,209,168,.08)}
 
-/* ── pillars (harness) ───────────────────── */
+/* pillars (harness) */
 .score-head{display:flex;align-items:center;gap:18px;margin-bottom:6px}
 .score-ring{position:relative;width:84px;height:84px;flex:0 0 auto}
 .score-ring svg{transform:rotate(-90deg)}
@@ -157,7 +157,7 @@ body{
 .toggle.on{background:rgba(127,209,168,.18);border-color:var(--good)}
 .toggle.on::after{left:22px;background:var(--good)}
 
-/* ── unlock banner ────────────────────────── */
+/* unlock banner */
 .unlock{margin-top:16px;border:1px solid rgba(127,209,168,.4);border-radius:12px;padding:0;max-height:0;opacity:0;overflow:hidden;
   transition:max-height .5s ease,opacity .4s ease,padding .4s;background:linear-gradient(135deg,rgba(127,209,168,.08),rgba(95,176,224,.04))}
 .unlock.show{max-height:160px;opacity:1;padding:16px 18px}
@@ -165,14 +165,14 @@ body{
 .unlock .u-h{font-size:16px;font-weight:800;margin-top:7px;letter-spacing:-.01em}
 .unlock .u-p{font-size:12.5px;color:var(--ink2);margin-top:6px;line-height:1.6}
 
-/* ── amplify note ─────────────────────────── */
+/* amplify note */
 .amp-note{margin-top:13px;font-size:11.5px;line-height:1.6;padding:11px 14px;border-radius:10px;border:1px solid var(--line);
   background:#0f1218;color:var(--muted);transition:all .3s}
 .amp-note.clean{border-color:rgba(127,209,168,.3);color:var(--ink2)}
 .amp-note.messy{border-color:rgba(224,98,95,.3);color:#e7b3b1}
 .amp-note b{color:var(--ink)}
 
-/* ── lower grid: correspondence + cases ───── */
+/* lower grid: correspondence + cases */
 .lower{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;margin-top:22px;align-items:start}
 @media (max-width:1180px){.lower{grid-template-columns:1fr}}
 
@@ -195,7 +195,7 @@ body{
 .case-b .c-h{font-size:13px;font-weight:700}
 .case-b .c-p{font-size:11.5px;color:var(--muted);margin-top:4px;line-height:1.55}
 
-/* ── quotes strip ─────────────────────────── */
+/* quotes strip */
 .quotes{margin-top:22px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
 @media (max-width:1180px){.quotes{grid-template-columns:1fr}}
 .quote{border-left:2px solid var(--accent2);padding:6px 0 6px 16px}
@@ -204,7 +204,7 @@ body{
 .quote:nth-child(2){border-color:var(--accent)}
 .quote:nth-child(3){border-color:var(--good)}
 
-/* ── footer ───────────────────────────────── */
+/* footer */
 .foot{margin-top:34px;border-top:1px solid var(--line);padding-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px}
 .foot .who b{font-size:14px;font-weight:800;letter-spacing:-.01em}
 .foot .who span{font-size:12px;color:var(--muted);margin-left:10px}
@@ -313,7 +313,7 @@ body{
           <button class="btn primary" id="btnFill">하네스 완성 ↑</button>
           <div class="amp">
             <span>증폭 토글</span>
-            <div class="toggle on" id="ampToggle" title="clean harness ↔ messy harness"></div>
+            <div class="toggle on" id="ampToggle" title="clean harness vs messy harness"></div>
             <span id="ampLabel" style="font-family:var(--mono);font-size:11px;color:var(--good)">CLEAN</span>
           </div>
         </div>
@@ -330,7 +330,7 @@ body{
   <!-- LOWER: correspondence table + verification-failure cases -->
   <div class="lower">
     <section class="panel">
-      <div class="panel-h"><span class="t">AI ↔ 사람 통화 대응표</span><span class="n">currency correspondence</span></div>
+      <div class="panel-h"><span class="t">AI vs 사람 통화 대응표</span><span class="n">currency correspondence</span></div>
       <div class="panel-b corr">
         <table>
           <thead><tr><th class="ai">AI 세계</th><th class="mid"></th><th class="hu">사람 세계</th></tr></thead>
@@ -383,119 +383,176 @@ body{
 (function(){
   "use strict";
 
-  // ── pillar definitions (5 pillars) ────────────────────────────
+  // pillar definitions (5 pillars)
   var PILLARS = [
-    {key:"goal", name:"목표", en:"GOAL", q:"무엇을 달성하면 끝인가?",
+    {key:"goal",      name:"목표", en:"GOAL",      q:"무엇을 달성하면 끝인가?",
      icon:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3.2"/><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3"/>'},
-    {key:"context", name:"맥락", en:"CONTEXT", q:"어떤 배경·제약·전례 위에서?",
+    {key:"context",   name:"맥락", en:"CONTEXT",   q:"어떤 배경·제약·전례 위에서?",
      icon:'<path d="M4 6h16M4 12h16M4 18h10"/>'},
-    {key:"criteria", name:"기준", en:"CRITERIA", q:"무엇이 \'잘 된 것\'인가?",
+    {key:"criteria",  name:"기준", en:"CRITERIA",  q:"무엇이 잘 된 것인가?",
      icon:'<path d="M3 12l5 5L21 4"/><path d="M3 19h7"/>'},
     {key:"authority", name:"권한", en:"AUTHORITY", q:"어디까지 스스로 결정해도 되나?",
      icon:'<path d="M12 2l8 4v6c0 5-3.4 8-8 10-4.6-2-8-5-8-10V6z"/>'},
-    {key:"verify", name:"검증", en:"VERIFY", q:"끝났음을 어떻게 증명하나?",
+    {key:"verify",    name:"검증", en:"VERIFY",    q:"끝났음을 어떻게 증명하나?",
      icon:'<path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/>'}
   ];
 
-  // default first-paint state: partial harness
   var DEFAULTS = {goal:70, context:55, criteria:40, authority:25, verify:20};
 
+  // ── tween state ──────────────────────────────────────────────────
+  // Each numeric value we display is tweened independently.
+  // tween(obj, key, target, speed): sets obj._tweens[key] = target.
+  // The rAF loop advances all tweens by dt each frame.
+  var tweens = {};   // key -> {cur, target, speed}
+
+  function setTween(key, target, speed) {
+    if (!tweens[key]) tweens[key] = {cur: target, target: target, speed: speed || 6};
+    else { tweens[key].target = target; tweens[key].speed = speed || tweens[key].speed; }
+  }
+
+  function getTween(key, fallback) {
+    return tweens[key] ? tweens[key].cur : (fallback || 0);
+  }
+
+  function advanceTweens(dt) {
+    var k, t, step;
+    for (k in tweens) {
+      t = tweens[k];
+      if (Math.abs(t.target - t.cur) < 0.01) { t.cur = t.target; continue; }
+      // exponential ease: approach target by (1 - e^(-speed*dt))
+      step = (t.target - t.cur) * (1 - Math.exp(-t.speed * dt));
+      t.cur += step;
+    }
+  }
+
+  // ── live state ───────────────────────────────────────────────────
   var state = {
-    amb: 92,                 // raw ambiguity 0..100
-    pillars: Object.assign({}, DEFAULTS),
-    amplify: true            // clean (true) vs messy (false)
+    amb:      92,
+    pillars:  Object.assign({}, DEFAULTS),
+    amplify:  true
   };
 
-  // ── build pillars DOM ──────────────────────────────────────────
+  // micro-jitter offsets per currency slot (adds live feel)
+  var jitter = {ai0:0, ai1:0, ai2:0, hu0:0, hu1:0, hu2:0};
+
+  // ── build pillars DOM ────────────────────────────────────────────
   var pillarsEl = document.getElementById("pillars");
-  PILLARS.forEach(function(p){
+  PILLARS.forEach(function(p) {
     var div = document.createElement("div");
     div.className = "pillar";
     div.dataset.key = p.key;
     div.innerHTML =
-      '<div class="pillar-top">'+
-        '<div class="pillar-ico"><svg viewBox="0 0 24 24">'+p.icon+'</svg></div>'+
-        '<div class="pillar-meta"><div class="pillar-name">'+p.name+' <span class="en">'+p.en+'</span></div>'+
-        '<div class="pillar-q">'+p.q+'</div></div>'+
-        '<div class="pillar-pct" data-pct>0%</div>'+
-      '</div>'+
-      '<input type="range" class="slider" min="0" max="100" value="'+DEFAULTS[p.key]+'" data-slider>';
+      '<div class="pillar-top">' +
+        '<div class="pillar-ico"><svg viewBox="0 0 24 24">' + p.icon + '</svg></div>' +
+        '<div class="pillar-meta"><div class="pillar-name">' + p.name +
+          ' <span class="en">' + p.en + '</span></div>' +
+        '<div class="pillar-q">' + p.q + '</div></div>' +
+        '<div class="pillar-pct" data-pct>0%</div>' +
+      '</div>' +
+      '<input type="range" class="slider" min="0" max="100" value="' + DEFAULTS[p.key] + '" data-slider>';
     pillarsEl.appendChild(div);
     var slider = div.querySelector("[data-slider]");
-    slider.addEventListener("input", function(){
+    slider.addEventListener("input", function() {
       state.pillars[p.key] = +slider.value;
-      render();
+      recomputeTargets();
     });
   });
 
-  // ── helpers ────────────────────────────────────────────────────
-  function harnessCompleteness(){
+  // ── helpers ──────────────────────────────────────────────────────
+  function harnessCompleteness() {
     var sum = 0;
-    PILLARS.forEach(function(p){ sum += state.pillars[p.key]; });
-    return sum / (PILLARS.length * 100); // 0..1
+    PILLARS.forEach(function(p) { sum += state.pillars[p.key]; });
+    return sum / (PILLARS.length * 100);
   }
 
-  function fmt(n){
+  function fmt(n) {
     n = Math.round(n);
     return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
 
-  // ── core render ────────────────────────────────────────────────
-  function render(){
-    var comp = harnessCompleteness();         // 0..1
-    var ambN = state.amb / 100;               // 0..1
+  // clamp dt to avoid jumps after tab-visibility changes
+  var MAX_DT = 0.05; // 50 ms cap
 
-    // amplify factor: clean harness amplifies the cost-reduction;
-    // messy harness amplifies the residual cost (clean→clean, messy→messy)
+  // ── target computation (sets tween targets from state) ───────────
+  var AI_BASE = 9200, HU_BASE = 480;
+
+  function recomputeTargets() {
+    var comp    = harnessCompleteness();
+    var ambN    = state.amb / 100;
     var ampFactor = state.amplify ? 1.0 : 1.55;
-
-    // residual ambiguity cost after harness, scaled by amplify
-    // when comp=1 cost collapses toward 0; messy keeps a floor higher
-    var residual = ambN * Math.pow(1 - comp, 1.35) * ampFactor;
-    if(!state.amplify) residual += ambN * 0.10; // messy floor
-
+    var residual  = ambN * Math.pow(1 - comp, 1.35) * ampFactor;
+    if (!state.amplify) residual += ambN * 0.10;
     residual = Math.max(0, Math.min(1, residual));
 
-    // base magnitudes per lane (token units / weighted cost units)
-    var AI_BASE = 9200, HU_BASE = 480;
+    // quality ring
+    setTween("comp", comp, 5);
+    setTween("amb",  state.amb, 5);
+    setTween("residual", residual, 4);
 
-    // per-currency amounts
-    var aiTotal = 0, huTotal = 0;
-    document.querySelectorAll(".lane.ai .cur").forEach(function(c){
-      var w = +c.dataset.w;
-      var amt = AI_BASE * residual * w;
-      aiTotal += amt;
-      c.querySelector("[data-amt]").textContent = fmt(amt);
-      c.querySelector("[data-bar]").style.width = (Math.min(100, residual*w*115)) + "%";
+    // per-slot AI
+    var aiWeights = [1.0, 0.85, 0.7];
+    var huWeights = [1.0, 0.9, 0.75];
+    aiWeights.forEach(function(w, i) {
+      setTween("ai" + i, AI_BASE * residual * w + jitter["ai" + i], 4.5);
     });
-    document.querySelectorAll(".lane.human .cur").forEach(function(c){
-      var w = +c.dataset.w;
-      var amt = HU_BASE * residual * w;
-      huTotal += amt;
-      c.querySelector("[data-amt]").textContent = fmt(amt);
-      c.querySelector("[data-bar]").style.width = (Math.min(100, residual*w*115)) + "%";
+    huWeights.forEach(function(w, i) {
+      setTween("hu" + i, HU_BASE * residual * w + jitter["hu" + i], 4.5);
+    });
+
+    // pillar values — tween each slider display value
+    PILLARS.forEach(function(p) {
+      setTween("pillar_" + p.key, state.pillars[p.key], 7);
+    });
+  }
+
+  // ── DOM update from tween state (called every rAF) ───────────────
+  function paintDOM() {
+    var comp     = getTween("comp");
+    var ambDisp  = getTween("amb");
+    var residual = getTween("residual");
+
+    // ambiguity readout
+    var av = document.getElementById("ambVal");
+    av.textContent = Math.round(ambDisp) + " / 100";
+    av.style.color = ambDisp > 75 ? "var(--bad)" : ambDisp > 45 ? "var(--warn)" : "var(--good)";
+
+    // AI lane
+    var aiElems = document.querySelectorAll(".lane.ai .cur");
+    var aiTotal = 0;
+    aiElems.forEach(function(c, i) {
+      var v = getTween("ai" + i);
+      aiTotal += v;
+      c.querySelector("[data-amt]").textContent = fmt(v);
+      var barPct = Math.min(100, (v / (AI_BASE * 1.0)) * 100);
+      c.querySelector("[data-bar]").style.width = barPct + "%";
     });
     document.getElementById("aiTotal").textContent = fmt(aiTotal);
-    document.getElementById("huTotal").textContent = fmt(huTotal);
 
-    // ambiguity readout color
-    var av = document.getElementById("ambVal");
-    av.textContent = Math.round(state.amb) + " / 100";
-    av.style.color = state.amb > 75 ? "var(--bad)" : state.amb > 45 ? "var(--warn)" : "var(--good)";
+    // Human lane
+    var huElems = document.querySelectorAll(".lane.human .cur");
+    var huTotal = 0;
+    huElems.forEach(function(c, i) {
+      var v = getTween("hu" + i);
+      huTotal += v;
+      c.querySelector("[data-amt]").textContent = fmt(v);
+      var barPct = Math.min(100, (v / (HU_BASE * 1.0)) * 100);
+      c.querySelector("[data-bar]").style.width = barPct + "%";
+    });
+    document.getElementById("huTotal").textContent = fmt(huTotal);
 
     // cost stamp
     var stamp = document.getElementById("stamp");
-    var costLevel = residual; // 0..1
-    stamp.classList.remove("high","mid","low");
-    if(costLevel > 0.45){ stamp.classList.add("high"); stamp.textContent = "COST: HIGH"; }
-    else if(costLevel > 0.15){ stamp.classList.add("mid"); stamp.textContent = "COST: SHIFTED"; }
-    else { stamp.classList.add("low"); stamp.textContent = "COST: NEAR-ZERO"; }
+    stamp.classList.remove("high", "mid", "low");
+    if (residual > 0.45)      { stamp.classList.add("high"); stamp.textContent = "COST: HIGH"; }
+    else if (residual > 0.15) { stamp.classList.add("mid");  stamp.textContent = "COST: SHIFTED"; }
+    else                       { stamp.classList.add("low");  stamp.textContent = "COST: NEAR-ZERO"; }
 
     // receipt meta
     document.getElementById("rmeta").innerHTML =
-      "REQ#0001<br>harness: " + Math.round(comp*100) + "% · " + (state.amplify ? "clean" : "messy");
+      "REQ#" + String(demoReqIdx + 1).padStart(4, "0") + "<br>harness: " +
+      Math.round(comp * 100) + "% · " + (state.amplify ? "clean" : "messy");
 
-    // quality score
+    // quality ring
     var q = Math.round(comp * 100);
     document.getElementById("qNum").textContent = q;
     var qWord = document.getElementById("qWord");
@@ -503,24 +560,24 @@ body{
     var circ = 226;
     document.getElementById("ringArc").style.strokeDashoffset = (circ - circ * comp);
 
-    // per-pillar pct + full state
-    document.querySelectorAll(".pillar").forEach(function(div){
+    // per-pillar
+    document.querySelectorAll(".pillar").forEach(function(div) {
       var k = div.dataset.key;
-      var v = state.pillars[k];
-      div.querySelector("[data-pct]").textContent = v + "%";
+      var v = getTween("pillar_" + k);
+      div.querySelector("[data-pct]").textContent = Math.round(v) + "%";
       var slider = div.querySelector("[data-slider]");
       slider.style.setProperty("--p", v + "%");
       div.classList.toggle("full", v >= 90);
     });
 
-    // unlock banner: all pillars >= 90
-    var allFull = PILLARS.every(function(p){ return state.pillars[p.key] >= 90; });
+    // unlock banner
+    var allFull = PILLARS.every(function(p) { return state.pillars[p.key] >= 90; });
     document.getElementById("unlock").classList.toggle("show", allFull);
 
     // amplify note
     var note = document.getElementById("ampNote");
-    note.classList.remove("clean","messy");
-    if(state.amplify){
+    note.classList.remove("clean", "messy");
+    if (state.amplify) {
       note.classList.add("clean");
       note.innerHTML = "<b>CLEAN 하네스.</b> AI는 코드베이스의 품질을 증폭한다 — 명확한 경계 위에서 같은 위임이 적은 비용으로 끝난다. clean → clean.";
     } else {
@@ -533,136 +590,196 @@ body{
     document.getElementById("ampLabel").style.color = state.amplify ? "var(--good)" : "var(--bad)";
   }
 
-  // ── presets ────────────────────────────────────────────────────
+  // ── rAF loop ─────────────────────────────────────────────────────
+  var lastTime = null;
+
+  function loop(ts) {
+    if (lastTime === null) lastTime = ts;
+    var dt = Math.min((ts - lastTime) / 1000, MAX_DT);
+    lastTime = ts;
+
+    advanceTweens(dt);
+    paintDOM();
+    requestAnimationFrame(loop);
+  }
+
+  // ── presets (user interaction) ───────────────────────────────────
   var presetsEl = document.getElementById("presets");
-  var reqInput = document.getElementById("req");
-  presetsEl.addEventListener("click", function(e){
+  var reqInput  = document.getElementById("req");
+
+  presetsEl.addEventListener("click", function(e) {
     var b = e.target.closest(".preset");
-    if(!b) return;
-    presetsEl.querySelectorAll(".preset").forEach(function(x){ x.classList.remove("on"); });
+    if (!b) return;
+    pauseDemo(12000);
+    presetsEl.querySelectorAll(".preset").forEach(function(x) { x.classList.remove("on"); });
     b.classList.add("on");
     reqInput.value = b.textContent;
     state.amb = +b.dataset.amb;
-    render();
+    recomputeTargets();
   });
 
-  // typing in the input: estimate ambiguity from length/specificity
-  reqInput.addEventListener("input", function(){
-    presetsEl.querySelectorAll(".preset").forEach(function(x){ x.classList.remove("on"); });
+  reqInput.addEventListener("input", function() {
+    pauseDemo(12000);
+    presetsEl.querySelectorAll(".preset").forEach(function(x) { x.classList.remove("on"); });
     var t = reqInput.value.trim();
-    // crude heuristic: longer + has numbers/quotes/criteria words => less ambiguous
     var len = t.length;
     var spec = 0;
-    if(/\d/.test(t)) spec += 12;
-    if(/(까지|기준|이내|이상|이하|형식|포맷|예시|예를|단계|반드시|제외|포함)/.test(t)) spec += 18;
-    if(/(왜|목적|위해|때문)/.test(t)) spec += 10;
-    var amb = 96 - Math.min(40, len*0.7) - spec;
+    if (/\d/.test(t)) spec += 12;
+    if (/(까지|기준|이내|이상|이하|형식|포맷|예시|예를|단계|반드시|제외|포함)/.test(t)) spec += 18;
+    if (/(왜|목적|위해|때문)/.test(t)) spec += 10;
+    var amb = 96 - Math.min(40, len * 0.7) - spec;
     state.amb = Math.max(8, Math.min(98, amb));
-    render();
+    recomputeTargets();
   });
 
-  // ── buttons ────────────────────────────────────────────────────
-  document.getElementById("btnClear").addEventListener("click", function(){
-    PILLARS.forEach(function(p){ state.pillars[p.key] = 0; });
-    syncSliders(); render();
+  // ── buttons ──────────────────────────────────────────────────────
+  document.getElementById("btnClear").addEventListener("click", function() {
+    pauseDemo(12000);
+    PILLARS.forEach(function(p) { state.pillars[p.key] = 0; });
+    syncSliders(); recomputeTargets();
   });
-  document.getElementById("btnFill").addEventListener("click", function(){
-    PILLARS.forEach(function(p){ state.pillars[p.key] = 100; });
-    syncSliders(); render();
+  document.getElementById("btnFill").addEventListener("click", function() {
+    pauseDemo(12000);
+    PILLARS.forEach(function(p) { state.pillars[p.key] = 100; });
+    syncSliders(); recomputeTargets();
   });
-  document.getElementById("ampToggle").addEventListener("click", function(){
+  document.getElementById("ampToggle").addEventListener("click", function() {
     state.amplify = !state.amplify;
     this.classList.toggle("on", state.amplify);
-    render();
+    recomputeTargets();
   });
-  function syncSliders(){
-    document.querySelectorAll(".pillar [data-slider]").forEach(function(s){
+
+  function syncSliders() {
+    document.querySelectorAll(".pillar [data-slider]").forEach(function(s) {
       var k = s.closest(".pillar").dataset.key;
       s.value = state.pillars[k];
     });
   }
 
-  // ── first paint (await fonts for headless render) ──────────────
-  function boot(){ render(); }
-  if(document.fonts && document.fonts.ready){
-    document.fonts.ready.then(boot);
-    // safety: render anyway if fonts hang
-    setTimeout(boot, 600);
-  } else {
-    boot();
+  // ── AUTO-DEMO CYCLE ──────────────────────────────────────────────
+  // Two interlocked cycles run simultaneously:
+  //   A) Request cycle: every ~4 s rotates through preset requests, updating amb + input text.
+  //   B) Pillar cycle: continuously ramps pillars up/down (sequential cascade).
+  // Both pause on user interaction and resume after a cooldown.
+
+  var demoReqIdx = 0;
+  var demoPaused = false;
+  var demoPauseTimer = null;
+
+  var DEMO_REQUESTS = [
+    {text: "이거 좀 정리해줘",   amb: 92},
+    {text: "백엔드 만들어줘",    amb: 88},
+    {text: "보고서 써줘",        amb: 80},
+    {text: "디자인 좀 봐줘",     amb: 72},
+    {text: "이 버그 고쳐줘",     amb: 60},
+    {text: "UX 개선해줘",        amb: 85},
+    {text: "성능 좀 올려봐",     amb: 78},
+    {text: "리팩토링해줘",       amb: 76},
+    {text: "코드 리뷰해줘",      amb: 68},
+    {text: "문서 좀 써줘",       amb: 82}
+  ];
+
+  function pauseDemo(ms) {
+    demoPaused = true;
+    if (demoPauseTimer) clearTimeout(demoPauseTimer);
+    demoPauseTimer = setTimeout(function() { demoPaused = false; }, ms || 8000);
   }
 
-  // ── auto-demo: cycles pillar sliders so the page animates without interaction ──
-  // Sequence: start at DEFAULTS (partial), ramp up to full harness, then back down.
-  // User interaction on any slider pauses auto-demo for 8 s, then resumes.
-  (function(){
-    var AUTO_INTERVAL = 38;   // ms per rAF-style step
-    var STEP = 0.55;          // pct units per tick
-    var PAUSE_MS = 8000;      // pause duration after user interaction
+  // pause on slider interaction too
+  document.getElementById("pillars").addEventListener("input", function() {
+    pauseDemo(8000);
+  });
 
-    // direction: 1 = filling up, -1 = emptying
-    var dir = 1;
-    var paused = false;
-    var pauseTimer = null;
-    var demoTimer = null;
+  // Request cycle: rotates request text + amb every ~4.5 s
+  (function requestCycle() {
+    function next() {
+      if (!demoPaused) {
+        demoReqIdx = (demoReqIdx + 1) % DEMO_REQUESTS.length;
+        var req = DEMO_REQUESTS[demoReqIdx];
 
-    // Order to animate pillars (sequential feel)
-    var ORDER = ["goal","context","criteria","authority","verify"];
+        // update input + highlight matching preset if any
+        reqInput.value = req.text;
+        presetsEl.querySelectorAll(".preset").forEach(function(b) {
+          b.classList.toggle("on", b.textContent === req.text);
+        });
+        state.amb = req.amb;
+        recomputeTargets();
+      }
+      setTimeout(next, 4500 + Math.random() * 1500);
+    }
+    setTimeout(next, 5000);
+  })();
 
-    function tick(){
-      if(paused){ demoTimer = setTimeout(tick, AUTO_INTERVAL); return; }
+  // Pillar cascade cycle: fills/empties pillars one-at-a-time, smooth ramp
+  (function pillarCycle() {
+    var dir = 1;        // 1 = fill, -1 = empty
+    var ORDER = ["goal", "context", "criteria", "authority", "verify"];
+    var SPEED = 0.55;   // pct/tick, ticks at ~30 ms
+    var TICK  = 30;
+
+    function tick() {
+      if (demoPaused) { setTimeout(tick, TICK); return; }
 
       var changed = false;
-      for(var i = 0; i < ORDER.length; i++){
+      for (var i = 0; i < ORDER.length; i++) {
         var k = ORDER[i];
         var v = state.pillars[k];
-        if(dir === 1 && v < 100){
-          state.pillars[k] = Math.min(100, v + STEP);
+        if (dir === 1 && v < 100) {
+          state.pillars[k] = Math.min(100, v + SPEED);
           changed = true;
-          break; // animate one pillar at a time for sequential cascade effect
-        } else if(dir === -1 && v > 0){
-          state.pillars[k] = Math.max(0, v - STEP);
+          break;
+        } else if (dir === -1 && v > 0) {
+          state.pillars[k] = Math.max(0, v - SPEED);
           changed = true;
           break;
         }
       }
 
-      // if nothing changed in this direction, flip
-      if(!changed){
+      if (!changed) {
         dir = -dir;
-        // small pause at extremes before reversing
-        demoTimer = setTimeout(function(){
-          syncSliders();
-          render();
-          demoTimer = setTimeout(tick, AUTO_INTERVAL);
-        }, 1200);
+        syncSliders();
+        recomputeTargets();
+        setTimeout(tick, 1400);
         return;
       }
 
       syncSliders();
-      render();
-      demoTimer = setTimeout(tick, AUTO_INTERVAL);
+      recomputeTargets();
+      setTimeout(tick, TICK);
     }
 
-    // pause on user slider interaction
-    document.getElementById("pillars").addEventListener("input", function(){
-      paused = true;
-      if(pauseTimer) clearTimeout(pauseTimer);
-      pauseTimer = setTimeout(function(){ paused = false; }, PAUSE_MS);
-    });
-
-    // also pause when fill/clear buttons are used
-    document.getElementById("btnFill").addEventListener("click", function(){ pauseFor(); });
-    document.getElementById("btnClear").addEventListener("click", function(){ pauseFor(); });
-    function pauseFor(){
-      paused = true;
-      if(pauseTimer) clearTimeout(pauseTimer);
-      pauseTimer = setTimeout(function(){ paused = false; }, PAUSE_MS);
-    }
-
-    // start after layout settles (give receipt bars time to paint first)
-    setTimeout(tick, 900);
+    setTimeout(tick, 1200);
   })();
+
+  // Micro-jitter cycle: adds tiny noise to currency amounts for live feel
+  (function jitterCycle() {
+    function nudge() {
+      var keys = ["ai0", "ai1", "ai2", "hu0", "hu1", "hu2"];
+      var scale = [60, 40, 35, 2.2, 1.6, 1.2];
+      keys.forEach(function(k, i) {
+        jitter[k] = (Math.random() - 0.5) * scale[i];
+      });
+      recomputeTargets();
+      setTimeout(nudge, 800 + Math.random() * 600);
+    }
+    setTimeout(nudge, 2000);
+  })();
+
+  // ── boot ─────────────────────────────────────────────────────────
+  function boot() {
+    recomputeTargets();
+    // seed tween .cur values so first frame matches state (no initial sweep)
+    Object.keys(tweens).forEach(function(k) { tweens[k].cur = tweens[k].target; });
+    requestAnimationFrame(loop);
+  }
+
+  if (document.fonts && document.fonts.ready) {
+    document.fonts.ready.then(boot);
+    setTimeout(boot, 600);
+  } else {
+    boot();
+  }
+
 })();
 </script>
 </body>

@@ -277,8 +277,8 @@
                 <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>이상 신호 잔류</td><td class="num delta"><span id="mDefect">100.0</span>%</td></tr>
                 <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>임계선 (limit)</td><td class="num">±규격</td></tr>
                 <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>트리거 감도</td><td class="num">MAX</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>검출 오차 err</td><td class="num">≈0</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>정지 응답시간</td><td class="num delta">즉시</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>검출 오차 err</td><td class="num"><span id="mErrVal">0.000</span></td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>정지 응답시간</td><td class="num delta"><span id="mStopResp">즉시</span></td></tr>
                 <tr><td class="lbl"><span class="swatch" style="color:var(--ch1)"></span>공정 상태</td><td class="num">IN-CTRL</td></tr>
               </table>
             </div>
@@ -676,11 +676,14 @@
     lx.fillStyle='#06100b'; lx.fillRect(0,0,LW,LH);
 
     // --- block diagram (top) ---
+    // 4단계 순환: 2.4s 주기, 각 단계 0.6s 활성
     const by=18, bh=42;
-    box(14, by, 86, bh, 'Standard', '품질 기준', false);
-    box(132, by, 96, bh, 'Inspect', '현지현물', state.doe>0.05);
-    box(262, by, 96, bh, 'Detect', '이상 감지', true);
-    box(392, by, 96, bh, 'Jidoka', '즉시 정지', true);
+    const loopPhase = (loopT / 2.4) % 1.0;  // 0..1 per cycle
+    const activeStep = Math.floor(loopPhase * 4); // 0=Standard,1=Inspect,2=Detect,3=Jidoka
+    box(14,  by, 86, bh, 'Standard', '품질 기준', activeStep===0);
+    box(132, by, 96, bh, 'Inspect',  '현지현물',  activeStep===1);
+    box(262, by, 96, bh, 'Detect',   '이상 감지', activeStep===2);
+    box(392, by, 96, bh, 'Jidoka',   '즉시 정지', activeStep===3);
     arrow(100, by+bh/2, 132, by+bh/2, 0.0);
     arrow(228, by+bh/2, 262, by+bh/2, 0.33);
     arrow(358, by+bh/2, 392, by+bh/2, 0.66);
@@ -736,10 +739,11 @@
     lx.fillStyle='#eafff6'; lx.shadowColor=COL.phos; lx.shadowBlur=12;
     lx.beginPath(); lx.arc(cxp,cyp,3,0,Math.PI*2); lx.fill(); lx.shadowBlur=0;
 
-    // settle status text
-    const settledErr=Math.abs(1-stepResp(2.4));
-    if(state.doe>0.5){ loopStat.textContent='CONTAINED · err=0'; loopStat.style.color=COL.phos; }
-    else { loopStat.textContent='ANOMALY · 임계 초과'; loopStat.style.color=COL.amber; }
+    // settle status text — 4단계 순환 표시
+    const stepLabels = ['Standard · 기준 확인','Inspect · 현지현물','Detect · 이상 감지','Jidoka · 즉시 정지'];
+    const stepColors = [COL.phos, COL.ch3, COL.amber, COL.ch4];
+    loopStat.textContent = stepLabels[activeStep];
+    loopStat.style.color = stepColors[activeStep];
   }
 
   // ====================================================================
@@ -819,6 +823,81 @@
   }
 
   // ====================================================================
+  // MEASURE LIVE VALUES (lerp targets for micro-variation)
+  // ====================================================================
+  const mState = {
+    defect:     { cur:99.2, tgt:99.2 },
+    errVal:     { cur:0.28, tgt:0.28 },
+    stopResp:   { cur:14.0, tgt:14.0 },
+  };
+  // reseed targets every ~1.4 s
+  let mSeedTimer=0;
+  function reseedMeasure(){
+    const doe = state.doe;
+    // 이상 신호 잔류: DOE 없으면 97-100%, 발동이면 0-3%
+    const baseDefect = doe>0.5 ? doe*100*0.03 : 97+Math.random()*3;
+    mState.defect.tgt = baseDefect + (Math.random()-0.5)*0.8;
+    // 검출 오차: DOE없으면 ±0.2-0.6, 발동이면 ≈0
+    mState.errVal.tgt  = doe>0.5 ? Math.random()*0.02 : 0.12+Math.random()*0.44;
+    // 정지 응답시간: DOE없으면 8-40ms, 발동이면 0-2ms
+    mState.stopResp.tgt = doe>0.5 ? Math.random()*2 : 8+Math.random()*32;
+  }
+  reseedMeasure();
+
+  // ====================================================================
+  // ANOMALY EVENT LOG (fake streaming)
+  // ====================================================================
+  // injected into loop panel below step response
+  const LOG_MSGS = [
+    () => `[${ts()}] CH2 SPEC-OUT: ${(3.2+Math.random()*1.8).toFixed(2)}σ 규격 이탈 감지`,
+    () => `[${ts()}] TRIG RISE: 임계선 +${(1.1+Math.random()*0.9).toFixed(2)}V 초과 — LEVEL ${(72+Math.random()*20|0)}%`,
+    () => `[${ts()}] JIDOKA ARMED: 이상 신호 잔류 ${(95+Math.random()*5).toFixed(1)}%`,
+    () => `[${ts()}] LINE HALT: 즉시 정지 응답 ${(0.8+Math.random()*1.4).toFixed(1)}ms`,
+    () => `[${ts()}] CAUSE TRACE: CH3 현지현물 편차 원인 역추적 중`,
+    () => `[${ts()}] ROOT FOUND: 공급 변동 ±${(0.3+Math.random()*0.5).toFixed(2)}mm → 재발 방지 CP 갱신`,
+    () => `[${ts()}] JIDOKA DONE: err=${(Math.random()*0.02).toFixed(3)} — CONTAINED`,
+    () => `[${ts()}] CH4 일탈 경계 복원: LIMIT 내 안착 확인`,
+    () => `[${ts()}] ANOMALY RESIDUAL: ${(Math.random()*1.2).toFixed(1)}% — 재발 감시 ON`,
+    () => `[${ts()}] MONITOR: CH1 기준선 ±0.00σ — IN-CTRL`,
+    () => `[${ts()}] PFMEA UPDATE: RPN ${(32+Math.random()*20|0)} → 재평가 예약`,
+    () => `[${ts()}] DETECT: 비전 검사 F-${(100+Math.random()*99|0)} 불량 마크`,
+    () => `[${ts()}] SPEC-IN: 규격 복귀 확인 — RUN 재개 승인`,
+    () => `[${ts()}] THRESHOLD: 임계선 recalibrated — ${(1.92+Math.random()*0.16).toFixed(2)}V`,
+    () => `[${ts()}] CH2 SETTLE: 이상 신호 ${(0.1+Math.random()*0.3).toFixed(2)}% 잔류 — ACCEPT`,
+  ];
+  function ts(){
+    const d=new Date();
+    return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0')+'.'+String(d.getMilliseconds()).padStart(3,'0');
+  }
+  // DOM log container — built once, appended under loop panel
+  const logWrap = document.createElement('div');
+  logWrap.style.cssText='overflow:hidden;max-height:88px;padding:6px 10px 4px;border-top:1px solid rgba(255,255,255,.06);font-size:9.5px;font-family:ui-monospace,"SF Mono",monospace;color:#4d7a63;line-height:1.55;display:flex;flex-direction:column-reverse;gap:0';
+  document.querySelector('#loop').closest('.panel').appendChild(logWrap);
+
+  const LOG_MAX=6;
+  let logEntries=[];   // {el, age}
+  let logNextIdx=Math.floor(Math.random()*LOG_MSGS.length);
+  let logTimer=0;
+  const LOG_INTERVAL_MIN=1.1, LOG_INTERVAL_MAX=2.8;
+  let logNextIn=LOG_INTERVAL_MIN+Math.random()*(LOG_INTERVAL_MAX-LOG_INTERVAL_MIN);
+
+  function pushLog(){
+    const msg=LOG_MSGS[logNextIdx%LOG_MSGS.length]();
+    logNextIdx++;
+    const el=document.createElement('div');
+    el.style.cssText='opacity:1;transition:opacity 1.8s linear;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#5cc8ff';
+    el.textContent=msg;
+    logWrap.insertBefore(el, logWrap.firstChild);
+    logEntries.unshift({el, age:0});
+    if(logEntries.length>LOG_MAX){
+      const old=logEntries.pop();
+      old.el.style.opacity='0';
+      setTimeout(()=>{ try{logWrap.removeChild(old.el);}catch(e){} }, 1900);
+    }
+    logNextIn=LOG_INTERVAL_MIN+Math.random()*(LOG_INTERVAL_MAX-LOG_INTERVAL_MIN);
+  }
+
+  // ====================================================================
   // ANIMATION LOOP
   // ====================================================================
   let last=performance.now();
@@ -828,14 +907,36 @@
       state.t += dt;
       loopT += dt;
       if(loopT>3.2) loopT=0;                 // re-trigger step response
-      // sweep head
-      sweepX += dt * (SW/ (state.timePerDiv/2) ) * 0.18;
+      // sweep head — dt-based smooth sweep
+      // visual period: ~1.5s at default 2ms/div, scales with timePerDiv
+      // sweepPeriod(s) = 1.5 * (timePerDiv/2)  => faster knob = faster sweep
+      const sweepPeriod = 1.5 * (state.timePerDiv / 2);
+      sweepX += dt * (SW / sweepPeriod);
       if(sweepX>SW) sweepX=0;
+
+      // log streaming
+      logTimer+=dt;
+      if(logTimer>=logNextIn){ logTimer=0; pushLog(); }
+
+      // measure reseed
+      mSeedTimer+=dt;
+      if(mSeedTimer>1.4){ mSeedTimer=0; reseedMeasure(); }
     }
     // ease DOE
     state.doe += (state.doeTarget - state.doe) * Math.min(dt*3.2,1);
-    // 이상 신호 잔류율: 100% (초기) → 0% (지도카 발동 후 완전 격리)
-    document.getElementById('mDefect').textContent = (100 - state.doe*100).toFixed(1);
+
+    // MEASURE lerp — smooth micro-variation
+    const lf = Math.min(dt*2.2, 1);
+    mState.defect.cur  += (mState.defect.tgt  - mState.defect.cur)  * lf;
+    mState.errVal.cur  += (mState.errVal.tgt   - mState.errVal.cur)  * lf;
+    mState.stopResp.cur+= (mState.stopResp.tgt - mState.stopResp.cur)* lf;
+
+    // update DOM measure values
+    document.getElementById('mDefect').textContent    = mState.defect.cur.toFixed(1);
+    document.getElementById('mErrVal').textContent    = mState.errVal.cur.toFixed(3);
+    document.getElementById('mStopResp').textContent  = mState.stopResp.cur < 1
+      ? (mState.stopResp.cur*1000).toFixed(0)+'µs'
+      : mState.stopResp.cur.toFixed(1)+'ms';
 
     renderScope();
     renderLoop();

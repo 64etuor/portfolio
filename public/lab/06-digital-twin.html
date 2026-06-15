@@ -318,13 +318,10 @@ canvas{display:block;outline:none}
       <b>도메인 지식이 결정적 레버</b>가 된다.
     </div>
 
-    <!-- live sync stream -->
+    <!-- live sync stream (rolling, JS-driven) -->
     <div class="xd-stream">
       <div class="rqh">Domain Sync Stream</div>
-      <div class="stream-row"><span class="sc" style="background:var(--c-mfg)"></span><span><b>현장</b> Takt 42s — 라인밸런스 96%</span></div>
-      <div class="stream-row"><span class="sc" style="background:var(--c-dev)"></span><span><b>MES</b> WIP 14ea — 파이프라인 OK</span></div>
-      <div class="stream-row"><span class="sc" style="background:var(--c-ai)"></span><span><b>AI</b> 예측 정확도 94.1%</span></div>
-      <div class="stream-row"><span class="sc" style="background:var(--signal)"></span><span><b>SSOT</b> 동기화 지연 &lt;40ms</span></div>
+      <div id="streamRows"></div>
     </div>
 
     <div class="xd-state">
@@ -1041,6 +1038,70 @@ function reconcileXD(){
   if(flAiEl) flAiEl.textContent = "ON";
 }
 
+/* ───────────────────── Domain Sync Stream (rolling live feed) ───────────────────── */
+const STREAM_MSGS = [
+  {c:"var(--c-mfg)", t:"<b>현장</b> Takt {takt}s — 라인밸런스 {lb}%"},
+  {c:"var(--c-dev)", t:"<b>MES</b> WIP {wip}ea — 파이프라인 OK"},
+  {c:"var(--c-ai)",  t:"<b>AI</b> 예측 정확도 {acc}% — 이상없음"},
+  {c:"var(--signal)",t:"<b>SSOT</b> 동기화 지연 &lt;{lag}ms"},
+  {c:"var(--c-mfg)", t:"<b>현장</b> OEE {oee}% — 가동 정상"},
+  {c:"var(--c-dev)", t:"<b>파이프라인</b> API 응답 {api}ms — OK"},
+  {c:"var(--c-ai)",  t:"<b>AI</b> 이상탐지 대기 — 신호 정상"},
+  {c:"var(--c-mfg)", t:"<b>안돈</b> GREEN — 라인 이상 없음"},
+  {c:"var(--signal)",t:"<b>SSOT</b> 3-Domain 동기 완료"},
+  {c:"var(--c-dev)", t:"<b>MES</b> CI/CD 배포 완료 — LIVE"},
+  {c:"var(--c-ai)",  t:"<b>AI</b> 예측 모델 갱신 — v{ver}"},
+  {c:"var(--c-mfg)", t:"<b>현장</b> Takt {takt}s — WIP {wip}ea"},
+  {c:"var(--signal)",t:"<b>Fusion</b> 크로스도메인 동기 {lag}ms"},
+  {c:"var(--c-ai)",  t:"<b>RPA</b> 반복업무 자동화 실행 중"},
+  {c:"var(--c-dev)", t:"<b>BI</b> 대시보드 갱신 — OEE {oee}%"},
+];
+function renderStreamMsg(tmpl){
+  return tmpl
+    .replace(/{takt}/g, ()=>(40+Math.round(Math.random()*5)))
+    .replace(/{lb}/g,   ()=>(94+Math.round(Math.random()*4)))
+    .replace(/{wip}/g,  ()=>(12+Math.round(Math.random()*5)))
+    .replace(/{acc}/g,  ()=>(93+Math.random()*2).toFixed(1))
+    .replace(/{lag}/g,  ()=>(32+Math.round(Math.random()*12)))
+    .replace(/{oee}/g,  ()=>(91+Math.random()*2).toFixed(1))
+    .replace(/{api}/g,  ()=>(18+Math.round(Math.random()*14)))
+    .replace(/{ver}/g,  ()=>"2."+(Math.round(Math.random()*9)));
+}
+const streamWrap = document.getElementById("streamRows");
+const MAX_STREAM_ROWS = 4;
+let streamMsgIdx = 0;
+let streamIntervalT = 0;
+const STREAM_INTERVAL = 2.1; // seconds between new messages
+function pushStreamRow(){
+  const msg = STREAM_MSGS[streamMsgIdx % STREAM_MSGS.length];
+  streamMsgIdx++;
+  const row = document.createElement("div");
+  row.className = "stream-row";
+  row.style.opacity = "0";
+  row.style.transition = "opacity 0.45s ease";
+  row.innerHTML = `<span class="sc" style="background:${msg.c}"></span><span>${renderStreamMsg(msg.t)}</span>`;
+  streamWrap.appendChild(row);
+  // fade in
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ row.style.opacity="1"; }));
+  // trim to max rows, fade out oldest
+  const rows = streamWrap.querySelectorAll(".stream-row");
+  if(rows.length > MAX_STREAM_ROWS){
+    const oldest = rows[0];
+    oldest.style.opacity = "0";
+    setTimeout(()=>{ if(oldest.parentNode) oldest.parentNode.removeChild(oldest); }, 460);
+  }
+}
+// seed initial rows
+for(let s=0;s<MAX_STREAM_ROWS;s++) pushStreamRow();
+
+function updateStream(dt){
+  streamIntervalT += dt;
+  if(streamIntervalT >= STREAM_INTERVAL){
+    streamIntervalT -= STREAM_INTERVAL;
+    pushStreamRow();
+  }
+}
+
 /* ───────────────────── controls ───────────────────── */
 const swLine = document.getElementById("swLine");
 const lineStateEl = document.getElementById("lineState");
@@ -1061,22 +1122,34 @@ document.getElementById("syncBtn").addEventListener("click",()=>{
   triggerCrossDomainPulse(-1);
 });
 
-/* ───────────────────── live KPI ticker (auto-fluctuation) ───────────────────── */
+/* ───────────────────── live KPI lerp (dt-based, no snap) ───────────────────── */
 const kpiEls = document.querySelectorAll("#kpis .kpi .v");
-const kpiBase = [92.4, 42, 14, 96, 94.1, 1.8, 38, null, null, null];
-function tickKpis(){
-  kpiEls.forEach((el, i)=>{
-    if(kpiBase[i]===null) return;
-    const base = kpiBase[i];
+const kpiBase  = [92.4, 42, 14, 96, 94.1, 1.8, 38, null, null, null];
+// displayed values lerp toward targets
+const kpiCur   = [92.4, 42, 14, 96, 94.1, 1.8, 38, null, null, null];
+const kpiTarget= [92.4, 42, 14, 96, 94.1, 1.8, 38, null, null, null];
+let kpiRefreshT = 0;
+function refreshKpiTargets(){
+  kpiBase.forEach((base,i)=>{
+    if(base===null) return;
     const jitter = (Math.random()-0.5)*0.6;
-    const val = (base + jitter).toFixed(1);
-    if(i===2) el.textContent = Math.round(base+jitter*3)+"ea";
-    else if(i===5) el.textContent = (base+jitter).toFixed(1)+"s";
-    else if(i===6) el.textContent = "<"+Math.round(base+jitter*5)+"ms";
-    else el.textContent = val+"%";
+    kpiTarget[i] = base + jitter;
   });
 }
-setInterval(tickKpis, 3200);
+refreshKpiTargets();
+function updateKpis(dt){
+  kpiRefreshT -= dt;
+  if(kpiRefreshT<=0){ refreshKpiTargets(); kpiRefreshT = 3.2; }
+  kpiEls.forEach((el, i)=>{
+    if(kpiBase[i]===null) return;
+    kpiCur[i] += (kpiTarget[i] - kpiCur[i]) * Math.min(1, dt*1.2);
+    const v = kpiCur[i];
+    if(i===2) el.textContent = Math.round(v)+"ea";
+    else if(i===5) el.textContent = v.toFixed(1)+"s";
+    else if(i===6) el.textContent = "<"+Math.round(v)+"ms";
+    else el.textContent = v.toFixed(1)+"%";
+  });
+}
 
 /* ───────────────────── clock ───────────────────── */
 const clockEl = document.getElementById("clock");
@@ -1100,7 +1173,7 @@ let throughputShown = STATIONS.map(()=>0);
 
 function animate(){
   requestAnimationFrame(animate);
-  const dt = Math.min(clock.getDelta(), 0.05);
+  const dt = Math.min(clock.getDelta(), 0.08);
   const time = clock.elapsedTime;
   const eff = lineOn ? speed : 0;
 
@@ -1158,17 +1231,19 @@ function animate(){
     lr.mat.opacity = lineOn ? pulse : lr.base*0.4;
   });
 
-  // AI rings expand (persistent, auto)
+  // AI rings expand (dt-accumulated, no modulo snap)
   aiRings.forEach((ar,i)=>{
-    const t = ((time*0.5 + ar.offset) % 1);
+    ar.phase = (ar.phase||ar.offset) + dt*0.5;
+    if(ar.phase>=1) ar.phase -= 1;
+    const t = ar.phase;
     ar.mesh.scale.setScalar(1 + t*6);
     ar.mat.opacity = (1-t)*0.35*(lineOn?1:0.2);
   });
 
-  // inter-domain flow particles
+  // inter-domain flow particles (one-way, no ping-pong snap)
   flowLines.forEach((fl,i)=>{
     fl.t = (fl.t + dt*fl.speed) % 1;
-    fl.particle.position.lerpVectors(fl.pa, fl.pb, fl.t<0.5? fl.t*2 : 2-fl.t*2);
+    fl.particle.position.lerpVectors(fl.pa, fl.pb, fl.t);
     fl.particle.scale.setScalar(lineOn?1:0.2);
   });
 
@@ -1203,6 +1278,12 @@ function animate(){
     xdSyncT -= dt;
     if(xdSyncT<=0) reconcileXD();
   }
+
+  // KPI lerp update
+  updateKpis(dt);
+
+  // Domain Sync Stream rolling feed
+  updateStream(dt);
 
   // auto-cycle focus (orbit through stations if user has not interacted)
   if(autoCycleEnabled){

@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { PROFILE } from '@content/index'
-import { SECTIONS, scenesBySection } from '@/scenes/registry'
+import { PERSPECTIVES, scenesByPerspective, scenesByCluster } from '@/scenes/registry'
 import { COMPOSITIONS } from '@/compositions'
 import { IntroGate } from '@/components/intro/IntroGate'
 
@@ -51,36 +51,50 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 27 scenes grouped into the 5-act narrative */}
+      {/* 4관점 */}
       <section className="mt-20">
-        <h2 className="font-serif text-3xl font-semibold" style={{ color: 'var(--ink)' }}>27 시안 · 5막 서사</h2>
-        <p className="mt-2 text-sm" style={{ color: 'var(--muted)' }}>현장 → 측정 → 시스템 → 운영 → 자율 → 사람. 각 지표는 단 한 시안이 소유합니다.</p>
-        {SECTIONS.map((sec) => (
-          <div key={sec.id} className="mt-12">
-            <div className="flex items-baseline gap-3 border-b pb-2" style={{ borderColor: 'var(--line)' }}>
-              <span className="font-serif text-2xl font-semibold" style={{ color: 'var(--accent)' }}>{sec.n}</span>
-              <h3 className="text-lg font-semibold" style={{ color: 'var(--ink)' }}>{sec.title}</h3>
-              <span className="text-xs" style={{ color: 'var(--muted)' }}>{sec.blurb}</span>
-            </div>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {scenesBySection(sec.id).map((s) => (
-                <Link key={s.id} href={`/s/${s.slug}`} className="group flex gap-3 rounded-xl border p-4 transition-colors hover:border-[var(--accent)]" style={{ borderColor: 'var(--line)', background: 'var(--panel)' }}>
-                  <span className="mt-0.5 h-10 w-10 flex-none rounded-md border" style={{ background: s.bg, borderColor: 'var(--line)' }} />
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs tabular-nums" style={{ color: 'var(--muted)' }}>{s.id}</span>
-                      <span className="truncate text-sm font-semibold" style={{ color: 'var(--ink)' }}>{s.title}</span>
-                      {s.featured && <span className="rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ background: 'var(--accent)', color: '#000' }}>★</span>}
-                    </div>
-                    <div className="mt-0.5 text-[11px]" style={{ color: 'var(--accent)' }}>{s.domain}</div>
-                    {s.owns && <div className="mt-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold" style={{ background: 'color-mix(in oklab, var(--accent) 18%, transparent)', color: 'var(--ink)' }}>소유: {s.owns}</div>}
-                    <p className="mt-1 line-clamp-2 text-xs leading-snug" style={{ color: 'var(--muted)' }}>{s.blurb}</p>
+        <h2 className="font-serif text-3xl font-semibold" style={{ color: 'var(--ink)' }}>4관점으로 보기</h2>
+        <p className="mt-2 text-sm" style={{ color: 'var(--muted)' }}>프로젝트+경력 · 스킬 · 철학 · 지식관리. 각 지표는 단 한 시안이 소유합니다.</p>
+        {PERSPECTIVES.filter((p) => p.id !== 'entry').map((p) => {
+          const groups =
+            p.id === 'project-career'
+              ? [
+                  { label: '프로젝트 (자기주도)', scenes: scenesByCluster(p.id, 'project') },
+                  { label: '경력 (제조 현장)', scenes: scenesByCluster(p.id, 'career') },
+                ]
+              : [{ label: '', scenes: scenesByPerspective(p.id) }]
+          return (
+            <div key={p.id} className="mt-12">
+              <div className="flex items-baseline gap-3 border-b pb-2" style={{ borderColor: 'var(--line)' }}>
+                <span className="font-serif text-2xl font-semibold" style={{ color: 'var(--accent)' }}>{p.n}</span>
+                <h3 className="text-lg font-semibold" style={{ color: 'var(--ink)' }}>{p.title}</h3>
+                <span className="text-xs" style={{ color: 'var(--muted)' }}>{p.blurb}</span>
+              </div>
+              {groups.map((g) => (
+                <div key={g.label || p.id} className="mt-4">
+                  {g.label && <div className="mb-2 text-xs font-semibold uppercase tracking-wider" style={{ color: 'var(--accent)' }}>{g.label}</div>}
+                  <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {g.scenes.map((s) => (
+                      <Link key={s.id} href={`/s/${s.slug}`} className="group flex gap-3 rounded-xl border p-4 transition-colors hover:border-[var(--accent)]" style={{ borderColor: 'var(--line)', background: 'var(--panel)' }}>
+                        <span className="mt-0.5 h-10 w-10 flex-none rounded-md border" style={{ background: s.bg, borderColor: 'var(--line)' }} />
+                        <div className="min-w-0">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs tabular-nums" style={{ color: 'var(--muted)' }}>{s.id}</span>
+                            <span className="truncate text-sm font-semibold" style={{ color: 'var(--ink)' }}>{s.title}</span>
+                            {s.featured && <span className="rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ background: 'var(--accent)', color: '#000' }}>★</span>}
+                          </div>
+                          <div className="mt-0.5 text-[11px]" style={{ color: 'var(--accent)' }}>{s.domain}</div>
+                          {s.owns && <div className="mt-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold" style={{ background: 'color-mix(in oklab, var(--accent) 18%, transparent)', color: 'var(--ink)' }}>소유: {s.owns}</div>}
+                          <p className="mt-1 line-clamp-2 text-xs leading-snug" style={{ color: 'var(--muted)' }}>{s.blurb}</p>
+                        </div>
+                      </Link>
+                    ))}
                   </div>
-                </Link>
+                </div>
               ))}
             </div>
-          </div>
-        ))}
+          )
+        })}
       </section>
     </main>
     </IntroGate>

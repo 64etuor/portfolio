@@ -823,6 +823,7 @@ function buildMinimap(){
 function updateMinimap(){
   var view=document.getElementById('mmview'); if(!view) return;
   var s=mmsvg._s, offx=mmsvg._ox, offy=mmsvg._oy;
+  if(!isFinite(s)||!scale||!isFinite(scale)||!stage.clientWidth||!stage.clientHeight) return;
   var vx=-tx/scale, vy=-ty/scale, vw=stage.clientWidth/scale, vh=stage.clientHeight/scale;
   view.setAttribute('x',offx+vx*s); view.setAttribute('y',offy+vy*s);
   view.setAttribute('width',vw*s); view.setAttribute('height',vh*s);

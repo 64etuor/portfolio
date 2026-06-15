@@ -1,6 +1,6 @@
 import Link from 'next/link'
 import { PROFILE } from '@content/index'
-import { SCENES } from '@/scenes/registry'
+import { SECTIONS, scenesBySection } from '@/scenes/registry'
 import { COMPOSITIONS } from '@/compositions'
 
 export default function Home() {
@@ -49,26 +49,36 @@ export default function Home() {
         </div>
       </section>
 
-      {/* All 27 scenes */}
+      {/* 27 scenes grouped into the 5-act narrative */}
       <section className="mt-20">
-        <h2 className="font-serif text-3xl font-semibold" style={{ color: 'var(--ink)' }}>27 시안</h2>
-        <p className="mt-2 text-sm" style={{ color: 'var(--muted)' }}>각 시안은 독립 모듈. 클릭하면 풀스크린으로 열립니다.</p>
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {SCENES.map((s) => (
-            <Link key={s.id} href={`/s/${s.slug}`} className="group flex gap-3 rounded-xl border p-4 transition-colors hover:border-[var(--accent)]" style={{ borderColor: 'var(--line)', background: 'var(--panel)' }}>
-              <span className="mt-0.5 h-10 w-10 flex-none rounded-md border" style={{ background: s.bg, borderColor: 'var(--line)' }} />
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-xs tabular-nums" style={{ color: 'var(--muted)' }}>{s.id}</span>
-                  <span className="truncate text-sm font-semibold" style={{ color: 'var(--ink)' }}>{s.title}</span>
-                  {s.featured && <span className="rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ background: 'var(--accent)', color: '#000' }}>★</span>}
-                </div>
-                <div className="mt-0.5 text-[11px]" style={{ color: 'var(--accent)' }}>{s.domain}</div>
-                <p className="mt-1 line-clamp-2 text-xs leading-snug" style={{ color: 'var(--muted)' }}>{s.blurb}</p>
-              </div>
-            </Link>
-          ))}
-        </div>
+        <h2 className="font-serif text-3xl font-semibold" style={{ color: 'var(--ink)' }}>27 시안 · 5막 서사</h2>
+        <p className="mt-2 text-sm" style={{ color: 'var(--muted)' }}>현장 → 측정 → 시스템 → 운영 → 자율 → 사람. 각 지표는 단 한 시안이 소유합니다.</p>
+        {SECTIONS.map((sec) => (
+          <div key={sec.id} className="mt-12">
+            <div className="flex items-baseline gap-3 border-b pb-2" style={{ borderColor: 'var(--line)' }}>
+              <span className="font-serif text-2xl font-semibold" style={{ color: 'var(--accent)' }}>{sec.n}</span>
+              <h3 className="text-lg font-semibold" style={{ color: 'var(--ink)' }}>{sec.title}</h3>
+              <span className="text-xs" style={{ color: 'var(--muted)' }}>{sec.blurb}</span>
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {scenesBySection(sec.id).map((s) => (
+                <Link key={s.id} href={`/s/${s.slug}`} className="group flex gap-3 rounded-xl border p-4 transition-colors hover:border-[var(--accent)]" style={{ borderColor: 'var(--line)', background: 'var(--panel)' }}>
+                  <span className="mt-0.5 h-10 w-10 flex-none rounded-md border" style={{ background: s.bg, borderColor: 'var(--line)' }} />
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs tabular-nums" style={{ color: 'var(--muted)' }}>{s.id}</span>
+                      <span className="truncate text-sm font-semibold" style={{ color: 'var(--ink)' }}>{s.title}</span>
+                      {s.featured && <span className="rounded px-1.5 py-0.5 text-[10px] font-bold" style={{ background: 'var(--accent)', color: '#000' }}>★</span>}
+                    </div>
+                    <div className="mt-0.5 text-[11px]" style={{ color: 'var(--accent)' }}>{s.domain}</div>
+                    {s.owns && <div className="mt-1 inline-block rounded px-1.5 py-0.5 text-[10px] font-semibold" style={{ background: 'color-mix(in oklab, var(--accent) 18%, transparent)', color: 'var(--ink)' }}>소유: {s.owns}</div>}
+                    <p className="mt-1 line-clamp-2 text-xs leading-snug" style={{ color: 'var(--muted)' }}>{s.blurb}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        ))}
       </section>
     </main>
   )

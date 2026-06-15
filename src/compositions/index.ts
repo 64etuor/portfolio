@@ -1,61 +1,62 @@
-// 조합(Composition) — 메시지/청중별 시안 시퀀스. 시안을 "조합"해서 설명한다.
+// 조합(Composition) — 청중/메시지별 시안 시퀀스. 각 조합은 "한 문장 결론"을 가진다.
+// 5막 서사(현장→측정→시스템→운영→자율→사람) 위에서 owner 시안 위주로 구성.
 
 export interface Composition {
   slug: string
   title: string
   audience: string
-  blurb: string
+  blurb: string // 한 문장 결론(메시지 아크)
   scenes: string[] // scene id 순서
 }
 
 export const COMPOSITIONS: Composition[] = [
   {
     slug: 'overview',
-    title: '전체 투어',
+    title: '전체 투어 (5막)',
     audience: '처음 보는 사람',
-    blurb: '현장 → 데이터 → AI → 사상까지, 한 사람으로 수렴하는 흐름.',
-    scenes: ['19', '22', '01', '23', '17', '27'],
+    blurb: '현장 부팅 → 측정 → 수렴 → 자율 → 사람. 한 동작의 5단계.',
+    scenes: ['05', '11', '22', '23', '27'],
   },
   {
     slug: 'data-architect',
-    title: '데이터·백엔드 아키텍트',
-    audience: '데이터/플랫폼 엔지니어 채용',
-    blurb: '실제 스키마·SSOT·파이프라인·실시간 신호로 증명하는 데이터 깊이.',
-    scenes: ['22', '19', '01', '18', '03'],
+    title: '데이터·플랫폼 엔지니어',
+    audience: '데이터/백엔드 채용',
+    blurb: 'SSOT outbox+CDC를 제조에서 먼저 했고, 지금도 한다.',
+    scenes: ['22', '19', '08', '03', '18'],
   },
   {
-    slug: 'field-software-fusion',
-    title: '현장 × 소프트웨어 융합',
-    audience: '제조 DX / 스마트팩토리',
-    blurb: '제조 도면 언어로 그린 실제 소프트웨어 — 당신만의 차별점.',
-    scenes: ['19', '06', '20', '12', '02'],
+    slug: 'manufacturing-dx',
+    title: '제조 DX / 스마트팩토리',
+    audience: '제조 DX 리더',
+    blurb: '도면 언어로 그린 진짜 소프트웨어 — 유일한 차별점.',
+    scenes: ['05', '02', '11', '12', '01'],
   },
   {
     slug: 'ai-builder',
-    title: 'AI 빌더 / 에이전트 아키텍트',
+    title: 'AI 빌더 / 에이전트',
     audience: 'AI 제품/플랫폼',
-    blurb: '거버넌스·지식그래프·의사결정·위임까지, 2026 AI 시스템 사고.',
-    scenes: ['23', '26', '25', '24', '04'],
+    blurb: '경계를 설계해 자율을 확장한다(하네스 = 포카요케).',
+    scenes: ['23', '25', '26', '24', '04'],
   },
   {
     slug: 'ops-pm',
     title: '운영·데이터 PM',
     audience: 'PM / 운영 리더',
-    blurb: '데이터로 현장 성과를 낸 운영자 — 정량·수상·자기 운영까지.',
-    scenes: ['01', '17', '15', '14'],
+    blurb: '데이터로 현장 성과를 낸 운영자(451분·재고+17%·수상).',
+    scenes: ['17', '15', '01', '13'],
   },
   {
     slug: 'maker',
     title: '메이커 / 하드웨어',
     audience: '하드웨어·기구·품질',
-    blurb: '회로·적층제조·용접·로봇·기구설계 — 손으로 만드는 엔지니어.',
-    scenes: ['10', '07', '11', '16', '21'],
+    blurb: '회로·적층·기구·로봇 — 손으로 만드는 엔지니어.',
+    scenes: ['10', '07', '21', '16', '06'],
   },
   {
     slug: 'human',
     title: '사람 — 작가이자 사상가',
     audience: '문화 적합성 / 깊이',
-    blurb: '글 쓰는 엔지니어. 철학을 도구로, 신념으로 일하는 사람.',
+    blurb: '글 쓰는 엔지니어. 철학을 도구로, 신념으로 일한다.',
     scenes: ['27', '25', '24'],
   },
 ]

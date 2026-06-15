@@ -307,39 +307,39 @@ canvas#stage{display:block;width:100%;height:100%}
           <div class="note" id="cpkNote">측정 대기…</div>
         </div>
       </div>
-      <div class=”verdict” id=”verdict”>
-        <span class=”vbig”>ISSUED</span>
-        <span class=”vtx”><b id=”passN”>0/8</b> 항목 추적 완료 · 전 공정 S/N 검증<br>검사성적서 자동발행 완료 — 2024 Core Value Award</span>
-        <span class=”stamp”>APPROVED<br>박양하 / 공정</span>
+      <div class="verdict" id="verdict">
+        <span class="vbig">ISSUED</span>
+        <span class="vtx"><b id="passN">0/8</b> 항목 추적 완료 · 전 공정 S/N 검증<br>검사성적서 자동발행 완료 — 2024 Core Value Award</span>
+        <span class="stamp">APPROVED<br>박양하 / 공정</span>
       </div>
-      <div class=”belief”>
-        <div class=”bq”>”<b>S/N 추적성</b>으로 리스크 범위를 측정 가능하게.”</div>
-        <div class=”bm”>
-          <span class=”bchip”><b>수기 관리</b> → 앱 자동화</span>
-          <span class=”bchip”><b>Power Apps</b> 모바일 등록</span>
-          <span class=”bchip”><b>부품 혼입</b> 원천 차단</span>
+      <div class="belief">
+        <div class="bq">"<b>S/N 추적성</b>으로 리스크 범위를 측정 가능하게."</div>
+        <div class="bm">
+          <span class="bchip"><b>수기 관리</b> → 앱 자동화</span>
+          <span class="bchip"><b>Power Apps</b> 모바일 등록</span>
+          <span class="bchip"><b>부품 혼입</b> 원천 차단</span>
         </div>
       </div>
     </div>
   </div>
 
   <!-- 추적성 배경 패널: 문제 발단 → 해결 -->
-  <div class=”hud” id=”crossover”>
-    <div class=”xo-top”>
-      <div class=”xo-kick”>TRACEABILITY AUDIT · 문제 발단 → 시스템 구축</div>
-      <div class=”xo-title”>필드 원자재 불량 —<br><b>S/N 수기 관리</b>로 리스크 범위 측정 불가</div>
-      <div class=”xo-sub”>
-        기준 = <span class=”dat”>S/N 등록 여부</span> · 검증 대상 = <span class=”dat”>조립·검사 데이터</span><br>
-        이탈 신호 = <b style=”color:var(--fail)”>미등록 제품</b> (상위 공정 투입 = 추적 불가 리스크)
+  <div class="hud" id="crossover">
+    <div class="xo-top">
+      <div class="xo-kick">TRACEABILITY AUDIT · 문제 발단 → 시스템 구축</div>
+      <div class="xo-title">필드 원자재 불량 —<br><b>S/N 수기 관리</b>로 리스크 범위 측정 불가</div>
+      <div class="xo-sub">
+        기준 = <span class="dat">S/N 등록 여부</span> · 검증 대상 = <span class="dat">조립·검사 데이터</span><br>
+        이탈 신호 = <b style="color:var(--fail)">미등록 제품</b> (상위 공정 투입 = 추적 불가 리스크)
       </div>
     </div>
-    <div class=”xo-head”>
-      <span>추적성 구축 항목 (6 ITEM)</span><span class=”r”>구현 수단</span><span class=”r”>상태</span>
+    <div class="xo-head">
+      <span>추적성 구축 항목 (6 ITEM)</span><span class="r">구현 수단</span><span class="r">상태</span>
     </div>
-    <div class=”xo-body” id=”xoBody”></div>
-    <div class=”xo-foot”>
-      <div class=”xnote”><b>핵심 전환:</b> 수기 S/N 관리의 공백을 Power Apps·Power Automate로 <b>자동화</b>. 공정 품질 검증으로 <b>부품 혼입 원천 차단</b>하고 검사성적서 자동 발행.</div>
-      <div class=”xverdict”><span>전 6 항목 구현 완료 · 2024 Core Value Award</span><span class=”xstamp” style=”margin-left:auto”>AWARDED</span></div>
+    <div class="xo-body" id="xoBody"></div>
+    <div class="xo-foot">
+      <div class="xnote"><b>핵심 전환:</b> 수기 S/N 관리의 공백을 Power Apps·Power Automate로 <b>자동화</b>. 공정 품질 검증으로 <b>부품 혼입 원천 차단</b>하고 검사성적서 자동 발행.</div>
+      <div class="xverdict"><span>전 6 항목 구현 완료 · 2024 Core Value Award</span><span class="xstamp" style="margin-left:auto">AWARDED</span></div>
     </div>
   </div>
 
@@ -1035,7 +1035,7 @@ function updateBoot(){
   if(bootDone) return;
   const p=Math.min(nowMs/BOOT_MS,1);
   bootFill.style.width=(p*100).toFixed(0)+"%";
-  if(p>=1){ bootDone=true; bootEl.classList.add("hide"); }
+  if(p>=1){ bootDone=true; bootEl.classList.add("hide"); setTimeout(function(){ bootEl.style.display="none"; }, 650); }
 }
 function boot(){
   buildRows();

@@ -328,7 +328,7 @@
       <div class="logo"></div>
       <div>
         <h1>Boule Control Room</h1>
-        <div class="sub">AUTONOMOUS DEV · EVENT-SOURCED GOVERNANCE · v2.3</div>
+        <div class="sub">BOUNDARIES BEFORE EXECUTION · BOUNDED TICKER · EVENT-SOURCED · v2.3</div>
       </div>
     </div>
     <div class="spacer"></div>
@@ -374,7 +374,7 @@
     <!-- ===== CENTER PIPELINE ===== -->
     <section class="panel" id="pipe">
       <div class="corner"></div>
-      <div class="ph"><span class="tag">CORE</span><h2>Boule Pipeline · event-sourced 복잡계</h2>
+      <div class="ph"><span class="tag">CORE</span><h2>Boule Pipeline · 경계 설계 후 실행</h2>
         <span class="pin" id="evHead">e0000</span></div>
 
       <div class="pipe-canvas-wrap">
@@ -391,7 +391,7 @@
           <div class="val"><span class="led ok" id="tickLed"></span><span id="tickTxt">RUNNING</span></div>
         </div>
         <div class="lamp">
-          <div class="lab">autonomy · envelope</div>
+          <div class="lab">autonomy · bounded envelope</div>
           <div class="val"><span class="led ok" id="autLed"></span><span id="autTxt" style="color:var(--signal)">FAIL-CLOSED</span></div>
         </div>
         <div class="lamp">
@@ -407,14 +407,14 @@
 
       <div class="pipe-controls">
         <div class="btn" id="killTicker"><span class="led"></span>KILL TICKER</div>
-        <span class="ticker-mini" id="killNote">ticker·autonomy 분리 → fail-closed 증명</span>
+        <span class="ticker-mini" id="killNote">ticker 정지해도 권한 봉투는 닫힌 채 유지 — 경계는 하트비트와 무관</span>
       </div>
     </section>
 
     <!-- ===== KNOWLEDGE ===== -->
     <section class="panel" id="know">
       <div class="corner"></div>
-      <div class="ph"><span class="tag">KNOWLEDGE</span><h2>LLM Wiki · GraphRAG</h2><span class="pin">3-layer</span></div>
+      <div class="ph"><span class="tag">KNOWLEDGE</span><h2>LLM Wiki · Lineage Graph</h2><span class="pin">3-layer</span></div>
 
       <div class="wiki-stack">
         <div class="layer"><span class="ln">raw</span><span class="desc">원천 캡처 — 미가공 노트/대화</span><span class="ct" id="rawCt">1,284</span><span class="flow" data-d="0"></span></div>
@@ -430,7 +430,7 @@
     <!-- ===== HUMAN IN THE LOOP ===== -->
     <section class="panel" id="human">
       <div class="corner"></div>
-      <div class="ph"><span class="tag">HUMAN-IN-THE-LOOP</span><h2>Hermes ACP · ask-user gate</h2></div>
+      <div class="ph"><span class="tag">HUMAN-IN-THE-LOOP</span><h2>Hermes ACP · human approval gate</h2></div>
 
       <div class="acp pending" id="acp">
         <div class="ah">
@@ -475,7 +475,7 @@
     <!-- ===== GUARDS ===== -->
     <section class="panel" id="guards">
       <div class="corner"></div>
-      <div class="ph"><span class="tag">GOVERNANCE</span><h2>Named Failure-modes · governed</h2><span class="pin">contained</span></div>
+      <div class="ph"><span class="tag">GOVERNANCE</span><h2>Named Failure-modes · stop conditions</h2><span class="pin">contained</span></div>
       <div class="guard">
         <div class="gh"><span class="led"></span>Schema 비대화<span class="st">CONTAINED</span></div>
         <div class="gd">SSOT가 모든 규칙 종착지로 비대해짐 — Hyrum's Law. net-zero 레저로 차단. <b style="color:var(--ink2)">최소주의 = 비대화 면역력.</b></div>
@@ -506,7 +506,7 @@
           <div class="vch"><span class="vt">CONSTITUTION · SSOT</span><span class="vp">AUTHORITATIVE</span></div>
           <div class="const-row"><span class="led"></span>AGENTS.md<span class="h">30KB · English-only</span></div>
           <div class="const-row"><span class="led"></span>CLAUDE.md<span class="h">1-line · @AGENTS.md import</span></div>
-          <div class="const-note">모든 볼트-쓰기 규칙의 단일 진실원천. <b>충돌 시 이 파일이 이김</b> — 다운스트림은 stale.</div>
+          <div class="const-note">모든 볼트-쓰기 규칙의 단일 진실원천. <b>충돌 시 이 파일이 이김</b> — 권한·중단조건·인간 게이트를 여기서 선언 후 실행.</div>
         </div>
 
         <!-- vault-lint gauge -->

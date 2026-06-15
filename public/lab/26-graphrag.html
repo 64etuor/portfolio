@@ -1159,6 +1159,25 @@ slider.addEventListener("input",drawGround);
 function resizeAll(){ sizeGraph(); sizeQuad(); sizeGround(); drawQuad(); drawGround(); }
 window.addEventListener("resize",resizeAll);
 
+/* auto-cycle: rotate hybrid -> vector -> graph -> hybrid ... */
+const AUTO_MODES=["hybrid","vector","graph"];
+let autoIdx=0;
+let autoCycleTimer=null;
+
+function scheduleNextCycle(){
+  // each cycle: 4 hops x 620ms reveal + 3 s viewing time = ~5.5 s
+  autoCycleTimer = setTimeout(function runCycle(){
+    autoIdx=(autoIdx+1)%AUTO_MODES.length;
+    const mode=AUTO_MODES[autoIdx];
+    // sync segmented control highlight
+    [...document.getElementById("modeSeg").children].forEach(b=>
+      b.classList.toggle("on", b.dataset.mode===mode));
+    loadQuery(mode);
+    runQuery(true);
+    scheduleNextCycle();
+  }, 5500);
+}
+
 function boot(){
   sizeGraph(); seed();
   // settle layout quickly for crisp first paint
@@ -1175,6 +1194,8 @@ function boot(){
   setTimeout(()=>veil.remove(),450);
   // kick off the animated pulse trace shortly after first paint for the "alive" delight
   setTimeout(()=>{ trace.active=true; trace.pulse=0; }, 700);
+  // start auto-cycle: first switch after initial hybrid has been shown
+  scheduleNextCycle();
 }
 
 if(document.fonts && document.fonts.ready){

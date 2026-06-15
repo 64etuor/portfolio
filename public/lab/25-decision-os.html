@@ -369,7 +369,7 @@
 
   <!-- TENET -->
   <div class="tenet">
-    <div class="q">“모든 결정은 <em>가치 변위(value displacement)</em>다 — Positive와 Negative를 반드시 명시하고 트레이드오프를 숨기지 마라.”</div>
+    <div class="q">"모든 결정은 <em>가치 변위(value displacement)</em>다 — Positive와 Negative를 반드시 명시하고 트레이드오프를 숨기지 마라."</div>
     <div class="by">좋은 결정은 결론의 정확성이 아니라,<br>결정이 놓인 <span style="color:var(--signal)">구조의 정직함</span>에서 나온다.</div>
   </div>
 
@@ -1010,6 +1010,8 @@ function highlightRank(){
 
 /* RUN: animate the 4 stages, then switch DAG to rank-projection */
 let running=false;
+let autoLoopTimer=null;   // handle for the auto-sweep loop
+
 async function runScoring(){
   if(running) return; running=true;
   const btn=document.getElementById("runBtn"); btn.setAttribute("disabled","");
@@ -1039,6 +1041,27 @@ async function runScoring(){
   running=false; btn.removeAttribute("disabled");
 }
 function wait(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+/* ---------- AUTO-SWEEP LOOP (runs without any interaction) ---------- */
+// Cycle: RUN scoring sweep (4 stages) → hold rank view 3.5 s → reset to tree → hold 3 s → repeat
+function resetToTree(){
+  viewMode="tree"; positions=treePositions(); tx=0; ty=0; scale=1;
+  NODES.forEach(n=> n._rank=null);
+  document.getElementById("rankFlag").classList.remove("show");
+  document.getElementById("dagHud").innerHTML="DAG = SSOT · tree = projection<br>drag=pan · scroll=zoom";
+  renderDAG(false);
+}
+async function autoSweep(){
+  await runScoring();           // Gate→Score→Cap→Tiebreaker animation
+  await wait(3500);             // hold rank projection so viewer can read it
+  resetToTree();                // snap back to dependency tree
+  await wait(3000);             // pause on tree before next cycle
+  autoLoopTimer = setTimeout(autoSweep, 0);   // next iteration (rAF-friendly via setTimeout 0)
+}
+function startAutoLoop(){
+  clearTimeout(autoLoopTimer);
+  autoLoopTimer = setTimeout(autoSweep, 0);
+}
 
 /* ---------- PRUNE (the blocked-action delight) ---------- */
 function attemptPrune(){
@@ -1174,20 +1197,24 @@ document.getElementById("cHidden").textContent=HIDDEN_EDGES.length;
 document.getElementById("cLedger").textContent=LEDGER.length;
 
 /* ---------- FIRST PAINT (alive with NO interaction) ---------- */
+let booted=false;
 function boot(){
+  if(booted) return; booted=true;
   setContext("complicated");
   renderRank(lastRanking);
   renderLedger();
   positions = treePositions();
   renderDAG(false);
-  selectNode(selId);          // pre-select D-05 → detail populated on first paint
+  selectNode(selId);          // pre-select D-05 -> detail populated on first paint
   tick(); setInterval(tick,1000);
+  // Start auto-sweep after layout is stable (font metrics settled)
+  setTimeout(startAutoLoop, 1800);
 }
 // Await fonts so SVG text metrics are stable before first paint
 if(document.fonts && document.fonts.ready){
   document.fonts.ready.then(boot);
   // safety fallback if fonts hang
-  setTimeout(()=>{ if(!document.getElementById("rankBody").children.length) boot(); }, 1200);
+  setTimeout(()=>{ if(!booted) boot(); }, 1200);
 }else{
   boot();
 }

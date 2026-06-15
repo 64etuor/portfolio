@@ -3,35 +3,35 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>박양하 · 살아있는 스프레드시트 — 스스로 계산하는 이력서</title>
+<title>박양하 · 살아있는 스프레드시트 — 코딩의 기원</title>
 <style>
 /* ───────────────────────── tokens ───────────────────────── */
 :root{
-  --app-bg:#1f2a23;          /* desktop behind the app */
-  --chrome:#217346;          /* the unmistakable spreadsheet green */
-  --chrome-2:#185c37;
-  --chrome-3:#103d24;
-  --ribbon:#f3f4f2;
-  --ribbon-line:#dcdfd9;
-  --paper:#ffffff;
-  --grid:#d8dcd6;            /* gridlines */
-  --grid-strong:#b9bfb6;
-  --hdr:#f5f6f4;             /* column/row header fill */
-  --hdr-line:#c7ccc3;
-  --hdr-ink:#5b6b60;
-  --ink:#1d2620;
-  --ink-2:#5d6a61;
-  --ink-3:#94a097;
-  --sel:#217346;            /* active cell border */
-  --sel-fill:rgba(33,115,70,.10);
-  --sel-band:rgba(33,115,70,.07);
-  --precedent:#2f6fed;      /* trace precedents (blue, like Excel) */
-  --precedent-fill:rgba(47,111,237,.12);
-  --formula:#0a7b34;
-  --num:#1546b6;
-  --good:#1a8a4f;
-  --bad:#c0392b;
-  --warn:#b8860b;
+  --app-bg:#0a0c10;
+  --chrome:#1e6b3f;
+  --chrome-2:#155230;
+  --chrome-3:#0d3620;
+  --ribbon:#141820;
+  --ribbon-line:#252c38;
+  --paper:#0d1117;
+  --grid:#1e2736;
+  --grid-strong:#2a3548;
+  --hdr:#111620;
+  --hdr-line:#1e2736;
+  --hdr-ink:#7a8fa8;
+  --ink:#c9d4e0;
+  --ink-2:#8999ad;
+  --ink-3:#4f6070;
+  --sel:#1e6b3f;
+  --sel-fill:rgba(30,107,63,.14);
+  --sel-band:rgba(30,107,63,.08);
+  --precedent:#3b82f6;
+  --precedent-fill:rgba(59,130,246,.12);
+  --formula:#4ade80;
+  --num:#60a5fa;
+  --good:#34d399;
+  --bad:#f87171;
+  --warn:#fbbf24;
   --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
   --sans:"Pretendard","Apple SD Gothic Neo","Helvetica Neue",-apple-system,system-ui,sans-serif;
   --rowh:30px;
@@ -41,7 +41,7 @@
 html,body{height:100%}
 body{
   background:
-    radial-gradient(1400px 800px at 50% -8%, rgba(33,115,70,.18), transparent 60%),
+    radial-gradient(1400px 800px at 50% -8%, rgba(30,107,63,.12), transparent 60%),
     var(--app-bg);
   color:var(--ink);
   font-family:var(--sans);
@@ -50,13 +50,13 @@ body{
   overflow:hidden;
   font-size:13px;
 }
-::selection{background:rgba(33,115,70,.25)}
+::selection{background:rgba(30,107,63,.3)}
 
 /* ───────────────────────── window shell ───────────────────────── */
 .app{
   position:fixed;inset:14px;border-radius:9px;overflow:hidden;
   display:grid;grid-template-rows:auto auto auto 1fr auto auto;
-  box-shadow:0 30px 80px -20px rgba(0,0,0,.55), 0 0 0 1px rgba(0,0,0,.25);
+  box-shadow:0 30px 80px -20px rgba(0,0,0,.75), 0 0 0 1px rgba(255,255,255,.06);
   background:var(--paper);
   min-width:980px;
 }
@@ -64,7 +64,7 @@ body{
 /* title bar */
 .titlebar{
   background:linear-gradient(180deg,var(--chrome),var(--chrome-2));
-  color:#eafff2;height:42px;display:flex;align-items:center;gap:12px;
+  color:#d4f5e4;height:42px;display:flex;align-items:center;gap:12px;
   padding:0 14px;font-weight:600;letter-spacing:-.01em;
   border-bottom:1px solid var(--chrome-3);
 }
@@ -72,16 +72,16 @@ body{
 .traffic i{width:12px;height:12px;border-radius:50%;display:block}
 .traffic .r{background:#ff5f57}.traffic .y{background:#febc2e}.traffic .g{background:#28c840}
 .titlebar .logo{
-  width:24px;height:24px;border-radius:5px;background:#fff;color:var(--chrome-2);
+  width:24px;height:24px;border-radius:5px;background:rgba(255,255,255,.12);color:#d4f5e4;
   display:grid;place-items:center;font-weight:800;font-size:14px;
-  box-shadow:0 1px 2px rgba(0,0,0,.25);
+  box-shadow:0 1px 2px rgba(0,0,0,.4);
 }
 .titlebar .doc{font-size:13.5px}
-.titlebar .doc small{opacity:.8;font-weight:400;margin-left:8px}
-.titlebar .who{margin-left:auto;display:flex;align-items:center;gap:10px;font-weight:400;font-size:12px;opacity:.92}
+.titlebar .doc small{opacity:.75;font-weight:400;margin-left:8px}
+.titlebar .who{margin-left:auto;display:flex;align-items:center;gap:10px;font-weight:400;font-size:12px;opacity:.88}
 .titlebar .who b{font-weight:700}
 .titlebar .avatar{
-  width:26px;height:26px;border-radius:50%;background:#eafff2;color:var(--chrome-2);
+  width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.15);color:#d4f5e4;
   display:grid;place-items:center;font-weight:800;font-size:12px;
 }
 
@@ -98,23 +98,23 @@ body{
   background:transparent;border:1px solid transparent;color:var(--ink);cursor:pointer;
   font-family:var(--sans);font-size:12px;line-height:1;transition:.12s;white-space:nowrap;
 }
-.rbtn:hover{background:#e7eae5;border-color:var(--ribbon-line)}
-.rbtn.on{background:var(--chrome);color:#fff;border-color:var(--chrome-2)}
+.rbtn:hover{background:#1a2030;border-color:var(--ribbon-line)}
+.rbtn.on{background:var(--chrome);color:#d4f5e4;border-color:var(--chrome-2)}
 .rbtn .ic{font-family:var(--mono);font-weight:700;font-size:12px}
 .rib-status{margin-left:auto;display:flex;align-items:center;gap:8px;color:var(--ink-3);font-family:var(--mono);font-size:11px}
-.recalc-led{width:8px;height:8px;border-radius:50%;background:#cfd6cd;transition:.2s}
-.recalc-led.busy{background:var(--warn);box-shadow:0 0 0 3px rgba(184,134,11,.18)}
-.recalc-led.done{background:var(--good);box-shadow:0 0 0 3px rgba(26,138,79,.18)}
+.recalc-led{width:8px;height:8px;border-radius:50%;background:#2a3548;transition:.2s}
+.recalc-led.busy{background:var(--warn);box-shadow:0 0 0 3px rgba(251,191,36,.18)}
+.recalc-led.done{background:var(--good);box-shadow:0 0 0 3px rgba(52,211,153,.18)}
 
 /* formula bar */
 .fxbar{
-  display:flex;align-items:stretch;background:#fff;border-bottom:1px solid var(--hdr-line);
+  display:flex;align-items:stretch;background:var(--paper);border-bottom:1px solid var(--hdr-line);
   height:30px;font-family:var(--mono);font-size:12.5px;
 }
 .namebox{
   width:120px;border-right:1px solid var(--hdr-line);display:flex;align-items:center;
   justify-content:space-between;padding:0 10px;color:var(--ink);font-weight:700;
-  background:#fafbf9;
+  background:#0d1420;
 }
 .namebox .caret{color:var(--ink-3);font-size:9px}
 .fx-icon{
@@ -127,7 +127,7 @@ body{
 }
 .fx-input .kw{color:var(--formula);font-weight:700}
 .fx-input .ref{color:var(--num);font-weight:700}
-.fx-input .str{color:#a3344b}
+.fx-input .str{color:#f472b6}
 .fx-input .cmt{color:var(--ink-3)}
 
 /* ───────────────────────── grid ───────────────────────── */
@@ -164,16 +164,16 @@ table.sheet col.rowhdr{width:42px}
   text-align:center;font-family:var(--mono);font-size:11px;font-weight:600;
   border-right:1px solid var(--hdr-line);user-select:none;
 }
-/* freeze header row (first data row used as labels) */
+/* freeze header row */
 tr.freeze th, tr.freeze td{
-  position:sticky;z-index:4;background:#eef4ef;font-weight:700;color:var(--ink);
+  position:sticky;z-index:4;background:#101826;font-weight:700;color:var(--ink);
   border-bottom:1px solid var(--grid-strong);
 }
 tr.freeze td.rowhdr{z-index:7}
 
 .sheet td.num{font-family:var(--mono);text-align:right;color:var(--num)}
 .sheet td.formula{font-family:var(--mono);color:var(--formula)}
-.sheet td.zebra{background:#fbfcfb}
+.sheet td.zebra{background:#0f1520}
 .sheet td.title{font-weight:700;color:var(--ink)}
 .sheet td.muted{color:var(--ink-2)}
 .sheet td.wide{max-width:340px;white-space:normal;line-height:1.45;padding-top:5px;padding-bottom:5px;height:auto;word-break:keep-all}
@@ -181,11 +181,11 @@ tr.freeze td.rowhdr{z-index:7}
 /* highlight states */
 .sheet td.hl-active{
   outline:2px solid var(--sel);outline-offset:-2px;z-index:3;
-  background:var(--sel-fill);box-shadow:inset 0 0 0 1px rgba(33,115,70,.4);
+  background:var(--sel-fill);box-shadow:inset 0 0 0 1px rgba(30,107,63,.5);
 }
 .sheet td.hl-active .fillhandle{
   position:absolute;right:-3px;bottom:-3px;width:7px;height:7px;background:var(--sel);
-  border:1px solid #fff;cursor:crosshair;z-index:4;
+  border:1px solid #0d1117;cursor:crosshair;z-index:4;
 }
 .sheet td.hl-precedent{
   outline:1.5px dashed var(--precedent);outline-offset:-2px;
@@ -193,44 +193,54 @@ tr.freeze td.rowhdr{z-index:7}
 }
 .sheet td.col-band{background:var(--sel-band)}
 .sheet td.row-band{background:var(--sel-band)}
-@keyframes antsglow{from{box-shadow:inset 0 0 0 30px rgba(47,111,237,.20)}to{box-shadow:inset 0 0 0 0 rgba(47,111,237,0)}}
+@keyframes antsglow{from{box-shadow:inset 0 0 0 30px rgba(59,130,246,.20)}to{box-shadow:inset 0 0 0 0 rgba(59,130,246,0)}}
 
 /* recalc sweep flash */
 .sheet td.recalcing{animation:recalcflash .5s ease}
 @keyframes recalcflash{
-  0%{background:rgba(184,134,11,.35)}
-  60%{background:rgba(26,138,79,.20)}
+  0%{background:rgba(251,191,36,.28)}
+  60%{background:rgba(52,211,153,.15)}
   100%{background:transparent}
 }
 .sheet td.justset{color:var(--good) !important}
 
 /* conditional-format heatmap cells */
-.heat{font-family:var(--mono);text-align:right;font-weight:700;color:#1c2a20;position:relative}
-.databar{position:absolute;left:0;top:3px;bottom:3px;border-radius:2px;opacity:.9;z-index:0}
+.heat{font-family:var(--mono);text-align:right;font-weight:700;color:var(--ink);position:relative}
+.databar{position:absolute;left:0;top:3px;bottom:3px;border-radius:2px;opacity:.85;z-index:0}
 .heat .v{position:relative;z-index:1}
 
 /* metric arrow */
 .arrow-up{color:var(--good)} .arrow-dn{color:var(--bad)}
 
-/* ───────────────────────── pivot / chart panel (지표 sheet) ───────────────────────── */
+/* ───────────────────────── pivot / chart panel ───────────────────────── */
 .metricwrap{display:grid;grid-template-columns:minmax(520px,1fr) minmax(360px,420px);gap:0;height:100%}
 .metricwrap .gridcol{overflow:auto;border-right:1px solid var(--hdr-line)}
-.pivot{padding:14px 16px;overflow:auto;background:#fafbf9}
+.pivot{padding:14px 16px;overflow:auto;background:#0c1018}
 .pivot h4{font-size:12px;color:var(--hdr-ink);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px;font-family:var(--mono)}
 .pivot .pv-sub{color:var(--ink-3);font-size:11px;margin-bottom:12px;font-family:var(--mono)}
-#chart{width:100%;height:300px}
+#chart{width:100%;height:280px}
 .pivot .legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px;font-size:11px;color:var(--ink-2)}
 .pivot .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
-.pivot .pv-note{margin-top:14px;padding:10px 12px;border:1px solid var(--ribbon-line);border-radius:7px;background:#fff;font-size:11.5px;color:var(--ink-2);line-height:1.5}
-.pivot .pv-note b{color:var(--chrome-2)}
+.pivot .pv-note{margin-top:14px;padding:10px 12px;border:1px solid var(--ribbon-line);border-radius:7px;background:#111820;font-size:11.5px;color:var(--ink-2);line-height:1.5}
+.pivot .pv-note b{color:var(--good)}
 
-/* delight: before/after toggle banner inside 지표 */
-.dax{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 12px;border:1px dashed var(--chrome);border-radius:8px;background:rgba(33,115,70,.05)}
+/* image placeholder */
+.img-placeholder{
+  margin-top:12px;border:1px dashed var(--ribbon-line);border-radius:8px;
+  background:#0e1520;padding:18px 14px;text-align:center;
+  font-family:var(--mono);font-size:11px;color:var(--ink-3);
+  min-height:90px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+}
+.img-placeholder .ph-icon{font-size:22px;opacity:.4}
+.img-placeholder .ph-label{color:var(--ink-3);letter-spacing:.04em}
+
+/* Excel->Code toggle banner */
+.dax{display:flex;align-items:center;gap:10px;margin-top:14px;padding:10px 12px;border:1px dashed var(--chrome);border-radius:8px;background:rgba(30,107,63,.06)}
 .dax .lab{font-family:var(--mono);font-size:11px;color:var(--ink-2)}
-.toggle{position:relative;width:128px;height:26px;border-radius:14px;background:#e3e6e1;cursor:pointer;border:1px solid var(--ribbon-line);flex:none}
-.toggle .knob{position:absolute;top:2px;left:2px;width:60px;height:20px;border-radius:11px;background:var(--chrome);color:#fff;display:grid;place-items:center;font-size:10px;font-weight:700;transition:.28s cubic-bezier(.4,1.3,.5,1)}
-.toggle.after .knob{left:66px;background:var(--chrome-3)}
-.toggle .ghost{position:absolute;top:0;height:100%;display:grid;place-items:center;font-size:10px;color:var(--ink-3);width:60px}
+.toggle{position:relative;width:138px;height:26px;border-radius:14px;background:#141c28;cursor:pointer;border:1px solid var(--ribbon-line);flex:none}
+.toggle .knob{position:absolute;top:2px;left:2px;width:64px;height:20px;border-radius:11px;background:var(--chrome);color:#d4f5e4;display:grid;place-items:center;font-size:10px;font-weight:700;transition:.28s cubic-bezier(.4,1.3,.5,1)}
+.toggle.after .knob{left:72px;background:#1d4ed8}
+.toggle .ghost{position:absolute;top:0;height:100%;display:grid;place-items:center;font-size:10px;color:var(--ink-3);width:64px}
 .toggle .ghost.l{left:4px}.toggle .ghost.r{right:4px}
 
 /* ───────────────────────── sheet tabs + status bar ───────────────────────── */
@@ -246,36 +256,36 @@ tr.freeze td.rowhdr{z-index:7}
   border:none;border-right:1px solid var(--ribbon-line);font-family:var(--sans);transition:.12s;
 }
 .tab .dot{width:9px;height:9px;border-radius:2px}
-.tab:hover{background:#e7eae5;color:var(--ink)}
+.tab:hover{background:#141c28;color:var(--ink)}
 .tab.active{
-  background:#fff;color:var(--ink);font-weight:700;
-  box-shadow:inset 0 2.5px 0 var(--chrome);border-bottom:1px solid #fff;margin-bottom:-1px;
+  background:var(--paper);color:var(--ink);font-weight:700;
+  box-shadow:inset 0 2.5px 0 var(--chrome);border-bottom:1px solid var(--paper);margin-bottom:-1px;
 }
 .tab .cnt{font-family:var(--mono);font-size:10px;color:var(--ink-3)}
 .addtab{display:grid;place-items:center;width:34px;color:var(--ink-3);cursor:default}
 
 .statusbar{
   display:flex;align-items:center;gap:0;background:linear-gradient(180deg,var(--chrome),var(--chrome-2));
-  color:#dffaeb;height:24px;font-size:11px;font-family:var(--mono);
+  color:#d4f5e4;height:24px;font-size:11px;font-family:var(--mono);
 }
-.statusbar .sb{padding:0 14px;border-right:1px solid rgba(255,255,255,.15);height:100%;display:flex;align-items:center;gap:7px}
-.statusbar .sb.right{margin-left:auto;border-right:none;border-left:1px solid rgba(255,255,255,.15)}
+.statusbar .sb{padding:0 14px;border-right:1px solid rgba(255,255,255,.12);height:100%;display:flex;align-items:center;gap:7px}
+.statusbar .sb.right{margin-left:auto;border-right:none;border-left:1px solid rgba(255,255,255,.12)}
 .statusbar b{color:#fff;font-weight:700}
 .statusbar .zoom{display:flex;align-items:center;gap:8px}
-.statusbar .ready{color:#a8f0c8}
+.statusbar .ready{color:#86efac}
 
-/* tooltip for formula explanation on hover */
+/* tooltip */
 .celltip{
   position:fixed;z-index:50;pointer-events:none;max-width:300px;
-  background:#1d2620;color:#eef4ef;font-family:var(--mono);font-size:11px;line-height:1.5;
-  padding:8px 11px;border-radius:7px;box-shadow:0 10px 30px -8px rgba(0,0,0,.5);
-  opacity:0;transform:translateY(4px);transition:.12s;border:1px solid rgba(255,255,255,.1);
+  background:#0d1520;color:#c9d4e0;font-family:var(--mono);font-size:11px;line-height:1.5;
+  padding:8px 11px;border-radius:7px;box-shadow:0 10px 30px -8px rgba(0,0,0,.7);
+  opacity:0;transform:translateY(4px);transition:.12s;border:1px solid rgba(255,255,255,.08);
 }
 .celltip.show{opacity:1;transform:translateY(0)}
-.celltip .tk{color:#7fdca0;font-weight:700}
-.celltip .tr{color:#82b1ff}
+.celltip .tk{color:#4ade80;font-weight:700}
+.celltip .tr{color:#60a5fa}
 
-/* responsive-ish guard */
+/* responsive guard */
 @media (max-width:1180px){
   .metricwrap{grid-template-columns:1fr}
   .pivot{border-top:1px solid var(--hdr-line)}
@@ -289,9 +299,9 @@ tr.freeze td.rowhdr{z-index:7}
   <div class="titlebar">
     <span class="traffic"><i class="r"></i><i class="y"></i><i class="g"></i></span>
     <span class="logo">박</span>
-    <span class="doc">이력서_박양하_v2026.xlsx <small>— 스스로 계산하는 이력서</small></span>
+    <span class="doc">코딩의_기원_박양하.xlsx <small>— 엑셀 자동화에서 개발자로</small></span>
     <span class="who">
-      마지막 재계산 <b id="lastcalc">—</b>
+      마지막 재계산 <b id="lastcalc">--</b>
       <span class="avatar">YH</span>
     </span>
   </div>
@@ -299,14 +309,14 @@ tr.freeze td.rowhdr{z-index:7}
   <!-- ribbon -->
   <div class="ribbon">
     <div class="rib-grp">
-      <button class="rbtn" id="btnRecalc"><span class="ic">∑</span> 전체 재계산 <small style="color:var(--ink-3)">F9</small></button>
+      <button class="rbtn" id="btnRecalc"><span class="ic">sum</span> 전체 재계산 <small style="color:var(--ink-3)">F9</small></button>
     </div>
     <div class="rib-grp">
-      <button class="rbtn on" id="btnTrace"><span class="ic">→</span> 수식 추적</button>
-      <button class="rbtn on" id="btnHeat"><span class="ic">▦</span> 조건부 서식</button>
+      <button class="rbtn on" id="btnTrace"><span class="ic">-&gt;</span> 수식 추적</button>
+      <button class="rbtn on" id="btnHeat"><span class="ic">##</span> 조건부 서식</button>
     </div>
     <div class="rib-grp">
-      <span style="color:var(--ink-3);font-family:var(--mono);font-size:11px">함수: =SUM · =AVG · =ROI · =YIELD · =DEFECT_RATE()</span>
+      <span style="color:var(--ink-3);font-family:var(--mono);font-size:11px">=SUM · =IF · =VLOOKUP · =MACRO · =SQL · =CODE()</span>
     </div>
     <div class="rib-status">
       <span class="recalc-led" id="led"></span>
@@ -316,19 +326,17 @@ tr.freeze td.rowhdr{z-index:7}
 
   <!-- formula bar -->
   <div class="fxbar">
-    <div class="namebox"><span id="nameRef">A1</span><span class="caret">▾</span></div>
+    <div class="namebox"><span id="nameRef">A1</span><span class="caret">v</span></div>
     <div class="fx-icon">fx</div>
     <div class="fx-input" id="fxInput"></div>
   </div>
 
-  <!-- grid (panes swap per sheet) -->
-  <div class="gridwrap" id="gridwrap">
-    <!-- panes injected by JS -->
-  </div>
+  <!-- grid -->
+  <div class="gridwrap" id="gridwrap"></div>
 
   <!-- sheet tabs -->
   <div class="tabbar">
-    <div class="tabscroll">◀ ▶</div>
+    <div class="tabscroll">&lt; &gt;</div>
     <div class="tabs" id="tabs"></div>
     <div class="addtab">+</div>
   </div>
@@ -337,8 +345,8 @@ tr.freeze td.rowhdr{z-index:7}
   <div class="statusbar">
     <span class="sb ready" id="sbReady">준비</span>
     <span class="sb" id="sbCell">셀 A1</span>
-    <span class="sb" id="sbAgg">합계: —</span>
-    <span class="sb right zoom">박양하 · 생산운영 PM / 공정기술 엔지니어 / 총괄본부장 &nbsp; 100%</span>
+    <span class="sb" id="sbAgg">합계: --</span>
+    <span class="sb right zoom">박양하 · 현장의 불합리를 코드로 바꿈 &nbsp; 100%</span>
   </div>
 </div>
 
@@ -348,66 +356,60 @@ tr.freeze td.rowhdr{z-index:7}
 import * as echarts from "https://esm.sh/echarts@5.5.0?bundle";
 
 /* ─────────────────────────────────────────────────────────────────────
-   DATA MODEL  (real content — 박양하)
+   DATA MODEL  -- 코딩의 기원 (엑셀 -> 코드 전환 서사)
    ───────────────────────────────────────────────────────────────────── */
 
-const CAREER = [
-  {co:"미러리스", from:"2025.08", to:"현재",     mo:11,  role:"총괄본부장",
-   work:"CRM·키오스크·앱 기획 · FastAPI·AWS/GCP·CI/CD 구축 · RPA·AI(MCP) AX 추진",
-   impact:92},
-  {co:"솔라엣지", from:"2023.09", to:"2024.12",  mo:16,  role:"공정기술 엔지니어",
-   work:"데이터 DB·대시보드 구축 · ST −50% · 검사성적서 자동발행 · MES · 사무공수 −451분/일",
-   impact:97},
-  {co:"이랜텍",   from:"2022.11", to:"2023.09",  mo:11,  role:"생산라인 PM / 파트장",
-   work:"DOE로 용착 공정 개선 · 사이클타임 단축 · 생산성 향상 · 전용 Jig 개발",
-   impact:88},
-  {co:"은성에스아이티", from:"2020.08", to:"2022.11", mo:27, role:"생산관리과장 (배터리팩 총괄)",
-   work:"부품 단가 +30% 재협상 · 운영경비 −85% · 비전검사 도입 · 불량 0건 · IATF16949",
-   impact:90},
+// 전환 단계: 수기 -> 엑셀 -> VBA/매크로 -> SQL/DB -> 코드
+const JOURNEY = [
+  {phase:"수기 반복",  period:"현장 초기",  tool:"종이·수기 집계",
+   trigger:"같은 숫자를 하루 수십 번 옮겨 적다가 - 왜 이걸 사람이 해야 하지?",
+   next:"엑셀 도입", pain:100},
+  {phase:"엑셀 함수",  period:"2020~2021",  tool:"SUM · IF · VLOOKUP",
+   trigger:"수식 하나로 수기 2시간이 30분으로. 자동화의 첫 맛.",
+   next:"반복 패턴 발견 -> VBA", pain:60},
+  {phase:"매크로/VBA", period:"2021~2022",  tool:"Excel VBA · 매크로 자동화",
+   trigger:"버튼 하나로 보고서 완성. 그런데 데이터가 쌓일수록 파일이 무거워지고 깨짐.",
+   next:"구조적 한계 -> DB 필요", pain:35},
+  {phase:"SQL / DB",   period:"2022~2023",  tool:"MySQL · 정형 스키마 설계",
+   trigger:"분산 엑셀을 DB로. 쿼리 한 줄이 VBA 200줄을 대체. 데이터가 먼저 쌓여야 한다.",
+   next:"DB + 코드 통합", pain:15},
+  {phase:"코드/개발",  period:"2023~현재",  tool:"Python · FastAPI · React · DevOps",
+   trigger:"이걸 더 제대로 하려면 직접 만들어야 한다 -> 부트캠프 -> 백/프론트/인프라",
+   next:"현재: 현장+개발 통합", pain:5},
 ];
 
-const SKILLS = [
-  {grp:"개발 / 데이터", lvl:5, items:["Python","SQL","FastAPI","React","TypeScript","Electron","Rust","MySQL/RDS","AWS","GCP","BI","ML","RPA","CI/CD"]},
-  {grp:"공정 / 품질",   lvl:5, items:["PFMEA","CP","PFD","SOP","산업용접","LOB","Jig개발","기구설계","비전검사","로봇티칭","Draftsight"]},
-  {grp:"시스템 / 표준", lvl:4, items:["ERP","MES","IATF16949"]},
+// 관성 거부 원칙 데이터
+const PRINCIPLES = [
+  {k:"원칙",       v:"관성에 따라 일하지 않는다",              note:"현장에서 체득한 제1원칙"},
+  {k:"방법",       v:"불합리를 방치하지 않는다",               note:"도구를 만들어서라도 바꾼다"},
+  {k:"데이터 철학", v:"없으면 끼워맞추지 않는다",               note:"데이터가 쌓이는 구조부터 설계"},
+  {k:"전환 트리거", v:"엑셀 한계 인식 -> 구조 설계 전환",       note:"엑셀->DB->코드 순서로 의심"},
+  {k:"역량 재계산", v:"부트캠프: 백/프론트/DevOps/데이터분석",   note:"필요하면 처음부터 다시 배운다"},
 ];
 
-// 지표: value used for chart magnitude (absolute % improvement), dir for arrow
-const METRICS = [
-  {k:"운영경비",  raw:"−85%",      mag:85, dir:-1, src:"은성에스아이티", cat:"비용"},
-  {k:"ST 단축",   raw:"−50%",      mag:50, dir:-1, src:"솔라엣지",       cat:"속도"},
-  {k:"C/T 단축",  raw:"−49%",      mag:49, dir:-1, src:"이랜텍",         cat:"속도"},
-  {k:"용착 공정",  raw:"DOE 개선",    mag:60,dir:-1, src:"이랜텍",         cat:"품질"},
-  {k:"생산성",    raw:"+24%",      mag:24, dir:1,  src:"이랜텍",         cat:"생산성"},
-  {k:"부품단가",  raw:"+30%",      mag:30, dir:1,  src:"은성에스아이티", cat:"협상"},
-  {k:"사무공수",  raw:"−451분/일", mag:94, dir:-1, src:"솔라엣지",       cat:"자동화"},
-  {k:"불량건수",  raw:"0건",       mag:100,dir:-1, src:"은성에스아이티", cat:"품질"},
-];
-
-const EDU = [
-  {a:"한국외국어대학교", b:"이탈리아어 (중퇴)",  c:"전공 전환 — 언어 → 제조·데이터"},
-  {a:"Kirana College",  b:"어학 / 호주 4년",     c:"TOEIC 930"},
-  {a:"CTIC",            b:"기술 교육",            c:"현장 기술 기반"},
-];
-const CONTACT = [
-  {a:"Email",  b:"64etuor@gmail.com"},
-  {a:"GitHub", b:"github.com/64etuor"},
-  {a:"Phone",  b:"010-7448-1791"},
+// 도구 진화 히스토리
+const TOOLS = [
+  {era:"0단계", name:"수기/종이",      kind:"아날로그", power:5,  unlock:"패턴 인식"},
+  {era:"1단계", name:"Excel 함수",    kind:"자동화 기초", power:30, unlock:"시간 단축 체감"},
+  {era:"2단계", name:"VBA 매크로",    kind:"반복 자동화", power:55, unlock:"구조적 한계 직면"},
+  {era:"3단계", name:"SQL/DB 설계",   kind:"데이터 구조화", power:78, unlock:"분산 데이터 통합"},
+  {era:"4단계", name:"Python/API",   kind:"백엔드 개발", power:88, unlock:"시스템 자동화 전체"},
+  {era:"5단계", name:"React/DevOps", kind:"풀스택/인프라", power:95, unlock:"아이디어 -> 제품 직접 구현"},
 ];
 
 const CAT_COLOR = {
-  "비용":"#217346","속도":"#2f6fed","품질":"#c0392b",
-  "생산성":"#1a8a4f","협상":"#b8860b","자동화":"#7b3fb5",
+  "아날로그":"#4f6070",
+  "자동화 기초":"#1e6b3f",
+  "반복 자동화":"#1d4ed8",
+  "데이터 구조화":"#7c3aed",
+  "백엔드 개발":"#0891b2",
+  "풀스택/인프라":"#059669",
 };
 
 /* helpers ----------------------------------------------------------------- */
-const $  = s => document.querySelector(s);
+const $ = s => document.querySelector(s);
 const COLNAME = n => { let s=""; n++; while(n>0){ s=String.fromCharCode(65+(n-1)%26)+s; n=Math.floor((n-1)/26);} return s; };
-const totalMonths = CAREER.reduce((a,c)=>a+c.mo,0);
-const avgImpact   = Math.round(CAREER.reduce((a,c)=>a+c.impact,0)/CAREER.length);
-const skillCount  = SKILLS.reduce((a,s)=>a+s.items.length,0);
 
-/* cell registry: id -> {ref, formula, explain, precedents:[refs], el} */
 const CELLS = {};
 function regCell(el, ref, opts={}){
   el.dataset.ref = ref;
@@ -419,7 +421,7 @@ function regCell(el, ref, opts={}){
    SHEET BUILDERS
    ───────────────────────────────────────────────────────────────────── */
 
-function tableShell(cols){ // cols = array of widths(px) for data columns
+function tableShell(cols){
   const t = document.createElement("table"); t.className="sheet";
   const cg = document.createElement("colgroup");
   const c0 = document.createElement("col"); c0.className="rowhdr"; cg.appendChild(c0);
@@ -440,179 +442,166 @@ function addRow(tb, rownum, freeze=false){
 }
 function cell(tr, text, cls=""){ const td=document.createElement("td"); if(cls) td.className=cls; td.innerHTML=text; tr.appendChild(td); return td; }
 
-/* ---- 경력 sheet ---- */
-function buildCareer(){
-  const pane=document.createElement("div"); pane.className="sheetpane"; pane.dataset.sheet="career";
-  const {t,tb}=tableShell([130,150,170,360,120]);
-  // header row (freeze)
+/* ---- 전환경로 sheet ---- */
+function buildJourney(){
+  const pane=document.createElement("div"); pane.className="sheetpane"; pane.dataset.sheet="journey";
+  const {t,tb}=tableShell([110,130,190,350,80]);
   let r=addRow(tb,1,true);
-  ["회사","기간","역할","핵심성과","임팩트지수"].forEach((h,i)=>{
-    const c=cell(tr0(r),h); regCell(c, COLNAME(i)+"1");
+  ["단계","시기","도구/방법","전환 트리거","고통지수"].forEach((h,i)=>{
+    regCell(cell(r,h), COLNAME(i)+"1");
   });
-  function tr0(x){return x;}
-  CAREER.forEach((c,idx)=>{
+  JOURNEY.forEach((j,idx)=>{
     const rownum=idx+2;
-    const tr=addRow(tb,rownum, false);
-    const z = idx%2? "zebra":"";
-    const cA=cell(tr, c.co, "title "+z);
-    const cB=cell(tr, `${c.from} – ${c.to}`, "muted "+z);
-    const cC=cell(tr, c.role, z);
-    const cD=cell(tr, c.work, "wide "+z);
-    const cE=cell(tr, `<span class="v">${c.impact}</span>`, "heat "+z);
-    // databar for impact
+    const tr=addRow(tb,rownum);
+    const z=idx%2?"zebra":"";
+    regCell(cell(tr, j.phase, "title "+z), `A${rownum}`, {explain:`전환 단계: ${j.phase}`});
+    regCell(cell(tr, j.period, "muted "+z), `B${rownum}`, {explain:`시기: ${j.period}`});
+    regCell(cell(tr, j.tool, "muted "+z), `C${rownum}`, {explain:`사용 도구: ${j.tool}`});
+    regCell(cell(tr, j.trigger, "wide "+z), `D${rownum}`, {explain:`전환 계기 (현장 체감)`});
+    const painCell=cell(tr, `<span class="v">${j.pain}</span>`, "heat "+z);
     const bar=document.createElement("span"); bar.className="databar";
-    bar.style.width=(c.impact*0.85)+"%";
-    bar.style.background="linear-gradient(90deg,rgba(33,115,70,.16),rgba(33,115,70,.42))";
-    cE.querySelector(".v").style.marginRight="2px"; cE.insertBefore(bar,cE.firstChild);
-    cE.classList.add("heatcell");
-    regCell(cA,`A${rownum}`,{explain:`'${c.co}' 텍스트 셀`});
-    regCell(cB,`B${rownum}`,{explain:`근속기간 = ${c.mo}개월`});
-    regCell(cC,`C${rownum}`);
-    regCell(cD,`D${rownum}`,{explain:`핵심성과 — 정량 지표는 '지표' 시트로 트레이스됨`});
-    regCell(cE,`E${rownum}`,{
-      formula:`=IMPACT(${c.role==="총괄본부장"?"전략·구축":"개선·정량성과"})`,
-      explain:`임팩트지수 ${c.impact} — 성과의 정량·범위 가중 점수`,
-      isFormula:true, recalc:()=>c.impact
+    bar.style.width=(j.pain*0.85)+"%";
+    const pct=j.pain/100;
+    bar.style.background=`linear-gradient(90deg, rgba(248,113,113,${pct*0.4}), rgba(248,113,113,${pct*0.7}))`;
+    painCell.insertBefore(bar, painCell.firstChild);
+    regCell(painCell, `E${rownum}`, {
+      formula:`=PAIN_INDEX(${j.phase})`,
+      explain:`고통지수 ${j.pain} -- 값이 낮아질수록 자동화가 해결한 것`,
+      isFormula:true, recalc:()=>j.pain
     });
   });
-  // summary rows
-  const sr=addRow(tb,6);
-  cell(sr,"<b>합계 / 요약</b>","title");
-  const cTot=cell(sr,`=SUM(B2:B5)`,"formula");
-  regCell(cTot,"B6",{formula:`=SUM(B2:B5)`, explain:`총 근속개월 = 11+16+11+27`,
-    precedents:["B2","B3","B4","B5"], isFormula:true,
-    recalc:()=>{ cTot.textContent=`${totalMonths}개월 (≈${(totalMonths/12).toFixed(1)}년)`; return totalMonths; }});
-  cell(sr,`4개 사 / 제조→데이터→개발`,"muted");
-  const cNote=cell(sr,`=COUNTA(D2:D5)`,"formula");
-  regCell(cNote,"D6",{formula:`=COUNTA(D2:D5)`, explain:`성과 항목 누적 = 4건의 굵직한 트랙`,
-    precedents:["D2","D3","D4","D5"], isFormula:true,
-    recalc:()=>{ cNote.textContent=`4개 트랙 누적`; return 4;}});
-  const cAvg=cell(sr,`=AVG(E2:E5)`,"formula heat");
-  regCell(cAvg,"E6",{formula:`=AVERAGE(E2:E5)`, explain:`평균 임팩트지수 = (92+97+88+90)/4`,
-    precedents:["E2","E3","E4","E5"], isFormula:true,
-    recalc:()=>{ cAvg.textContent=`평균 ${avgImpact}`; return avgImpact;}});
+  // summary
+  const sr=addRow(tb,7);
+  cell(sr,"<b>=DELTA()</b>","title formula");
+  cell(sr,"현재","muted");
+  cell(sr,"Python / FastAPI / React","muted");
+  const cNote=cell(sr,"=YIELD_FROM(엑셀_반복업무)","formula wide");
+  regCell(cNote,"D7",{formula:`=YIELD_FROM(엑셀->코드)`,
+    explain:`수기 100 -> 코드 5: 현장 불합리가 개발자 경로를 만든 것`,
+    isFormula:true, recalc:()=>{ cNote.textContent="고통지수 100 -> 5: 자동화가 쌓여 개발자가 됨"; return 5; }});
+  const cFin=cell(sr,"=CODE()","formula heat");
+  regCell(cFin,"E7",{formula:`=CODE(현장_불합리)`,
+    explain:`최종값: 도구를 만드는 사람`,
+    isFormula:true, recalc:()=>{ cFin.textContent="개발자"; return 0; }});
   pane.appendChild(t); return pane;
 }
 
-/* ---- 스킬 sheet ---- */
-function buildSkills(){
-  const pane=document.createElement("div"); pane.className="sheetpane"; pane.dataset.sheet="skills";
-  const {t,tb}=tableShell([170,90,560,110]);
+/* ---- 원칙 sheet ---- */
+function buildPrinciples(){
+  const pane=document.createElement("div"); pane.className="sheetpane"; pane.dataset.sheet="principles";
+  const {t,tb}=tableShell([160,340,280]);
   let r=addRow(tb,1,true);
-  ["분류","숙련도","기술 스택","항목수"].forEach((h,i)=>regCell(cell(r,h),COLNAME(i)+"1"));
-  let rn=2;
-  SKILLS.forEach((s,idx)=>{
-    const tr=addRow(tb,rn); const z=idx%2?"zebra":"";
-    regCell(cell(tr,s.grp,"title "+z),`A${rn}`);
-    const stars="★".repeat(s.lvl)+"☆".repeat(5-s.lvl);
-    const cB=cell(tr,`<span style="color:var(--warn);letter-spacing:1px">${stars}</span>`,z);
-    regCell(cB,`B${rn}`,{explain:`숙련도 ${s.lvl}/5`});
-    // tags
-    const tags=s.items.map(i=>`<span style="display:inline-block;background:#eef4ef;border:1px solid var(--ribbon-line);border-radius:5px;padding:1px 7px;margin:2px 4px 2px 0;font-size:11px;font-family:var(--mono);color:var(--ink)">${i}</span>`).join("");
-    const cC=cell(tr,tags,"wide "+z); regCell(cC,`C${rn}`,{explain:`${s.items.length}개 기술`});
-    const cD=cell(tr,`=COUNTA(...)`,"formula heat "+z);
-    regCell(cD,`D${rn}`,{formula:`=COUNTA(${COLNAME(2)}${rn})`, explain:`이 분류의 기술 개수 = ${s.items.length}`,
-      precedents:[`C${rn}`], isFormula:true, recalc:()=>{cD.textContent=s.items.length; return s.items.length;}});
-    rn++;
+  ["항목","내용","근거/비고"].forEach((h,i)=>regCell(cell(r,h),COLNAME(i)+"1"));
+  PRINCIPLES.forEach((p,idx)=>{
+    const rn=idx+2; const tr=addRow(tb,rn); const z=idx%2?"zebra":"";
+    regCell(cell(tr,p.k,"title "+z),`A${rn}`);
+    const cB=cell(tr,p.v,z);
+    regCell(cB,`B${rn}`,{explain:`핵심 신념: ${p.v}`});
+    regCell(cell(tr,p.note,"muted wide "+z),`C${rn}`);
   });
-  const sr=addRow(tb,rn);
-  regCell(cell(sr,"<b>총 보유 기술</b>","title"),`A${rn}`);
-  cell(sr,"—","muted");
-  cell(sr,"제조 현장 ↔ 풀스택 개발을 잇는 T자형 역량","muted");
-  const cTot=cell(sr,`=SUM(D2:D4)`,"formula heat");
-  regCell(cTot,`D${rn}`,{formula:`=SUM(D2:D${rn-1})`, explain:`총 기술 수 = ${skillCount}개`,
-    precedents:["D2","D3","D4"], isFormula:true, recalc:()=>{cTot.textContent=`${skillCount}개`; return skillCount;}});
+  const sr=addRow(tb,PRINCIPLES.length+2);
+  regCell(cell(sr,"<b>=CONCAT()</b>","title formula"),`A${PRINCIPLES.length+2}`);
+  const cB=cell(sr,"=IF(불합리, 도구_만든다, ELSE 참는다)","formula");
+  regCell(cB,`B${PRINCIPLES.length+2}`,{
+    formula:`=IF(불합리_감지, 구조_바꾼다, 관성_거부)`,
+    explain:`핵심 의사결정 함수 -- 현장에서 귀납된 알고리즘`,
+    isFormula:true, recalc:()=>{ cB.textContent="=IF(불합리 -> 구조 재설계, 반복 자동화, 도구 직접 개발)"; return 1; }
+  });
+  const cC=cell(sr,"=COUNTA(원칙)","formula heat");
+  regCell(cC,`C${PRINCIPLES.length+2}`,{
+    formula:`=COUNTA(원칙_목록)`,
+    explain:`귀납된 원칙 수 = ${PRINCIPLES.length}개`,
+    isFormula:true, recalc:()=>{ cC.textContent=`${PRINCIPLES.length}개 원칙`; return PRINCIPLES.length; }
+  });
   pane.appendChild(t); return pane;
 }
 
-/* ---- 지표 sheet : grid + pivot chart ---- */
+/* ---- 도구진화 sheet : grid + pivot chart ---- */
 let chart=null;
-function buildMetrics(){
-  const pane=document.createElement("div"); pane.className="sheetpane"; pane.dataset.sheet="metrics";
+function buildTools(){
+  const pane=document.createElement("div"); pane.className="sheetpane"; pane.dataset.sheet="tools";
   const wrap=document.createElement("div"); wrap.className="metricwrap";
   const gridcol=document.createElement("div"); gridcol.className="gridcol";
-  const {t,tb}=tableShell([130,140,110,170]);
+  const {t,tb}=tableShell([90,160,150,100]);
   let r=addRow(tb,1,true);
-  ["지표","원시값","개선폭","출처(회사)"].forEach((h,i)=>regCell(cell(r,h),COLNAME(i)+"1"));
-  const maxMag=Math.max(...METRICS.map(m=>m.mag));
-  METRICS.forEach((m,idx)=>{
+  ["단계","도구/언어","분류","역량치"].forEach((h,i)=>regCell(cell(r,h),COLNAME(i)+"1"));
+  const maxPow=Math.max(...TOOLS.map(t=>t.power));
+  TOOLS.forEach((tool,idx)=>{
     const rn=idx+2; const tr=addRow(tb,rn); const z=idx%2?"zebra":"";
-    regCell(cell(tr,m.k,"title "+z),`A${rn}`);
-    const arrow = m.dir<0 ? `<span class="arrow-up">▼</span>` : `<span class="arrow-up">▲</span>`;
-    const cB=cell(tr,`${arrow} ${m.raw}`,"muted "+z);
-    regCell(cB,`B${rn}`,{explain:`${m.src}에서 달성한 실제 성과`});
-    // heatmap cell with color-scale by magnitude
-    const cC=cell(tr,`<span class="v">${m.mag}</span>`,"heat "+z);
+    regCell(cell(tr,tool.era,"title "+z),`A${rn}`);
+    regCell(cell(tr,tool.name,"muted "+z),`B${rn}`,{explain:`도구: ${tool.name} / 해금: ${tool.unlock}`});
+    regCell(cell(tr,tool.kind,z),`C${rn}`);
+    const cD=cell(tr,`<span class="v">${tool.power}</span>`,"heat "+z);
     const bar=document.createElement("span"); bar.className="databar";
-    bar.style.width=(m.mag/maxMag*92)+"%";
-    bar.style.background=heatScale(m.mag);
-    cC.insertBefore(bar,cC.firstChild);
-    regCell(cC,`C${rn}`,{formula:`=NORMALIZE("${m.raw}")`, explain:`개선폭 정규화값 ${m.mag} — 조건부 색상 스케일 적용`, isFormula:true, recalc:()=>m.mag, metric:m});
-    regCell(cell(tr,m.src,"muted "+z),`D${rn}`,{explain:`출처: ${m.src}`});
+    bar.style.width=(tool.power/maxPow*90)+"%";
+    bar.style.background=heatScale(tool.power);
+    cD.insertBefore(bar,cD.firstChild);
+    regCell(cD,`D${rn}`,{
+      formula:`=SKILL_POWER("${tool.name}")`,
+      explain:`역량치 ${tool.power} -- 해금 조건: ${tool.unlock}`,
+      isFormula:true, recalc:()=>tool.power, tool
+    });
   });
-  // pivot summary row
-  const sr=addRow(tb, METRICS.length+2);
-  regCell(cell(sr,"<b>=YIELD()</b>","title formula"),`A${METRICS.length+2}`);
-  const cY=cell(sr,"계산중…","formula heat");
-  regCell(cY,`B${METRICS.length+2}`,{formula:`=YIELD(품질지표)`, explain:`품질 수율 = (공정 안정 & 규격 적합) ⇒ 100.0%`,
-    precedents:["C5","C9"], isFormula:true, recalc:()=>{cY.textContent="수율 100.0%"; return 100;}});
-  cell(sr,"=ROI","formula");
-  const cR=cell(sr,"계산중…","formula heat");
-  regCell(cR,`D${METRICS.length+2}`,{formula:`=ROI(자동화·협상)`, explain:`사무공수 −451분/일 + 단가 +30% ⇒ 정성적 ROI 최상`,
-    precedents:["C8","C7"], isFormula:true, recalc:()=>{cR.textContent="ROI ★최상"; return 1;}});
-
+  // final row
+  const sr=addRow(tb, TOOLS.length+2);
+  regCell(cell(sr,"<b>=UNLOCK()</b>","title formula"),`A${TOOLS.length+2}`);
+  const cY=cell(sr,"계산중...","formula heat");
+  regCell(cY,`B${TOOLS.length+2}`,{
+    formula:`=UNLOCK(현장_불합리)`,
+    explain:`최종 잠금해제: 아이디어에서 제품까지 혼자 구현 가능`,
+    isFormula:true, recalc:()=>{ cY.textContent="풀스택 + 현장지식"; return 1; }
+  });
+  cell(sr,"전체 스택","muted");
+  const cR=cell(sr,"계산중...","formula heat");
+  regCell(cR,`D${TOOLS.length+2}`,{
+    formula:`=SUM(D2:D${TOOLS.length+1})`,
+    explain:`누적 역량: 수기(5) + 엑셀(30) + VBA(55) + SQL(78) + Python(88) + React(95)`,
+    isFormula:true,
+    precedents:["D2","D3","D4","D5","D6","D7"],
+    recalc:()=>{ const s=TOOLS.reduce((a,t)=>a+t.power,0); cR.textContent=`누적 ${s}`; return s; }
+  });
   gridcol.appendChild(t);
 
-  // pivot / chart side
+  // pivot side
   const piv=document.createElement("div"); piv.className="pivot";
   piv.innerHTML=`
-    <h4>피벗 차트 — 카테고리별 개선폭</h4>
-    <div class="pv-sub">=PIVOT(지표!A:C, 행=카테고리, 값=SUM(개선폭))</div>
+    <h4>피벗 -- 도구 단계별 역량 성장</h4>
+    <div class="pv-sub">=PIVOT(도구!A:D, 행=단계, 값=역량치)</div>
     <div id="chart"></div>
     <div class="legend" id="chartLegend"></div>
     <div class="dax">
-      <span class="lab">데이터 소스:</span>
+      <span class="lab">현재 컨텍스트:</span>
       <div class="toggle" id="excelToggle" role="switch" aria-checked="false" tabindex="0">
-        <span class="ghost l">Excel</span><span class="ghost r">DB</span>
-        <span class="knob">수기 Excel</span>
+        <span class="ghost l">Excel</span><span class="ghost r">Code</span>
+        <span class="knob">Excel VBA</span>
       </div>
-      <span class="lab" id="daxRows">→ 451개 중복 행</span>
+      <span class="lab" id="daxRows">-> 수기 100% 의존</span>
     </div>
     <div class="pv-note" id="pvNote">
-      <b>수기 Excel:</b> 매일 451분어치 중복 입력 행이 쌓임 — 시트는 점점 무거워지고 오류가 누적.
-      토글을 누르면 같은 데이터가 <b>단일 DB 쿼리 1행</b>으로 접힘. 그게 솔라엣지에서 한 일.
+      <b>Excel 시절:</b> 보고서마다 함수를 새로 짜고, 시트가 깨질 때마다 처음부터. "더 나은 방법이 있어야 한다"는 확신이 SQL로, 그리고 코드로 이어졌다.
+    </div>
+    <!-- TODO: 사용자 제공 참고 이미지 삽입 위치 -->
+    <div class="img-placeholder">
+      <span class="ph-icon">[img]</span>
+      <span class="ph-label">참고 이미지</span>
+      <span style="font-size:10px;opacity:.5">사용자 제공 예정</span>
     </div>`;
   wrap.appendChild(gridcol); wrap.appendChild(piv);
   pane.appendChild(wrap);
   return pane;
 }
-function heatScale(v){ // green->yellow->red style "color scale" (here: low->high = light->deep green)
-  // map 0..100 to deep teal-green emphasis
+function heatScale(v){
   const t=Math.min(1,v/100);
-  const a=0.20+t*0.55;
-  return `linear-gradient(90deg, rgba(33,115,70,${a*0.5}), rgba(33,115,70,${a}))`;
-}
-
-/* ---- 학력 sheet ---- */
-function buildEdu(){
-  const pane=document.createElement("div"); pane.className="sheetpane"; pane.dataset.sheet="edu";
-  const {t,tb}=tableShell([220,260,360]);
-  let r=addRow(tb,1,true);
-  ["기관","과정","비고"].forEach((h,i)=>regCell(cell(r,h),COLNAME(i)+"1"));
-  EDU.forEach((e,idx)=>{
-    const rn=idx+2; const tr=addRow(tb,rn); const z=idx%2?"zebra":"";
-    regCell(cell(tr,e.a,"title "+z),`A${rn}`);
-    regCell(cell(tr,e.b,z),`B${rn}`);
-    regCell(cell(tr,e.c,"muted wide "+z),`C${rn}`);
-  });
-  const sr=addRow(tb,EDU.length+2);
-  regCell(cell(sr,"<b>요약</b>","title"),`A${EDU.length+2}`);
-  cell(sr,"호주 4년 · TOEIC 930","muted");
-  cell(sr,"비전공 → 현장 → 데이터/개발로 스스로 경로를 재계산","muted wide");
-  pane.appendChild(t); return pane;
+  const a=0.18+t*0.60;
+  return `linear-gradient(90deg, rgba(30,107,63,${a*0.45}), rgba(52,211,153,${a}))`;
 }
 
 /* ---- 연락처 sheet ---- */
+const CONTACT=[
+  {a:"Email",  b:"64etuor@gmail.com"},
+  {a:"GitHub", b:"github.com/64etuor"},
+  {a:"Phone",  b:"010-7448-1791"},
+];
 function buildContact(){
   const pane=document.createElement("div"); pane.className="sheetpane"; pane.dataset.sheet="contact";
   const {t,tb}=tableShell([160,420]);
@@ -622,31 +611,36 @@ function buildContact(){
     const rn=idx+2; const tr=addRow(tb,rn); const z=idx%2?"zebra":"";
     regCell(cell(tr,c.a,"title "+z),`A${rn}`);
     const cB=cell(tr,`<span style="color:var(--num);font-family:var(--mono)">${c.b}</span>`,z);
-    regCell(cB,`B${rn}`,{formula:`=HYPERLINK("${c.b}")`, explain:`연락처 — 클릭 가능한 링크 셀`, isFormula:true});
+    regCell(cB,`B${rn}`,{formula:`=HYPERLINK("${c.b}")`, explain:`연락처 셀`, isFormula:true});
   });
   const sr=addRow(tb,CONTACT.length+2);
   regCell(cell(sr,"<b>=CONCAT()</b>","title formula"),`A${CONTACT.length+2}`);
-  const cB=cell(sr,"박양하 · 데이터로 일하는 생산운영가","muted");
-  regCell(cB,`B${CONTACT.length+2}`,{formula:`=CONCAT(이름," · ",한줄소개)`, explain:`자기소개 결합 셀`, isFormula:true});
+  const cB=cell(sr,"박양하 - 현장의 불합리를 코드로 바꾼 개발자","muted");
+  regCell(cB,`B${CONTACT.length+2}`,{
+    formula:`=CONCAT(이름, " - ", 한줄소개)`,
+    explain:`자기소개 결합 셀`,
+    isFormula:true,
+    recalc:()=>{ cB.textContent="박양하 - 현장의 불합리를 코드로 바꾼 개발자"; return 1; }
+  });
   pane.appendChild(t); return pane;
 }
 
 /* ─────────────────────────────────────────────────────────────────────
    MOUNT
    ───────────────────────────────────────────────────────────────────── */
-const SHEETS = [
-  {id:"career",  name:"경력",  color:"#217346", build:buildCareer},
-  {id:"skills",  name:"스킬",  color:"#2f6fed", build:buildSkills},
-  {id:"metrics", name:"지표",  color:"#c0392b", build:buildMetrics},
-  {id:"edu",     name:"학력",  color:"#b8860b", build:buildEdu},
-  {id:"contact", name:"연락처",color:"#7b3fb5", build:buildContact},
+const SHEETS=[
+  {id:"journey",    name:"전환경로",  color:"#1e6b3f", build:buildJourney},
+  {id:"principles", name:"원칙",      color:"#7c3aed", build:buildPrinciples},
+  {id:"tools",      name:"도구진화",  color:"#0891b2", build:buildTools},
+  {id:"contact",    name:"연락처",    color:"#4f6070", build:buildContact},
 ];
 const gw=$("#gridwrap"), tabsEl=$("#tabs");
 const panes={};
-SHEETS.forEach(s=>{ const p=s.build(); panes[s.id]=p; gw.appendChild(p);
+SHEETS.forEach(s=>{
+  const p=s.build(); panes[s.id]=p; gw.appendChild(p);
   const tab=document.createElement("button"); tab.className="tab"; tab.dataset.sheet=s.id;
   tab.innerHTML=`<span class="dot" style="background:${s.color}"></span>${s.name}`;
-  tab.addEventListener("click",()=>activateSheet(s.id));
+  tab.addEventListener("click",()=>{ stopAutoplay(); activateSheet(s.id); });
   tabsEl.appendChild(tab);
 });
 
@@ -656,7 +650,7 @@ function activateSheet(id, opts={}){
   [...tabsEl.children].forEach(tb=>tb.classList.toggle("active", tb.dataset.sheet===id));
   activeSheet=id;
   gw.scrollTop=0;
-  if(id==="metrics"){ requestAnimationFrame(()=>{ drawChart(); }); }
+  if(id==="tools"){ requestAnimationFrame(()=>{ drawChart(); }); }
   if(!opts.silent) recalcSweep(id, opts.thenSelect);
 }
 
@@ -668,17 +662,15 @@ function clearHighlights(){
   });
 }
 function fxHTML(formula){
-  if(!formula) return `<span class="cmt">— 입력값 (수식 없음)</span>`;
-  const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  if(!formula) return `<span class="cmt">-- 입력값 (수식 없음)</span>`;
+  const esc=s=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   const L=String.fromCharCode(0xF000), R=String.fromCharCode(0xF001);
   const strs=[];
-  // protect string literals so the ref/keyword regexes leave their contents alone
-  let s = esc(formula).replace(/"([^"]*)"/g,(m,g1)=>{ strs.push(g1); return L+(strs.length-1)+R; });
-  s = s
+  let s=esc(formula).replace(/"([^"]*)"/g,(m,g1)=>{ strs.push(g1); return L+(strs.length-1)+R; });
+  s=s
     .replace(/=([A-Z_]+)/g,'=<span class="kw">$1</span>')
     .replace(/\b([A-Z]+\d+(?::[A-Z]+\d+)?)\b/g,'<span class="ref">$1</span>');
-  // restore protected strings as styled literals
-  s = s.replace(new RegExp(L+"(\\d+)"+R,"g"),(m,i)=>`<span class="str">"${strs[+i]}"</span>`);
+  s=s.replace(new RegExp(L+"(\\d+)"+R,"g"),(m,i)=>`<span class="str">"${strs[+i]}"</span>`);
   return s;
 }
 const traceOn=()=>$("#btnTrace").classList.contains("on");
@@ -688,32 +680,29 @@ function selectCell(ref){
   activeRef=ref;
   c.el.classList.add("hl-active");
   const fh=document.createElement("span"); fh.className="fillhandle"; c.el.appendChild(fh);
-  // name box + fx bar
   $("#nameRef").textContent=ref;
-  $("#fxInput").innerHTML = fxHTML(c.formula) + (c.formula?` &nbsp;<span class="cmt">// ${c.explain||""}</span>`:(c.explain?`<span class="cmt">// ${c.explain}</span>`:""));
-  // status bar
+  $("#fxInput").innerHTML=fxHTML(c.formula)+(c.formula?` &nbsp;<span class="cmt">// ${c.explain||""}</span>`:(c.explain?`<span class="cmt">// ${c.explain}</span>`:""));
   $("#sbCell").textContent="셀 "+ref;
-  const v = c.el.querySelector(".v");
-  $("#sbAgg").textContent = c.isFormula? ("값: "+ (v? v.textContent : c.el.textContent.trim())) : "합계: —";
-  // trace precedents
-  if(traceOn() && c.precedents && c.precedents.length){
+  const v=c.el.querySelector(".v");
+  $("#sbAgg").textContent=c.isFormula?("값: "+(v?v.textContent:c.el.textContent.trim())):"합계: --";
+  if(traceOn()&&c.precedents&&c.precedents.length){
     c.precedents.forEach(p=>{ const pc=CELLS[p]; if(pc&&pc.el){ pc.el.classList.remove("hl-precedent"); void pc.el.offsetWidth; pc.el.classList.add("hl-precedent"); }});
   }
 }
-// click delegation
 gw.addEventListener("click",e=>{
   const td=e.target.closest("td[data-ref]"); if(!td) return;
+  stopAutoplay();
   selectCell(td.dataset.ref);
 });
 
-/* ── hover tooltip explaining formulas ── */
+/* ── hover tooltip ── */
 const tip=$("#celltip");
 gw.addEventListener("mousemove",e=>{
   const td=e.target.closest("td[data-ref]");
   if(!td){ tip.classList.remove("show"); return; }
   const c=CELLS[td.dataset.ref];
-  if(!c || (!c.formula && !c.explain)){ tip.classList.remove("show"); return; }
-  tip.innerHTML = (c.formula? `<span class="tk">${td.dataset.ref}</span>  ${fxHTML(c.formula)}<br>`:`<span class="tk">${td.dataset.ref}</span><br>`) + (c.explain||"");
+  if(!c||(!c.formula&&!c.explain)){ tip.classList.remove("show"); return; }
+  tip.innerHTML=(c.formula?`<span class="tk">${td.dataset.ref}</span>  ${fxHTML(c.formula)}<br>`:`<span class="tk">${td.dataset.ref}</span><br>`)+(c.explain||"");
   tip.style.left=Math.min(window.innerWidth-310, e.clientX+14)+"px";
   tip.style.top=(e.clientY+16)+"px";
   tip.classList.add("show");
@@ -722,10 +711,10 @@ gw.addEventListener("mouseleave",()=>tip.classList.remove("show"));
 
 /* ── recalculation sweep ── */
 const led=$("#led"), recalcMsg=$("#recalcMsg"), sbReady=$("#sbReady");
-function recalcSweep(sheetId, thenSelect){
+function recalcSweep(sheetId, thenSelect, onDone){
   const pane=panes[sheetId];
-  const formulaCells=[...pane.querySelectorAll("td.formula, td.heat")].filter(td=>td.dataset.ref && CELLS[td.dataset.ref] && CELLS[td.dataset.ref].isFormula);
-  led.className="recalc-led busy"; recalcMsg.textContent="재계산 중…"; sbReady.textContent="계산 중";
+  const formulaCells=[...pane.querySelectorAll("td.formula, td.heat")].filter(td=>td.dataset.ref&&CELLS[td.dataset.ref]&&CELLS[td.dataset.ref].isFormula);
+  led.className="recalc-led busy"; recalcMsg.textContent="재계산 중..."; sbReady.textContent="계산 중";
   let i=0;
   const step=()=>{
     if(i>=formulaCells.length){
@@ -734,34 +723,33 @@ function recalcSweep(sheetId, thenSelect){
       const now=new Date();
       $("#lastcalc").textContent=now.toLocaleTimeString("ko-KR",{hour12:false});
       if(thenSelect){ selectCell(thenSelect); }
+      if(onDone) onDone();
       return;
     }
     const td=formulaCells[i++]; const c=CELLS[td.dataset.ref];
     td.classList.add("recalcing");
     if(c.recalc){ try{ c.recalc(); }catch(_){} td.classList.add("justset"); setTimeout(()=>td.classList.remove("justset"),700); }
     setTimeout(()=>td.classList.remove("recalcing"),500);
-    setTimeout(step, 70);
+    setTimeout(step, 75);
   };
   step();
 }
 
-/* ── DELIGHT: =DEFECT_RATE() animated 15% → 0% in career impact + metrics ── */
-// also Excel→DB toggle on metrics sheet
+/* ── Excel/Code 토글 ── */
 function wireToggle(){
-  const tg=$("#excelToggle"), knob=tg.querySelector(".knob"), rows=$("#daxRows"), note=$("#pvNote");
+  const tg=$("#excelToggle"); if(!tg) return;
+  const knob=tg.querySelector(".knob"), rows=$("#daxRows"), note=$("#pvNote");
   const flip=()=>{
     const after=tg.classList.toggle("after");
     tg.setAttribute("aria-checked", after);
     if(after){
-      knob.textContent="DB 1행";
-      // animate 451 -> 1
-      let n=451; rows.style.color="var(--good)";
-      const iv=setInterval(()=>{ n=Math.max(1,Math.round(n*0.78)-3); rows.textContent=`→ ${n}개 행`; if(n<=1){clearInterval(iv); rows.textContent="→ 1개 행 (DB 쿼리)";} },35);
-      note.innerHTML=`<b>DB:</b> 매일 451분 걸리던 수기 입력이 <b>쿼리 한 줄</b>로 접힘. 451개 중복 행 → 1행. 시트는 가벼워지고 오류율 0 — <b>사무공수 −451분/일</b>의 실제 메커니즘.`;
+      knob.textContent="Code";
+      rows.style.color="var(--good)"; rows.textContent="-> 코드 1파일로 관리";
+      note.innerHTML=`<b>Code:</b> SQL 쿼리 한 줄, Python 스크립트 하나가 VBA 200줄과 엑셀 50개 시트를 대체. 구조를 먼저 바꾸면 데이터는 자동으로 쌓인다.`;
       drawChart(true);
     }else{
-      knob.textContent="수기 Excel"; rows.style.color="var(--ink-3)"; rows.textContent="→ 451개 중복 행";
-      note.innerHTML=`<b>수기 Excel:</b> 매일 451분어치 중복 입력 행이 쌓임 — 시트는 점점 무거워지고 오류가 누적. 토글을 누르면 같은 데이터가 <b>단일 DB 쿼리 1행</b>으로 접힘. 그게 솔라엣지에서 한 일.`;
+      knob.textContent="Excel VBA"; rows.style.color="var(--ink-3)"; rows.textContent="-> 수기 100% 의존";
+      note.innerHTML=`<b>Excel 시절:</b> 보고서마다 함수를 새로 짜고, 시트가 깨질 때마다 처음부터. "더 나은 방법이 있어야 한다"는 확신이 SQL로, 그리고 코드로 이어졌다.`;
       drawChart(false);
     }
   };
@@ -769,45 +757,36 @@ function wireToggle(){
   tg.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){e.preventDefault();flip();}});
 }
 
-/* ── PIVOT CHART (echarts) ── */
-function pivotData(){
-  const map={};
-  METRICS.forEach(m=>{ map[m.cat]=(map[m.cat]||0)+m.mag; });
-  return Object.entries(map).sort((a,b)=>b[1]-a[1]);
-}
-function drawChart(dbMode=false){
+/* ── PIVOT CHART ── */
+function drawChart(codeMode=false){
   const el=$("#chart"); if(!el) return;
   if(!chart){ chart=echarts.init(el,null,{renderer:"canvas"}); }
-  const data=pivotData();
-  const cats=data.map(d=>d[0]);
-  const vals=data.map(d=>d[1]);
+  const data=TOOLS.map(t=>({name:t.name, value:t.power, kind:t.kind}));
   chart.setOption({
     animationDuration:700, animationEasing:"cubicOut",
+    backgroundColor:"transparent",
     grid:{left:8,right:18,top:10,bottom:6,containLabel:true},
     tooltip:{trigger:"axis",axisPointer:{type:"shadow"},
-      backgroundColor:"#1d2620",borderColor:"#2c3b31",textStyle:{color:"#eef4ef",fontSize:11,fontFamily:"monospace"},
-      formatter:p=>`${p[0].name} 카테고리<br/>SUM(개선폭) = <b>${p[0].value}</b>`},
-    xAxis:{type:"value",max:Math.max(...vals)*1.15,splitLine:{lineStyle:{color:"#eef0ec"}},
-      axisLabel:{color:"#94a097",fontFamily:"monospace",fontSize:10},axisLine:{show:false},axisTick:{show:false}},
-    yAxis:{type:"category",data:cats,inverse:true,
-      axisLabel:{color:"#1d2620",fontWeight:"bold",fontSize:12,fontFamily:"sans-serif"},
-      axisLine:{lineStyle:{color:"#c7ccc3"}},axisTick:{show:false}},
+      backgroundColor:"#0d1520",borderColor:"#1e2736",textStyle:{color:"#c9d4e0",fontSize:11,fontFamily:"monospace"},
+      formatter:p=>`${p[0].name}<br/>역량치 = <b>${p[0].value}</b>`},
+    xAxis:{type:"value",max:100,splitLine:{lineStyle:{color:"#1e2736"}},
+      axisLabel:{color:"#4f6070",fontFamily:"monospace",fontSize:10},axisLine:{show:false},axisTick:{show:false}},
+    yAxis:{type:"category",data:data.map(d=>d.name),inverse:true,
+      axisLabel:{color:codeMode?"#4ade80":"#8999ad",fontWeight:"bold",fontSize:11,fontFamily:"sans-serif"},
+      axisLine:{lineStyle:{color:"#1e2736"}},axisTick:{show:false}},
     series:[{
-      type:"bar",data:vals.map((v,i)=>({value:v,itemStyle:{color:CAT_COLOR[cats[i]]||"#217346",
-        borderRadius:[0,4,4,0], opacity:dbMode?1:0.92}})),
-      barWidth:dbMode?20:18,
-      label:{show:true,position:"right",color:"#5d6a61",fontFamily:"monospace",fontWeight:"bold",fontSize:11,
-        formatter:p=>p.value}
+      type:"bar",data:data.map(d=>({value:d.value,itemStyle:{color:CAT_COLOR[d.kind]||"#1e6b3f",borderRadius:[0,4,4,0],opacity:codeMode?1:0.8}})),
+      barWidth:codeMode?20:16,
+      label:{show:true,position:"right",color:"#8999ad",fontFamily:"monospace",fontWeight:"bold",fontSize:11,formatter:p=>p.value}
     }]
   });
-  // legend
   const lg=$("#chartLegend");
-  if(lg){ lg.innerHTML=cats.map(c=>`<span><i style="background:${CAT_COLOR[c]||'#217346'}"></i>${c}</span>`).join(""); }
+  if(lg){ lg.innerHTML=data.map(d=>`<span><i style="background:${CAT_COLOR[d.kind]||'#1e6b3f'}"></i>${d.kind}</span>`).join(""); }
 }
 window.addEventListener("resize",()=>{ if(chart) chart.resize(); });
 
 /* ── ribbon buttons ── */
-$("#btnRecalc").addEventListener("click",()=>recalcSweep(activeSheet, activeRef));
+$("#btnRecalc").addEventListener("click",()=>{ stopAutoplay(); recalcSweep(activeSheet, activeRef); });
 $("#btnTrace").addEventListener("click",()=>{ $("#btnTrace").classList.toggle("on"); if(activeRef) selectCell(activeRef); });
 $("#btnHeat").addEventListener("click",()=>{
   const on=$("#btnHeat").classList.toggle("on");
@@ -815,33 +794,69 @@ $("#btnHeat").addEventListener("click",()=>{
 });
 
 /* ─────────────────────────────────────────────────────────────────────
-   FIRST PAINT  (must show populated sheet + chart, default cell selected)
+   AUTO-PLAY  (스크롤/클릭 없이 자동 반복 재계산 스윕)
+   ───────────────────────────────────────────────────────────────────── */
+const AUTOPLAY_SHEETS=["journey","principles","tools","contact"];
+let apIdx=0, apTimer=null, apActive=true;
+
+function autoplayStep(){
+  if(!apActive) return;
+  const sheetId=AUTOPLAY_SHEETS[apIdx % AUTOPLAY_SHEETS.length];
+  activateSheet(sheetId, {silent:true});
+  // pick a meaningful default cell per sheet
+  const defaultCells={journey:"E2", principles:"B2", tools:"D4", contact:"B2"};
+  const sel=defaultCells[sheetId];
+  recalcSweep(sheetId, sel, ()=>{
+    if(!apActive) return;
+    apTimer=setTimeout(()=>{
+      if(!apActive) return;
+      apIdx++;
+      apTimer=setTimeout(autoplayStep, 400);
+    }, 2800);
+  });
+}
+
+function stopAutoplay(){
+  apActive=false;
+  if(apTimer){ clearTimeout(apTimer); apTimer=null; }
+}
+
+/* ─────────────────────────────────────────────────────────────────────
+   FIRST PAINT
    ───────────────────────────────────────────────────────────────────── */
 async function boot(){
-  if(document.fonts && document.fonts.ready){ try{ await document.fonts.ready; }catch(_){} }
-  wireToggle();
-  // show career first, run recalc, then select a meaningful default cell (E2 = 미러리스 임팩트)
-  activateSheet("career", {silent:true});
-  $("#tabs").children[0].classList.add("active");
-  // initial recalc + default selection (so headless PDF shows computed state)
-  // pre-fill formula cell text synchronously so static render is non-empty
-  Object.values(CELLS).forEach(c=>{ if(c.recalc){ try{c.recalc();}catch(_){}} });
-  selectCell("E2");
-  recalcSweep("career","E2");
+  if(document.fonts&&document.fonts.ready){ try{ await document.fonts.ready; }catch(_){} }
 
-  // build the metrics chart once even though hidden, so switching is instant & static export safe
-  // create offscreen-safe: defer until pane has size
+  // pre-fill formula cells synchronously
+  Object.values(CELLS).forEach(c=>{ if(c.recalc){ try{ c.recalc(); }catch(_){} }});
+
+  // show first sheet immediately (silent, no recalc yet)
+  activateSheet("journey", {silent:true});
+  $("#tabs").children[0].classList.add("active");
+  selectCell("E2");
+
+  // wire toggle after metrics pane is in DOM
+  wireToggle();
+
+  // offscreen chart pre-render
   setTimeout(()=>{
     const wasActive=activeSheet;
-    panes.metrics.classList.add("active");
+    panes.tools.classList.add("active");
     drawChart(false);
-    panes.metrics.classList.toggle("active", wasActive==="metrics");
-  }, 120);
+    panes.tools.classList.toggle("active", wasActive==="tools");
+  }, 100);
+
+  // layout gate: give layout time to settle before autoplay
+  setTimeout(()=>{
+    apActive=true;
+    autoplayStep();
+  }, 350);
 }
 boot();
 
-/* keyboard: F9 recalc */
-window.addEventListener("keydown",e=>{ if(e.key==="F9"){ e.preventDefault(); recalcSweep(activeSheet, activeRef);} });
+window.addEventListener("keydown",e=>{
+  if(e.key==="F9"){ e.preventDefault(); stopAutoplay(); recalcSweep(activeSheet, activeRef); }
+});
 </script>
 </body>
 </html>

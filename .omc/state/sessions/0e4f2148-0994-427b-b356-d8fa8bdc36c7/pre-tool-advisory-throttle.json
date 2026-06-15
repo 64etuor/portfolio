@@ -2,15 +2,15 @@
   "version": 1,
   "entries": {
     "79a93d4a2f8f50b95f852280616242fee1855dc99a3c75211917f55e72e95fae": {
-      "last_emitted_at_ms": 1781517468578,
+      "last_emitted_at_ms": 1781519366040,
       "message": "Use parallel execution for independent tasks. Use run_in_background for long operations (npm install, builds, tests)."
     },
     "445ed27a3872b681d98190bae61ccb84954e1bc4e140df5370be958dee776b3a": {
-      "last_emitted_at_ms": 1781517450401,
+      "last_emitted_at_ms": 1781519240644,
       "message": "Verify changes work after editing. Test functionality before marking complete."
     },
     "466399dafa2d20f60587180bad0a07358eb7f2bce724df0ff682f038ad33f5ad": {
-      "last_emitted_at_ms": 1781517431563,
+      "last_emitted_at_ms": 1781519209846,
       "message": "Read multiple files in parallel when possible for faster analysis."
     },
     "6d6354026867f20041ddf8cc1e15e06244b1d125da85f09c7d67e61035b86f6d": {
@@ -24,27 +24,7 @@
     "c3997075ae6ceb84eeed99d998d2ca4ce370cb2e9c5c92c4c710d2846988a91c": {
       "last_emitted_at_ms": 1781516769435,
       "message": "Spawning agent: general-purpose (inherit) | Task: Redo dedup 14 16 18 19"
-    },
-    "9fb38d7da46cf7e4f3d93828a16010163f9ac6bd2d0e556c116f449519da19b2": {
-      "last_emitted_at_ms": 1781514797863,
-      "message": "Spawning agent: general-purpose (inherit) | Task: Dedup 15(add) 17 05 11"
-    },
-    "18260faca689eac537b75d67db25d010a1afc3af451a7ba36f6391c5b07f56ce": {
-      "last_emitted_at_ms": 1781514785635,
-      "message": "Spawning agent: general-purpose (inherit) | Task: Dedup scenes 03 10 20 21"
-    },
-    "adab7ac5713fd5103bd6bfdda3823f80399ff666b826ccb9db8ea41b25444212": {
-      "last_emitted_at_ms": 1781514775731,
-      "message": "Spawning agent: general-purpose (inherit) | Task: Dedup scenes 14 16 18 19"
-    },
-    "cb5f17a0c6db77a0c48520deefbfb271cd9daa1f5ad703c465d579cf5efb08ee": {
-      "last_emitted_at_ms": 1781514764399,
-      "message": "Spawning agent: general-purpose (inherit) | Task: Dedup scenes 06 07 12 13"
-    },
-    "0907cec0c62835263aac721beb06e2e90f55ce02d7e5b473d7bb4edcd63d4157": {
-      "last_emitted_at_ms": 1781514753667,
-      "message": "Spawning agent: general-purpose (inherit) | Task: Dedup scenes 01 02 09"
     }
   },
-  "updated_at": "2026-06-15T09:57:48.578Z"
+  "updated_at": "2026-06-15T10:29:26.040Z"
 }

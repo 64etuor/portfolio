@@ -3,11 +3,11 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>박양하 · 공정 라인 / ASSEMBLY LINE</title>
+<title>박양하 · 이랜텍 라인 생산성 / ASSEMBLY LINE</title>
 <style>
 /* ============================================================
    PARK YANGHA — ASSEMBLY LINE PORTFOLIO
-   공정 라인: 입고 → 가공 → 검사 → 조립 → 출하
+   이랜텍 공정 라인: 분석 → Neck C/T 단축 → Function Test → LOB 개선 → 출하
    Monochrome industrial + hazard yellow safety color.
    ============================================================ */
 
@@ -354,7 +354,7 @@ main{position:relative; z-index:1; padding-top:76px;}
   .bom-head>div:nth-child(3),.bom-row>div:nth-child(3){display:none;}
 }
 
-/* ============ WELD STATION (machining delight) ============ */
+/* ============ JIG STATION (machining delight) ============ */
 .weldstage{
   position:relative;margin-top:26px;height:230px;background:#0a0c0d;
   border:1px solid var(--steel-line);border-radius:3px;overflow:hidden;
@@ -378,8 +378,8 @@ main{position:relative; z-index:1; padding-top:76px;}
 .defect-meter{
   position:absolute;top:16px;left:18px;font-family:var(--mono);font-size:12px;color:var(--ink-dim);
 }
-.defect-meter .pct{font-size:30px;font-weight:700;color:var(--fail);transition:color .5s;}
-.defect-meter .pct.zero{color:var(--pass);}
+.defect-meter .pct{font-size:30px;font-weight:700;color:var(--hazard);transition:color .5s;}
+.defect-meter .pct.arrived{color:var(--pass);}
 
 /* ============ ROBOTIC PICK-AND-PLACE (assembly) ============ */
 .gantry{
@@ -487,23 +487,23 @@ main{position:relative; z-index:1; padding-top:76px;}
 
 <!-- ============ HMI STATUS BAR ============ -->
 <div class="hmi">
-  <div class="cell brand">PYH-LINE&nbsp;01</div>
+  <div class="cell brand">ELENTEC-LINE</div>
   <div class="cell"><span class="led"></span><span class="run">RUNNING</span></div>
-  <div class="cell opt"><span class="lbl">PART</span><span class="val" id="hmiPart">SN-2025-0815</span></div>
+  <div class="cell opt"><span class="lbl">PART</span><span class="val" id="hmiPart">BATTERY-PACK</span></div>
   <div class="cell opt"><span class="lbl">STATION</span><span class="val" id="hmiStation">OP-00 / 라인 대기</span></div>
-  <div class="cell opt"><span class="lbl">YIELD</span><span class="val run">100.0%</span></div>
-  <div class="cell takt"><span class="lbl">TAKT</span><span class="val mono" id="hmiTakt">12.0s</span></div>
+  <div class="cell opt"><span class="lbl">생산성</span><span class="val run">+24%</span></div>
+  <div class="cell takt"><span class="lbl">C/T</span><span class="val mono" id="hmiTakt">28.0s</span></div>
   <div class="cell"><span class="lbl">UTC+9</span><span class="val clock" id="hmiClock">--:--:--</span></div>
 </div>
 
 <!-- ============ PROGRESS RAIL ============ -->
 <div class="rail" id="rail">
   <div class="stop" data-go="op00"><span class="dot"></span><span class="txt">OP-00 LINE</span></div>
-  <div class="stop" data-go="op10"><span class="dot"></span><span class="txt">OP-10 입고</span></div>
-  <div class="stop" data-go="op20"><span class="dot"></span><span class="txt">OP-20 가공</span></div>
-  <div class="stop" data-go="op30"><span class="dot"></span><span class="txt">OP-30 검사</span></div>
-  <div class="stop" data-go="op40"><span class="dot"></span><span class="txt">OP-40 조립</span></div>
-  <div class="stop" data-go="op50"><span class="dot"></span><span class="txt">OP-50 출하</span></div>
+  <div class="stop" data-go="op10"><span class="dot"></span><span class="txt">OP-10 분석</span></div>
+  <div class="stop" data-go="op20"><span class="dot"></span><span class="txt">OP-20 Neck C/T</span></div>
+  <div class="stop" data-go="op30"><span class="dot"></span><span class="txt">OP-30 검사 C/T</span></div>
+  <div class="stop" data-go="op40"><span class="dot"></span><span class="txt">OP-40 LOB 개선</span></div>
+  <div class="stop" data-go="op50"><span class="dot"></span><span class="txt">OP-50 결과</span></div>
 </div>
 
 <main>
@@ -516,19 +516,19 @@ main{position:relative; z-index:1; padding-top:76px;}
     <span class="op-ko">라인 가동 / LINE START</span>
   </div>
   <h1 class="hero-mega reveal d1">
-    <span class="ko">박양하</span>
-    <span class="en">PARK YANGHA · 공정 라인</span>
+    <span class="ko">이랜텍 라인</span>
+    <span class="en">ELENTEC · 생산라인 PM</span>
   </h1>
   <p class="hero-sub reveal d2">
-    원자재가 한 대의 완제품이 되기까지 — 교육에서 입고되고, 현장에서 가공·검사·조립을 거쳐
-    오늘의 <b>총괄본부장</b>으로 출하됩니다. 한 사람의 커리어를 하나의 <b>공정 라인</b>으로 봅니다.
-    스크롤하면 <span class="mono" style="color:var(--hazard)">PART SN-2025-0815</span> 가 다음 스테이션으로 이송됩니다.
+    배터리팩 소형 생산라인의 병목을 데이터로 찾아내고, Jig를 직접 개발해 C/T를 깎아냅니다.
+    Neck 공정 <b>C/T 31% 단축</b>, Function Test <b>C/T 49% 단축</b>, LOB 개선으로
+    <b>생산성 24% 향상</b> — 스크롤하면 각 스테이션의 계측값이 갱신됩니다.
   </p>
   <div class="hero-meta reveal d3">
-    <span>역할 / <b>생산운영 PM</b></span>
-    <span>전문 / <b>공정기술 엔지니어</b></span>
-    <span>직책 / <b>총괄본부장</b></span>
-    <span>가동률 / <b>100%</b></span>
+    <span>회사 / <b>이랜텍</b></span>
+    <span>직무 / <b>생산라인 PM · 파트장</b></span>
+    <span>기간 / <b>2022.11–2023.09</b></span>
+    <span>C/T 단축 / <b>최대 49%</b></span>
   </div>
   <div class="scroll-cue reveal d4">SCROLL TO ADVANCE LINE <span class="arr"></span></div>
 
@@ -540,44 +540,44 @@ main{position:relative; z-index:1; padding-top:76px;}
     <div class="belt-rails bot"></div>
     <div class="rollers" id="rollers"></div>
     <div class="part" id="masterPart">
-      <span class="pn">SN-2025-0815</span>
-      <span>PART · REV.A</span>
-      <span>STEEL / AL6061</span>
+      <span class="pn">BATTERY-PACK</span>
+      <span>LOT · REV.A</span>
+      <span>소형 배터리팩</span>
     </div>
   </div>
 </section>
 
 <div class="hazardline"></div>
 
-<!-- ====================================================== OP-10 RECEIVING / 교육 -->
+<!-- ====================================================== OP-10 ANALYSIS / 공정 분석 -->
 <section class="station" id="op10">
   <div class="ticks tl"></div><div class="ticks tr"></div>
   <div class="station-tag reveal">
     <span class="op-no">OP-10</span>
-    <span class="op-ko">입고 · 교육</span>
-    <span class="op-en">RECEIVING</span>
+    <span class="op-ko">분석 · 현황 파악</span>
+    <span class="op-en">ANALYSIS</span>
   </div>
-  <h2 class="reveal d1">원자재 <span class="hl">입고</span> 검수<br/>— 기반 역량의 반입</h2>
-  <p class="sub reveal d2">언어·해외경험·경영 기초가 라인에 반입됩니다. 입고 검수에서 사양과 규격을 확인하고 LOT 번호를 부여합니다.</p>
+  <h2 class="reveal d1">라인을 <span class="hl">계측</span>하다<br/>— Capa · LOB · C/T 분석</h2>
+  <p class="sub reveal d2">개선 전 라인의 공정 사이클타임·LOB·병목을 전수 계측합니다. 숫자 없이는 아무것도 깎을 수 없습니다.</p>
 
   <div class="grid">
     <div class="card traveler span6 reveal d2">
-      <div class="wo-head"><span>RECEIVING / 입고 트래블러</span><span class="no">LOT EDU-001</span></div>
-      <div class="wo-row"><span class="k">원자재</span><span class="v">한국외국어대학교 · 이탈리아어 (중퇴)</span></div>
-      <div class="wo-row"><span class="k">반입</span><span class="v">Kirana College · Social Media Marketing</span></div>
-      <div class="wo-row"><span class="k">반입</span><span class="v">CTIC · Business Administration</span></div>
-      <div class="wo-row"><span class="k">스펙</span><span class="v">호주 체류 4년 · TOEIC 930</span></div>
-      <div class="wo-row"><span class="k">판정</span><span class="v" style="color:var(--pass)">ACCEPTED · 입고 승인</span></div>
+      <div class="wo-head"><span>ANALYSIS SHEET / 현황 분석서</span><span class="no">LOT ELT-001</span></div>
+      <div class="wo-row"><span class="k">대상 라인</span><span class="v">소형 배터리팩 조립 라인</span></div>
+      <div class="wo-row"><span class="k">Neck 공정</span><span class="v">커팅 — C/T 16.72s (병목)</span></div>
+      <div class="wo-row"><span class="k">검사 공정</span><span class="v">Function Test — C/T 55s</span></div>
+      <div class="wo-row"><span class="k">분석 항목</span><span class="v">Capa · LOB · 공정 C/T 전수 측정</span></div>
+      <div class="wo-row"><span class="k">판정</span><span class="v" style="color:var(--hazard)">BOTTLENECK IDENTIFIED · 개선 착수</span></div>
     </div>
     <div class="card span6 reveal d3">
-      <div class="ch">INCOMING QC <span class="barcode"></span> CERT</div>
-      <h3>글로벌 커뮤니케이션 · 비즈니스 기초</h3>
-      <p class="role">FOUNDATION MATERIAL</p>
+      <div class="ch">ANALYSIS QC <span class="barcode"></span> REPORT</div>
+      <h3>공정 현황 계측 · 병목 식별</h3>
+      <p class="role">이랜텍 · 생산라인 PM / 파트장</p>
       <ul>
-        <li>해외 4년 체류로 다국적 환경 <b>커뮤니케이션·적응력</b> 확보</li>
-        <li><b>TOEIC 930</b> — 영문 사양서·고객사 대응 가능 등급</li>
-        <li>소셜 마케팅·경영학 이수로 <b>현장-사업 연결</b> 시야 확보</li>
-        <li>다른 산업으로 전직, <b>제조 현장으로 라인 투입</b></li>
+        <li>전 공정 <b>C/T 전수 측정</b> — 병목 2개소 식별</li>
+        <li>Neck: 커팅 공정 <b>16.72s</b> → 라인 전체 속도 제한</li>
+        <li>Function Test: <b>55s</b> → 검사 대기 누적</li>
+        <li><b>WBS · Gantt · 공유 업무 보드</b>로 개선 일정 수립</li>
       </ul>
     </div>
   </div>
@@ -589,27 +589,27 @@ main{position:relative; z-index:1; padding-top:76px;}
     <div class="belt-dashes"></div>
     <div class="belt-rails bot"></div>
     <div class="part" style="left:14%;">
-      <span class="pn">LOT EDU-001</span><span>RAW MATERIAL</span><span>QTY 1 · ACCEPTED</span>
+      <span class="pn">LOT ELT-001</span><span>ANALYSIS</span><span>BOTTLENECK×2</span>
     </div>
   </div>
 </section>
 
 <div class="hazardline"></div>
 
-<!-- ====================================================== OP-20 MACHINING / 초기경력 (WELD) -->
+<!-- ====================================================== OP-20 NECK C/T 단축 (JIG ARM) -->
 <section class="station" id="op20">
   <div class="ticks tl"></div><div class="ticks tr"></div>
   <div class="station-tag reveal">
     <span class="op-no">OP-20</span>
-    <span class="op-ko">가공 · 초기 현장</span>
-    <span class="op-en">MACHINING / WELDING</span>
+    <span class="op-ko">Neck 공정 · 커팅 Jig 개발</span>
+    <span class="op-en">NECK C/T REDUCTION</span>
   </div>
-  <h2 class="reveal d1">소재를 <span class="hl">가공</span>하다<br/>— 생산관리 · 라인 PM</h2>
-  <p class="sub reveal d2">2차전지 배터리팩 총괄, 초음파 용착 라인 — 첫 현장에서 원가·품질·생산성을 직접 깎아냅니다.</p>
+  <h2 class="reveal d1">병목을 <span class="hl">Jig</span>로 깎다<br/>— 커팅 C/T 31% 단축</h2>
+  <p class="sub reveal d2">커팅 Jig를 직접 설계·개발해 Neck 공정 사이클타임을 16.72초에서 12.76초로 단축합니다. Jig 하나가 라인 전체의 속도를 바꿉니다.</p>
 
-  <!-- WELD DELIGHT: defect 15% -> 0% -->
+  <!-- JIG ARM DELIGHT: C/T 16.72s → 12.76s -->
   <div class="weldstage reveal d2" id="weldStage">
-    <div class="defect-meter">공정 불량률 / LINE DEFECT<br/><span class="pct" id="defectPct">15.0%</span></div>
+    <div class="defect-meter">커팅 Neck C/T<br/><span class="pct" id="defectPct">16.72<span style="font-size:16px">s</span></span></div>
     <div class="welder-arm"></div>
     <div class="workpiece"></div>
     <div class="weld-jig"></div>
@@ -617,25 +617,25 @@ main{position:relative; z-index:1; padding-top:76px;}
 
   <div class="grid">
     <div class="card span6 reveal d2">
-      <div class="ch">WORK ORDER <span class="barcode"></span> OP-20A</div>
-      <h3>은성에스아이티 · 생산관리 과장</h3>
-      <div class="role">2차전지 배터리팩 생산 총괄 · 2020.08–2022.11</div>
+      <div class="ch">WORK ORDER <span class="barcode"></span> OP-20</div>
+      <h3>커팅 Jig 개발 — Neck 공정 단축</h3>
+      <div class="role">이랜텍 · 생산라인 PM / 파트장 · 2022.11–2023.09</div>
       <ul>
-        <li>원가분석 기반 <b>단가 30%+ 재협상</b> 달성</li>
-        <li>라인 <b>운영경비 85%+ 절감</b></li>
-        <li><b>비전검사 도입</b> — 고객·필드 <b>불량 0건</b></li>
-        <li><b>ERP · IATF16949</b> 체계 운영</li>
+        <li>커팅 공정 병목 원인 분석 → <b>전용 Jig 설계·제작</b></li>
+        <li>C/T <b>16.72s → 12.76s</b> (31% 단축)</li>
+        <li>Jig 적용 후 공정 <b>표준작업서(SOP) 개정</b></li>
+        <li>라인 전체 Capa <b>상승</b> — 후공정 대기 해소</li>
       </ul>
     </div>
     <div class="card span6 reveal d3">
-      <div class="ch">WORK ORDER <span class="barcode"></span> OP-20B</div>
-      <h3>이랜텍 · 생산라인 PM / 파트장</h3>
-      <div class="role">초음파 용착 라인 · 2022.11–2023.09</div>
+      <div class="ch">TECH SPEC <span class="barcode"></span> JIG-C01</div>
+      <h3>Jig 개발 방법론</h3>
+      <div class="role">공정기술 · 기구 개선</div>
       <ul>
-        <li>공정 사이클타임(C/T) <b>31~49% 단축</b></li>
-        <li><b>DOE</b> 기반 공정 인자 최적화 · 불량률 안정화</li>
-        <li>생산성(LOB) 및 라인밸런스 개선</li>
-        <li><b>Jig 개발</b> 및 공정 표준화</li>
+        <li><b>공정 C/T 분석</b> 기반 Jig 설계 요건 도출</li>
+        <li>시작품 제작 → 반복 검증 → <b>양산 적용</b></li>
+        <li>동작 표준화로 <b>작업자 편차 최소화</b></li>
+        <li>개선 전·후 <b>계측 데이터</b>로 효과 확인</li>
       </ul>
     </div>
   </div>
@@ -646,89 +646,71 @@ main{position:relative; z-index:1; padding-top:76px;}
     <div class="belt-dashes"></div>
     <div class="belt-rails bot"></div>
     <div class="part" style="left:30%;">
-      <span class="pn">SN-...0815</span><span>MACHINED</span><span>C/T −49%</span>
+      <span class="pn">NECK C/T</span><span>16.72→12.76s</span><span>−31%</span>
     </div>
   </div>
 </section>
 
 <div class="hazardline"></div>
 
-<!-- ====================================================== OP-30 INSPECTION / 공정기술 -->
+<!-- ====================================================== OP-30 FUNCTION TEST C/T 단축 -->
 <section class="station" id="op30">
   <div class="ticks tl"></div><div class="ticks tr"></div>
   <div class="station-tag reveal">
     <span class="op-no">OP-30</span>
-    <span class="op-ko">검사 · 공정기술</span>
-    <span class="op-en">INSPECTION</span>
+    <span class="op-ko">검사 · Function Test Jig 개조</span>
+    <span class="op-en">INSPECTION C/T −49%</span>
   </div>
-  <h2 class="reveal d1"><span class="hl">검사</span>로 증명하다<br/>— 데이터 · MES · KPI</h2>
-  <p class="sub reveal d2">비전 카메라가 스캔하고, 데이터가 합·불을 판정합니다. 공정기술 엔지니어로서 라인을 숫자로 통제합니다.</p>
+  <h2 class="reveal d1"><span class="hl">−49%</span> — 검사 C/T를<br/>절반으로 줄이다</h2>
+  <p class="sub reveal d2">Core-pack Function Test Jig를 개조해 검사 사이클타임을 55초에서 28초로 단축합니다. 이 시안의 핵심 지표입니다.</p>
 
-  <!-- CAMERA SCAN DELIGHT -->
+  <!-- CAMERA SCAN DELIGHT — 55s → 28s 표시 -->
   <div class="scanstage reveal d2" id="scanStage">
     <div class="hud-corner c1"></div><div class="hud-corner c2"></div>
     <div class="hud-corner c3"></div><div class="hud-corner c4"></div>
     <div class="scan-target">
       <div class="part" style="position:relative;left:auto;top:auto;transform:none;width:160px;height:160px;border-radius:3px;">
-        <span class="pn" style="font-size:13px;">SN-2025-0815</span>
-        <span style="font-size:10px;">DIM CHECK · ±0.02mm</span>
-        <span style="font-size:10px;">SURFACE · OK</span>
+        <span class="pn" style="font-size:13px;">CORE-PACK</span>
+        <span style="font-size:10px;">FUNCTION TEST</span>
+        <span style="font-size:10px;">C/T 55s → 28s</span>
       </div>
       <div class="crosshair"></div>
     </div>
     <div class="scan-line"></div>
     <div class="scan-readout mono">
-      VISION SYS v3.4<br/>
-      EDGE DETECT … <span style="color:var(--pass)">OK</span><br/>
-      DIM TOL ±0.02 … <span style="color:var(--pass)">OK</span><br/>
-      DEFECT MAP … <span class="blink">SCANNING</span>
+      FUNCTION TEST v2.0<br/>
+      JIG REWORK … <span style="color:var(--pass)">DONE</span><br/>
+      C/T BEFORE … <span style="color:var(--fail)">55s</span><br/>
+      C/T AFTER … <span class="blink" style="color:var(--pass)">28s ▼49%</span>
     </div>
     <!-- QC stamp lands here -->
     <div class="stamp" id="inspStamp" style="right:36px;top:28px;">
-      <span class="big">PASS</span><span class="small">QC · INSP · OP-30</span>
+      <span class="big">−49%</span><span class="small">C/T · INSP · OP-30</span>
     </div>
   </div>
 
-  <div class="card span12 reveal d3" style="margin-top:18px;">
-    <div class="ch">WORK ORDER <span class="barcode"></span> OP-30</div>
-    <h3>솔라엣지 · 공정기술 엔지니어</h3>
-    <div class="role">데이터 기반 공정 통제 · 2023.09–2024.12</div>
-    <div class="grid" style="margin-top:8px;gap:14px;">
-      <ul class="span6" style="margin:0;">
-        <li>생산·불량·KPI <b>데이터 DB / 대시보드</b> 구축</li>
-        <li>공정 <b>LOB 분석</b> 으로 병목 가시화</li>
-        <li>표준작업시간(ST) <b>50% 절감</b></li>
-      </ul>
-      <ul class="span6" style="margin:0;">
-        <li><b>검사성적서 자동발행</b> 시스템</li>
-        <li><b>MES 구축</b> — 실시간 트래킹</li>
-        <li>사무공수 <b>일 451분 절감</b></li>
-      </ul>
-    </div>
-  </div>
-
-  <!-- KPI READOUTS — 이 스테이션의 시그니처 지표: 공정 C/T -->
+  <!-- KPI READOUTS — 이 시안의 소유 지표 -->
   <div class="kpis reveal d3">
-    <div class="kpi"><div class="k-l">사이클 / C/T 최소</div><div class="k-v good">−31<span class="u">%</span></div><div class="k-bar"><i class="good" data-w="31"></i></div></div>
-    <div class="kpi"><div class="k-l">사이클 / C/T 최대</div><div class="k-v good">−49<span class="u">%</span></div><div class="k-bar"><i class="good" data-w="49"></i></div></div>
-    <div class="kpi"><div class="k-l">택트 / TAKT</div><div class="k-v">12.0<span class="u">s</span></div><div class="k-bar"><i data-w="60"></i></div></div>
-    <div class="kpi"><div class="k-l">수율 / YIELD</div><div class="k-v good">100<span class="u">%</span></div><div class="k-bar"><i class="good" data-w="100"></i></div></div>
-    <div class="kpi"><div class="k-l">라인합격 / FPY</div><div class="k-v">99.7<span class="u">%</span></div><div class="k-bar"><i data-w="99"></i></div></div>
+    <div class="kpi"><div class="k-l">Function Test / C/T 전</div><div class="k-v" style="color:var(--fail)">55<span class="u">s</span></div><div class="k-bar"><i data-w="100"></i></div></div>
+    <div class="kpi"><div class="k-l">Function Test / C/T 후</div><div class="k-v good">28<span class="u">s</span></div><div class="k-bar"><i class="good" data-w="51"></i></div></div>
+    <div class="kpi"><div class="k-l">C/T 단축률</div><div class="k-v good">−49<span class="u">%</span></div><div class="k-bar"><i class="good" data-w="49"></i></div></div>
+    <div class="kpi"><div class="k-l">Neck C/T 전</div><div class="k-v" style="color:var(--signal)">16.72<span class="u">s</span></div><div class="k-bar"><i data-w="66"></i></div></div>
+    <div class="kpi"><div class="k-l">Neck C/T 후</div><div class="k-v good">12.76<span class="u">s</span></div><div class="k-bar"><i class="good" data-w="50"></i></div></div>
   </div>
 </section>
 
 <div class="hazardline"></div>
 
-<!-- ====================================================== OP-40 ASSEMBLY / PM·총괄 -->
+<!-- ====================================================== OP-40 LOB 개선 / 생산성 24% -->
 <section class="station" id="op40">
   <div class="ticks tl"></div><div class="ticks tr"></div>
   <div class="station-tag reveal">
     <span class="op-no">OP-40</span>
-    <span class="op-ko">조립 · 총괄</span>
-    <span class="op-en">ASSEMBLY</span>
+    <span class="op-ko">LOB 개선 · 생산성 향상</span>
+    <span class="op-en">LINE BALANCE / PRODUCTIVITY</span>
   </div>
-  <h2 class="reveal d1"><span class="hl">조립</span> · 시스템 통합<br/>— 총괄본부장</h2>
-  <p class="sub reveal d2">픽앤플레이스 갠트리가 부품을 집어 제품을 완성합니다. 제품 기획부터 백엔드·인프라·자동화까지 한 라인으로 통합합니다.</p>
+  <h2 class="reveal d1"><span class="hl">+24%</span> 생산성<br/>— LOB 개선</h2>
+  <p class="sub reveal d2">라인밸런스(LOB) 분석을 통해 공정 간 부하를 고르게 재배분합니다. 연 환산 4,437만원 절감 — 숫자가 라인의 건강을 증명합니다.</p>
 
   <!-- PICK-AND-PLACE GANTRY -->
   <div class="gantry reveal d2">
@@ -736,81 +718,80 @@ main{position:relative; z-index:1; padding-top:76px;}
     <div class="carriage"><div class="zarm"></div><div class="grip"></div></div>
     <div class="cube"></div>
     <div class="bins">
-      <div class="bin"><span>CRM</span></div>
-      <div class="bin"><span>KIOSK</span></div>
-      <div class="bin"><span>APP</span></div>
-      <div class="bin"><span>FASTAPI</span></div>
-      <div class="bin"><span>AWS/GCP</span></div>
-      <div class="bin"><span>RPA·AI</span></div>
+      <div class="bin"><span>C/T 측정</span></div>
+      <div class="bin"><span>LOB 분석</span></div>
+      <div class="bin"><span>재배분</span></div>
+      <div class="bin"><span>Jig 개발</span></div>
+      <div class="bin"><span>표준화</span></div>
+      <div class="bin"><span>효과 검증</span></div>
     </div>
   </div>
 
   <div class="card traveler span12 reveal d3" style="margin-top:18px;">
-    <div class="wo-head"><span>ASSEMBLY ORDER / 조립 지시서</span><span class="no">미러리스 · 2025.08–현재</span></div>
+    <div class="wo-head"><span>LOB IMPROVEMENT ORDER / 라인 개선 지시서</span><span class="no">이랜텍 · 2022.11–2023.09</span></div>
     <div class="grid" style="gap:14px;">
       <ul class="span6" style="margin:0;">
-        <li><b>CRM · 키오스크 · 앱</b> 제품 기획·총괄</li>
-        <li><b>FastAPI</b> 백엔드 설계·구현</li>
-        <li><b>AWS / GCP</b> 클라우드 인프라 운영</li>
+        <li>소형 배터리팩 라인 <b>LOB 전수 분석</b></li>
+        <li>공정 부하 재배분 → <b>생산성 24% 향상</b></li>
+        <li>연 환산 절감 효과 <b>4,437만원</b></li>
       </ul>
       <ul class="span6" style="margin:0;">
-        <li><b>CI/CD</b> 파이프라인 구축</li>
-        <li><b>RPA · AI MCP 서버</b> 기반 AX 시스템</li>
-        <li>현장 출신 PM → <b>전사 시스템 조립</b></li>
+        <li><b>WBS · Gantt · 공유 업무 보드</b>로 진척 관리</li>
+        <li>인적자원 배치 최적화 → 대기·이동 낭비 제거</li>
+        <li>개선 전·후 <b>계측 데이터</b>로 효과 확인·보고</li>
       </ul>
     </div>
   </div>
 
-  <!-- BOM / PARTS BIN (SKILLS) -->
+  <!-- BOM / 개선 활동 명세 -->
   <div class="bom reveal d3">
-    <div class="bom-head"><div>REF</div><div>BOM / 자재 명세 · 보유 역량</div><div>CLASS</div><div>QTY</div></div>
+    <div class="bom-head"><div>REF</div><div>개선 활동 명세 · LOB IMPROVEMENT BOM</div><div>CLASS</div><div>효과</div></div>
 
-    <div class="bom-grp">A · SOFTWARE / 개발</div>
-    <div class="bom-row"><div class="ref">A1</div><div class="desc">Python · SQL · FastAPI</div><div>BACKEND</div><div class="qty">EXPERT</div></div>
-    <div class="bom-row"><div class="ref">A2</div><div class="desc">React · TypeScript · Electron</div><div>FRONTEND</div><div class="qty">HIGH</div></div>
-    <div class="bom-row"><div class="ref">A3</div><div class="desc">Rust · MySQL / RDS</div><div>SYSTEM</div><div class="qty">MID</div></div>
+    <div class="bom-grp">A · C/T 단축 / 사이클타임 개선</div>
+    <div class="bom-row"><div class="ref">A1</div><div class="desc">커팅 Jig 개발 — Neck 공정 C/T 단축</div><div>JIG DEV</div><div class="qty">−31%</div></div>
+    <div class="bom-row"><div class="ref">A2</div><div class="desc">검사 Jig 개조 — Function Test C/T 단축</div><div>JIG REWORK</div><div class="qty">−49%</div></div>
 
-    <div class="bom-grp">B · CLOUD / DATA / 자동화</div>
-    <div class="bom-row"><div class="ref">B1</div><div class="desc">AWS · GCP · CI/CD</div><div>INFRA</div><div class="qty">HIGH</div></div>
-    <div class="bom-row"><div class="ref">B2</div><div class="desc">BI · ML · 데이터 대시보드</div><div>DATA</div><div class="qty">HIGH</div></div>
-    <div class="bom-row"><div class="ref">B3</div><div class="desc">RPA · AI MCP · AX 시스템</div><div>AUTOMATION</div><div class="qty">EXPERT</div></div>
+    <div class="bom-grp">B · LOB 개선 / 라인밸런스</div>
+    <div class="bom-row"><div class="ref">B1</div><div class="desc">전 공정 C/T 전수 측정 · 병목 식별</div><div>ANALYSIS</div><div class="qty">계측</div></div>
+    <div class="bom-row"><div class="ref">B2</div><div class="desc">공정 부하 재배분 · 인적자원 배치</div><div>BALANCING</div><div class="qty">최적화</div></div>
+    <div class="bom-row"><div class="ref">B3</div><div class="desc">소형 배터리팩 라인 생산성 향상</div><div>PRODUCTIVITY</div><div class="qty">+24%</div></div>
+    <div class="bom-row"><div class="ref">B4</div><div class="desc">연 환산 절감 효과</div><div>COST SAVING</div><div class="qty">4,437만원</div></div>
 
-    <div class="bom-grp">C · 공정 / 품질 / PROCESS</div>
-    <div class="bom-row"><div class="ref">C1</div><div class="desc">PFMEA · CP · PFD · SOP</div><div>PROCESS</div><div class="qty">EXPERT</div></div>
-    <div class="bom-row"><div class="ref">C2</div><div class="desc">산업용접 (스팟 · 레이저 · 초음파)</div><div>WELDING</div><div class="qty">EXPERT</div></div>
-    <div class="bom-row"><div class="ref">C3</div><div class="desc">LOB · Jig개발 · 기구설계</div><div>METHOD</div><div class="qty">HIGH</div></div>
-    <div class="bom-row"><div class="ref">C4</div><div class="desc">비전검사 · 로봇티칭 · Draftsight</div><div>QC / CAD</div><div class="qty">HIGH</div></div>
-    <div class="bom-row"><div class="ref">C5</div><div class="desc">ERP · MES · SQ / ISO / IATF16949</div><div>SYSTEM</div><div class="qty">EXPERT</div></div>
+    <div class="bom-grp">C · 프로젝트 관리 / PM</div>
+    <div class="bom-row"><div class="ref">C1</div><div class="desc">WBS · Gantt 차트 · 공유 업무 보드</div><div>PM TOOL</div><div class="qty">운영</div></div>
+    <div class="bom-row"><div class="ref">C2</div><div class="desc">Capa · LOB · 공정 C/T 분석</div><div>PROCESS</div><div class="qty">데이터</div></div>
+    <div class="bom-row"><div class="ref">C3</div><div class="desc">개선 전·후 계측 비교 · 보고</div><div>VERIFY</div><div class="qty">완료</div></div>
   </div>
 </section>
 
 <div class="hazardline"></div>
 
-<!-- ====================================================== OP-50 SHIPPING / 연락 -->
+<!-- ====================================================== OP-50 결과 / 연락 -->
 <section class="station" id="op50">
   <div class="ticks tl"></div><div class="ticks tr"></div>
   <div class="station-tag reveal">
     <span class="op-no">OP-50</span>
-    <span class="op-ko">출하 · 연락</span>
-    <span class="op-en">SHIPPING</span>
+    <span class="op-ko">결과 · 연락</span>
+    <span class="op-en">RESULTS</span>
   </div>
-  <h2 class="reveal d1"><span class="hl">출하</span> 준비 완료<br/>— SHIP TO CONTACT</h2>
-  <p class="sub reveal d2">전 공정 합격. 완제품을 포장하고 송장을 부착합니다. 다음 라인은 당신의 조직입니다.</p>
+  <h2 class="reveal d1"><span class="hl">출하</span> 준비 완료<br/>— C/T −49% · 생산성 +24%</h2>
+  <p class="sub reveal d2">전 공정 개선 완료. 이랜텍 소형 배터리팩 라인의 두 핵심 지표가 검증되었습니다. 다음 라인은 당신의 조직입니다.</p>
 
   <div class="ship">
     <!-- SHIPPING LABEL -->
     <div class="shipping-label reveal d2">
-      <div class="sl-top"><span>SHIPPING LABEL</span><span>PRIORITY · EXPRESS</span></div>
+      <div class="sl-top"><span>RESULT SHEET</span><span>이랜텍 · 2022.11–2023.09</span></div>
       <div class="sl-body">
-        <div class="sl-line"><span class="k">Ship From</span><span class="v">PYH ASSEMBLY LINE 01 · 대한민국</span></div>
-        <div class="sl-line"><span class="k">Product</span><span class="v">박양하 / 생산운영 PM · 총괄본부장</span></div>
+        <div class="sl-line"><span class="k">회사</span><span class="v">이랜텍 · 생산라인 PM / 파트장</span></div>
+        <div class="sl-line"><span class="k">C/T 단축</span><span class="v">Function Test 55s → 28s (−49%)</span></div>
+        <div class="sl-line"><span class="k">생산성</span><span class="v">LOB 개선 +24% (연 4,437만원 절감)</span></div>
         <div class="sl-line"><span class="k">Email</span><span class="v"><a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a></span></div>
         <div class="sl-line"><span class="k">GitHub</span><span class="v"><a href="https://github.com/64etuor" target="_blank" rel="noopener">github.com/64etuor</a></span></div>
         <div class="sl-line"><span class="k">Tel</span><span class="v"><a href="tel:010-0000-0000">010-0000-0000</a></span></div>
         <div class="sl-barcode"></div>
-        <div class="sl-barcode-no">SN-2025-0815-PYH</div>
+        <div class="sl-barcode-no">ELT-2023-PM-PYH</div>
       </div>
-      <div class="sl-stamp"><span class="b">SHIP</span><span class="s">QC PASSED</span></div>
+      <div class="sl-stamp"><span class="b">DONE</span><span class="s">QC PASSED</span></div>
     </div>
 
     <!-- OPERATOR BADGE -->
@@ -820,9 +801,9 @@ main{position:relative; z-index:1; padding-top:76px;}
         <div class="oc-photo"></div>
         <div class="oc-info">
           <div class="nm">박양하 <small>PARK YANGHA</small></div>
-          <div class="ti">생산운영 PM<br/>공정기술 엔지니어<br/>총괄본부장 · 미러리스</div>
+          <div class="ti">생산라인 PM · 파트장<br/>이랜텍 · 2022.11–2023.09<br/>공정기술 / LOB · C/T 개선</div>
           <div class="oc-tags">
-            <span>PROCESS</span><span>DATA</span><span>BACKEND</span><span>AX</span><span>QC</span><span>LEADERSHIP</span>
+            <span>C/T −49%</span><span>LOB +24%</span><span>JIG DEV</span><span>PM</span><span>PROCESS</span><span>DATA</span>
           </div>
         </div>
       </div>
@@ -830,8 +811,8 @@ main{position:relative; z-index:1; padding-top:76px;}
   </div>
 
   <div class="plate reveal d3">
-    <span>PYH-LINE 01 · ASSEMBLY LINE PORTFOLIO</span>
-    <span>OP-10 → OP-50 · YIELD 100.0% · DEFECT 0</span>
+    <span>ELENTEC LINE · ASSEMBLY LINE PORTFOLIO</span>
+    <span>C/T −49% · 생산성 +24% · 연 4,437만원 절감</span>
     <span>© 2025 PARK YANGHA · REV.A</span>
   </div>
 </section>
@@ -882,14 +863,14 @@ main{position:relative; z-index:1; padding-top:76px;}
   /* ---------- Stations observer: HMI + rail + per-station effects ---------- */
   var stations = ['op00','op10','op20','op30','op40','op50'];
   var stationLabels = {
-    op00:'OP-00 / 라인 대기', op10:'OP-10 / 입고·교육', op20:'OP-20 / 가공·현장',
-    op30:'OP-30 / 검사·공정기술', op40:'OP-40 / 조립·총괄', op50:'OP-50 / 출하·연락'
+    op00:'OP-00 / 라인 대기', op10:'OP-10 / 분석·계측', op20:'OP-20 / Neck C/T 단축',
+    op30:'OP-30 / 검사 C/T −49%', op40:'OP-40 / LOB 개선 +24%', op50:'OP-50 / 결과·연락'
   };
   var hmiStation = document.getElementById('hmiStation');
   var hmiTakt = document.getElementById('hmiTakt');
   var railStops = Array.prototype.slice.call(document.querySelectorAll('.rail .stop'));
   var stampFired=false, defectFired=false;
-  var taktByStation = {op00:'12.0s',op10:'08.4s',op20:'15.2s',op30:'09.6s',op40:'18.0s',op50:'06.0s'};
+  var taktByStation = {op00:'28.0s',op10:'55.0s',op20:'16.72s',op30:'28.0s',op40:'12.76s',op50:'28.0s'};
 
   function setActive(id){
     var idx = stations.indexOf(id);
@@ -898,7 +879,7 @@ main{position:relative; z-index:1; padding-top:76px;}
       s.classList.toggle('done', i<idx);
     });
     if(hmiStation) hmiStation.textContent = stationLabels[id] || id;
-    if(hmiTakt) hmiTakt.textContent = taktByStation[id] || '12.0s';
+    if(hmiTakt) hmiTakt.textContent = taktByStation[id] || '28.0s';
   }
 
   if('IntersectionObserver' in window){
@@ -921,34 +902,34 @@ main{position:relative; z-index:1; padding-top:76px;}
     if(!stamp) return;
     setTimeout(function(){
       stamp.classList.add('hit');
-      // takt blip on yield
     }, 1100);
   }
 
-  /* ---------- Weld defect 15% -> 0% delight ---------- */
+  /* ---------- Jig arm C/T 16.72s → 12.76s delight ---------- */
   function fireDefect(){
     if(defectFired) return; defectFired=true;
     var el = document.getElementById('defectPct');
     if(!el) return;
-    var start=15.0, cur=start, t0=null, dur=2200;
+    var start=16.72, end=12.76, cur=start, t0=null, dur=2200;
     function step(ts){
       if(!t0) t0=ts;
       var p = Math.min(1,(ts-t0)/dur);
-      // ease-out
       var e = 1 - Math.pow(1-p,3);
-      cur = start*(1-e);
-      el.textContent = cur.toFixed(1)+'%';
+      cur = start - (start-end)*e;
+      el.innerHTML = cur.toFixed(2)+'<span style="font-size:16px">s</span>';
       if(p<1){ requestAnimationFrame(step); }
-      else { el.textContent='0.0%'; el.classList.add('zero'); }
+      else {
+        el.innerHTML = '12.76<span style="font-size:16px">s</span>';
+        el.classList.add('arrived');
+      }
     }
     setTimeout(function(){ requestAnimationFrame(step); }, 600);
   }
 
-  /* ---------- spark generator on weld station ---------- */
+  /* ---------- spark generator on jig station ---------- */
   var weld = document.getElementById('weldStage');
   if(weld && !prefersReduced){
     setInterval(function(){
-      // only spawn when weld station visible (cheap check)
       var r = weld.getBoundingClientRect();
       if(r.bottom<0 || r.top>window.innerHeight) return;
       var arm = weld.querySelector('.welder-arm');
@@ -964,7 +945,7 @@ main{position:relative; z-index:1; padding-top:76px;}
     s.className='spark';
     s.style.left = x+'px'; s.style.top = y+'px';
     parent.appendChild(s);
-    var ang = (Math.random()*Math.PI) + Math.PI*0.0; // downward-ish spread
+    var ang = (Math.random()*Math.PI) + Math.PI*0.0;
     var dist = 18 + Math.random()*44;
     var dx = Math.cos(ang)*dist*(Math.random()<.5?-1:1);
     var dy = 14 + Math.random()*52;
@@ -977,12 +958,10 @@ main{position:relative; z-index:1; padding-top:76px;}
 
   /* ---------- master part advances with scroll ---------- */
   var masterPart = document.getElementById('masterPart');
-  var hmiPart = document.getElementById('hmiPart');
   var hero = document.getElementById('op00');
   function onScroll(){
     if(masterPart && hero){
       var hr = hero.getBoundingClientRect();
-      // map scroll within hero to belt travel 8% -> 86%
       var prog = Math.min(1, Math.max(0, (-hr.top) / (hr.height*0.85)));
       var leftPct = 8 + prog*78;
       masterPart.style.left = leftPct + '%';
@@ -1000,7 +979,7 @@ main{position:relative; z-index:1; padding-top:76px;}
     });
   });
 
-  /* ---------- pause belts when offscreen (perf) is automatic via CSS; init bars ---------- */
+  /* ---------- init bars ---------- */
   fillBars(document);
 
   setActive('op00');

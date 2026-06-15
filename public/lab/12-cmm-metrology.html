@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>박양하 · CMM 정밀 검사 — 3D 측정기 검사성적서 자동발행</title>
+<title>박양하 · 솔라엣지 공정 추적성 — S/N 기반 검사성적서 자동발행</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
 :root{
@@ -241,11 +241,11 @@ canvas#stage{display:block;width:100%;height:100%}
       <span class="en">PARK YANGHA</span>
     </div>
     <div class="sep"></div>
-    <span class="role">생산운영 PM · 공정기술 엔지니어 · 총괄본부장</span>
+    <span class="role">공정기술 엔지니어 · 솔라엣지테크놀로지스코리아 · 2024 Core Value Award</span>
     <div class="machine">
-      <span><b>CMM</b> ZEISS-CONTURA · 프로브 팁 Ø2.0mm</span>
+      <span><b>TRACEABILITY</b> S/N 기반 추적성 · Power Apps / Power BI / Power Automate</span>
       <span class="sep" style="height:18px"></span>
-      <span class="statled" id="statled"><span class="dot"></span><span id="statText">INSPECTING</span></span>
+      <span class="statled" id="statled"><span class="dot"></span><span id="statText">TRACKING</span></span>
     </div>
   </div>
 
@@ -255,29 +255,29 @@ canvas#stage{display:block;width:100%;height:100%}
     <div class="dro-axis"><span class="ax">Y</span><span class="val" id="droY">+000.000</span><span class="un">mm</span></div>
     <div class="dro-axis"><span class="ax">Z</span><span class="val" id="droZ">+000.000</span><span class="un">mm</span></div>
     <div class="dro-meta">
-      <span>측정점 <b id="ptCount">0</b> / 248</span>
-      <span>FEED <b>180</b> mm/min</span>
-      <span>PROBE <b>SCAN</b></span>
+      <span>등록 S/N <b id="ptCount">0</b> / 248</span>
+      <span>UPLOAD <b>Real-time</b></span>
+      <span>MODE <b>TRACK</b></span>
       <span id="clock">T+00.0s</span>
     </div>
   </div>
 
-  <!-- GD&T legend -->
+  <!-- 추적성 범례 -->
   <div class="hud" id="legend">
-    <div class="lg-h">GD&amp;T 기하공차</div>
-    <div class="lg-row"><div class="lg-sym">⌖</div><div class="lg-tx"><b>위치도</b> Position Ø0.05 Ⓜ</div></div>
-    <div class="lg-row"><div class="lg-sym">⏥</div><div class="lg-tx"><b>평면도</b> Flatness 0.02</div></div>
-    <div class="lg-row"><div class="lg-sym">◎</div><div class="lg-tx"><b>동심도</b> Concentricity Ø0.03</div></div>
-    <div class="lg-row"><div class="lg-sym">⌭</div><div class="lg-tx"><b>원통도</b> Cylindricity 0.04</div></div>
-    <div class="lg-row"><div class="lg-sym">∥</div><div class="lg-tx"><b>평행도</b> Parallelism 0.02 A</div></div>
+    <div class="lg-h">S/N 추적성 체계</div>
+    <div class="lg-row"><div class="lg-sym">🔍</div><div class="lg-tx"><b>S/N 검증</b> 조립 전 부품 일치 확인</div></div>
+    <div class="lg-row"><div class="lg-sym">📋</div><div class="lg-tx"><b>체크리스트</b> 모바일 공정 점검</div></div>
+    <div class="lg-row"><div class="lg-sym">🚫</div><div class="lg-tx"><b>투입 차단</b> 미등록 제품 상위공정 차단</div></div>
+    <div class="lg-row"><div class="lg-sym">📊</div><div class="lg-tx"><b>BI 대시보드</b> 생산 이력 실시간 추적</div></div>
+    <div class="lg-row"><div class="lg-sym">📄</div><div class="lg-tx"><b>자동발행</b> Power Automate 성적서</div></div>
     <div class="datumtag">
-      <div class="dchip">⟦A⟧</div><div class="dchip">⟦B⟧</div><div class="dchip">⟦C⟧</div>
+      <div class="dchip">입고</div><div class="dchip">조립</div><div class="dchip">출하</div>
     </div>
   </div>
 
-  <!-- equipment / skills -->
+  <!-- 도구 / 역량 -->
   <div class="hud" id="equip">
-    <div class="eq-h"><span>측정장비 · 기법</span><span id="eqCount">0/24</span></div>
+    <div class="eq-h"><span>도구 · 역량</span><span id="eqCount">0/24</span></div>
     <div class="chips" id="chips"></div>
   </div>
 
@@ -285,17 +285,17 @@ canvas#stage{display:block;width:100%;height:100%}
   <div class="hud" id="report">
     <div class="rp-top">
       <div class="rp-title">
-        <span class="t">검사 성적서</span>
-        <span class="badge" id="rpId">RPT-2026-0615</span>
+        <span class="t">검사 성적서 (자동발행)</span>
+        <span class="badge" id="rpId">TRC-2024-0615</span>
       </div>
       <div class="rp-sub">
-        <span>PART <b>CAREER-ASSY-01</b></span>
-        <span>발행 <b>AUTO</b></span>
+        <span>PROJ <b>솔라엣지-공정추적성</b></span>
+        <span>발행 <b>Power Automate</b></span>
         <span>S/N <b>PYH-7448</b></span>
       </div>
     </div>
     <div class="rp-head">
-      <span>측정 피처 (FEATURE)</span><span class="r">규격±공차</span><span class="r">실측</span><span class="r">판정</span>
+      <span>추적 항목 (TRACE ITEM)</span><span class="r">기준·조건</span><span class="r">결과</span><span class="r">판정</span>
     </div>
     <div class="rp-body" id="rpBody"></div>
     <div class="rp-foot">
@@ -307,39 +307,39 @@ canvas#stage{display:block;width:100%;height:100%}
           <div class="note" id="cpkNote">측정 대기…</div>
         </div>
       </div>
-      <div class="verdict" id="verdict">
-        <span class="vbig">PASS</span>
-        <span class="vtx"><b id="passN">0/8</b> 피처 합격 · 전수 규격 내<br>검사성적서 자동발행 완료 — 양산 승인</span>
-        <span class="stamp">APPROVED<br>박양하 / QA</span>
+      <div class=”verdict” id=”verdict”>
+        <span class=”vbig”>ISSUED</span>
+        <span class=”vtx”><b id=”passN”>0/8</b> 항목 추적 완료 · 전 공정 S/N 검증<br>검사성적서 자동발행 완료 — 2024 Core Value Award</span>
+        <span class=”stamp”>APPROVED<br>박양하 / 공정</span>
       </div>
-      <div class="belief">
-        <div class="bq">“<b>품질과 타협하지 않는다.</b>”</div>
-        <div class="bm">
-          <span class="bchip">고객·필드 불량 <b>0건</b> 유지</span>
-          <span class="bchip"><b>비전검사</b> 도입</span>
-          <span class="bchip">Cpk로 <b>불량 0건</b> 정량화</span>
+      <div class=”belief”>
+        <div class=”bq”>”<b>S/N 추적성</b>으로 리스크 범위를 측정 가능하게.”</div>
+        <div class=”bm”>
+          <span class=”bchip”><b>수기 관리</b> → 앱 자동화</span>
+          <span class=”bchip”><b>Power Apps</b> 모바일 등록</span>
+          <span class=”bchip”><b>부품 혼입</b> 원천 차단</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 크로스오버 패널: 제조 공차 → 소프트웨어 경계 -->
-  <div class="hud" id="crossover">
-    <div class="xo-top">
-      <div class="xo-kick">CROSS-DOMAIN INSPECTION · 측정 → 코드</div>
-      <div class="xo-title">제조 <b>공차(tolerance)</b> 사고를<br>소프트웨어 <b>경계</b>로 이식</div>
-      <div class="xo-sub">
-        DATUM = <span class="dat">async I/O 경계</span> · 피검 부품 = <span class="dat">SQLAlchemy async</span><br>
-        측정 신호 = <b style="color:var(--fail)">MissingGreenlet</b> (경계 이탈 = 암묵적 I/O)
+  <!-- 추적성 배경 패널: 문제 발단 → 해결 -->
+  <div class=”hud” id=”crossover”>
+    <div class=”xo-top”>
+      <div class=”xo-kick”>TRACEABILITY AUDIT · 문제 발단 → 시스템 구축</div>
+      <div class=”xo-title”>필드 원자재 불량 —<br><b>S/N 수기 관리</b>로 리스크 범위 측정 불가</div>
+      <div class=”xo-sub”>
+        기준 = <span class=”dat”>S/N 등록 여부</span> · 검증 대상 = <span class=”dat”>조립·검사 데이터</span><br>
+        이탈 신호 = <b style=”color:var(--fail)”>미등록 제품</b> (상위 공정 투입 = 추적 불가 리스크)
       </div>
     </div>
-    <div class="xo-head">
-      <span>공차 이탈 유형 (6 SCENARIO)</span><span class="r">경계 판정</span><span class="r">판정</span>
+    <div class=”xo-head”>
+      <span>추적성 구축 항목 (6 ITEM)</span><span class=”r”>구현 수단</span><span class=”r”>상태</span>
     </div>
-    <div class="xo-body" id="xoBody"></div>
-    <div class="xo-foot">
-      <div class="xnote"><b>같은 정신:</b> 동기 ORM이 알아서 해주던 lazy loading을 async에선 전부 <b>명시적</b>으로. 측정 엔지니어가 코드에서도 “경계와 공차”로 사고한다.</div>
-      <div class="xverdict"><span>전 6 시나리오 분류·판정 완료</span><span class="xstamp" style="margin-left:auto">CLASSIFIED</span></div>
+    <div class=”xo-body” id=”xoBody”></div>
+    <div class=”xo-foot”>
+      <div class=”xnote”><b>핵심 전환:</b> 수기 S/N 관리의 공백을 Power Apps·Power Automate로 <b>자동화</b>. 공정 품질 검증으로 <b>부품 혼입 원천 차단</b>하고 검사성적서 자동 발행.</div>
+      <div class=”xverdict”><span>전 6 항목 구현 완료 · 2024 Core Value Award</span><span class=”xstamp” style=”margin-left:auto”>AWARDED</span></div>
     </div>
   </div>
 
@@ -360,54 +360,57 @@ canvas#stage{display:block;width:100%;height:100%}
 
 <!-- boot -->
 <div id="boot">
-  <div class="boot-mark">COORDINATE MEASURING MACHINE · METROLOGY</div>
-  <div class="boot-title">CMM 검사 스테이션 초기화 — 프로브 캘리브레이션</div>
+  <div class="boot-mark">TRACEABILITY MANAGEMENT · S/N TRACKING SYSTEM</div>
+  <div class="boot-title">공정 추적성 시스템 초기화 — S/N 데이터베이스 연결</div>
   <div class="boot-bar"><div class="boot-fill" id="bootFill"></div></div>
 </div>
 
 <script>
 "use strict";
 /* ============================================================
-   CMM 정밀 검사 — Canvas 2.5D 아이소메트릭 검사 스테이션
-   박양하 portfolio. 프로브 갠트리가 피처를 traverse·touch하며
-   검사성적서를 자동 작성. Cpk 게이지. 용착불량 re-measure 딜라이트.
+   S/N 기반 공정 추적성 — Canvas 2.5D 아이소메트릭 추적 스테이션
+   박양하 portfolio. 솔라엣지테크놀로지스코리아 공정기술 엔지니어 (2024.03–06).
+   프로브 갠트리가 S/N 추적 항목을 traverse·검증하며 검사성적서 자동발행.
+   2024 Core Value Award 수상.
    ============================================================ */
 
-/* ---------- data: 측정 피처 = 경력/지표 ---------- */
-// 각 피처: 규격(nominal)·공차·실측·판정. 한 곳(용착불량)은 OUT→DOE 재측정→IN.
-// 검사성적서 = 실제 치수·기하공차 측정값. 이 신은 '불량·추적성 0건 + Cpk'만 OWN.
-// 다른 신이 OWN하는 경력 지표(운영경비/ST/C-T/생산성/단가/사무공수)는 여기서 제거하고
-// 품질·추적성 관점의 실측 치수 피처로 대체. 용착 행은 일반 품질 피처로 일반화(DOE 비트는 #11 전용).
+/* ---------- data: 추적 항목 = 공정 추적성 구축 내용 ---------- */
+// 각 항목: 기준(nominal)·허용·결과·판정. 한 곳(S/N 수기 관리 공백)은 OUT→앱 구축→IN.
+// 검사성적서 = 실제 공정 추적성 구현 결과. 정량 퍼센트 지표 강조 제외.
 const FEATURES = [
-  {key:"opex",  feat:"평면도 (DATUM A)",  sub:"⏥ Flatness · 기준 평면",     unit:"mm", nom:0,   tol:0.02, meas:0.011, dir:"zero", color:"--c-sol"},
-  {key:"st",    feat:"위치도 보어 ⌀12",  sub:"⌖ Position Ⓜ A",            unit:"mm", nom:0,   tol:0.05, meas:0.022, dir:"zero", color:"--c-sol"},
-  {key:"ct",    feat:"평행도 측면 B",     sub:"∥ Parallelism · A",         unit:"mm", nom:0,   tol:0.02, meas:0.013, dir:"zero", color:"--c-sol"},
-  {key:"weld",  feat:"이음부 원통도",      sub:"⌭ Cylindricity · 재측정",    unit:"mm", nom:0,   tol:0.04, meas:0.072, remeas:0.018, dir:"zero", color:"--c-elen", special:true},
-  {key:"prod",  feat:"동심도 ⌀30",        sub:"◎ Concentricity",           unit:"mm", nom:0,   tol:0.03, meas:0.015, dir:"zero", color:"--c-sol"},
-  {key:"price", feat:"위치도 보어 C",     sub:"⌖ Position · C",            unit:"mm", nom:0,   tol:0.05, meas:0.028, dir:"zero", color:"--c-sol"},
-  {key:"office",feat:"진직도 슬롯",        sub:"⏥ Straightness",            unit:"mm", nom:0,   tol:0.02, meas:0.009, dir:"zero", color:"--c-sol"},
-  {key:"defect",feat:"출하 불량 (추적성)", sub:"⌖ 전수검사 · 비전 · S/N 추적", unit:"건", nom:0,   tol:0,  meas:0,   dir:"zero", color:"--c-eun"}
+  {key:"opex",  feat:"원자재 불량 발견",   sub:"⌖ 필드 이슈 · S/N 수기 관리 공백",  unit:"건", nom:0, tol:0, meas:1,   remeas:0, dir:"zero", color:"--c-elen", special:true},
+  {key:"st",    feat:"S/N 등록 앱 구축",   sub:"📱 Power Apps · 모바일 실적 등록",   unit:"OK", nom:1, tol:0, meas:1,   dir:"zero", color:"--c-sol"},
+  {key:"ct",    feat:"모바일 체크리스트",   sub:"📋 공정별 점검 · 실시간 기록",        unit:"OK", nom:1, tol:0, meas:1,   dir:"zero", color:"--c-sol"},
+  {key:"weld",  feat:"S/N 검증 로직",      sub:"🔍 조립 전 부품 일치 · S/N 대조",    unit:"OK", nom:1, tol:0, meas:1,   dir:"zero", color:"--c-sol"},
+  {key:"prod",  feat:"투입 차단 규칙",      sub:"🚫 미등록 제품 상위공정 차단",        unit:"OK", nom:1, tol:0, meas:1,   dir:"zero", color:"--c-sol"},
+  {key:"price", feat:"부품 혼입 방지",      sub:"🔒 S/N 대조 · 혼입 원천 차단",       unit:"OK", nom:1, tol:0, meas:1,   dir:"zero", color:"--c-sol"},
+  {key:"office",feat:"Power BI 대시보드",  sub:"📊 생산 이력 · 실시간 추적",          unit:"OK", nom:1, tol:0, meas:1,   dir:"zero", color:"--c-sol"},
+  {key:"defect",feat:"검사성적서 자동발행", sub:"📄 Power Automate · 자동 발행",       unit:"OK", nom:1, tol:0, meas:1,   dir:"zero", color:"--c-mir"}
 ];
-const SKILLS = ["Python","SQL","FastAPI","React","TypeScript","Electron","Rust","MySQL/RDS","AWS","GCP","BI","ML","RPA","CI/CD","PFMEA/CP","산업용접","LOB","Jig개발","기구설계","비전검사","로봇티칭","Draftsight","ERP/MES","IATF16949"];
+const SKILLS = ["Power Apps","Power BI","Power Automate","SharePoint","Excel","S/N 추적","공정 품질","PFMEA","공정기술","생산관리","품질검증","체크리스트","부품 혼입방지","ERP/MES","RPA","Python","SQL","React","TypeScript","Electron","CI/CD","LOB","Jig개발","IATF16949"];
 
-/* ---------- 크로스오버: MissingGreenlet 6 시나리오 = 공차 이탈 유형 ---------- */
-// 실제 노트(600_Tech Stack/Python/MissingGreenlet…md) 기반.
-// async I/O 경계(datum)를 벗어난 암묵적 I/O를 "공차 이탈 유형"으로 분류·판정.
+/* ---------- 추적성 구축 6 항목 = 공정 개선 단계 ---------- */
+// 솔라엣지 공정 추적성 구축 실제 이력 기반.
+// 수기 S/N 관리 공백(이탈)→앱 자동화(복구)→검사성적서 자동발행(완료).
 const XSCENARIOS = [
-  {feat:"lazy-load 관계 접근",  sub:"obj.relationship 암묵 I/O", dev:"경계 밖 I/O",  jud:"fail"},
-  {feat:"커밋 후 expired 속성", sub:"expire_on_commit 재로딩",  dev:"경계 밖 I/O",  jud:"fail"},
-  {feat:"세션 컨텍스트 누수",   sub:"동기 컨텍스트서 await", dev:"datum 이탈",   jud:"fail"},
-  {feat:"selectinload 명시 로딩", sub:"eager 로딩 사전 선언",   dev:"경계 내",      jud:"pass"},
-  {feat:"await refresh() 명시",  sub:"명시적 재조회 호출",     dev:"경계 내",      jud:"pass"},
-  {feat:"greenlet_spawn 경계화",sub:"run_sync로 경계 명시",   dev:"경계 정의",    jud:"pass"}
+  {feat:"원자재 불량 발생",        sub:"필드 이슈 → S/N 수기 공백 확인",  dev:"추적 불가",   jud:"fail"},
+  {feat:"리스크 범위 측정 불가",   sub:"수기 관리 → 피해 범위 산정 불가",  dev:"공백 확인",   jud:"fail"},
+  {feat:"Power Apps 앱 기획",      sub:"재발 방지 · 모바일 등록 설계",     dev:"설계 완료",   jud:"pass"},
+  {feat:"S/N 검증 로직 구현",      sub:"조립 전 S/N 대조 · 투입 차단",    dev:"구현 완료",   jud:"pass"},
+  {feat:"Power BI 대시보드",       sub:"생산 이력 실시간 추적 연동",        dev:"운영 중",     jud:"pass"},
+  {feat:"검사성적서 자동발행",     sub:"Power Automate · 이메일 자동 발송", dev:"자동화 완료", jud:"pass"}
 ];
 
 // each feature mapped to a physical feature on the part (canvas coords set later)
 function fmtVal(v,unit){
+  if(unit==="OK") return v===1?"완료":"미완";
+  if(unit==="건") return v+"건";
   const s=(v>0?"+":"")+v;
   return s+unit;
 }
 function specStr(f){
+  if(f.unit==="OK") return "구현 필수";
+  if(f.unit==="건"&&f.tol===0) return "0건 (재발 방지)";
   if(f.tol===0) return f.nom+f.unit+" max";
   return (f.nom>0?"+":"")+f.nom+"±"+f.tol+f.unit;
 }
@@ -873,11 +876,11 @@ function genTimeline(){
       // commit measurement to row
       commitFeature(f, f.special? "out":"pass");
     }});
-    // for special weld feature: show OUT, toast, then DOE re-measure to IN
+    // for special item: show FAIL(수기 공백), toast, then APP 구축으로 PASS
     if(f.special){
       timeline.push({t:t+2300,fn:()=>{
-        showToast("⌭ <b>이음부 원통도</b> 0.072mm — 규격 0±0.04mm <b>초과(OUT-OF-TOL)</b> · 재측정 요청","warn");
-        statText.textContent="OUT OF TOL — 재측정";
+        showToast("⚠ <b>원자재 불량 발견</b> — S/N 수기 관리 미흡 · <b>리스크 범위 측정 불가</b> · 앱 개발 기획","warn");
+        statText.textContent="S/N 공백 — 앱 구축 기획";
       }});
       timeline.push({t:t+3600,fn:()=>{
         // re-probe: descend again
@@ -888,7 +891,7 @@ function genTimeline(){
         // recolor cloud green
         CLOUD.forEach(p=>{ if(Math.abs(p.x-tg.x)<14&&Math.abs(p.y-tg.y)<14) p.col="rgba(60,230,164,.85)"; });
         remeasureWeld(f);
-        showToast("✓ 공정 보정 후 재측정 <b>0.018mm IN-TOL</b> — 규격 내 재현 · PASS","pass");
+        showToast("✓ Power Apps S/N 추적 앱 구축 — <b>재발 방지 · 리스크 범위 추적 가능</b> · PASS","pass");
       }});
       t+=4900;
     }else{
@@ -898,15 +901,15 @@ function genTimeline(){
 
   // finalize
   timeline.push({t:t+200,fn:()=>{
-    statText.textContent="REPORT 자동발행";
+    statText.textContent="검사성적서 자동발행 중";
     probe.tpx=PART.bx/2;probe.tpy=-10;probe.tpz=95;
   }});
   timeline.push({t:t+1200,fn:()=>{
-    statled.classList.add("done");statText.textContent="INSPECTION COMPLETE";
+    statled.classList.add("done");statText.textContent="TRACEABILITY COMPLETE";
     verdictEl.classList.add("on");
-    cpkNoteEl.textContent="전 피처 규격 내 · 자동발행 완료";
+    cpkNoteEl.textContent="전 항목 추적 완료 · 검사성적서 자동발행";
   }});
-  // 크로스오버 패널 reveal: 측정이 끝나면 "같은 사고를 코드에서도" 보여준다
+  // 추적성 패널 reveal: 추적이 끝나면 배경/경위 보여준다
   timeline.push({t:t+1700,fn:()=>{ crossoverEl.classList.add("on"); }});
   xrows.forEach((r,i)=>{
     timeline.push({t:t+2000+i*180,fn:()=>{ r.classList.add("show"); }});
@@ -940,7 +943,7 @@ function remeasureWeld(f){
   r.querySelector(".meas").textContent = fmtVal(f.remeas,f.unit);
   r.querySelector(".jud").innerHTML='<span class="tag pass">PASS</span>';
   passCount++; bumpCpk(); updatePassN();
-  statText.textContent="이음부 PASS — 측정 계속";
+  statText.textContent="S/N 앱 구축 완료 — 추적 계속";
 }
 function updatePassN(){ passNEl.textContent=passCount+"/8"; }
 function bumpCpk(){
@@ -950,8 +953,8 @@ function bumpCpk(){
 }
 
 /* ---------- which GD&T sym per target ---------- */
-const SYMS={opex:["⏥","0.02 A"],st:["⌖","Ø0.05 Ⓜ A"],ct:["∥","0.02 B"],weld:["⌭","0.04"],
-  prod:["◎","Ø0.03 A"],price:["⌖","Ø0.05 C"],office:["⏥","0.02"],defect:["⌖","Ø0.05 A B C"]};
+const SYMS={opex:["⚠","불량 발생"],st:["📱","앱 구축"],ct:["📋","체크리스트"],weld:["🔍","S/N 검증"],
+  prod:["🚫","투입 차단"],price:["🔒","혼입 방지"],office:["📊","BI 추적"],defect:["📄","자동발행"]};
 
 /* ====================================================================
    MAIN LOOP

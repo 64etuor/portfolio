@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>박양하 · 19" 벤치 계측 랙 / Instrument Rack</title>
+<title>박양하 · 생산원가 계측 랙 / Production Cost Rack</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -382,13 +382,13 @@
             </svg>
           </div>
           <div class="brand">
-            <h1>박양하 <span style="color:var(--muted);font-weight:600;font-size:.7em">／ MEASUREMENT BENCH RACK</span></h1>
-            <div class="role">공정·품질 엔지니어 <b>계측 · 검사 · 캘리브레이션</b> → 풀스택 개발</div>
+            <h1>박양하 <span style="color:var(--muted);font-weight:600;font-size:.7em">／ PRODUCTION COST RACK</span></h1>
+            <div class="role">은성에스아이티 · 생산관리 과장 <b>2차전지 배터리팩 생산 총괄</b> · 2020.08–2022.11</div>
           </div>
           <div class="topmeta">
-            <span class="pill"><span class="dot run"></span> SYSTEM&nbsp;ON</span>
-            <span class="pill"><span class="dot"></span> SELF-CAL&nbsp;OK</span>
-            <span class="pill mono"><span class="dot warn"></span> NIST-TRACEABLE</span>
+            <span class="pill"><span class="dot run"></span> OPEX&nbsp;−85%</span>
+            <span class="pill"><span class="dot"></span> 불량&nbsp;0건</span>
+            <span class="pill mono"><span class="dot warn"></span> IATF&nbsp;16949</span>
           </div>
         </div>
       </section>
@@ -398,8 +398,8 @@
         <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
         <div class="modtitle">
           <span class="uno">2U · DMM</span>
-          <h3>디지털 멀티미터 — 6½ 자리 정밀 측정</h3>
-          <span class="sub mono">MODEL DP-6500 · 분해능 0.1ppm · 셀렉터로 측정항목 전환</span>
+          <h3>운영원가 계측기 — 라인 경비 정밀 측정</h3>
+          <span class="sub mono">MODEL PC-8500 · 셀렉터로 성과지표 전환 · 은성에스아이티 2020–2022</span>
         </div>
 
         <div class="dmm">
@@ -410,8 +410,8 @@
               <span class="an" data-an="HOLD">HOLD</span>
               <span class="an on" data-an="DCV">REL</span>
               <span class="an" data-an="PCT">%</span>
-              <span class="an" data-an="MV">mV</span>
-              <span class="an" data-an="OHM">Ω</span>
+              <span class="an" data-an="MV">건</span>
+              <span class="an" data-an="OHM">원</span>
               <span class="an" data-an="MIN">MIN</span>
               <span class="an on" data-an="REC">REC</span>
             </div>
@@ -461,43 +461,43 @@
       <!-- ===== row: CAL unit + scope ===== -->
       <div class="grid2">
         <!-- CAL routine -->
-        <section class="u" aria-label="캘리브레이션 유닛">
+        <section class="u" aria-label="원가 재협상 루틴">
           <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
           <div class="modtitle">
             <span class="uno">1U · CAL</span>
-            <h3>캘리브레이션 유닛 — 측정기 자가 보정 루틴</h3>
-            <span class="sub mono">NIST-traceable · 기준기 대조</span>
+            <h3>원가 보정 루틴 — 제조원가 구조 재협상</h3>
+            <span class="sub mono">실투입 자원 분석 → 협력사 단가 재협상 → 기존 계약 무효화</span>
           </div>
           <div class="calbody">
             <div class="caltop">
               <div class="lamp" id="calLamp" aria-hidden="true"><div class="glass"></div></div>
               <div style="display:flex;flex-direction:column;align-items:center"><div class="lamplbl">PASS</div></div>
               <div class="calreadbox" id="calBox">
-                <div class="calread-lbl">기준기 대비 편차 · MEASURED</div>
-                <div class="calread" id="calRead">15.0<span style="font-size:.6em"> ppm</span></div>
+                <div class="calread-lbl">단가 반영 편차 · MEASURED</div>
+                <div class="calread" id="calRead">−30.0<span style="font-size:.6em"> %</span></div>
                 <div class="specrow">
                   <span class="verdict" id="calVerdict">OUT-OF-SPEC</span>
-                  <span class="mono">공차 USL ≤ 1.0ppm · ε ±0.1ppm</span>
+                  <span class="mono">실투입 미반영 · 기존 계약 단가 저평가</span>
                 </div>
               </div>
             </div>
-            <button class="calbtn" id="calBtn"><span class="ico"></span> CAL 루틴 실행 — 기준기 대조 보정</button>
+            <button class="calbtn" id="calBtn"><span class="ico"></span> 원가 재협상 루틴 실행</button>
             <div class="calsteps" id="calSteps">
-              <div class="step" data-s="0"><span class="sd"></span> 기준 게이지 영점 · <b>device_inventory</b> 조회</div>
-              <div class="step" data-s="1"><span class="sd"></span> 다점 기준값 측정 · 선형성 편차 산출</div>
-              <div class="step" data-s="2"><span class="sd"></span> 게인/오프셋 보정 계수 적용 · 재측정</div>
-              <div class="step" data-s="3"><span class="sd"></span> 캘리브레이션 인증 · 릴레이 래치 · PASS</div>
+              <div class="step" data-s="0"><span class="sd"></span> 제조원가·운영비 구조 분석 · 실투입 자원 목록화</div>
+              <div class="step" data-s="1"><span class="sd"></span> 단가 미반영 항목 확인 · 편차 산출</div>
+              <div class="step" data-s="2"><span class="sd"></span> 협력사 원가 재협상 · 기존 계약 무효화</div>
+              <div class="step" data-s="3"><span class="sd"></span> 단가 +30% 이상 인상 관철 · PASS</div>
             </div>
           </div>
         </section>
 
         <!-- scope -->
-        <section class="u" aria-label="오실로스코프 / 검사 모듈">
+        <section class="u" aria-label="배터리셀 검사 모듈">
           <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
           <div class="modtitle">
             <span class="uno">1U · SCOPE</span>
-            <h3>검사 모듈 — OCV / IR 파형</h3>
-            <span class="sub mono">솔라엣지</span>
+            <h3>배터리셀 검사 — OCV / IR 파형</h3>
+            <span class="sub mono">비전 검사 시스템 · 역방향 삽입 쇼트 방지</span>
           </div>
           <div class="scopewrap">
             <div class="crt">
@@ -512,135 +512,136 @@
               <div class="srow"><span class="k">OCV</span><span class="v">3.642 V</span></div>
               <div class="srow"><span class="k">IR (절연)</span><span class="v cy">> 500 MΩ</span></div>
               <div class="srow"><span class="k">판정</span><span class="v">IN-SPEC</span></div>
-              <div class="srow"><span class="k">비전 검사</span><span class="v amb">은성/이랜텍</span></div>
-              <div class="srow"><span class="k">DV 전산화</span><span class="v cy">100%</span></div>
+              <div class="srow"><span class="k">비전 검사</span><span class="v amb">역방향 쇼트 0건</span></div>
+              <div class="srow"><span class="k">고객 불량</span><span class="v cy">0건</span></div>
             </div>
           </div>
         </section>
       </div>
 
       <!-- ===== U: DAQ telemetry ===== -->
-      <section class="u" aria-label="신호원 / DAQ">
+      <section class="u" aria-label="생산 데이터 수집">
         <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
         <div class="modtitle">
           <span class="uno">1U · DAQ</span>
-          <h3>신호원 · 데이터 수집 — OPC UA 텔레메트리</h3>
-          <span class="sub mono">python-opcua · 5분 간격</span>
+          <h3>생산현황 · 데이터 수집 — ERP 텔레메트리</h3>
+          <span class="sub mono">ERP · 생산현황 · 자재현황 시스템 도입</span>
         </div>
         <div class="daqgrid" id="daqGrid">
-          <div class="tcell g"><div class="tk">샘플레이트</div><div class="tv">1.0<span class="tu">kS/s</span></div></div>
-          <div class="tcell g"><div class="tk">SNR</div><div class="tv">+72<span class="tu">dB</span></div></div>
-          <div class="tcell a"><div class="tk">드리프트</div><div class="tv">0.4<span class="tu">ppm/h</span></div></div>
-          <div class="tcell"><div class="tk">관찰성 노드</div><div class="tv" id="tManhr">12<span class="tu">ch</span></div></div>
+          <div class="tcell g"><div class="tk">운영경비 절감</div><div class="tv">−85<span class="tu">%</span></div></div>
+          <div class="tcell g"><div class="tk">단가 인상</div><div class="tv">+30<span class="tu">%↑</span></div></div>
+          <div class="tcell a"><div class="tk">고객·필드 불량</div><div class="tv">0<span class="tu">건</span></div></div>
+          <div class="tcell"><div class="tk">인증 관리</div><div class="tv" id="tManhr">3<span class="tu">종</span></div></div>
         </div>
         <div class="opcrow">
-          <span class="tag">opc.tcp://bench.dut:4840</span>
-          <span class="tag" id="opcNode">ns=2;s=Line.Telemetry</span>
+          <span class="tag">erp://production.line:8080</span>
+          <span class="tag" id="opcNode">배터리팩·정수기·와이어링하네스</span>
           <span style="color:var(--green);font-weight:700">● STREAMING</span>
           <span class="mono" id="opcSeq">seq 0001</span>
           <span style="margin-left:auto" class="mono">last poll <span id="opcTime" style="color:var(--cyan)">00:00</span> ago</span>
         </div>
       </section>
 
-      <!-- ===== U: OBS observability ===== -->
-      <section class="u" aria-label="관찰성 / 옵저버빌리티">
-        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
-        <div class="modtitle">
-          <span class="uno">1U · OBS</span>
-          <h3>관찰성 / OBSERVABILITY — 출력 시점부터 설계된 디버그 가능성</h3>
-          <span class="sub mono">metrics · logs · traces · RED/USE · SLO</span>
+      <!-- ===== U: OBS 생산품질 모니터 ===== -->
+      <section class=”u” aria-label=”생산품질 모니터”>
+        <span class=”ear tl”></span><span class=”ear tr”></span><span class=”ear bl”></span><span class=”ear br”></span>
+        <div class=”modtitle”>
+          <span class=”uno”>1U · OBS</span>
+          <h3>생산품질 모니터 — 원가·불량·인증 현황판</h3>
+          <span class=”sub mono”>운영경비 · 불량 · 단가 · 인증 · 비전검사</span>
         </div>
 
-        <div class="obscreed">
-          <b>“디버그 가능성은 사후에 더할 수 없고, 출력 시점부터 설계되는 1급 속성이다.”</b><br>
-          관찰성 <span class="vs">≠</span> 모니터링 — 모니터링은 <b>known unknowns</b>(질문을 미리 안다),
-          관찰성은 <b>unknown unknowns</b>(사후 임의 차원으로 슬라이스). Kalman 제어이론 차용: 외부 신호로 내부 상태를 추론한다.
+        <div class=”obscreed”>
+          <b>”실투입 자원이 단가에 반영되지 않으면, 원가는 측정값이 아니라 추측값이다.”</b><br>
+          제조원가 구조 분석 → 협력사 <b>단가 +30% 이상</b> 관철 · 기존 계약 무효화.
+          배터리셀 역방향 삽입 쇼트 위험 → 외부 네트워크 활용 <b>저비용 비전 검사 시스템</b> 도입.
+          고객 불량·필드 불량 <span class=”vs”>0건</span> 유지.
         </div>
 
-        <div class="obsgrid">
-          <!-- left: 3-tier readout + drilldown -->
-          <div class="obspane">
-            <div class="ph"><span class="dot"></span><span class="pt">3-Tier Signal · Drilldown</span><span class="pn" id="obsDrill">metric → trace → log</span></div>
-            <div class="tier m act" data-tier="0"><span class="tl"></span><span class="tn">METRIC</span><span class="td">집계 신호 · 카디널리티 통제</span><span class="tx">RED/USE</span></div>
-            <div class="tier t" data-tier="1"><span class="tl"></span><span class="tn">TRACE</span><span class="td">trace_id 전파 · span 트리</span><span class="tx">head/tail 샘플링</span></div>
-            <div class="tier l" data-tier="2"><span class="tl"></span><span class="tn">LOG</span><span class="td">원본 신호 · 카디널리티 풍부</span><span class="tx">no-sample</span></div>
-            <div class="drillnote">드릴다운: 이상 <b id="obsAnom">metric</b> 감지 → 해당 <b>trace_id</b>로 점프 → 원본 <b>log</b> 확인</div>
+        <div class=”obsgrid”>
+          <!-- left: 원가절감 3단계 -->
+          <div class=”obspane”>
+            <div class=”ph”><span class=”dot”></span><span class=”pt”>원가 절감 단계 · Drilldown</span><span class=”pn” id=”obsDrill”>분석 → 협상 → 검증</span></div>
+            <div class=”tier m act” data-tier=”0”><span class=”tl”></span><span class=”tn”>분석</span><span class=”td”>제조원가·운영비 구조 분석 · 실투입 확인</span><span class=”tx”>MEASURE</span></div>
+            <div class=”tier t” data-tier=”1”><span class=”tl”></span><span class=”tn”>협상</span><span class=”td”>협력사 원가 재협상 · 기존 계약 무효화</span><span class=”tx”>CALIBRATE</span></div>
+            <div class=”tier l” data-tier=”2”><span class=”tl”></span><span class=”tn”>검증</span><span class=”td”>단가 인상 관철 · 불량 0건 유지 확인</span><span class=”tx”>VERIFY</span></div>
+            <div class=”drillnote”>결과: 라인 운영경비 <b id=”obsAnom”>−85%</b> · 단가 <b>+30%↑</b> · 불량 <b>0건</b></div>
           </div>
 
-          <!-- right: cardinality meter -->
-          <div class="obspane">
-            <div class="ph"><span class="dot warn" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan)"></span><span class="pt">카디널리티 미터</span><span class="pn">cardinality</span></div>
-            <div class="cardrow">
-              <div class="cardmeter agg">
-                <div class="cl"><span>집계 신호 (metric) · 통제</span><span class="cv" id="cardAgg">~12 series</span></div>
-                <div class="cardtrack"><div class="cardfill ctl" id="cardAggBar"></div></div>
+          <!-- right: 절감율 미터 -->
+          <div class=”obspane”>
+            <div class=”ph”><span class=”dot warn” style=”background:var(--cyan);box-shadow:0 0 8px var(--cyan)”></span><span class=”pt”>원가 절감율 미터</span><span class=”pn”>cost reduction</span></div>
+            <div class=”cardrow”>
+              <div class=”cardmeter agg”>
+                <div class=”cl”><span>라인 운영경비 절감 (초기 대비)</span><span class=”cv” id=”cardAgg”>−85%</span></div>
+                <div class=”cardtrack”><div class=”cardfill ctl” id=”cardAggBar” style=”width:85%”></div></div>
               </div>
-              <div class="cardmeter raw">
-                <div class="cl"><span>원본 신호 (log/trace) · 풍부 보존</span><span class="cv" id="cardRaw">~1.4M events</span></div>
-                <div class="cardtrack"><div class="cardfill rich" id="cardRawBar"></div></div>
+              <div class=”cardmeter raw”>
+                <div class=”cl”><span>협력사 단가 인상 관철</span><span class=”cv” id=”cardRaw”>+30%↑</span></div>
+                <div class=”cardtrack”><div class=”cardfill rich” id=”cardRawBar” style=”width:30%”></div></div>
               </div>
-              <div class="cardlaw">운영 규율 — <b>집계 신호는 카디널리티 통제, 원본 신호는 카디널리티 풍부하게 보존.</b>
-                안티: user_id를 <span class="w">메트릭 라벨</span>로 쓰면 라벨 폭발 → OOM.</div>
+              <div class=”cardlaw”>운영 규율 — <b>실투입 자원을 단가에 반영하고, 불량은 현장에서 원천 차단.</b>
+                비전 검사 도입으로 <span class=”w”>역방향 삽입 쇼트</span> 위험 제거.</div>
             </div>
           </div>
         </div>
 
-        <!-- RED + USE gauges + SLO -->
-        <div class="obsgrid" style="margin-top:11px">
-          <div class="obspane">
-            <div class="ph"><span class="dot"></span><span class="pt">RED · 요청 신호</span><span class="pn">Rate/Errors/Duration</span></div>
-            <div class="gaugegrid" id="redGauges"></div>
-            <div class="ph" style="margin:13px 0 9px"><span class="dot" style="background:var(--amber);box-shadow:0 0 8px var(--amber)"></span><span class="pt">USE · 자원 신호</span><span class="pn">Utilization/Saturation/Errors</span></div>
-            <div class="gaugegrid" id="useGauges"></div>
+        <!-- 성과 게이지 + 인증/시스템 -->
+        <div class=”obsgrid” style=”margin-top:11px”>
+          <div class=”obspane”>
+            <div class=”ph”><span class=”dot”></span><span class=”pt”>성과 지표 · 생산품질</span><span class=”pn”>Quality/Cost/Delivery</span></div>
+            <div class=”gaugegrid” id=”redGauges”></div>
+            <div class=”ph” style=”margin:13px 0 9px”><span class=”dot” style=”background:var(--amber);box-shadow:0 0 8px var(--amber)”></span><span class=”pt”>자원 활용 · 시스템</span><span class=”pn”>ERP/Vision/Cert</span></div>
+            <div class=”gaugegrid” id=”useGauges”></div>
           </div>
 
-          <div class="obspane">
-            <div class="ph"><span class="dot"></span><span class="pt">SLO · Error Budget Burn</span><span class="pn">99.9% / 30d</span></div>
-            <div class="slobar">
-              <div class="sloline"><span>가용성 SLO</span><span class="sv" id="sloVal">99.94%</span></div>
-              <div class="burntrack"><div class="burnused" id="burnUsed"></div><div class="burnleft"></div></div>
-              <div class="burnlabels"><span>소진 <b id="burnPct">32%</b></span><span>잔여 예산 <span id="burnRem">29.4 min</span></span></div>
+          <div class=”obspane”>
+            <div class=”ph”><span class=”dot”></span><span class=”pt”>불량 예산 소진율</span><span class=”pn”>불량 0건 목표</span></div>
+            <div class=”slobar”>
+              <div class=”sloline”><span>품질 목표 달성율</span><span class=”sv” id=”sloVal”>100%</span></div>
+              <div class=”burntrack”><div class=”burnused” id=”burnUsed” style=”width:0%”></div><div class=”burnleft”></div></div>
+              <div class=”burnlabels”><span>불량 <b id=”burnPct”>0건</b></span><span>잔여 예산 <span id=”burnRem”>전액 보존</span></span></div>
             </div>
-            <div class="ph" style="margin:14px 0 8px"><span class="dot" style="background:#c79bff;box-shadow:0 0 8px #c79bff"></span><span class="pt">Trace Span Waterfall</span><span class="pn">span tree</span></div>
-            <div class="wftrace">trace_id <b id="wfTid">7f3a…e2c1</b> · 드릴다운 metric→trace→log</div>
-            <div class="wf" id="wfRows"></div>
-            <div class="antip">
-              <span class="a">✕ 라벨 폭발</span>
-              <span class="a">✕ 로그를 메트릭처럼</span>
-              <span class="a">✕ 샘플링 없는 전수수집</span>
+            <div class=”ph” style=”margin:14px 0 8px”><span class=”dot” style=”background:#c79bff;box-shadow:0 0 8px #c79bff”></span><span class=”pt”>원가절감 프로세스 Waterfall</span><span class=”pn”>단계별 진행</span></div>
+            <div class=”wftrace”>process_id <b id=”wfTid”>cost-reduction-2021</b> · 분석→협상→검증</div>
+            <div class=”wf” id=”wfRows”></div>
+            <div class=”antip”>
+              <span class=”a”>✕ 단가 미반영 계약</span>
+              <span class=”a”>✕ 역방향 셀 삽입</span>
+              <span class=”a”>✕ 현장 불량 방치</span>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ===== U: DUT bay / device inventory ===== -->
-      <section class="u" aria-label="DUT 베이 / 장비 인벤토리">
+      <!-- ===== U: DUT bay / 생산 시스템 인벤토리 ===== -->
+      <section class="u" aria-label="생산 시스템 인벤토리">
         <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
         <div class="modtitle">
           <span class="uno">2U · DUT BAY</span>
-          <h3>피측정 장치 · device_inventory</h3>
-          <span class="sub mono">status · capabilities</span>
+          <h3>생산 시스템 · 도입 현황</h3>
+          <span class="sub mono">status · capabilities · 은성에스아이티 2020–2022</span>
         </div>
         <div class="inv">
           <div class="invrow">
-            <div><div class="nm">Mirrorless · calibration_profile</div><div class="cap">WB · EXPOSURE · CROP · COLOR · mode=gpu</div></div>
-            <div class="cap">WebGL2 / MediaPipe</div>
-            <div class="stled cal"><span class="d"></span> CALIBRATING</div>
+            <div><div class="nm">배터리팩 생산라인 · 운영경비 계측</div><div class="cap">초기 대비 −85% 절감 · 라인 운영경비 구조 개선</div></div>
+            <div class="cap">생산관리 총괄</div>
+            <div class="stled ok"><span class="d"></span> −85% 달성</div>
           </div>
           <div class="invrow">
-            <div><div class="nm">Canon EOS R100 · 광학축 정렬</div><div class="cap">렌즈중심 → 얼굴 target · tilt ≈ 18°</div></div>
-            <div class="cap">TensorFlow.js</div>
-            <div class="stled ok"><span class="d"></span> ALIGNED</div>
+            <div><div class="nm">비전 검사 시스템 · 셀 역방향 삽입 방지</div><div class="cap">배터리셀 역방향 삽입 쇼트 위험 → 저비용 비전검사 도입</div></div>
+            <div class="cap">외부 네트워크 활용</div>
+            <div class="stled ok"><span class="d"></span> 쇼트 0건</div>
           </div>
           <div class="invrow">
-            <div><div class="nm">솔라엣지 OCV/IR 검사장비</div><div class="cap">OCV 3.642V · IR > 500MΩ</div></div>
-            <div class="cap">DAQ / OPC UA</div>
+            <div><div class="nm">ERP · 생산현황 · 자재현황 시스템</div><div class="cap">배터리팩·정수기 부품·자동차 와이어링 하네스 생산운영</div></div>
+            <div class="cap">시스템 도입</div>
             <div class="stled ok"><span class="d"></span> ONLINE</div>
           </div>
           <div class="invrow">
-            <div><div class="nm">비전 검사 시스템 · 은성/이랜텍</div><div class="cap">용착 불량 판정 · DOE</div></div>
-            <div class="cap">비전검사 / CadQuery</div>
-            <div class="stled ok"><span class="d"></span> PASS 0건</div>
+            <div><div class="nm">SQ · ISO · IATF 16949 인증 관리</div><div class="cap">고객 불량·필드 불량 0건 유지 · 품질시스템 운영</div></div>
+            <div class="cap">인증 관리</div>
+            <div class="stled ok"><span class="d"></span> 불량 0건</div>
           </div>
         </div>
       </section>
@@ -650,9 +651,9 @@
         <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
         <div class="footu">
           <div class="chips">
-            <span class="chip">Electron</span><span class="chip"><b>WebGL2</b></span><span class="chip">MediaPipe</span>
-            <span class="chip">TensorFlow.js</span><span class="chip">React</span><span class="chip">Django</span>
-            <span class="chip">PostgreSQL&nbsp;17</span><span class="chip"><b>OPC&nbsp;UA</b></span><span class="chip">CadQuery</span><span class="chip">비전검사</span>
+            <span class="chip"><b>생산관리</b></span><span class="chip">원가분석</span><span class="chip">ERP 도입</span>
+            <span class="chip">비전검사</span><span class="chip"><b>IATF&nbsp;16949</b></span><span class="chip">SQ·ISO</span>
+            <span class="chip">협력사 협상</span><span class="chip">배터리팩</span><span class="chip">와이어링 하네스</span><span class="chip">정수기 부품</span>
           </div>
           <div class="contact">
             <a class="cbtn" href="mailto:64etuor@gmail.com"><span class="d"></span> 64etuor@gmail.com</a>
@@ -660,7 +661,7 @@
             <a class="cbtn" href="tel:010-0000-0000"><span class="d"></span> 010-0000-0000</a>
           </div>
         </div>
-        <div class="label-strip" style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px">박양하 · 계측 랙 v2.0 · 측정은 신뢰를 만든다 · MEASURE · CALIBRATE · VERIFY</div>
+        <div class="label-strip" style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px">박양하 · 은성에스아이티 2020.08–2022.11 · 운영경비 −85% · MEASURE · CALIBRATE · VERIFY</div>
       </section>
 
     </div>
@@ -673,13 +674,13 @@
 
   /* ---------- DMM function selector ---------- */
   var METRICS = [
-    {fn:"DC %",   nm:"운영경비 절감", val:-85.00, unit:"%",     pct:0.85, ann:["PCT"]},
-    {fn:"DCV",    nm:"기준 전압 (DC)", val:+3.642, unit:"V", pct:0.73, ann:["DCV"]},
-    {fn:"OHM",    nm:"절연 저항 (IR)", val:+500.00, unit:"MΩ", pct:0.92, ann:["OHM"]},
-    {fn:"mV",     nm:"오프셋 (REL)", val:-12.50, unit:"mV", pct:0.18, ann:["MV"]},
-    {fn:"FREQ",   nm:"샘플링 주기", val:+5.00, unit:"min", pct:0.42, ann:["PCT"]},
-    {fn:"TEMP",   nm:"센서 온도", val:+24.00, unit:"℃", pct:0.48, ann:["MV"]},
-    {fn:"CAL",    nm:"in-spec 편차", val:0, unit:"ppm", pct:0.0, ann:["OHM"]}
+    {fn:"DC %",   nm:"라인 운영경비 절감",   val:-85.00, unit:"%",  pct:0.85, ann:["PCT"]},
+    {fn:"단가 %", nm:"협력사 단가 인상",      val:+30.00, unit:"%",  pct:0.30, ann:["PCT","DCV"]},
+    {fn:"불량 건",nm:"고객·필드 불량",        val:0,      unit:"건", pct:0.0,  ann:["MV"]},
+    {fn:"OCV V",  nm:"배터리셀 OCV",          val:+3.642, unit:"V",  pct:0.73, ann:["DCV"]},
+    {fn:"IR MΩ",  nm:"절연 저항 (IR)",        val:+500.00,unit:"MΩ", pct:0.92, ann:["OHM"]},
+    {fn:"인증",   nm:"SQ·ISO·IATF 16949",    val:3,      unit:"건", pct:0.60, ann:["OHM","MV"]},
+    {fn:"시스템", nm:"ERP·생산·자재 도입",    val:3,      unit:"건", pct:0.60, ann:["PCT"]}
   ];
   var selBtns = document.getElementById("selbtns");
   var dmmDigits = document.getElementById("dmmDigits");
@@ -711,7 +712,6 @@
   function dialAngle(i){var N=METRICS.length;return -135 + 270*(i/(N-1));}
 
   function fmtVal(m){
-    if(m.unit==="분") return (m.val>0?"+":"")+m.val;
     if(m.unit==="건") return m.val.toFixed(0);
     var s=(m.val>0?"+":(m.val<0?"−":""))+Math.abs(m.val).toFixed(2);
     return s;
@@ -756,8 +756,7 @@
   }
   function renderDigits(v, unit, target){
     var txt;
-    if(unit==="분"){ txt=(v>0?"+":(v<0?"−":""))+Math.abs(Math.round(v)); }
-    else if(unit==="건"){ txt=Math.abs(Math.round(v)).toFixed(0); }
+    if(unit==="건"){ txt=Math.abs(Math.round(v)).toFixed(0); }
     else { txt=(target>0?"+":(target<0?"−":""))+Math.abs(v).toFixed(2); }
     dmmDigits.textContent=txt;
   }
@@ -808,26 +807,26 @@
     calState="fail";
     calBox.classList.remove("pass"); calLamp.classList.remove("pass");
     calVerdict.classList.remove("pass"); calVerdict.textContent="OUT-OF-SPEC";
-    calRead.innerHTML='15.0<span style="font-size:.6em"> ppm</span>';
+    calRead.innerHTML='-30.0<span style="font-size:.6em"> %</span>';
     calSteps.forEach(function(s){s.classList.remove("done");});
     var i=0;
     function step(){
       if(i<calSteps.length){
         calSteps[i].classList.add("done");
         beep(660+i*120,0.05);
-        // measured deviation descends through steps
-        var seq=[15.0,8.2,2.4,0.0];
+        // 단가 편차 수렴 (OUT-OF-SPEC → 협상 완료)
+        var seq=[-30.0,-18.5,-8.2,+30.0];
         var v=seq[i];
-        calRead.innerHTML=(v.toFixed(1))+'<span style="font-size:.6em"> ppm</span>';
-        if(v<=1.0){ calRead.style.color="var(--vfd)"; }
+        calRead.innerHTML=(v>0?"+":"")+v.toFixed(1)+'<span style="font-size:.6em"> %</span>';
+        if(v>=0){ calRead.style.color="var(--vfd)"; }
         i++; setTimeout(step,520);
       } else {
-        // relay latch + PASS
+        // 협상 타결 + PASS
         beep(990,0.04); setTimeout(function(){beep(1320,0.12);},60);
         calBox.classList.add("pass"); calLamp.classList.add("pass");
         calVerdict.classList.add("pass"); calVerdict.textContent="IN-SPEC ✓";
         calRead.style.color="";
-        calRead.innerHTML='0.0<span style="font-size:.6em"> ppm</span>';
+        calRead.innerHTML='+30.0<span style="font-size:.6em"> %</span>';
         calState="pass";
         calBusy=false; calBtn.disabled=false;
       }
@@ -930,31 +929,31 @@
     }
     var red=document.getElementById("redGauges");
     if(red){
-      gauge(red,"Rate","1.2k/s",0.62,"c");
-      gauge(red,"Errors","0.04%",0.04,"");
-      gauge(red,"Duration","p99 84ms",0.34,"a");
+      gauge(red,"OPEX절감","−85%",0.85,"");
+      gauge(red,"불량","0건",0.0,"");
+      gauge(red,"단가인상","+30%",0.30,"a");
     }
     var use=document.getElementById("useGauges");
     if(use){
-      gauge(use,"Util","58%",0.58,"");
-      gauge(use,"Sat","0.21",0.21,"c");
-      gauge(use,"Errors","0",0.0,"");
+      gauge(use,"ERP","도입",1.0,"c");
+      gauge(use,"비전검사","도입",1.0,"c");
+      gauge(use,"인증","3종",0.80,"");
     }
 
     // animate cardinality + burn bars on first frame
     requestAnimationFrame(function(){
-      var ab=document.getElementById("cardAggBar"); if(ab) ab.style.width="7%";
-      var rb=document.getElementById("cardRawBar"); if(rb) rb.style.width="92%";
-      var bu=document.getElementById("burnUsed"); if(bu) bu.style.width="32%";
+      var ab=document.getElementById("cardAggBar"); if(ab) ab.style.width="85%";
+      var rb=document.getElementById("cardRawBar"); if(rb) rb.style.width="30%";
+      var bu=document.getElementById("burnUsed"); if(bu) bu.style.width="0%";
     });
 
-    // span waterfall: api.gateway -> auth -> db.query(err) -> render
+    // span waterfall: 원가절감 프로세스
     var spans=[
-      {n:"api.gateway",   o:0,  w:1.00, err:false, ms:"84ms"},
-      {n:"auth.verify",   o:.06,w:.18,  err:false, ms:"15ms"},
-      {n:"db.query users",o:.26,w:.54,  err:true,  ms:"45ms"},
-      {n:"cache.lookup",  o:.30,w:.10,  err:false, ms:"8ms"},
-      {n:"render.json",   o:.84,w:.14,  err:false, ms:"12ms"}
+      {n:"원가구조 분석",   o:0,   w:1.00, err:false, ms:"4주"},
+      {n:"실투입 목록화",   o:.05, w:.25,  err:false, ms:"1주"},
+      {n:"단가 편차 산출",  o:.30, w:.20,  err:true,  ms:"−30%"},
+      {n:"협력사 재협상",   o:.50, w:.30,  err:false, ms:"2주"},
+      {n:"계약 무효·관철", o:.80, w:.20,  err:false, ms:"+30%"}
     ];
     var wf=document.getElementById("wfRows");
     if(wf){
@@ -978,7 +977,7 @@
 
     // gentle drilldown cycle across the 3 tiers (metric->trace->log)
     var tiers=Array.prototype.slice.call(document.querySelectorAll(".tier"));
-    var anomEl=document.getElementById("obsAnom"), labels=["metric","trace","log"];
+    var anomEl=document.getElementById("obsAnom"), labels=["−85%","+30%","0건"];
     var di=0;
     if(tiers.length){
       setInterval(function(){

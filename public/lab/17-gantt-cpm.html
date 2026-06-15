@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>박양하 · 커리어 간트 + 크리티컬 패스 + 임팩트 스코어카드</title>
+<title>박양하 · 솔라엣지 공정 데이터 통합 · 간트 + 크리티컬 패스 + 임팩트 스코어카드</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
 :root{
@@ -223,66 +223,6 @@ footer .r a:hover{color:var(--crit)}
 
 .dim-others #gantt.cp .nc{opacity:.16;transition:opacity .35s}
 
-/* ============ self-ops section ============ */
-.selfops{margin-top:24px}
-.selfops-hd{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;
-  border-top:2px solid var(--ink);padding-top:14px;margin-bottom:14px;flex-wrap:wrap}
-.selfops-hd .l{display:flex;flex-direction:column;gap:5px}
-.selfops-hd h2{font-size:19px;font-weight:800;letter-spacing:-.014em;line-height:1.05}
-.selfops-hd h2 .en{color:var(--ink-3);font-weight:700}
-.selfops-cap{font-size:11.5px;color:var(--ink-2);line-height:1.55;max-width:560px}
-.selfops-cap b{color:var(--ink)}
-.selfops-badge{font-family:var(--mono);font-size:9.5px;color:var(--warn);
-  border:1px solid #ecd9b6;background:#fbf3e1;border-radius:5px;padding:3px 8px;letter-spacing:.03em;white-space:nowrap}
-.selfops-grid{display:grid;grid-template-columns:1.32fr 1fr;gap:22px;align-items:start}
-@media (max-width:1080px){.selfops-grid{grid-template-columns:1fr}}
-
-/* momentum panel */
-.mom-top{display:flex;flex-wrap:wrap;gap:9px;padding:14px 15px 4px}
-.mom-stat{flex:1 1 0;min-width:96px;border:1px solid var(--line);border-radius:10px;
-  padding:9px 11px;background:var(--paper-2)}
-.mom-stat .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-3)}
-.mom-stat .v{display:flex;align-items:baseline;gap:3px;margin-top:3px}
-.mom-stat .v .n{font-family:var(--mono);font-size:21px;font-weight:800;letter-spacing:-.02em;line-height:1}
-.mom-stat .v .u{font-size:10.5px;font-weight:700;color:var(--ink-2)}
-.mom-stat .c{font-size:10px;color:var(--ink-2);margin-top:3px;line-height:1.35}
-#momChart{display:block;width:100%}
-.mom-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:9px 15px 13px;flex-wrap:wrap}
-.mom-foot .lg{display:flex;gap:13px;flex-wrap:wrap}
-.mom-foot .lg .i{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--ink-2)}
-.mom-foot .lg .i .sw{width:14px;height:8px;border-radius:2px}
-.mom-foot .lg .i .swl{width:16px;height:0;border-top:2px solid var(--c-mir)}
-.mom-foot .note{font-family:var(--mono);font-size:9px;color:var(--ink-3);letter-spacing:.02em}
-.mom-log{margin:0 15px 14px;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
-.mom-log .lhd{display:flex;align-items:center;justify-content:space-between;gap:8px;
-  padding:7px 11px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#fff,#fafbf8)}
-.mom-log .lhd .t{font-size:10.5px;font-weight:800}
-.mom-log .lhd .b{font-family:var(--mono);font-size:8.5px;color:var(--ink-3);letter-spacing:.08em;text-transform:uppercase}
-.mom-log table{width:100%;border-collapse:collapse;font-size:10px}
-.mom-log th{font-family:var(--mono);font-size:8px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);
-  text-align:left;padding:5px 9px;border-bottom:1px solid var(--line);font-weight:700}
-.mom-log td{padding:5px 9px;border-bottom:1px solid var(--grid);color:var(--ink-2);vertical-align:top}
-.mom-log tr:last-child td{border-bottom:none}
-.mom-log td.tk{color:var(--ink);font-weight:600}
-.mom-log td.dur{font-family:var(--mono);text-align:right;color:var(--ink);white-space:nowrap}
-.mom-log .schema{font-family:var(--mono);font-size:8.5px;color:var(--ink-3);padding:6px 11px;background:var(--paper-2);letter-spacing:.01em}
-
-/* life wheel panel */
-.lw-wrap{padding:12px 15px 6px;display:flex;justify-content:center}
-#wheel{display:block;max-width:340px;width:100%}
-.lw-legend{display:flex;gap:16px;justify-content:center;padding:2px 15px 8px;flex-wrap:wrap}
-.lw-legend .i{display:flex;align-items:center;gap:6px;font-size:10.5px;color:var(--ink-2)}
-.lw-legend .i .sw{width:14px;height:9px;border-radius:2px}
-.lw-axes{padding:2px 15px 12px;display:flex;flex-wrap:wrap;gap:5px}
-.lw-axis{font-family:var(--mono);font-size:9px;letter-spacing:.02em;color:var(--ink-2);
-  border:1px solid var(--line);border-radius:999px;padding:3px 9px;background:#fff;display:flex;align-items:center;gap:6px}
-.lw-axis .gap{color:var(--warn);font-weight:700}
-.lw-axis .grp{color:var(--ink-3)}
-.lw-princ{margin:0 15px 14px;border:1px solid var(--line);border-left:3px solid var(--warn);
-  border-radius:8px;padding:9px 12px;background:var(--paper-2)}
-.lw-princ .t{font-size:10.5px;font-weight:800}
-.lw-princ .d{font-size:10px;color:var(--ink-2);margin-top:3px;line-height:1.5}
 </style>
 </head>
 <body>
@@ -291,13 +231,13 @@ footer .r a:hover{color:var(--crit)}
   <!-- masthead -->
   <header class="mast">
     <div class="mast-l">
-      <div class="kicker">PROJECT PLAN · CRITICAL PATH METHOD · EXECUTIVE SCORECARD</div>
-      <h1><span class="nm">박양하</span> &nbsp;<span class="sub">커리어 간트 &amp; 임팩트 보드</span></h1>
+      <div class="kicker">PROJECT PLAN · CRITICAL PATH METHOD · IMPACT SCORECARD</div>
+      <h1><span class="nm">박양하</span> &nbsp;<span class="sub">공정 데이터 통합 · 간트 &amp; 임팩트 보드</span></h1>
       <div class="role-row">
-        <span class="role-pill lead">생산운영 PM</span>
-        <span class="role-pill">공정기술 엔지니어</span>
-        <span class="role-pill lead">총괄본부장</span>
-        <span class="role-pill">제조 → SW · 데이터 · AI</span>
+        <span class="role-pill lead">공정기술 엔지니어</span>
+        <span class="role-pill">솔라엣지테크놀로지스코리아</span>
+        <span class="role-pill lead">2023 MOC Best Employee</span>
+        <span class="role-pill">제조 데이터 → DB · 대시보드 · 자동화</span>
       </div>
     </div>
     <div class="mast-r">
@@ -325,7 +265,7 @@ footer .r a:hover{color:var(--crit)}
       </div>
       <span class="hint">막대를 클릭하면 역할 상세 + 비즈니스 임팩트가 열립니다.</span>
     </div>
-    <div class="cp-note mono">최장 의존 체인 <b>5단계</b> · 제조 현장 → 데이터/AX 총괄까지 단절 없이 연결</div>
+    <div class="cp-note mono">솔라엣지 <b>데이터 통합</b> 프로젝트 · 공수 −451분/일 · ST −50% 달성</div>
   </div>
 
   <!-- main layout -->
@@ -334,7 +274,7 @@ footer .r a:hover{color:var(--crit)}
     <!-- GANTT -->
     <section class="board" id="boardWrap">
       <div class="board-hd">
-        <h2><span class="ix">GANTT</span> 커리어 타임라인 · 의존성 · 진척률 · 마일스톤</h2>
+        <h2><span class="ix">GANTT</span> 커리어 타임라인 · 솔라엣지 데이터 통합 단계 · 마일스톤</h2>
         <div class="board-meta mono">2020 Q3 → 2026 Q2 · FS 의존 · Today 2026.06</div>
       </div>
       <svg id="gantt" role="img" aria-label="커리어 간트 차트"></svg>
@@ -344,22 +284,22 @@ footer .r a:hover{color:var(--crit)}
     <aside class="rail">
 
       <div class="card">
-        <div class="card-hd"><span class="t">누적 임팩트</span><span class="b">CUMULATIVE</span></div>
+        <div class="card-hd"><span class="t">대표 성과</span><span class="b">KEY IMPACT</span></div>
         <div class="hero">
-          <div class="lbl">대표 운영 성과 — 라인 생산성 향상</div>
-          <div class="big"><span class="num" id="heroNum">0</span><span class="unit">% 생산성 ↑</span></div>
-          <div class="sub">이랜텍 생산라인 PM 시절 <b>LOB 라인밸런싱</b>으로 라인 생산성 <b>+24%</b> — 의존 체인 한가운데서 처리량을 끌어올린 핵심 성과.</div>
-          <span class="est">집계: 직접 측정치 (실적 기준)</span>
+          <div class="lbl">중복 사무공수 절감 — 데이터 통합 자동화</div>
+          <div class="big"><span class="num" id="heroNum">0</span><span class="unit">분/일 ↓ 사무공수</span></div>
+          <div class="sub">생산실적·불량·KPI 데이터를 엑셀·수기에서 <b>DB+대시보드 통합 관리</b>로 전환 — 중복 사무공수 일 <b>451분 감축</b>, 연 약 5천만원 해당.</div>
+          <span class="est">집계: 직접 측정치 (실적 기준) · 2023.09–2024.12</span>
         </div>
       </div>
 
       <div class="card">
-        <div class="card-hd"><span class="t">임원 KPI 스코어카드</span><span class="b">SCORECARD</span></div>
+        <div class="card-hd"><span class="t">임팩트 스코어카드</span><span class="b">SCORECARD · 솔라엣지</span></div>
         <div class="catstrip">
-          <span class="cattag"><span class="d" style="background:var(--c-eun)"></span>원가</span>
-          <span class="cattag"><span class="d" style="background:var(--good)"></span>품질</span>
-          <span class="cattag"><span class="d" style="background:var(--c-elen)"></span>생산성</span>
-          <span class="cattag"><span class="d" style="background:var(--c-mir)"></span>자동화</span>
+          <span class="cattag"><span class="d" style="background:var(--c-sol)"></span>사무공수</span>
+          <span class="cattag"><span class="d" style="background:var(--good)"></span>공정 ST</span>
+          <span class="cattag"><span class="d" style="background:var(--warn)"></span>원가절감</span>
+          <span class="cattag"><span class="d" style="background:var(--ink-3)"></span>수상</span>
         </div>
         <div class="kpis" id="kpis"></div>
       </div>
@@ -377,63 +317,9 @@ footer .r a:hover{color:var(--crit)}
     </aside>
   </div>
 
-  <!-- ============ SELF-OPS ============ -->
-  <section class="selfops" id="selfops">
-    <div class="selfops-hd">
-      <div class="l">
-        <div class="kicker">SELF-OPS · 운영을 자기 자신에게도 적용</div>
-        <h2>자기 운영 계측 &nbsp;<span class="en">Self-Instrumentation</span></h2>
-        <div class="selfops-cap">엔지니어링 계측을 자기 자신에게 — <b>주간 회고 cadence</b> · <b>다축 정렬 점수</b> · <b>작업단위 텔레메트리</b>.
-          현장에서 쓰던 instrument&nbsp;→&nbsp;measure&nbsp;→&nbsp;retro&nbsp;→&nbsp;iterate 루프를 음주·루틴·결제 같은 개인 영역까지 데이터 문제로 자가실험한다.</div>
-      </div>
-      <span class="selfops-badge">종단 수치는 실제 기록 포맷 기준의 대표값</span>
-    </div>
-
-    <div class="selfops-grid">
-
-      <!-- momentum panel -->
-      <div class="card">
-        <div class="card-hd"><span class="t">주간 Momentum 대시보드 · 12주 연속</span><span class="b">VELOCITY</span></div>
-        <div class="mom-top" id="momTop"></div>
-        <svg id="momChart" role="img" aria-label="주간 모멘텀 12주 시계열"></svg>
-        <div class="mom-foot">
-          <div class="lg">
-            <span class="i"><span class="sw" style="background:#cdd1e6"></span>총 배치시간 (h)</span>
-            <span class="i"><span class="sw" style="background:var(--c-mir)"></span>작업 세션 수</span>
-            <span class="i"><span class="swl"></span>프로젝트 velocity</span>
-          </div>
-          <span class="note">My Momentum Dashboard · 250505 → 250713 · 매 ~7일</span>
-        </div>
-        <div class="mom-log">
-          <div class="lhd"><span class="t">작업단위 텔레메트리 — 원시 시간기록</span><span class="b">RAW LOG</span></div>
-          <table>
-            <thead><tr><th>plan</th><th>task</th><th>started_at</th><th style="text-align:right">duration</th></tr></thead>
-            <tbody id="momLog"></tbody>
-          </table>
-          <div class="schema">schema: todo → plan → task → started_at → duration_min</div>
-        </div>
-      </div>
-
-      <!-- life wheel panel -->
-      <div class="card">
-        <div class="card-hd"><span class="t">Life Wheel · LYT Epic Life Audit</span><span class="b">ALIGNMENT</span></div>
-        <div class="lw-wrap"><svg id="wheel" role="img" aria-label="라이프 휠 — Current vs Ideal 정렬 레이더"></svg></div>
-        <div class="lw-legend">
-          <span class="i"><span class="sw" style="background:rgba(107,72,184,.55)"></span>Current</span>
-          <span class="i"><span class="sw" style="background:rgba(31,157,107,.22);border:1.4px dashed #1f9d6b"></span>Ideal</span>
-        </div>
-        <div class="lw-axes" id="lwAxes"></div>
-        <div class="lw-princ">
-          <div class="t">원칙 — 결과가 아니라 정렬(alignment)에 점수</div>
-          <div class="d">Lived Experience(Recreation·Environment·Body) / Relationships(Soul·Partnership·Family·Friends) / Work 를 Current vs Ideal로 채점. 큰 갭이 다음 분기 액션의 우선순위가 된다.</div>
-        </div>
-      </div>
-
-    </div>
-  </section>
 
   <footer>
-    <div class="l mono">PARK YANGHA · CAREER GANTT v17 · CPM HIGHLIGHT · BOARD-ROOM SCORECARD</div>
+    <div class="l mono">PARK YANGHA · 솔라엣지 공정 데이터 통합 · GANTT v17 · CPM · 사무공수 −451분/일 · ST −50%</div>
     <div class="r mono">
       <a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a>
       <a href="https://github.com/64etuor" target="_blank" rel="noopener">github.com/64etuor</a>
@@ -570,36 +456,36 @@ const TASKS = [
 const MILES = [
   { at:ym(2022,11), label:'IATF16949 운영 · 0불량', row:'eun' },
   { at:ym(2023,9),  label:'라인 생산성 LOB +24%', row:'elen' },
-  { at:ym(2024,12), label:'데이터/MES 전환', row:'sol' },
+  { at:ym(2024,6),  label:'사무공수 −451분/일 · ST −50% 달성', row:'sol' },
+  { at:ym(2024,12), label:'데이터 통합 완료 · MOC Best Employee', row:'sol' },
   { at:ym(2025,8),  label:'제조→SW/AI 브리지 완료', row:'bridge' },
 ];
 
-// Scorecard KPIs — 이 보드가 소유하는 대표 수치는 라인 생산성 +24% 하나.
-// 나머지 성과(원가·품질·셋업·자동화·재고 등)는 각 전용 씬이 소유하므로
-// 여기서는 정량 수치 없이 역량/적용범위만 중립적으로 표기한다.
+// Scorecard KPIs — 이 보드 소유 지표: 사무공수 −451분/일 · 제품 ST −50%
+// 다른 시안 소유(운영경비 −85%·C/T −49%·용착·재고)는 표시하지 않음
 const KPIS = [
-  { cat:'생산성', cls:'up', n:'+24', u:'%', nm:'라인 생산성 LOB', delta:'라인밸런싱', spark:[100,108,115,121,124], color:COLORS.elen, bar:24 },
-  { cat:'생산성', cls:'', n:'LOB', u:'', nm:'라인밸런싱 분석', delta:'병목 해소', spark:[3,2,2,1,1], color:COLORS.elen, bar:62 },
-  { cat:'원가', cls:'', n:'재협상', u:'', nm:'원가·조달 구조개선', delta:'협상력', spark:[1,2,2,3,3], color:COLORS.eun, bar:55 },
-  { cat:'품질', cls:'', n:'관리', u:'', nm:'품질체계 운영', delta:'IATF16949', spark:[2,2,3,3,3], color:'#1f9d6b', bar:70 },
-  { cat:'공정', cls:'', n:'개선', u:'', nm:'사이클·셋업 최적화', delta:'표준화', spark:[3,2,2,1,1], color:COLORS.sol, bar:58 },
-  { cat:'자동화', cls:'', n:'RPA', u:'', nm:'사무·검사 자동화', delta:'반복업무 제거', spark:[1,2,2,3,3], color:COLORS.mir, bar:66 },
+  { cat:'사무공수', cls:'dn', n:'−451', u:'분/일', nm:'중복 사무공수 절감', delta:'DB 통합·자동화', spark:[520,480,420,360,280,200,69], color:COLORS.sol, bar:87 },
+  { cat:'공정 ST', cls:'dn', n:'−50', u:'%', nm:'제품 셋업타임 단축', delta:'ST 정규화·표준화', spark:[100,90,80,70,60,55,50], color:'#1f9d6b', bar:50 },
+  { cat:'원가절감', cls:'up', n:'≈5천', u:'만원/년', nm:'사무공수 연간 환산', delta:'직접 측정치', spark:[1,2,3,4,5], color:COLORS.sol, bar:80 },
+  { cat:'수상', cls:'up', n:'MOC', u:'Best', nm:'2023 MOC Best Employee', delta:'올해의 직원', spark:[3,3,4,4,5], color:'#7a8290', bar:100 },
 ];
 
 const DERIVED = [
-  { t:'생산성 향상의 의미', v:'+24%', tag:'',
-    d:'LOB 라인밸런싱으로 동일 설비·인원에서 처리량을 +24% — 추가 투자 없이 병목을 풀어 라인 캐파를 키운 구조적 개선.', est:false },
-  { t:'의존 체인 위치', v:'핵심', tag:'',
-    d:'제조 현장 → 데이터/AX 총괄로 이어지는 최장 의존 체인의 중간 단계. 이 시기의 생산성·공정 역량이 이후 데이터·자동화 전환의 토대가 됨.', est:false },
-  { t:'역량 전환 ROI 등급', v:'A', tag:'정성평가',
-    d:'현장 공정 최적화에서 출발해 데이터·자동화·AI까지 단계적으로 확장. 도입 폭과 지속성 기준 최상위 등급.', est:true },
+  { t:'사무공수 451분의 의미', v:'연 1,805h↓', tag:'',
+    d:'하루 451분 × 연 240일 기준 약 1,805시간 — 인건비 환산 연 약 5천만원. 엑셀·수기 분산 데이터를 DB 단일 구조로 통합한 직접 효과.', est:false },
+  { t:'ST 50% 단축의 의미', v:'−50%', tag:'',
+    d:'정확한 DB 데이터 기반 공정 LOB 개선·Jig 개발·작업방식 개선으로 제품 셋업타임을 절반으로 단축. ST 정규화 완료 후 지속 유지.', est:false },
+  { t:'역량 전환 포지션', v:'핵심', tag:'전환점',
+    d:'현장 공정 엔지니어링에서 데이터 엔지니어링으로의 전환점. VBA·SQL·Power BI·On-premises Gateway까지 직접 구축한 풀사이클 구현 경험.', est:true },
 ];
 
 const SKILLS = [
-  ['Python',1],['SQL',1],['FastAPI',1],['React',1],['TypeScript',1],['Electron',0],['Rust',0],
-  ['MySQL/RDS',0],['AWS',1],['GCP',1],['BI',0],['ML',0],['RPA',1],['CI/CD',0],
-  ['PFMEA',0],['CP/PFD',0],['SOP',0],['산업용접',0],['LOB',0],['Jig개발',0],['기구설계',0],
-  ['비전검사',1],['로봇티칭',0],['ERP',0],['MES',1],['IATF16949',0],['AI MCP',1]
+  ['Excel VBA',1],['SQL',1],['MySQL',1],['Power BI',1],['On-prem Gateway',1],
+  ['데이터 무결성 검증',1],['DB 설계',1],['대시보드 구축',1],
+  ['작업지시 DB',0],['생산계획 DB',0],['불량 DB',0],['KPI DB',0],
+  ['BOM 관리',0],['워크오더',0],['OPEX 분석',0],
+  ['공정 LOB',0],['Jig 개발',0],['ST 표준화',1],['MES 연계',0],
+  ['보고서 자동화',1],['RPA',0],['IATF16949',0],['SOP',0]
 ];
 
 /* ============================================================
@@ -936,162 +822,7 @@ function countUp(elm,target,dur=1100,sign='+'){
   requestAnimationFrame(tick);
 }
 
-/* ============================================================
-   SELF-OPS DATA  (real format; longitudinal values representative)
-   - 12 weekly "My Momentum Dashboard" snapshots (250505..250713)
-   - anchored to the real raw log slice: ~89 sessions / 169h over ~3 wk,
-     ~114min avg session — weekly figures derived from that cadence.
-============================================================ */
-const MOM = [
-  // wk label = dashboard date (yymmdd) · hours batched · task sessions · velocity (plans shipped)
-  {wk:'250505', h:38, n:24, v:14},
-  {wk:'250511', h:52, n:33, v:21},
-  {wk:'250519', h:57, n:30, v:23},
-  {wk:'250526', h:61, n:35, v:25},
-  {wk:'250601', h:49, n:28, v:19},
-  {wk:'250608', h:54, n:31, v:22},
-  {wk:'250615', h:46, n:27, v:18},
-  {wk:'250622', h:58, n:34, v:24},
-  {wk:'250629', h:51, n:29, v:20},
-  {wk:'250706', h:44, n:25, v:17},
-  {wk:'250713', h:56, n:32, v:23},
-  {wk:'250720', h:60, n:36, v:26},
-];
-// real rows lifted from the raw time-log CSV (todo→plan→task→started_at→duration_min)
-const MOM_LOG = [
-  {p:'Bean 중복 등록 문제 해결', t:'Bean 중복 등록 문제 해결(Qualifier 설정)', at:'5.19 07:40', d:60},
-  {p:'채팅 도메인 초기 설정', t:'웹소켓·STOMP 엔드포인트·핸들러 구현', at:'5.17 20:50', d:75},
-  {p:'AI 채팅·감정 분석 기능 구현', t:'AI 채팅·감정 분석 기능 구현', at:'5.18 15:25', d:217},
-  {p:'Husky·Lint-staged 컨벤션 자동화', t:'Husky·Lint-staged 등 컨벤션 자동화', at:'5.19 14:00', d:280},
-  {p:'레디스 캐싱 처리', t:'레디스 캐싱 처리·팀원 협업', at:'5.22 14:53', d:219},
-  {p:'CI/CD 테스트', t:'CI/CD 테스트 · Jenkins · ArgoCD', at:'5.27 10:00', d:140},
-];
-// Life Wheel — LYT axes; scores are "alignment" 0..10 (Current vs Ideal)
-const WHEEL = [
-  {grp:'Lived Exp.', ax:'Recreation', cur:4, ide:8},
-  {grp:'Lived Exp.', ax:'Environment', cur:6, ide:8},
-  {grp:'Lived Exp.', ax:'Body', cur:5, ide:9},
-  {grp:'Relations', ax:'Soul', cur:6, ide:8},
-  {grp:'Relations', ax:'Partnership', cur:5, ide:8},
-  {grp:'Relations', ax:'Family', cur:7, ide:9},
-  {grp:'Relations', ax:'Friends', cur:5, ide:7},
-  {grp:'Work', ax:'Work', cur:8, ide:9},
-];
 
-/* ---- momentum top stats (from real aggregate) ---- */
-function renderMomTop(){
-  const wrap=document.getElementById('momTop');if(!wrap)return;wrap.innerHTML='';
-  const totH=MOM.reduce((a,b)=>a+b.h,0), totN=MOM.reduce((a,b)=>a+b.n,0);
-  const stats=[
-    {k:'주차',v:MOM.length,u:'주 연속',c:'250505 → 250720 cadence'},
-    {k:'누적 배치시간',v:totH.toLocaleString(),u:'h',c:'12주 합산'},
-    {k:'작업 세션',v:totN.toLocaleString(),u:'건',c:'단일 작업단위 로깅'},
-    {k:'평균 세션',v:'≈114',u:'min',c:'원시 로그 기준'},
-  ];
-  stats.forEach(s=>{
-    const d=document.createElement('div');d.className='mom-stat';
-    d.innerHTML=`<div class="k">${s.k}</div><div class="v"><span class="n">${s.v}</span><span class="u">${s.u}</span></div><div class="c">${s.c}</div>`;
-    wrap.appendChild(d);
-  });
-}
-
-/* ---- momentum chart: bars (hours) + bars (sessions) + velocity line ---- */
-function buildMomChart(){
-  const s=document.getElementById('momChart');if(!s)return;
-  while(s.firstChild)s.removeChild(s.firstChild);
-  const W=s.clientWidth||640, H=190;
-  const padL=34,padR=34,padT=14,padB=26;
-  const plotW=W-padL-padR, plotH=H-padT-padB;
-  s.setAttribute('viewBox',`0 0 ${W} ${H}`);s.setAttribute('height',H);
-  const maxH=Math.max(...MOM.map(d=>d.h)), maxN=Math.max(...MOM.map(d=>d.n)), maxV=Math.max(...MOM.map(d=>d.v));
-  const slot=plotW/MOM.length;
-  const bw=Math.min(20,slot*0.62);
-  const yH=v=>padT+plotH-(v/maxH)*plotH;
-  const yV=v=>padT+plotH-(v/(maxV*1.18))*plotH;
-  // baseline grid
-  [0.25,0.5,0.75,1].forEach(f=>{
-    const gy=padT+plotH-f*plotH;
-    el('line',{x1:padL,y1:gy,x2:W-padR,y2:gy,stroke:'var(--grid)','stroke-width':1},s);
-  });
-  el('line',{x1:padL,y1:padT+plotH,x2:W-padR,y2:padT+plotH,stroke:'var(--line-2)','stroke-width':1.2},s);
-  // bars
-  MOM.forEach((d,i)=>{
-    const cx=padL+slot*i+slot/2;
-    // hours bar (light) — full width behind
-    const hh=(d.h/maxH)*plotH;
-    el('rect',{x:cx-bw/2,y:yH(d.h),width:bw,height:hh,rx:3,fill:'#cdd1e6'},s);
-    // sessions bar (mir) — slim overlay scaled to its own max
-    const sh=(d.n/maxN)*plotH*0.92, sw=bw*0.46;
-    el('rect',{x:cx-sw/2,y:padT+plotH-sh,width:sw,height:sh,rx:2,fill:'var(--c-mir)','fill-opacity':.88},s);
-    // x label (last 2 digits = MMDD short → show MM/DD)
-    const lbl=el('text',{x:cx,y:H-9,fill:'var(--ink-3)','font-size':8,'font-family':'var(--mono)','text-anchor':'middle'},s);
-    lbl.textContent=d.wk.slice(2);
-  });
-  // velocity sparkline (over the bars)
-  const pts=MOM.map((d,i)=>{const cx=padL+slot*i+slot/2;return `${cx.toFixed(1)},${yV(d.v).toFixed(1)}`;}).join(' ');
-  el('polyline',{points:pts,fill:'none',stroke:'var(--c-mir)','stroke-width':2,'stroke-linejoin':'round','stroke-linecap':'round','stroke-opacity':.95},s);
-  MOM.forEach((d,i)=>{const cx=padL+slot*i+slot/2;el('circle',{cx,cy:yV(d.v),r:2.4,fill:'#fff',stroke:'var(--c-mir)','stroke-width':1.6},s);});
-}
-
-/* ---- raw log rows ---- */
-function renderMomLog(){
-  const tb=document.getElementById('momLog');if(!tb)return;tb.innerHTML='';
-  MOM_LOG.forEach(r=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${r.p}</td><td class="tk">${r.t}</td><td class="mono">${r.at}</td><td class="dur">${r.d}min</td>`;
-    tb.appendChild(tr);
-  });
-}
-
-/* ---- life wheel radar (Current vs Ideal) ---- */
-function buildWheel(){
-  const s=document.getElementById('wheel');if(!s)return;
-  while(s.firstChild)s.removeChild(s.firstChild);
-  const SZ=320, cx=SZ/2, cy=SZ/2+6, R=108, maxScore=10;
-  s.setAttribute('viewBox',`0 0 ${SZ} ${SZ}`);
-  const N=WHEEL.length;
-  const ang=i=>(-Math.PI/2)+(i/N)*Math.PI*2;
-  const pt=(i,r)=>[cx+Math.cos(ang(i))*r, cy+Math.sin(ang(i))*r];
-  // rings
-  [0.25,0.5,0.75,1].forEach(f=>{
-    const ring=WHEEL.map((_,i)=>pt(i,R*f).map(v=>v.toFixed(1)).join(',')).join(' ');
-    el('polygon',{points:ring,fill:'none',stroke:'var(--grid)','stroke-width':1},s);
-  });
-  // spokes + labels
-  WHEEL.forEach((d,i)=>{
-    const [ex,ey]=pt(i,R);
-    el('line',{x1:cx,y1:cy,x2:ex,y2:ey,stroke:'var(--line)','stroke-width':1},s);
-    const [lx,ly]=pt(i,R+16);
-    const anchor = Math.abs(lx-cx)<6 ? 'middle' : (lx>cx?'start':'end');
-    const tx=el('text',{x:lx,y:ly+3,fill:'var(--ink-2)','font-size':8.5,'font-weight':700,'text-anchor':anchor,'font-family':'var(--mono)'},s);
-    tx.textContent=d.ax;
-  });
-  // ideal polygon (dashed green)
-  const idP=WHEEL.map((d,i)=>pt(i,R*d.ide/maxScore).map(v=>v.toFixed(1)).join(',')).join(' ');
-  el('polygon',{points:idP,fill:'rgba(31,157,107,.10)',stroke:'#1f9d6b','stroke-width':1.5,'stroke-dasharray':'4 3','stroke-opacity':.9},s);
-  // current polygon (purple) — animate scale-in
-  const curP=WHEEL.map((d,i)=>pt(i,R*d.cur/maxScore).map(v=>v.toFixed(1)).join(',')).join(' ');
-  const curPoly=el('polygon',{points:curP,fill:'rgba(107,72,184,.20)',stroke:'var(--c-mir)','stroke-width':2,
-    'transform-origin':`${cx}px ${cy}px`},s);
-  WHEEL.forEach((d,i)=>{const [px,py]=pt(i,R*d.cur/maxScore);el('circle',{cx:px,cy:py,r:2.6,fill:'var(--c-mir)'},s);});
-  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if(!reduce){
-    curPoly.style.transition='transform .8s cubic-bezier(.2,.8,.2,1),opacity .8s';
-    curPoly.style.opacity='0';curPoly.style.transform='scale(.6)';
-    requestAnimationFrame(()=>setTimeout(()=>{curPoly.style.opacity='1';curPoly.style.transform='scale(1)';},160));
-  }
-}
-
-/* ---- life wheel axis chips (sorted by alignment gap) ---- */
-function renderWheelAxes(){
-  const wrap=document.getElementById('lwAxes');if(!wrap)return;wrap.innerHTML='';
-  [...WHEEL].sort((a,b)=>(b.ide-b.cur)-(a.ide-a.cur)).forEach(d=>{
-    const gap=d.ide-d.cur;
-    const e=document.createElement('span');e.className='lw-axis';
-    e.innerHTML=`<span class="grp">${d.grp}</span>${d.ax} <b>${d.cur}/${d.ide}</b>${gap>0?`<span class="gap">▲${gap}</span>`:''}`;
-    wrap.appendChild(e);
-  });
-}
 
 /* ============================================================
    Init (await fonts for headless PDF)
@@ -1102,12 +833,7 @@ function init(){
   renderKPIs();
   renderDerived();
   renderSkills();
-  countUp(document.getElementById('heroNum'),24,1100,'+');
-  renderMomTop();
-  buildMomChart();
-  renderMomLog();
-  buildWheel();
-  renderWheelAxes();
+  countUp(document.getElementById('heroNum'),451,1100,'−');
 }
 if(document.fonts && document.fonts.ready){
   document.fonts.ready.then(init);
@@ -1116,7 +842,7 @@ if(document.fonts && document.fonts.ready){
 } else { init(); }
 
 let rt;
-window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{buildGantt();buildMomChart();},180);});
+window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(()=>{buildGantt();},180);});
 </script>
 </body>
 </html>

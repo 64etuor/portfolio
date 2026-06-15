@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>박양하 · 소나 워터폴 — 스펙트로그램 캐스케이드</title>
+<title>박양하 · 초음파 용착 DOE — 스펙트로그램 캐스케이드</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap');
 
@@ -210,11 +210,11 @@
 
   <!-- TOP BAR -->
   <div class="topbar">
-    <div class="tag"><span class="k">SYSTEM</span><span class="v">SONAR // WATERFALL</span></div>
-    <div class="tag"><span class="k">MODE</span><span class="v amb">PASSIVE LOFAR</span></div>
+    <div class="tag"><span class="k">SYSTEM</span><span class="v">ULTRASONIC // WELD DOE</span></div>
+    <div class="tag"><span class="k">MODE</span><span class="v amb">SWEEP SCAN</span></div>
     <div class="tag"><span class="k">CHANNELS</span><span class="v">04 / ACTIVE</span></div>
-    <div class="tag"><span class="k">GAIN</span><span class="v" id="gainv">+38 dB</span></div>
-    <div class="tag"><span class="k">RANGE</span><span class="v">24 mo</span></div>
+    <div class="tag"><span class="k">AMPLITUDE</span><span class="v" id="gainv">92 %</span></div>
+    <div class="tag"><span class="k">PERIOD</span><span class="v">DOE 2023</span></div>
     <div class="sys">
       <span class="title">박양하 <b>SIGNAL PORTFOLIO</b></span>
       <span class="blink"></span>
@@ -227,11 +227,11 @@
     <div class="ident">
       <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
       <div class="name">박양하</div>
-      <div class="role">생산운영 / 공정 엔지니어 →<br>데이터 · 풀스택 · AI 아키텍트</div>
-      <div class="sub">REAL-TIME SIGNAL &amp; STREAM SYSTEMS</div>
+      <div class="role">이랜텍 생산라인 PM<br>초음파 용착 공정 DOE · 불량 0%대 달성</div>
+      <div class="sub">ULTRASONIC WELD · DOE · PROCESS ENG</div>
     </div>
 
-    <div class="sectlabel">HYDROPHONE ARRAY</div>
+    <div class="sectlabel">DOE PARAMETER ARRAY</div>
     <div class="chlist" id="chlist"></div>
 
     <div class="legend">
@@ -245,26 +245,26 @@
   <div class="center">
     <canvas id="waterfall"></canvas>
     <canvas id="overlay"></canvas>
-    <div class="ovlabel">SPECTROGRAM CASCADE · <b>FFT 1024</b> · HANN · OVERLAP 50% · t↓</div>
+    <div class="ovlabel">DOE SWEEP CASCADE · <b>초음파 20 kHz</b> · 진폭·가압·시간 스윕 · t↓</div>
     <div class="nowline"><span>◀ NOW</span></div>
-    <div class="axis-time">◀ TIME / HISTORY ▶</div>
+    <div class="axis-time">◀ DOE 조건 탐색 이력 ▶</div>
   </div>
 
   <!-- RIGHT -->
   <div class="right">
-    <div class="sectlabel">SIGNAL READOUTS</div>
+    <div class="sectlabel">DOE READOUTS</div>
     <div class="readouts">
-      <div class="ro"><div class="l">VIDEO 프레임</div><div class="n">60 fps</div></div>
-      <div class="ro"><div class="l">검사 주기</div><div class="n">5 min</div></div>
-      <div class="ro"><div class="l">스트림 채널</div><div class="n">4 ch</div></div>
-      <div class="ro"><div class="l">아노말리 LOBE</div><div class="n hot" id="weldro">HOT</div></div>
-      <div class="ro"><div class="l">처리량</div><div class="n teal">live</div></div>
-      <div class="ro"><div class="l">GPU 필터</div><div class="n teal">WebGL2</div></div>
-      <div class="ro"><div class="l">이벤트 큐</div><div class="n amb">async</div></div>
-      <div class="ro"><div class="l">SSOT 적재</div><div class="n teal">PG17</div></div>
+      <div class="ro"><div class="l">진폭 조건</div><div class="n">92 %</div></div>
+      <div class="ro"><div class="l">가압력 단계</div><div class="n">STEP 3</div></div>
+      <div class="ro"><div class="l">DOE 채널</div><div class="n">4 ch</div></div>
+      <div class="ro"><div class="l">불량율 신호</div><div class="n hot" id="weldro">HOT</div></div>
+      <div class="ro"><div class="l">불량율 목표</div><div class="n teal">0 %</div></div>
+      <div class="ro"><div class="l">용착 방식</div><div class="n teal">초음파</div></div>
+      <div class="ro"><div class="l">재작업 절감</div><div class="n amb">3,200만</div></div>
+      <div class="ro"><div class="l">폐기 절감</div><div class="n teal">3,600만</div></div>
     </div>
 
-    <div class="sectlabel">ACOUSTIC EVENT LOG</div>
+    <div class="sectlabel">DOE EVENT LOG</div>
     <div class="feed" id="feed"></div>
 
     <div class="contact">
@@ -276,11 +276,11 @@
 
   <!-- STATUS -->
   <div class="statusbar">
-    <div class="seg">CONTACT TRACKING<b>4 SOURCES</b></div>
-    <div class="seg">NOISE FLOOR<b>−88 dB</b></div>
-    <div class="seg">SNR<b class="amb" id="snr">21.4 dB</b></div>
-    <div class="seg">SWEEP<b id="sweep">0.0 s</b></div>
-    <div class="seg right">ANOMALY EVENT ARMED · CH4 ANOMALY MONITOR · click channel label to inspect ▸</div>
+    <div class="seg">DOE 인자<b>4 PARAM</b></div>
+    <div class="seg">기저 불량율<b>15 %</b></div>
+    <div class="seg">목표 불량율<b class="amb" id="snr">0 %대</b></div>
+    <div class="seg">스윕 경과<b id="sweep">0.0 s</b></div>
+    <div class="seg right">이랜텍 초음파 용착 DOE · CH4 불량율 신호 · 채널 클릭 시 상세 ▸</div>
   </div>
 </div>
 
@@ -307,42 +307,42 @@
   const CH = [
     {
       id:"CH1", color:"#48e6ff", key:"video",
-      name:"Mirrorless 키오스크", short:"3-CAM LIVE + WebGL2",
-      freq:"VIDEO", hz:"30–60 fps",
-      band:"BAND 0 · 실시간 영상 신호 · 1080p/4K",
-      desc:"3대 카메라 <em>동시 라이브 프리뷰</em>(1080p/4K)와 <em>WebGL2 GPU 필터 파이프라인</em>(bilateral blur · color · face warp · LUT)을 Electron 3-process(Main / Renderer / Agent) 구조로 실시간 합성. MediaPipe · TensorFlow.js 기반 온디바이스 추론으로 프레임 지연을 최소화한 영상 채널.",
-      stack:["Electron 3-process","WebGL2","MediaPipe","TensorFlow.js","GPU Pipeline","1080p/4K"],
-      out:[["프리뷰","3-CAM 동시"],["GPU 필터","bilateral·LUT"],["추론","온디바이스"],["프로세스","Main/Rend/Agent"]],
+      name:"진폭 스윕", short:"AMPLITUDE · 70–100 %",
+      freq:"AMP", hz:"70–100 %",
+      band:"BAND 0 · 초음파 진폭 조건 탐색 · 연속 브로드밴드",
+      desc:"초음파 용착 <em>진폭(Amplitude)</em> 조건 스윕 채널. 70 %–100 % 구간을 연속 스캔하며 각 조건에서의 에너지 분포를 기록. <em>광대역 연속 신호</em>로 표현되며, 진폭이 높을수록 중심 주파수 성분이 강화된다. DOE의 1차 인자.",
+      stack:["진폭 70–100 %","연속 스윕","중심 주파수 분석","에너지 밀도","1차 인자"],
+      out:[["인자","진폭 (AMP)"],["범위","70 – 100 %"],["특성","연속 브로드밴드"],["DOE 역할","1차 인자"]],
       base:0.46, var:0.30, speed:1.7   // busy continuous broadband
     },
     {
       id:"CH2", color:"#1ad6b4", key:"mes",
-      name:"솔라엣지 MES", short:"OPC UA + VISION ETL",
-      freq:"INSPECT", hz:"5 min",
-      band:"BAND 1 · 실시간 검사 시계열 · 5분 간격",
-      desc:"<em>OPC UA 서버</em>로 설비 신호를 수집하고 OCV / IR 검사장비와 비전 데이터를 <em>ETL 파이프라인</em>으로 정규화해 <em>PostgreSQL 17</em>에 적재. 5분 간격으로 갱신되는 검사 시계열 대시보드로 라인 상태를 상시 모니터링.",
-      stack:["OPC UA","OCV / IR 검사","Vision ETL","PostgreSQL 17","Time-Series","5min Dashboard"],
-      out:[["수집","OPC UA"],["검사","OCV·IR·Vision"],["적재","PostgreSQL 17"],["주기","5 min"]],
+      name:"가압력 스윕", short:"PRESSURE · 주기적 펄스",
+      freq:"PRESS", hz:"step",
+      band:"BAND 1 · 가압력 조건 탐색 · 단계별 펄스",
+      desc:"초음파 용착 <em>가압력(Pressure)</em> 조건 채널. 단계적으로 조건을 변경하며 각 레벨에서 일정 시간 유지 후 다음 조건으로 전환. <em>주기적 펄스 패턴</em>으로 표현되며 압력 레벨마다 토날 라인이 나타난다. 가압력과 진폭의 교호작용이 불량율을 결정.",
+      stack:["가압력 단계별","토날 라인","교호작용 분석","조건 유지 시간","2차 인자"],
+      out:[["인자","가압력 (PRESS)"],["패턴","단계별 펄스"],["교호작용","진폭 × 가압력"],["DOE 역할","2차 인자"]],
       base:0.34, var:0.10, speed:0.32, tick:true  // periodic pulse
     },
     {
       id:"CH3", color:"#ffc24a", key:"radar",
-      name:"Work Radar", short:"OPS EVENT STREAM",
-      freq:"EVENT", hz:"async",
-      band:"BAND 2 · 이벤트 스트림 · 운영 신호",
-      desc:"캘린더 · GitHub PR · Notion · agent job · 루틴 등 흩어진 <em>운영 신호를 수집</em>하는 Tauri / Rust / SQLite 데스크톱 레이더. <em>Boule ticker heartbeat</em>가 일정 주기로 박동하며 비동기 이벤트를 단일 타임라인으로 통합.",
-      stack:["Tauri","Rust","SQLite","GitHub API","Notion API","Boule Ticker"],
-      out:[["소스","Cal·PR·Notion"],["heartbeat","Boule ticker"],["런타임","Tauri/Rust"],["저장","SQLite"]],
+      name:"용착 시간 스윕", short:"TIME · 트랜지언트",
+      freq:"TIME", hz:"ms",
+      band:"BAND 2 · 용착 시간 조건 탐색 · 간헐적 트랜지언트",
+      desc:"초음파 <em>용착 시간(Weld Time)</em> 조건 채널. 짧은 펄스 형태로 조건을 인가하며 시간 변화에 따른 에너지 응답을 기록. <em>간헐적 스파이크 트랜지언트</em>로 표현. 용착 시간이 과도하면 사출 케이스 변형이 발생해 폐기로 이어지는 핵심 인자.",
+      stack:["용착 시간","간헐적 인가","변형 임계 탐색","케이스 폐기 방지","3차 인자"],
+      out:[["인자","용착 시간 (TIME)"],["패턴","스파이크 트랜지언트"],["임계","케이스 변형 한계"],["DOE 역할","3차 인자"]],
       base:0.30, var:0.42, speed:2.4, spiky:true  // sparse spiky transients
     },
     {
       id:"CH4", color:"#ff7a5c", key:"weld",
-      name:"솔라엣지 Power BI / RPA", short:"TELEMETRY + ANOMALY",
-      freq:"TELEM", hz:"live",
-      band:"BAND 3 · 실시간 텔레메트리 · OEE/공정 이상감지",
-      desc:"생산현황 · OEE · 공수의 <em>실시간 텔레메트리</em>를 Power BI dataset 갱신 트리거와 RPA로 자동화. 이 채널에는 공정 <em>핫 아노말리</em>가 기록되어 있으며 — <em>보정 마커</em> 이후 이상 신호가 베이스라인으로 냉각되는 과정이 그대로 남아 있다.",
-      stack:["Power BI","RPA","이상감지","Dataset Trigger","OEE Telemetry","baseline 수렴"],
-      out:[["아노말리","HOT → CLEARED","hot"],["방법","베이스라인 보정"],["갱신","dataset trigger"],["자동화","RPA"]],
+      name:"불량율 신호", short:"DEFECT · 15 % → 0 %",
+      freq:"DEFECT", hz:"live",
+      band:"BAND 3 · 초음파 용착 불량율 · 15 % → 0 %대",
+      desc:"이랜텍 생산라인 초음파 용착 공정의 <em>불량율 신호</em>. DOE 이전 불량율 <em>15 %</em>가 핫 로브로 기록되며 — 최적 조건 확정 마커 이후 신호가 <em>0 %대 베이스라인</em>으로 냉각된다. 재작업 낭비 연 환산 3,200만 원 절감 · 폐기 비용 연 환산 3,600만 원 절감.",
+      stack:["불량율 15 % → 0 %","최적 조건 확정","재작업 비용 절감","폐기 비용 절감","DOE 결과"],
+      out:[["불량율","15 % → 0 %","hot"],["재작업 절감","연 3,200만 원"],["폐기 절감","연 3,600만 원"],["방법","DOE 최적 조건"]],
       base:0.30, var:0.16, speed:1.1, weld:true   // anomaly band logic in render
     }
   ];
@@ -683,7 +683,7 @@
     const snr=(18+6*noise(9.1,t,1.2)).toFixed(1);
     document.getElementById("snr").textContent=snr+" dB";
     document.getElementById("sweep").textContent=((t/1000)%600).toFixed(1)+" s";
-    document.getElementById("gainv").textContent="+"+(34+Math.round(8*noise(3,t,0.6)))+" dB";
+    document.getElementById("gainv").textContent=(88+Math.round(14*noise(3,t,0.6)))+" %";
 
     requestAnimationFrame(frame);
   }
@@ -727,7 +727,7 @@
       octx.fillStyle="#ffe27a";
       octx.font="9px 'Share Tech Mono', monospace";
       octx.textBaseline="top";
-      octx.fillText("◆ 이상 보정 마커",x+6,y+4);
+      octx.fillText("◆ DOE 최적 조건 확정",x+6,y+4);
       octx.restore();
     }
   }
@@ -735,22 +735,22 @@
   /* ============ EVENT LOG FEED ============ */
   const feed=document.getElementById("feed");
   const evPool=[
-    ['cy','CH1','3-CAM preview lock · 4K@60 · GPU pipeline nominal'],
-    ['ok','CH2','OPC UA poll OK · PostgreSQL17 commit · 5min frame'],
-    ['wn','CH3','PR event burst · Boule ticker heartbeat ↑'],
-    ['cy','CH1','WebGL2 LUT swap · bilateral kernel 9x9'],
-    ['ok','CH2','OCV/IR inspect batch · ETL normalize done'],
-    ['wn','CH3','Notion sync · agent job queued · async'],
-    ['ok','CH4','OEE telemetry push · dataset trigger fired'],
-    ['cy','CH1','MediaPipe face mesh · 468 lm · on-device'],
-    ['ok','CH4','RPA routine · dataset trigger 갱신'],
-    ['wn','CH3','calendar delta · GitHub PR merged'],
+    ['cy','CH1','진폭 스윕 92 % · 에너지 분포 정상 · 중심주파수 안정'],
+    ['ok','CH2','가압력 STEP 3 유지 · 토날 라인 검출 · 조건 유효'],
+    ['wn','CH3','용착 시간 250 ms · 케이스 변형 임계 근접 · 감시 중'],
+    ['cy','CH1','진폭 70 % 구간 스캔 완료 · 저에너지 브로드밴드 기록'],
+    ['ok','CH2','가압력 × 진폭 교호작용 분석 · 최적 영역 좁혀짐'],
+    ['wn','CH3','용착 시간 과잉 검출 · 사출 케이스 변형 위험 플래그'],
+    ['ok','CH4','불량율 신호 감소 추세 · DOE 조건 수렴 중'],
+    ['cy','CH1','진폭 100 % 상한 스캔 · 발열 경계 모니터링'],
+    ['ok','CH4','재작업 공수 감소 확인 · 임율 6.3 원/초 기준'],
+    ['wn','CH3','용착 시간 최소값 탐색 · 접합 강도 하한 검증'],
   ];
   let evi=0;
   function logEvent(kind){
     let cls,tag,msg;
     if(kind==="doe"){
-      cls="er";tag="CH4";msg="◆ 이상 보정 적용 — 공정 아노말리 HOT → 베이스라인 · 냉각 시작";
+      cls="er";tag="CH4";msg="◆ DOE 최적 조건 확정 — 불량율 15 % → 0 %대 · 베이스라인 냉각 시작";
     }else{
       const e=evPool[evi%evPool.length];evi++;
       cls=e[0];tag=e[1];msg=e[2];

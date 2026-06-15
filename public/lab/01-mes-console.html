@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>MES 자체개발 · 박양하 솔라엣지 공정기술</title>
+<title>MES 실시간 운영 콘솔 · 박양하 솔라엣지</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -250,74 +250,74 @@ svg text{fill:var(--txt-dim);font-family:'JetBrains Mono';font-size:9px}
   <div class="tb-brand">
     <div class="logo-led"></div>
     <div>
-      <div class="title">PARK&nbsp;YANGHA&nbsp;//&nbsp;DEV</div>
-      <div class="sub">MES 자체개발 · SolarEdge 신제품 라인</div>
+      <div class="title">PARK&nbsp;YANGHA&nbsp;//&nbsp;MES</div>
+      <div class="sub">실시간 운영 콘솔 · SolarEdge 신제품 라인</div>
     </div>
   </div>
   <div class="tb-meta">
-    <div class="tb-cell"><span class="k">Project</span><span class="v a">MES-SOLAREDGE-L01</span></div>
-    <div class="tb-cell"><span class="k">Period</span><span class="v">2024.10 – 2024.12</span></div>
-    <div class="tb-cell"><span class="k">Role</span><span class="v">공정기술 엔지니어 · MES 기획·개발 리드</span></div>
+    <div class="tb-cell"><span class="k">Line</span><span class="v a">SOLAREDGE-L01</span></div>
+    <div class="tb-cell"><span class="k">Shift</span><span class="v">DAY / A조</span></div>
+    <div class="tb-cell"><span class="k">Stack</span><span class="v">Django · React · Electron · OPC UA · PostgreSQL</span></div>
     <div class="tb-cell"><span class="k">System Clock</span><span class="v g" id="clock">--:--:--</span></div>
-    <div class="tb-cell"><span class="k">Build Age</span><span class="v a" id="uptime">--</span></div>
+    <div class="tb-cell"><span class="k">Shift Elapsed</span><span class="v a" id="uptime">--</span></div>
   </div>
   <div class="tb-right">
-    <span class="pill live" id="conn">SYS ONLINE</span>
-    <span class="pill" id="alarmcount">EVENTS 0</span>
+    <span class="pill live" id="conn">DAQ LIVE</span>
+    <span class="pill" id="alarmcount">ALARMS 0</span>
   </div>
 </div>
 
 <div class="wrap">
 
-  <!-- MES 자체개발 배경 — WHY we built it in-house -->
-  <div class="section-tag">// PROJECT BACKGROUND — MES 자체개발 기획 배경</div>
-  <div class="philo" title="자동화 설비 예산 초과 상황에서 MES 외주비 누락을 발견, 직접 기획·개발을 리딩했습니다.">
+  <!-- MES 자체개발 맥락 — 이 콘솔이 자체 개발된 시스템임을 알림 -->
+  <div class="section-tag">// ABOUT THIS CONSOLE — 자체개발 MES · 솔라엣지테크놀로지스코리아 2024.10–12</div>
+  <div class="philo" title="자동화 설비 예산 30만불 초과 상황에서 MES 외주비 누락을 발견, 직접 기획·개발을 리딩했습니다.">
     <div class="philo-cell">
-      <div class="pname"><span class="pj">$</span> 예산 갭 발견 · BUDGET GAP</div>
-      <div class="ptag">TRIGGER · 자체개발 기획</div>
-      <div class="pdesc">자동화 설비 예산 <em>30만 달러 초과</em> 상황에서 MES 외주 개발비가 누락된 것을 확인. 추가 발주 대신 <em>직접 기획·리딩</em>을 선택.</div>
+      <div class="pname"><span class="pj">$</span> 자체개발 배경 · WHY IN-HOUSE</div>
+      <div class="ptag">공정기술 엔지니어 · MES 기획·리딩</div>
+      <div class="pdesc">자동화 설비 예산 <em>30만 달러 초과</em> 상황에서 MES 외주 개발비 누락 확인. 추가 발주 대신 <em>직접 기획·개발 리딩</em>을 선택.</div>
     </div>
     <div class="philo-cell">
-      <div class="pname"><span class="pj">⚙</span> 레거시 연동 · LEGACY INTEGRATION</div>
-      <div class="ptag">OCV / IR 검사장비 · MS Access</div>
-      <div class="pdesc">구형 OCV/IR 검사 장비의 데이터를 <em>Python + MS Access DB</em>로 수집·정제. 신규 PostgreSQL 아키텍처와 브리지 설계.</div>
+      <div class="pname"><span class="pj">⚙</span> 데이터 수집 · ETL LAYER</div>
+      <div class="ptag">OPC UA · TCP/IP · OCV/IR 검사장비 · MS Access</div>
+      <div class="pdesc">구형 OCV/IR 검사장비 <em>Python 드라이버</em> + OPC UA 설비 태그 수집 + TCP/IP 비전 데이터. MS Access → PostgreSQL 마이그레이션.</div>
     </div>
     <div class="philo-cell">
-      <div class="pname"><span class="pj">⬡</span> 풀스택 아키텍처 · FULL-STACK ARCH</div>
-      <div class="ptag">Django · React · Electron · OPC UA</div>
-      <div class="pdesc">Backend Django REST Framework · Frontend React/TypeScript/Electron · ETL OPC UA + TCP/IP · DB PostgreSQL · 대시보드 Python Dash. <em>1인 설계·구현</em>.</div>
+      <div class="pname"><span class="pj">⬡</span> 풀스택 아키텍처 · FULL-STACK</div>
+      <div class="ptag">Django REST · React · TypeScript · Electron · PostgreSQL · Dash</div>
+      <div class="pdesc">Backend DRF API · Frontend React/TS/Electron · DB PostgreSQL · 실시간 대시보드 Python Dash. <em>1인 설계·구현.</em> 아래 화면은 해당 MES가 표시하는 운영 현황.</div>
     </div>
   </div>
 
-  <!-- ROW 1: gauges + sparkstrip + cpk + system event feed -->
-  <div class="section-tag">// MES SYSTEM OVERVIEW — 아키텍처 레이어별 상태</div>
+  <!-- ROW 1: OEE 게이지 + 처리량 스파크 + FPY bell + 안돈/알람 피드 -->
+  <div class="section-tag">// PLANT OVERVIEW — 설비 종합 효율 · 실시간 공정 현황</div>
   <div class="grid row-1">
 
     <div class="panel">
-      <div class="p-head"><span class="dot"></span><span class="h-title">레이어별 완성도 · LAYER STATUS</span><span class="h-id">PNL-01 / ARCH.SUITE</span></div>
+      <div class="p-head"><span class="dot"></span><span class="h-title">설비 종합 효율 OEE</span><span class="h-id">PNL-01 / OEE.SUITE</span></div>
       <div class="p-body">
         <div class="gauge-wrap">
-          <div class="gauge" data-gauge="oee" data-target="88.0" data-color="green"></div>
-          <div class="gauge" data-gauge="avail" data-target="92.0" data-color="amber"></div>
-          <div class="gauge" data-gauge="perf" data-target="85.0" data-color="cyan"></div>
+          <div class="gauge" data-gauge="oee" data-target="91.4" data-color="green"></div>
+          <div class="gauge" data-gauge="avail" data-target="96.2" data-color="amber"></div>
+          <div class="gauge" data-gauge="perf" data-target="94.8" data-color="cyan"></div>
         </div>
       </div>
     </div>
 
     <div class="panel">
-      <div class="p-head"><span class="dot"></span><span class="h-title">런타임 신호 · RUNTIME SIGNAL</span><span class="h-id">PNL-02 / RT.STREAM</span></div>
+      <div class="p-head"><span class="dot"></span><span class="h-title">처리량 · 생산 신호</span><span class="h-id">PNL-02 / THRPT</span></div>
       <div class="p-body">
         <div style="display:flex;flex-direction:column;gap:9px;font-family:'JetBrains Mono';font-size:11px">
           <div>
-            <div style="display:flex;justify-content:space-between"><span style="color:var(--txt-dim)">API 응답시간 (ms)</span><span class="num" id="uph" style="color:var(--green)">0</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--txt-dim)">시간당 생산량 UPH</span><span class="num" id="uph" style="color:var(--green)">0</span></div>
             <svg class="sparkline" id="spark-uph"></svg>
           </div>
           <div>
-            <div style="display:flex;justify-content:space-between"><span style="color:var(--txt-dim)">ETL 사이클 (s)</span><span class="num" id="ct" style="color:var(--amber)">0</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--txt-dim)">사이클타임 C/T (s)</span><span class="num" id="ct" style="color:var(--amber)">0</span></div>
             <svg class="sparkline" id="spark-ct"></svg>
           </div>
           <div>
-            <div style="display:flex;justify-content:space-between"><span style="color:var(--txt-dim)">DB 쿼리 응답 (ms)</span><span class="num" id="lob" style="color:var(--cyan)">0</span></div>
+            <div style="display:flex;justify-content:space-between"><span style="color:var(--txt-dim)">생산 달성률 ACHV (%)</span><span class="num" id="lob" style="color:var(--cyan)">0</span></div>
             <svg class="sparkline" id="spark-lob"></svg>
           </div>
         </div>
@@ -325,29 +325,29 @@ svg text{fill:var(--txt-dim);font-family:'JetBrains Mono';font-size:9px}
     </div>
 
     <div class="panel">
-      <div class="p-head"><span class="dot"></span><span class="h-title">데이터 파싱 품질 · PARSE HEALTH</span><span class="h-id">PNL-03 / PARSE.BELL</span></div>
+      <div class="p-head"><span class="dot"></span><span class="h-title">공정 수율 FPY · 품질 분포</span><span class="h-id">PNL-03 / FPY.BELL</span></div>
       <div class="p-body">
         <svg id="bell" style="width:100%;height:120px"></svg>
         <div class="cpk-readout">
-          <div><span>Parse Cpk</span><b id="cpkv">1.67</b></div>
-          <div><span>파싱 성공률</span><b id="yieldv" style="color:var(--amber)">—</b></div>
-          <div><span>오류 PPM</span><b id="ppmv" style="color:var(--cyan)">—</b></div>
+          <div><span>Cpk</span><b id="cpkv">1.67</b></div>
+          <div><span>수율 FPY</span><b id="yieldv" style="color:var(--amber)">—</b></div>
+          <div><span>불량 PPM</span><b id="ppmv" style="color:var(--cyan)">—</b></div>
         </div>
       </div>
     </div>
 
     <div class="panel">
-      <div class="p-head"><span class="dot"></span><span class="h-title">시스템 이벤트 피드 · SYS LOG</span><span class="h-id">PNL-04 / SYS.FEED</span></div>
+      <div class="p-head"><span class="dot"></span><span class="h-title">안돈 · 실시간 알람 피드</span><span class="h-id">PNL-04 / ANDON.FEED</span></div>
       <div class="andon-bar">
         <div class="andon-lamps">
-          <span class="alamp r" id="lamp-r" title="빌드 오류 / 연동 실패"></span>
-          <span class="alamp y" id="lamp-y" title="경고 / 파싱 불안정"></span>
+          <span class="alamp r" id="lamp-r" title="정지 — 설비/품질 이상"></span>
+          <span class="alamp y" id="lamp-y" title="주의 — 일탈 감시"></span>
           <span class="alamp g on" id="lamp-g" title="정상 가동"></span>
         </div>
-        <span class="andon-state g" id="andon-state">정상 · ONLINE</span>
+        <span class="andon-state g" id="andon-state">정상 · GO</span>
         <div class="andon-jidoka">
-          <span class="stop-flag" id="stop-flag">BUILD WATCH</span>
-          <b>MES v0.1</b>
+          <span class="stop-flag" id="stop-flag">STOP-THE-LINE</span>
+          <b>ANDON</b>
         </div>
       </div>
       <div class="p-body">
@@ -356,56 +356,56 @@ svg text{fill:var(--txt-dim);font-family:'JetBrains Mono';font-size:9px}
     </div>
   </div>
 
-  <!-- ROW KPI: count-up achievement tiles -->
-  <div class="section-tag">// MES STACK — 구성 레이어 · 기술 지표</div>
+  <!-- ROW KPI: count-up OEE tiles -->
+  <div class="section-tag">// CUMULATIVE KPI — 실시간 운영 지표 (OEE 구성요소 분해)</div>
   <div class="grid row-kpi" id="kpi-row"></div>
   <div class="grid row-kpi" id="kpi-row2" style="margin-top:12px"></div>
 
-  <!-- ROW 2: Gantt(MES dev tasks) + challenge pareto -->
-  <div class="section-tag">// MES 개발 타임라인 — 태스크 스케줄 2024.10 → 2024.12</div>
+  <!-- ROW 2: Gantt(생산 워크오더) + 불량 파레토 -->
+  <div class="section-tag">// PRODUCTION SCHEDULE — 당일 워크오더 · 라인별 생산 계획</div>
   <div class="grid row-2">
     <div class="panel">
-      <div class="p-head"><span class="dot"></span><span class="h-title">개발 태스크 GANTT</span><span class="h-id">PNL-05 / TASK.PLAN</span></div>
+      <div class="p-head"><span class="dot"></span><span class="h-title">생산 스케줄 GANTT · 워크오더</span><span class="h-id">PNL-05 / WO.PLAN</span></div>
       <div class="p-body">
         <div class="gantt" id="gantt"></div>
       </div>
     </div>
 
     <div class="panel">
-      <div class="p-head"><span class="dot"></span><span class="h-title">개발 난점 파레토 · 도전과제</span><span class="h-id">PNL-06 / CHALLENGE.PARETO</span></div>
+      <div class="p-head"><span class="dot"></span><span class="h-title">불량 모드 파레토 · 4M</span><span class="h-id">PNL-06 / DEFECT.PARETO</span></div>
       <div class="p-body">
         <svg id="pareto" class="chart-box"></svg>
-        <div class="legend"><span><i style="background:var(--amber)"></i>공수(일)</span><span><i style="background:var(--green)"></i>해결 진행률</span></div>
+        <div class="legend"><span><i style="background:var(--amber)"></i>불량 건수</span><span><i style="background:var(--green)"></i>누적 % (FPY 개선)</span></div>
         <table class="dtable" style="margin-top:8px" id="dtable"></table>
       </div>
     </div>
   </div>
 
-  <!-- ROW 3: trend chart + equipment/system status + capability -->
+  <!-- ROW 3: OEE 추이 + 설비/라인 상태 + 공정문서/인증 -->
   <div class="grid row-3" style="margin-top:12px">
     <div class="panel" style="grid-column:span 1">
-      <div class="p-head"><span class="dot"></span><span class="h-title">개발 진행률 추이 · 레이어별</span><span class="h-id">PNL-07 / DEV.TREND</span></div>
+      <div class="p-head"><span class="dot"></span><span class="h-title">OEE 추이 · 불량률 개선 개입</span><span class="h-id">PNL-07 / OEE.TREND</span></div>
       <div class="p-body">
         <svg id="trend" class="chart-box"></svg>
-        <div class="legend"><span><i style="background:var(--red)"></i>초기(레거시 분석)</span><span><i style="background:var(--green)"></i>통합 이후</span><span style="color:var(--amber)">▲ ETL 통합 완료 시점</span></div>
+        <div class="legend"><span><i style="background:var(--red)"></i>개선 전</span><span><i style="background:var(--green)"></i>개선 후</span><span style="color:var(--amber)">▲ 개선 개입 시점</span></div>
         <div style="margin-top:8px;font-family:'JetBrains Mono';font-size:9.5px;line-height:1.6;color:var(--txt-dim);border-top:1px solid var(--line);padding-top:7px">
-          <span style="color:var(--amber)">// ARCH NOTE</span> · 레거시 OCV/IR 프로토콜 역분석이 가장 큰 병목 — ETL 안정화 이후 Backend·Frontend 병렬 진행.<br>
-          <b style="color:var(--txt);font-weight:500">Django REST API</b> → <b style="color:var(--cyan);font-weight:500">OPC UA ETL</b> → <b style="color:var(--green);font-weight:500">React/Electron UI</b> → Dash 대시보드.
+          <span style="color:var(--amber)">// MES 자체개발 스택</span> · OPC UA 수집 → PostgreSQL 적재 → Django REST API → React/Electron UI → Python Dash 대시보드.<br>
+          <b style="color:var(--txt);font-weight:500">OCV/IR 검사장비</b> 레거시 연동 + <b style="color:var(--cyan);font-weight:500">TCP/IP 비전 데이터</b> 수집 → 실시간 FPY 반영.
         </div>
       </div>
     </div>
 
     <div class="panel">
-      <div class="p-head"><span class="dot"></span><span class="h-title">MES 기술 스택 · STACK HEALTH</span><span class="h-id">PNL-08 / STACK.HEALTH</span></div>
+      <div class="p-head"><span class="dot"></span><span class="h-title">설비 · 라인 상태 · MES 스택</span><span class="h-id">PNL-08 / ASSET.HEALTH</span></div>
       <div class="p-body">
         <div class="stat-grid" id="skills"></div>
       </div>
     </div>
 
     <div class="panel">
-      <div class="p-head"><span class="dot"></span><span class="h-title">산출물 · 표준 · 문서</span><span class="h-id">PNL-09 / ARTIFACT.LOG</span></div>
+      <div class="p-head"><span class="dot"></span><span class="h-title">공정 표준 · 인증 · 산출물</span><span class="h-id">PNL-09 / CERT.LOG</span></div>
       <div class="p-body" id="certbody">
-        <div class="stat-cat">개발 산출물</div>
+        <div class="stat-cat">MES 개발 산출물</div>
         <div class="chips" style="margin-bottom:12px">
           <span class="chip"><span class="led"></span>Django REST API</span>
           <span class="chip"><span class="led"></span>PostgreSQL 스키마</span>
@@ -429,7 +429,7 @@ svg text{fill:var(--txt-dim);font-family:'JetBrains Mono';font-size:9px}
     <div class="fcell"><div class="fk">E-mail</div><div class="fv"><a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a></div></div>
     <div class="fcell"><div class="fk">Repository</div><div class="fv"><a href="https://github.com/64etuor" target="_blank">github.com/64etuor</a></div></div>
     <div class="fcell"><div class="fk">Direct Line</div><div class="fv">010-7448-1791</div></div>
-    <div class="fcell"><div class="fk">Console Build</div><div class="fv" style="color:var(--txt-faint)">MES-SOLAREDGE v0.1 · 2024.10–12</div></div>
+    <div class="fcell"><div class="fk">Console Build</div><div class="fv" style="color:var(--txt-faint)">MES-SOLAREDGE v1.0 · DAQ@1Hz · 자체개발</div></div>
   </div>
 
 </div>
@@ -443,13 +443,15 @@ const $$ = (s,el=document)=>[...el.querySelectorAll(s)];
 const rnd=(a,b)=>a+Math.random()*(b-a);
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 
-/* ============ system clock + uptime ============ */
-const careerStart=new Date(2024,9,1); // 2024.10 솔라엣지 MES 개발 시작
+/* ============ system clock + shift elapsed ============ */
 function tickClock(){
   const now=new Date();
   $("#clock").textContent=now.toLocaleTimeString('ko-KR',{hour12:false});
-  const yrs=(now-careerStart)/(1000*60*60*24*365.25);
-  $("#uptime").textContent=yrs.toFixed(2)+" yr";
+  // shift start: today 08:00
+  const shiftStart=new Date(now);shiftStart.setHours(8,0,0,0);
+  const elapsed=Math.max(0,now-shiftStart);
+  const h=Math.floor(elapsed/3600000),m=Math.floor((elapsed%3600000)/60000);
+  $("#uptime").textContent=`${String(h).padStart(2,'0')}h ${String(m).padStart(2,'0')}m`;
 }
 tickClock(); setInterval(tickClock,1000);
 
@@ -459,7 +461,7 @@ function buildGauge(node){
   const colorKey=node.dataset.color;
   const colors={green:'#37f08e',amber:'#ffb627',cyan:'#3fd0e0'};
   const col=colors[colorKey];
-  const labels={oee:['Backend','Django · DRF'],avail:['ETL','OPC UA · TCP/IP'],perf:['Frontend','React · Electron']};
+  const labels={oee:['OEE','종합 효율'],avail:['가동률','AVAILABILITY'],perf:['성능률','PERFORMANCE']};
   const lab=labels[node.dataset.gauge]||['',''];
   const w=108,h=78,cx=54,cy=66,r=44;
   const svg=d3.select(node).append('svg').attr('viewBox',`0 0 ${w} ${h}`);
@@ -529,9 +531,9 @@ function makeSpark(svgSel,seed,color,fmt){
   draw();
   return {push(){data.push(seed());data.shift();draw();return data[data.length-1];},last(){return data[data.length-1]}};
 }
-const sUph=makeSpark('#spark-uph',()=>rnd(42,68),'#37f08e');
-const sCt =makeSpark('#spark-ct',()=>rnd(0.8,1.4),'#ffb627');
-const sLob=makeSpark('#spark-lob',()=>rnd(18,35),'#3fd0e0');
+const sUph=makeSpark('#spark-uph',()=>rnd(820,910),'#37f08e');
+const sCt =makeSpark('#spark-ct',()=>rnd(11.5,13.2),'#ffb627');
+const sLob=makeSpark('#spark-lob',()=>rnd(88,97),'#3fd0e0');
 function setNum(id,v,suffix=''){const el=$(id);el.textContent=v;el.classList.remove('tickflash');void el.offsetWidth;el.classList.add('tickflash');}
 
 /* ============ Cpk bell curve ============ */
@@ -580,16 +582,16 @@ function drawBell(cpk){
 }
 drawBell(1.67);
 
-/* ============ KPI count-up tiles — MES 아키텍처 지표 ============ */
+/* ============ KPI count-up tiles — MES 실시간 운영 지표 ============ */
 const kpis=[
-  {l:'Backend · Django REST',pre:'',v:7,suf:'API',c:'g',d:'DRF 엔드포인트 / PostgreSQL 연동',spark:()=>rnd(6,8)},
-  {l:'ETL · OPC UA 태그',pre:'',v:24,suf:'ch',c:'c',d:'설비 데이터 채널 / 1Hz 폴링',spark:()=>rnd(22,26)},
-  {l:'Frontend · React 컴포넌트',pre:'',v:18,suf:'EA',c:'g',d:'TypeScript + Electron 패키징',spark:()=>rnd(16,20)},
-  {l:'DB 테이블 설계',pre:'',v:12,suf:'tbl',c:'',d:'PostgreSQL 스키마 / ERD 설계',spark:()=>rnd(11,13)},
-  {l:'장비 프로토콜',pre:'',v:3,suf:'종',c:'c',d:'OPC UA · TCP/IP · MS Access',spark:()=>rnd(2,4)},
-  {l:'대시보드 패널',pre:'',v:6,suf:'EA',c:'g',d:'Python Dash 실시간 공정 현황',spark:()=>rnd(5,7)},
-  {l:'문서 산출물',pre:'',v:5,suf:'종',c:'',d:'PFMEA · CP · PFD · SOP · 번역',spark:()=>rnd(4,6)},
-  {l:'레거시 연동 소스',pre:'',v:2,suf:'종',c:'g',d:'OCV/IR 검사장비 + MS Access DB',spark:()=>rnd(1,3)},
+  {l:'설비 종합 효율 OEE',pre:'',v:91.4,suf:'%',c:'g',d:'가동률×성능률×품질률 / 실시간',spark:()=>rnd(89,93),fixed:1},
+  {l:'가동률 AVAILABILITY',pre:'',v:96.2,suf:'%',c:'g',d:'설비 가동 신호 / OPC UA DAQ',spark:()=>rnd(94,98),fixed:1},
+  {l:'성능률 PERFORMANCE',pre:'',v:94.8,suf:'%',c:'c',d:'실제 C/T ÷ 이상 C/T / 실시간',spark:()=>rnd(92,97),fixed:1},
+  {l:'품질률 · 수율 FPY',pre:'',v:99.7,suf:'%',c:'g',d:'OCV/IR 검사 통과율 / 당일',spark:()=>rnd(99.2,99.9),fixed:1},
+  {l:'시간당 생산량 UPH',pre:'',v:872,suf:'EA',c:'c',d:'당일 누적 / DAQ @1Hz',spark:()=>rnd(820,910)},
+  {l:'생산 달성률 ACHV',pre:'',v:94,suf:'%',c:'g',d:'실적 ÷ 계획 / 워크오더 기준',spark:()=>rnd(88,97)},
+  {l:'사이클타임 C/T',pre:'',v:12.4,suf:'s',c:'',d:'라인 평균 / Takt 13.2s',spark:()=>rnd(11.5,13.2),fixed:1},
+  {l:'비가동 다운타임',pre:'',v:18,suf:'min',c:'',d:'당일 누적 / 설비 정지 이벤트',spark:()=>rnd(10,30)},
 ];
 function buildKpis(){
   const r1=$('#kpi-row'),r2=$('#kpi-row2');
@@ -619,30 +621,32 @@ function buildKpis(){
 }
 buildKpis();
 
-/* ============ GANTT — MES dev tasks as work orders ============ */
-const T0=new Date(2024,9,1), T1=new Date(2025,0,1); // 2024.10 – 2025.01
+/* ============ GANTT — 당일 생산 워크오더 스케줄 ============ */
+// 당일 06:00 ~ 익일 06:00 기준 (18h span)
+const todayBase=new Date();todayBase.setHours(6,0,0,0);
+const T0=todayBase;
+const T1=new Date(T0.getTime()+18*3600*1000);
 const span=T1-T0;
+function hm(h,m=0){const d=new Date(T0);d.setHours(T0.getHours()+h,m,0,0);return d;}
 const jobs=[
-  {wo:'TASK-001',name:'요구사항 분석 · 예산 갭 확인',role:'기획 · 리딩',s:new Date(2024,9,1),e:new Date(2024,9,14),status:'done',
-   desc:'자동화 설비 예산 30만불 초과 상황에서 MES 외주비 누락 발견 → 자체개발 결정'},
-  {wo:'TASK-002',name:'DB 아키텍처 설계 (PostgreSQL)',role:'설계 · DBA',s:new Date(2024,9,7),e:new Date(2024,9,21),status:'done',
-   desc:'ERD 설계, 스키마 정의, 레거시 MS Access 마이그레이션 계획'},
-  {wo:'TASK-003',name:'ETL · 레거시 장비 연동',role:'Python · OPC UA · TCP/IP',s:new Date(2024,9,14),e:new Date(2024,10,11),status:'done',
-   desc:'OCV/IR 검사장비 Python 드라이버, OPC UA 설비 태그 수집, TCP/IP 비전 데이터 파이프라인'},
-  {wo:'TASK-004',name:'Backend · Django REST Framework',role:'API 개발',s:new Date(2024,9,21),e:new Date(2024,10,18),status:'done',
-   desc:'DRF API 서버, 인증, 생산/불량/설비 데이터 엔드포인트'},
-  {wo:'TASK-005',name:'Frontend · React / Electron',role:'UI·UX 설계·개발',s:new Date(2024,10,4),e:new Date(2024,11,2),status:'done',
-   desc:'TypeScript, React 컴포넌트, Electron 데스크톱 패키징, UI/UX 디자인'},
-  {wo:'TASK-006',name:'Dash 실시간 대시보드',role:'Python Dash · 시각화',s:new Date(2024,10,18),e:new Date(2024,11,9),status:'done',
-   desc:'공정 현황 실시간 대시보드, KPI 패널, 불량 추이 시각화'},
-  {wo:'TASK-007',name:'PFMEA · CP · PFD · SOP 작성',role:'공정문서 · 번역',s:new Date(2024,10,1),e:new Date(2024,11,31),status:'done',
-   desc:'신제품 라인 공정 문서 전체 작성 및 영문 번역'},
+  {wo:'WO-2401',name:'OCV 검사 · 1호 라인',role:'OCV 충방전 · 비전검사',s:hm(0),e:hm(3,30),status:'done',
+   desc:'OCV/IR 검사장비 → Python 드라이버 수집 → PostgreSQL 적재 · 완료'},
+  {wo:'WO-2402',name:'IR 검사 · 2호 라인',role:'내부저항 측정 · 불량 분류',s:hm(1),e:hm(4,30),status:'done',
+   desc:'IR 측정값 OPC UA 태그 수집 → FPY 산출 · 완료'},
+  {wo:'WO-2403',name:'조립 공정 · A라인',role:'부품 조립 · 토크 검사',s:hm(2),e:hm(8),status:'run',
+   desc:'진행 중 — React/Electron MES UI에서 실시간 모니터링'},
+  {wo:'WO-2404',name:'비전 검사 · B라인',role:'TCP/IP 비전 데이터 수집',s:hm(3,30),e:hm(9),status:'run',
+   desc:'진행 중 — TCP/IP 비전 시스템 → Django REST API 실시간 적재'},
+  {wo:'WO-2405',name:'출하 검사 · 전수',role:'최종 OCV·외관 검사',s:hm(8),e:hm(12),status:'run',
+   desc:'진행 중 — Python Dash 대시보드 FPY 실시간 반영'},
+  {wo:'WO-2406',name:'야간 배치 · DB 집계',role:'PostgreSQL ETL · 일일 리포트',s:hm(14),e:hm(17),status:'run',
+   desc:'예정 — Django REST 집계 API → KPI 일간 보고서 자동 생성'},
 ];
 function buildGantt(){
   const g=$('#gantt');
   // axis
   const ax=document.createElement('div');ax.className='gantt-axis';
-  ['2024.10','2024.11','2024.12','→','END'].forEach(y=>{const s=document.createElement('span');s.textContent=y;ax.appendChild(s);});
+  ['06:00','09:00','12:00','15:00','18:00','21:00','→'].forEach(y=>{const s=document.createElement('span');s.textContent=y;ax.appendChild(s);});
   // structure: empty label col then track
   const axWrap=document.createElement('div');axWrap.style.display='grid';axWrap.style.gridTemplateColumns='182px 1fr';axWrap.style.gap='10px';
   const sp=document.createElement('div');axWrap.appendChild(sp);axWrap.appendChild(ax);
@@ -663,13 +667,13 @@ function buildGantt(){
 }
 buildGantt();
 
-/* ============ Challenge Pareto (개발 도전과제) ============ */
+/* ============ Defect Pareto — 불량 모드 4M ============ */
 const defects=[
-  {m:'레거시 프로토콜 역분석',n:14,cat:'ETL'},
-  {m:'OPC UA 태그 매핑',n:9,cat:'ETL'},
-  {m:'Electron 빌드 환경',n:6,cat:'Frontend'},
-  {m:'MS Access 스키마 마이그레이션',n:5,cat:'DB'},
-  {m:'DRF 직렬화 설계',n:3,cat:'Backend'},
+  {m:'OCV 전압 편차',n:38,cat:'Machine'},
+  {m:'IR 측정 이상',n:24,cat:'Machine'},
+  {m:'외관 스크래치',n:17,cat:'Material'},
+  {m:'조립 토크 NG',n:11,cat:'Method'},
+  {m:'작업자 셋업 오류',n:6,cat:'Man'},
 ];
 function drawPareto(){
   const svg=d3.select('#pareto');svg.selectAll('*').remove();
@@ -699,7 +703,7 @@ function drawPareto(){
   svg.selectAll('.vl').data(defects).join('text').attr('x',d=>x(d.m)+x.bandwidth()/2).attr('y',H-m.b+21).attr('text-anchor','middle').style('font-size','8px').attr('fill','#6f857c').text(d=>d.n);
   // build dtable
   const tb=$('#dtable');
-  tb.innerHTML='<tr><th>도전과제</th><th>레이어</th><th>공수(일)</th><th>비중</th></tr>'+
+  tb.innerHTML='<tr><th>불량 모드</th><th>4M</th><th>건수</th><th>비중</th></tr>'+
     defects.map(d=>`<tr><td>${d.m}</td><td style="color:var(--cyan)">${d.cat}</td><td class="num">${d.n}</td>
       <td><div class="bar-cell"><div class="bf" style="width:${(d.n/defects[0].n*100).toFixed(0)}%"></div></div></td></tr>`).join('');
 }
@@ -736,10 +740,10 @@ function drawTrend(){
 }
 drawTrend();
 
-/* ============ Skills as MES stack health ============ */
+/* ============ Skills as asset / MES stack health ============ */
 const skillGroups=[
-  {cat:'Backend · ETL · DB',items:[['Python',''],['Django',''],['Django REST Framework',''],['PostgreSQL',''],['OPC UA','a'],['TCP/IP','a'],['MS Access 연동','c'],['ETL 파이프라인',''],['Python Dash','a']]},
-  {cat:'Frontend · DevTools',items:[['React',''],['TypeScript',''],['Electron','a'],['UI/UX 설계','c'],['Git',''],['VS Code',''],['PFMEA · CP · PFD · SOP','a']]},
+  {cat:'설비 · 라인 상태',items:[['OCV 검사 1호',''],['IR 검사 2호',''],['조립 A라인','a'],['비전검사 B라인','a'],['출하검사',''],['야간배치 ETL','c']]},
+  {cat:'MES 스택 · 자체개발',items:[['Django REST',''],['PostgreSQL',''],['OPC UA ETL','a'],['React · Electron',''],['Python Dash','a'],['TCP/IP 비전','c'],['PFMEA · CP · SOP','a']]},
 ];
 function buildSkills(){
   const root=$('#skills');
@@ -786,23 +790,23 @@ function triggerAndon(sev){
 const feed=$('#feed');
 let alarmTotal=0;
 const seedEvents=[
-  {sev:'ok',msg:'SYSTEM INIT · MES 자체개발 기획 확정 — 외주 대신 인하우스 개발 결정'},
-  {sev:'warn',msg:'BUDGET ALERT · 자동화 설비 예산 30만불 초과 — MES 외주비 누락 확인'},
-  {sev:'info',msg:'ARCH DESIGN · PostgreSQL 스키마 설계 착수 · ERD 초안 완료'},
-  {sev:'info',msg:'ETL TASK-003 · OCV/IR 검사장비 Python 드라이버 개발 시작'},
-  {sev:'ok',msg:'LEGACY BRIDGE · MS Access → PostgreSQL 마이그레이션 경로 확정'},
+  {sev:'ok',msg:'SHIFT START · DAY A조 가동 — OEE 모니터링 시작'},
+  {sev:'info',msg:'OPC UA · 설비 태그 수집 정상 @1Hz — SOLAREDGE-L01'},
+  {sev:'ok',msg:'WO-2401 완료 · OCV 검사 1호 라인 — FPY 99.8%'},
+  {sev:'ok',msg:'WO-2402 완료 · IR 검사 2호 라인 — 불량 2건 분류'},
+  {sev:'info',msg:'Django REST · 생산 실적 API 업데이트 완료'},
 ];
 const liveEvents=[
-  {sev:'info',msg:'OPC UA · 설비 태그 24ch 폴링 정상 — 데이터 수집 안정'},
-  {sev:'info',msg:'Django REST · API 엔드포인트 7종 응답 정상 (200 OK)'},
-  {sev:'warn',msg:'Electron 빌드 · 패키징 환경 불일치 — Node 버전 충돌 해결 중'},
-  {sev:'ok',msg:'ETL 파이프라인 · OPC UA → PostgreSQL 실시간 적재 검증 완료'},
-  {sev:'info',msg:'React UI · 생산 현황 컴포넌트 렌더링 정상 (TypeScript)'},
-  {sev:'crit',msg:'레거시 프로토콜 · IR 검사장비 바이트 포맷 불일치 — 역분석 재시도'},
-  {sev:'ok',msg:'Dash 대시보드 · 실시간 KPI 패널 5종 로딩 완료'},
-  {sev:'info',msg:'PFMEA 초안 완료 · CP·PFD 작성 진행 중 (국·영문 병행)'},
-  {sev:'warn',msg:'TCP/IP 비전 데이터 · 패킷 손실 감지 — 재전송 로직 추가'},
-  {sev:'ok',msg:'PostgreSQL · 스키마 마이그레이션 완료 · 쿼리 응답 정상'},
+  {sev:'info',msg:'OEE 91.4% 유지 · 가동률 96.2% · 성능률 94.8%'},
+  {sev:'info',msg:'UPH 872EA · 사이클타임 C/T 12.4s — Takt 13.2s 이내'},
+  {sev:'warn',msg:'WO-2403 · 조립 토크 NG 감지 — 설비 점검 요청'},
+  {sev:'ok',msg:'OCV 전압 편차 알람 해제 · 1호 라인 정상 복귀'},
+  {sev:'info',msg:'PostgreSQL · 실적 데이터 적재 완료 — 생산 달성률 94%'},
+  {sev:'crit',msg:'2호 라인 비전검사 설비 정지 — 다운타임 발생'},
+  {sev:'ok',msg:'비전검사 설비 재가동 · FPY 99.7% 회복'},
+  {sev:'info',msg:'Python Dash · KPI 대시보드 갱신 @1Hz 정상'},
+  {sev:'warn',msg:'IR 측정 편차 상한 근접 · 교정 요청'},
+  {sev:'ok',msg:'생산 달성률 94% 달성 · 계획 대비 정상 궤도'},
 ];
 function pushEvent(ev,initial=false){
   const t=new Date();
@@ -812,7 +816,7 @@ function pushEvent(ev,initial=false){
   const sevLab={info:'INFO',warn:'WARN',crit:'CRIT',ok:'OK'}[ev.sev];
   row.innerHTML=`<span class="ft">${ts}</span><span class="fsev sev-${ev.sev}">${sevLab}</span><span class="fmsg">${ev.msg}</span>`;
   feed.prepend(row);
-  if(ev.sev==='crit'||ev.sev==='warn'){alarmTotal++;$('#alarmcount').textContent='EVENTS '+alarmTotal;}
+  if(ev.sev==='crit'||ev.sev==='warn'){alarmTotal++;$('#alarmcount').textContent='ALARMS '+alarmTotal;}
   if(!initial)triggerAndon(ev.sev); // 안돈: 이상 발생 시 점등 → 라인 정지/주의 → 복귀
   while(feed.children.length>14)feed.removeChild(feed.lastChild);
 }
@@ -824,7 +828,7 @@ setInterval(()=>{pushEvent(liveEvents[evi%liveEvents.length]);evi++;},3400);
 setInterval(()=>{
   setNum('#uph',Math.round(sUph.push()));
   setNum('#ct',sCt.push().toFixed(1));
-  setNum('#lob',Math.round(sLob.push()));
+  setNum('#lob',sLob.push().toFixed(1));
   kpis.forEach(k=>k._sp&&k._sp.push());
   jitterGauges();
 },1400);

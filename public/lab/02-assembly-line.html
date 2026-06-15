@@ -491,7 +491,7 @@ main{position:relative; z-index:1; padding-top:76px;}
   <div class="cell"><span class="led"></span><span class="run">RUNNING</span></div>
   <div class="cell opt"><span class="lbl">PART</span><span class="val" id="hmiPart">BATTERY-PACK</span></div>
   <div class="cell opt"><span class="lbl">STATION</span><span class="val" id="hmiStation">OP-00 / 라인 대기</span></div>
-  <div class="cell opt"><span class="lbl">생산성</span><span class="val run">+24%</span></div>
+  <div class="cell opt"><span class="lbl">생산성</span><span class="val run" id="hmiProd">+24%</span></div>
   <div class="cell takt"><span class="lbl">C/T</span><span class="val mono" id="hmiTakt">28.0s</span></div>
   <div class="cell"><span class="lbl">UTC+9</span><span class="val clock" id="hmiClock">--:--:--</span></div>
 </div>
@@ -681,7 +681,7 @@ main{position:relative; z-index:1; padding-top:76px;}
       FUNCTION TEST v2.0<br/>
       JIG REWORK … <span style="color:var(--pass)">DONE</span><br/>
       C/T BEFORE … <span style="color:var(--fail)">55s</span><br/>
-      C/T AFTER … <span class="blink" style="color:var(--pass)">28s ▼49%</span>
+      C/T AFTER … <span id="ftAfterVal" class="blink" style="color:var(--pass)">55s</span>
     </div>
     <!-- QC stamp lands here -->
     <div class="stamp" id="inspStamp" style="right:36px;top:28px;">
@@ -838,7 +838,7 @@ main{position:relative; z-index:1; padding-top:76px;}
   var rollers = document.getElementById('rollers');
   if(rollers){ for(var i=0;i<28;i++){ rollers.appendChild(document.createElement('i')); } }
 
-  /* ---------- KPI bar fill on reveal ---------- */
+  /* ---------- KPI bar fill ---------- */
   function fillBars(scope){
     var bars = (scope||document).querySelectorAll('.k-bar i, .chip-bar i');
     bars.forEach(function(b){
@@ -846,6 +846,7 @@ main{position:relative; z-index:1; padding-top:76px;}
       if(w) b.style.width = w + '%';
     });
   }
+  fillBars(document);
 
   /* ---------- IntersectionObserver reveals ---------- */
   var revealEls = document.querySelectorAll('.reveal');
@@ -860,16 +861,15 @@ main{position:relative; z-index:1; padding-top:76px;}
     revealEls.forEach(function(el){ el.classList.add('in'); });
   }
 
-  /* ---------- Stations observer: HMI + rail + per-station effects ---------- */
+  /* ---------- Stations observer: HMI + rail ---------- */
   var stations = ['op00','op10','op20','op30','op40','op50'];
   var stationLabels = {
     op00:'OP-00 / 라인 대기', op10:'OP-10 / 분석·계측', op20:'OP-20 / Neck C/T 단축',
     op30:'OP-30 / 검사 C/T −49%', op40:'OP-40 / LOB 개선 +24%', op50:'OP-50 / 결과·연락'
   };
   var hmiStation = document.getElementById('hmiStation');
-  var hmiTakt = document.getElementById('hmiTakt');
-  var railStops = Array.prototype.slice.call(document.querySelectorAll('.rail .stop'));
-  var stampFired=false, defectFired=false;
+  var hmiTakt   = document.getElementById('hmiTakt');
+  var railStops  = Array.prototype.slice.call(document.querySelectorAll('.rail .stop'));
   var taktByStation = {op00:'28.0s',op10:'55.0s',op20:'16.72s',op30:'28.0s',op40:'12.76s',op50:'28.0s'};
 
   function setActive(id){
@@ -878,109 +878,265 @@ main{position:relative; z-index:1; padding-top:76px;}
       s.classList.toggle('active', i===idx);
       s.classList.toggle('done', i<idx);
     });
-    if(hmiStation) hmiStation.textContent = stationLabels[id] || id;
-    if(hmiTakt) hmiTakt.textContent = taktByStation[id] || '28.0s';
+    if(hmiStation) hmiStation.textContent = stationLabels[id]||id;
+    if(hmiTakt)    hmiTakt.textContent    = taktByStation[id]||'28.0s';
   }
 
   if('IntersectionObserver' in window){
     var sio = new IntersectionObserver(function(entries){
       entries.forEach(function(e){
-        if(e.isIntersecting && e.intersectionRatio>=0.4){
-          setActive(e.target.id);
-          if(e.target.id==='op30'){ fireInspection(); }
-          if(e.target.id==='op20'){ fireDefect(); }
-        }
+        if(e.isIntersecting && e.intersectionRatio>=0.4) setActive(e.target.id);
       });
     },{threshold:[0.4]});
     stations.forEach(function(id){ var el=document.getElementById(id); if(el) sio.observe(el); });
   }
 
-  /* ---------- QC PASS stamp thunk (inspection) ---------- */
-  function fireInspection(){
-    if(stampFired) return; stampFired=true;
-    var stamp = document.getElementById('inspStamp');
-    if(!stamp) return;
-    setTimeout(function(){
-      stamp.classList.add('hit');
-    }, 1100);
+  /* ==========================================================
+     MASTER BELT PART — 자동 루프 + 스크롤 혼합
+     ~6 s 사이클: 좌→우 이동 후 순간 리셋
+  ========================================================== */
+  var masterPart = document.getElementById('masterPart');
+  var hero       = document.getElementById('op00');
+  var autoLoop   = null;        // rAF handle
+  var autoProg   = 0;           // 0~1
+  var CYCLE      = 6000;        // ms
+  var lastTS     = null;
+  var scrollOverride = false;   // 스크롤 중에는 스크롤값 우선
+  var scrollTimer = null;
+
+  function applyProg(p){
+    if(masterPart) masterPart.style.left = (8 + p*78) + '%';
   }
 
-  /* ---------- Jig arm C/T 16.72s → 12.76s delight ---------- */
-  function fireDefect(){
-    if(defectFired) return; defectFired=true;
-    var el = document.getElementById('defectPct');
-    if(!el) return;
-    var start=16.72, end=12.76, cur=start, t0=null, dur=2200;
-    function step(ts){
-      if(!t0) t0=ts;
-      var p = Math.min(1,(ts-t0)/dur);
-      var e = 1 - Math.pow(1-p,3);
-      cur = start - (start-end)*e;
-      el.innerHTML = cur.toFixed(2)+'<span style="font-size:16px">s</span>';
-      if(p<1){ requestAnimationFrame(step); }
-      else {
-        el.innerHTML = '12.76<span style="font-size:16px">s</span>';
-        el.classList.add('arrived');
+  function autoStep(ts){
+    if(!lastTS) lastTS = ts;
+    var dt = ts - lastTS; lastTS = ts;
+    if(!scrollOverride){
+      autoProg += dt / CYCLE;
+      if(autoProg >= 1){
+        autoProg = 0;                     // 순간 리셋
+        if(masterPart){ masterPart.style.transition='none'; applyProg(0); }
+        setTimeout(function(){ if(masterPart) masterPart.style.transition=''; }, 30);
+      } else {
+        applyProg(autoProg);
       }
     }
-    setTimeout(function(){ requestAnimationFrame(step); }, 600);
+    autoLoop = requestAnimationFrame(autoStep);
   }
 
-  /* ---------- spark generator on jig station ---------- */
-  var weld = document.getElementById('weldStage');
-  if(weld && !prefersReduced){
-    setInterval(function(){
-      var r = weld.getBoundingClientRect();
-      if(r.bottom<0 || r.top>window.innerHeight) return;
-      var arm = weld.querySelector('.welder-arm');
-      if(!arm) return;
-      var armR = arm.getBoundingClientRect();
-      var weldR = weld.getBoundingClientRect();
-      var x = armR.left - weldR.left + armR.width/2;
-      for(var i=0;i<4;i++){ spawnSpark(weld, x, 118); }
-    }, 140);
+  if(!prefersReduced){
+    autoLoop = requestAnimationFrame(autoStep);
   }
+
+  /* 스크롤 중에는 스크롤값 우선, 멈추면 자동으로 복귀 */
+  window.addEventListener('scroll', function(){
+    if(hero){
+      var hr = hero.getBoundingClientRect();
+      var p  = Math.min(1, Math.max(0, (-hr.top)/(hero.offsetHeight*0.85)));
+      if(p > 0 && p < 1){
+        scrollOverride = true;
+        autoProg = p;
+        applyProg(p);
+      }
+    }
+    clearTimeout(scrollTimer);
+    scrollTimer = setTimeout(function(){ scrollOverride = false; }, 800);
+  }, {passive:true});
+
+  /* ==========================================================
+     OP-20 — 커팅 Jig C/T 카운터 자동 루프
+     16.72 → 12.76 s を 2.5s で下げ、1s 停止後リセット
+     총 사이클 ~6s
+  ========================================================== */
+  var ctEl     = document.getElementById('defectPct');
+  var CT_START = 16.72, CT_END = 12.76;
+  var CT_DOWN  = 2500;  // 감소 구간 ms
+  var CT_HOLD  = 800;   // 도착 후 유지 ms
+  var CT_RESET = 300;   // 리셋 후 대기 ms
+  var CT_PAUSE = 1400;  // 시작 전 대기 ms
+
+  function ctLoop(){
+    if(!ctEl || prefersReduced) return;
+    var weld = document.getElementById('weldStage');
+    var onScreen = weld && (function(){
+      var r = weld.getBoundingClientRect();
+      return r.top < window.innerHeight && r.bottom > 0;
+    })();
+    if(!onScreen){ setTimeout(ctLoop, 600); return; }
+
+    // 16.72에서 12.76으로 카운트다운
+    var t0 = null;
+    ctEl.classList.remove('arrived');
+    ctEl.innerHTML = CT_START.toFixed(2)+'<span style="font-size:16px">s</span>';
+
+    function down(ts){
+      if(!t0) t0=ts;
+      var p = Math.min(1,(ts-t0)/CT_DOWN);
+      var e = 1-Math.pow(1-p,3);
+      var v = CT_START-(CT_START-CT_END)*e;
+      ctEl.innerHTML = v.toFixed(2)+'<span style="font-size:16px">s</span>';
+      if(p<1){ requestAnimationFrame(down); }
+      else {
+        ctEl.innerHTML = CT_END.toFixed(2)+'<span style="font-size:16px">s</span>';
+        ctEl.classList.add('arrived');
+        // 유지 → 리셋 → 다음 사이클
+        setTimeout(function(){
+          ctEl.classList.remove('arrived');
+          ctEl.innerHTML = CT_START.toFixed(2)+'<span style="font-size:16px">s</span>';
+          setTimeout(ctLoop, CT_PAUSE);
+        }, CT_HOLD + CT_RESET);
+      }
+    }
+    setTimeout(function(){ requestAnimationFrame(down); }, CT_PAUSE);
+  }
+  ctLoop();
+
+  /* ==========================================================
+     OP-30 — Function Test C/T 카운터 자동 루프
+     55 → 28 s를 2.5s에 감소, 스탬프 thunk, 1s 유지 후 리셋
+     총 사이클 ~7s
+  ========================================================== */
+  var ftReadout = document.querySelector('#scanStage .scan-readout');
+  var ftAfterEl = ftReadout && ftReadout.querySelector('.ft-after');
+  var inspStamp = document.getElementById('inspStamp');
+  var FT_START  = 55, FT_END = 28;
+  var FT_DOWN   = 2500;
+  var FT_HOLD   = 1200;
+  var FT_PAUSE  = 1000;
+
+  /* scan-readout 안의 숫자 업데이트용 span을 동적으로 찾아 씀 */
+  function ftLoop(){
+    if(prefersReduced) return;
+    var scanStage = document.getElementById('scanStage');
+    var onScreen = scanStage && (function(){
+      var r = scanStage.getBoundingClientRect();
+      return r.top < window.innerHeight && r.bottom > 0;
+    })();
+    if(!onScreen){ setTimeout(ftLoop, 600); return; }
+
+    /* 스탬프 초기화 */
+    if(inspStamp){ inspStamp.classList.remove('hit'); }
+
+    var t0=null;
+    /* scan-readout 내 "C/T AFTER" 줄의 숫자 span */
+    var afterSpan = document.getElementById('ftAfterVal');
+
+    function down(ts){
+      if(!t0) t0=ts;
+      var p = Math.min(1,(ts-t0)/FT_DOWN);
+      var e = 1-Math.pow(1-p,3);
+      var v = FT_START-(FT_START-FT_END)*e;
+      if(afterSpan) afterSpan.textContent = v.toFixed(0)+'s';
+      if(p<1){ requestAnimationFrame(down); }
+      else {
+        if(afterSpan) afterSpan.textContent = FT_END+'s ▼49%';
+        /* 스탬프 thunk */
+        if(inspStamp){
+          void inspStamp.offsetWidth; // reflow to re-trigger animation
+          inspStamp.classList.add('hit');
+        }
+        setTimeout(function(){
+          if(inspStamp) inspStamp.classList.remove('hit');
+          if(afterSpan) afterSpan.textContent = FT_START+'s';
+          setTimeout(ftLoop, FT_PAUSE);
+        }, FT_HOLD);
+      }
+    }
+    setTimeout(function(){ requestAnimationFrame(down); }, FT_PAUSE);
+  }
+  ftLoop();
+
+  /* ==========================================================
+     OP-40 — HMI 생산성 게이지 자동 루프
+     0 → +24% を 3s でカウントアップ、1s停止後リセット
+  ========================================================== */
+  var hmiProdEl = document.getElementById('hmiProd');
+  var PROD_DUR  = 3000;
+  var PROD_HOLD = 1500;
+  var PROD_PAUSE= 1000;
+
+  function prodLoop(){
+    if(prefersReduced || !hmiProdEl) return;
+    var t0=null;
+    hmiProdEl.textContent='+0%';
+    function up(ts){
+      if(!t0) t0=ts;
+      var p=Math.min(1,(ts-t0)/PROD_DUR);
+      var e=1-Math.pow(1-p,3);
+      hmiProdEl.textContent='+'+Math.round(24*e)+'%';
+      if(p<1){ requestAnimationFrame(up); }
+      else {
+        hmiProdEl.textContent='+24%';
+        setTimeout(function(){
+          hmiProdEl.textContent='+0%';
+          setTimeout(prodLoop, PROD_PAUSE);
+        }, PROD_HOLD);
+      }
+    }
+    requestAnimationFrame(up);
+  }
+  prodLoop();
+
+  /* ==========================================================
+     스파크 제너레이터 — OP-20 Jig arm
+  ========================================================== */
+  var weldStage = document.getElementById('weldStage');
   function spawnSpark(parent, x, y){
     var s = document.createElement('div');
     s.className='spark';
-    s.style.left = x+'px'; s.style.top = y+'px';
+    s.style.left=x+'px'; s.style.top=y+'px';
     parent.appendChild(s);
-    var ang = (Math.random()*Math.PI) + Math.PI*0.0;
-    var dist = 18 + Math.random()*44;
-    var dx = Math.cos(ang)*dist*(Math.random()<.5?-1:1);
-    var dy = 14 + Math.random()*52;
-    var dur = 280 + Math.random()*260;
+    var dist=18+Math.random()*44;
+    var dx=Math.cos(Math.random()*Math.PI)*dist*(Math.random()<.5?-1:1);
+    var dy=14+Math.random()*52;
+    var dur=280+Math.random()*260;
     s.animate([
-      {transform:'translate(0,0) scale(1)', opacity:1, background:'var(--hazard)'},
-      {transform:'translate('+dx+'px,'+dy+'px) scale(.2)', opacity:0, background:'var(--signal)'}
-    ],{duration:dur, easing:'cubic-bezier(.3,.7,.6,1)'}).onfinish=function(){ s.remove(); };
+      {transform:'translate(0,0) scale(1)',opacity:1,background:'var(--hazard)'},
+      {transform:'translate('+dx+'px,'+dy+'px) scale(.2)',opacity:0,background:'var(--signal)'}
+    ],{duration:dur,easing:'cubic-bezier(.3,.7,.6,1)'}).onfinish=function(){ s.remove(); };
+  }
+  if(weldStage && !prefersReduced){
+    setInterval(function(){
+      var r=weldStage.getBoundingClientRect();
+      if(r.bottom<0||r.top>window.innerHeight) return;
+      var arm=weldStage.querySelector('.welder-arm');
+      if(!arm) return;
+      var aR=arm.getBoundingClientRect(), wR=weldStage.getBoundingClientRect();
+      var x=aR.left-wR.left+aR.width/2;
+      for(var i=0;i<4;i++) spawnSpark(weldStage,x,118);
+    },140);
   }
 
-  /* ---------- master part advances with scroll ---------- */
-  var masterPart = document.getElementById('masterPart');
-  var hero = document.getElementById('op00');
-  function onScroll(){
-    if(masterPart && hero){
-      var hr = hero.getBoundingClientRect();
-      var prog = Math.min(1, Math.max(0, (-hr.top) / (hr.height*0.85)));
-      var leftPct = 8 + prog*78;
-      masterPart.style.left = leftPct + '%';
-    }
+  /* ==========================================================
+     스테이션 컨베이어 벨트 파트 — 각 station 내 미니 벨트
+     각 .station 안의 첫 번째 .part를 좌→우 자동 이동
+  ========================================================== */
+  if(!prefersReduced){
+    var stationBelts = Array.prototype.slice.call(document.querySelectorAll('.station .belt-wrap'));
+    stationBelts.forEach(function(wrap){
+      /* masterPart가 있는 첫 번째 벨트는 별도 처리 */
+      var part = wrap.querySelector('.part');
+      if(!part || part.id==='masterPart') return;
+      var startPct = parseFloat(part.style.left)||14;
+      var t0=null, cyc=5200+Math.random()*1200;
+      function run(ts){
+        if(!t0) t0=ts;
+        var p=((ts-t0)%cyc)/cyc;
+        part.style.left=(startPct + p*(86-startPct))+'%';
+        requestAnimationFrame(run);
+      }
+      requestAnimationFrame(run);
+    });
   }
-  window.addEventListener('scroll', onScroll, {passive:true});
-  onScroll();
 
   /* ---------- rail click nav ---------- */
   railStops.forEach(function(s){
-    s.addEventListener('click', function(){
-      var go = s.getAttribute('data-go');
-      var el = document.getElementById(go);
-      if(el) el.scrollIntoView({behavior: prefersReduced?'auto':'smooth', block:'start'});
+    s.addEventListener('click',function(){
+      var go=s.getAttribute('data-go');
+      var el=document.getElementById(go);
+      if(el) el.scrollIntoView({behavior:prefersReduced?'auto':'smooth',block:'start'});
     });
   });
-
-  /* ---------- init bars ---------- */
-  fillBars(document);
 
   setActive('op00');
 })();

@@ -543,72 +543,72 @@
       </section>
 
       <!-- ===== U: OBS 생산품질 모니터 ===== -->
-      <section class=”u” aria-label=”생산품질 모니터”>
-        <span class=”ear tl”></span><span class=”ear tr”></span><span class=”ear bl”></span><span class=”ear br”></span>
-        <div class=”modtitle”>
-          <span class=”uno”>1U · OBS</span>
+      <section class="u" aria-label="생산품질 모니터">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="modtitle">
+          <span class="uno">1U · OBS</span>
           <h3>생산품질 모니터 — 원가·불량·인증 현황판</h3>
-          <span class=”sub mono”>운영경비 · 불량 · 단가 · 인증 · 비전검사</span>
+          <span class="sub mono">운영경비 · 불량 · 단가 · 인증 · 비전검사</span>
         </div>
 
-        <div class=”obscreed”>
-          <b>”실투입 자원이 단가에 반영되지 않으면, 원가는 측정값이 아니라 추측값이다.”</b><br>
+        <div class="obscreed">
+          <b>"실투입 자원이 단가에 반영되지 않으면, 원가는 측정값이 아니라 추측값이다."</b><br>
           제조원가 구조 분석 → 협력사 <b>단가 +30% 이상</b> 관철 · 기존 계약 무효화.
           배터리셀 역방향 삽입 쇼트 위험 → 외부 네트워크 활용 <b>저비용 비전 검사 시스템</b> 도입.
-          고객 불량·필드 불량 <span class=”vs”>0건</span> 유지.
+          고객 불량·필드 불량 <span class="vs">0건</span> 유지.
         </div>
 
-        <div class=”obsgrid”>
+        <div class="obsgrid">
           <!-- left: 원가절감 3단계 -->
-          <div class=”obspane”>
-            <div class=”ph”><span class=”dot”></span><span class=”pt”>원가 절감 단계 · Drilldown</span><span class=”pn” id=”obsDrill”>분석 → 협상 → 검증</span></div>
-            <div class=”tier m act” data-tier=”0”><span class=”tl”></span><span class=”tn”>분석</span><span class=”td”>제조원가·운영비 구조 분석 · 실투입 확인</span><span class=”tx”>MEASURE</span></div>
-            <div class=”tier t” data-tier=”1”><span class=”tl”></span><span class=”tn”>협상</span><span class=”td”>협력사 원가 재협상 · 기존 계약 무효화</span><span class=”tx”>CALIBRATE</span></div>
-            <div class=”tier l” data-tier=”2”><span class=”tl”></span><span class=”tn”>검증</span><span class=”td”>단가 인상 관철 · 불량 0건 유지 확인</span><span class=”tx”>VERIFY</span></div>
-            <div class=”drillnote”>결과: 라인 운영경비 <b id=”obsAnom”>−85%</b> · 단가 <b>+30%↑</b> · 불량 <b>0건</b></div>
+          <div class="obspane">
+            <div class="ph"><span class="dot"></span><span class="pt">원가 절감 단계 · Drilldown</span><span class="pn" id="obsDrill">분석 → 협상 → 검증</span></div>
+            <div class="tier m act" data-tier="0"><span class="tl"></span><span class="tn">분석</span><span class="td">제조원가·운영비 구조 분석 · 실투입 확인</span><span class="tx">MEASURE</span></div>
+            <div class="tier t" data-tier="1"><span class="tl"></span><span class="tn">협상</span><span class="td">협력사 원가 재협상 · 기존 계약 무효화</span><span class="tx">CALIBRATE</span></div>
+            <div class="tier l" data-tier="2"><span class="tl"></span><span class="tn">검증</span><span class="td">단가 인상 관철 · 불량 0건 유지 확인</span><span class="tx">VERIFY</span></div>
+            <div class="drillnote">결과: 라인 운영경비 <b id="obsAnom">−85%</b> · 단가 <b>+30%↑</b> · 불량 <b>0건</b></div>
           </div>
 
           <!-- right: 절감율 미터 -->
-          <div class=”obspane”>
-            <div class=”ph”><span class=”dot warn” style=”background:var(--cyan);box-shadow:0 0 8px var(--cyan)”></span><span class=”pt”>원가 절감율 미터</span><span class=”pn”>cost reduction</span></div>
-            <div class=”cardrow”>
-              <div class=”cardmeter agg”>
-                <div class=”cl”><span>라인 운영경비 절감 (초기 대비)</span><span class=”cv” id=”cardAgg”>−85%</span></div>
-                <div class=”cardtrack”><div class=”cardfill ctl” id=”cardAggBar” style=”width:85%”></div></div>
+          <div class="obspane">
+            <div class="ph"><span class="dot warn" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan)"></span><span class="pt">원가 절감율 미터</span><span class="pn">cost reduction</span></div>
+            <div class="cardrow">
+              <div class="cardmeter agg">
+                <div class="cl"><span>라인 운영경비 절감 (초기 대비)</span><span class="cv" id="cardAgg">−85%</span></div>
+                <div class="cardtrack"><div class="cardfill ctl" id="cardAggBar" style="width:85%"></div></div>
               </div>
-              <div class=”cardmeter raw”>
-                <div class=”cl”><span>협력사 단가 인상 관철</span><span class=”cv” id=”cardRaw”>+30%↑</span></div>
-                <div class=”cardtrack”><div class=”cardfill rich” id=”cardRawBar” style=”width:30%”></div></div>
+              <div class="cardmeter raw">
+                <div class="cl"><span>협력사 단가 인상 관철</span><span class="cv" id="cardRaw">+30%↑</span></div>
+                <div class="cardtrack"><div class="cardfill rich" id="cardRawBar" style="width:30%"></div></div>
               </div>
-              <div class=”cardlaw”>운영 규율 — <b>실투입 자원을 단가에 반영하고, 불량은 현장에서 원천 차단.</b>
-                비전 검사 도입으로 <span class=”w”>역방향 삽입 쇼트</span> 위험 제거.</div>
+              <div class="cardlaw">운영 규율 — <b>실투입 자원을 단가에 반영하고, 불량은 현장에서 원천 차단.</b>
+                비전 검사 도입으로 <span class="w">역방향 삽입 쇼트</span> 위험 제거.</div>
             </div>
           </div>
         </div>
 
         <!-- 성과 게이지 + 인증/시스템 -->
-        <div class=”obsgrid” style=”margin-top:11px”>
-          <div class=”obspane”>
-            <div class=”ph”><span class=”dot”></span><span class=”pt”>성과 지표 · 생산품질</span><span class=”pn”>Quality/Cost/Delivery</span></div>
-            <div class=”gaugegrid” id=”redGauges”></div>
-            <div class=”ph” style=”margin:13px 0 9px”><span class=”dot” style=”background:var(--amber);box-shadow:0 0 8px var(--amber)”></span><span class=”pt”>자원 활용 · 시스템</span><span class=”pn”>ERP/Vision/Cert</span></div>
-            <div class=”gaugegrid” id=”useGauges”></div>
+        <div class="obsgrid" style="margin-top:11px">
+          <div class="obspane">
+            <div class="ph"><span class="dot"></span><span class="pt">성과 지표 · 생산품질</span><span class="pn">Quality/Cost/Delivery</span></div>
+            <div class="gaugegrid" id="redGauges"></div>
+            <div class="ph" style="margin:13px 0 9px"><span class="dot" style="background:var(--amber);box-shadow:0 0 8px var(--amber)"></span><span class="pt">자원 활용 · 시스템</span><span class="pn">ERP/Vision/Cert</span></div>
+            <div class="gaugegrid" id="useGauges"></div>
           </div>
 
-          <div class=”obspane”>
-            <div class=”ph”><span class=”dot”></span><span class=”pt”>불량 예산 소진율</span><span class=”pn”>불량 0건 목표</span></div>
-            <div class=”slobar”>
-              <div class=”sloline”><span>품질 목표 달성율</span><span class=”sv” id=”sloVal”>100%</span></div>
-              <div class=”burntrack”><div class=”burnused” id=”burnUsed” style=”width:0%”></div><div class=”burnleft”></div></div>
-              <div class=”burnlabels”><span>불량 <b id=”burnPct”>0건</b></span><span>잔여 예산 <span id=”burnRem”>전액 보존</span></span></div>
+          <div class="obspane">
+            <div class="ph"><span class="dot"></span><span class="pt">불량 예산 소진율</span><span class="pn">불량 0건 목표</span></div>
+            <div class="slobar">
+              <div class="sloline"><span>품질 목표 달성율</span><span class="sv" id="sloVal">100%</span></div>
+              <div class="burntrack"><div class="burnused" id="burnUsed" style="width:0%"></div><div class="burnleft"></div></div>
+              <div class="burnlabels"><span>불량 <b id="burnPct">0건</b></span><span>잔여 예산 <span id="burnRem">전액 보존</span></span></div>
             </div>
-            <div class=”ph” style=”margin:14px 0 8px”><span class=”dot” style=”background:#c79bff;box-shadow:0 0 8px #c79bff”></span><span class=”pt”>원가절감 프로세스 Waterfall</span><span class=”pn”>단계별 진행</span></div>
-            <div class=”wftrace”>process_id <b id=”wfTid”>cost-reduction-2021</b> · 분석→협상→검증</div>
-            <div class=”wf” id=”wfRows”></div>
-            <div class=”antip”>
-              <span class=”a”>✕ 단가 미반영 계약</span>
-              <span class=”a”>✕ 역방향 셀 삽입</span>
-              <span class=”a”>✕ 현장 불량 방치</span>
+            <div class="ph" style="margin:14px 0 8px"><span class="dot" style="background:#c79bff;box-shadow:0 0 8px #c79bff"></span><span class="pt">원가절감 프로세스 Waterfall</span><span class="pn">단계별 진행</span></div>
+            <div class="wftrace">process_id <b id="wfTid">cost-reduction-2021</b> · 분석→협상→검증</div>
+            <div class="wf" id="wfRows"></div>
+            <div class="antip">
+              <span class="a">✕ 단가 미반영 계약</span>
+              <span class="a">✕ 역방향 셀 삽입</span>
+              <span class="a">✕ 현장 불량 방치</span>
             </div>
           </div>
         </div>

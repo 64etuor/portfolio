@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>박양하 · 솔라엣지 공정 추적성 — S/N 기반 검사성적서 자동발행</title>
+<title>박양하 · 솔라엣지 검사 데이터 파이프라인 — 장비 데이터 수집·정제·DB통합·Cpk 시각화</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
 :root{
@@ -18,12 +18,12 @@
   --ink:#e9f0fa;
   --ink-2:#94a4bd;
   --ink-3:#5a6a82;
-  --pass:#3ce6a4;       /* PASS / IN-tol */
+  --pass:#3ce6a4;       /* PASS / in-spec */
   --pass-dim:#1c6e52;
-  --fail:#ff5d6c;       /* FAIL / OUT */
-  --amber:#ffb84d;      /* 측정중 / probe */
-  --datum:#6fb4ff;      /* datum / dimension */
-  --probe:#ffd34d;      /* probe tip */
+  --fail:#ff5d6c;       /* FAIL / NG / out-of-spec */
+  --amber:#ffb84d;      /* 정제·cleansing */
+  --datum:#6fb4ff;      /* 수집 / data flow */
+  --probe:#ffd34d;
   --c-mir:#c9a3ff;
   --c-sol:#6fb4ff;
   --c-elen:#ffb454;
@@ -76,33 +76,33 @@ canvas#stage{display:block;width:100%;height:100%}
 .statled.done{color:var(--pass)}
 .statled.done .dot{background:var(--pass);box-shadow:0 0 12px var(--pass)}
 
-/* DRO bar under top */
+/* throughput bar under top */
 #dro{top:54px;left:0;right:0;height:40px;display:flex;align-items:center;gap:0;
   border-bottom:1px solid var(--line-soft);background:rgba(7,11,16,.7);backdrop-filter:blur(4px);
   font-family:var(--mono)}
 .dro-axis{display:flex;align-items:center;gap:10px;padding:0 22px;height:100%;border-right:1px solid var(--line-soft)}
-.dro-axis .ax{font-size:12px;font-weight:700;color:var(--datum);width:14px}
-.dro-axis .val{font-size:14px;letter-spacing:.04em;color:var(--ink);min-width:96px;text-align:right;font-variant-numeric:tabular-nums}
+.dro-axis .ax{font-size:10px;font-weight:700;color:var(--datum);letter-spacing:.1em}
+.dro-axis .val{font-size:14px;letter-spacing:.04em;color:var(--ink);min-width:70px;text-align:right;font-variant-numeric:tabular-nums}
 .dro-axis .un{font-size:9px;color:var(--ink-3)}
 .dro-meta{margin-left:auto;display:flex;gap:22px;padding:0 22px;font-size:10px;color:var(--ink-3);letter-spacing:.12em}
 .dro-meta b{color:var(--probe)}
 
-/* left: GD&T legend */
-#legend{left:18px;top:118px;width:208px;padding:14px 15px;border:1px solid var(--line);border-radius:12px;
+/* left: pipeline legend */
+#legend{left:18px;top:118px;width:212px;padding:14px 15px;border:1px solid var(--line);border-radius:12px;
   background:var(--panel);backdrop-filter:blur(8px)}
 .lg-h{font-family:var(--mono);font-size:9.5px;letter-spacing:.24em;color:var(--ink-3);text-transform:uppercase;margin-bottom:11px}
-.lg-row{display:flex;align-items:center;gap:11px;padding:5px 0;border-bottom:1px dashed var(--line-soft)}
+.lg-row{display:flex;align-items:flex-start;gap:11px;padding:6px 0;border-bottom:1px dashed var(--line-soft)}
 .lg-row:last-child{border-bottom:0}
 .lg-sym{width:24px;height:24px;border:1px solid var(--line);border-radius:6px;display:grid;place-items:center;
   font-size:13px;color:var(--datum);flex:0 0 auto}
 .lg-tx{font-size:11px;color:var(--ink-2);line-height:1.35}
 .lg-tx b{color:var(--ink);font-weight:600}
-.datumtag{margin-top:13px;display:flex;gap:7px}
-.dchip{flex:1;text-align:center;font-family:var(--mono);font-size:11px;font-weight:700;color:var(--datum);
-  border:1px solid var(--datum);border-radius:5px;padding:5px 0;background:rgba(111,180,255,.07);letter-spacing:.1em}
+.datumtag{margin-top:13px;display:flex;gap:6px}
+.dchip{flex:1;text-align:center;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--datum);
+  border:1px solid var(--datum);border-radius:5px;padding:5px 0;background:rgba(111,180,255,.07);letter-spacing:.04em}
 
-/* left lower: skills / 측정장비 */
-#equip{left:18px;bottom:18px;width:208px;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:var(--panel);backdrop-filter:blur(8px)}
+/* left lower: skills / 도구 */
+#equip{left:18px;bottom:18px;width:212px;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:var(--panel);backdrop-filter:blur(8px)}
 .eq-h{font-family:var(--mono);font-size:9.5px;letter-spacing:.2em;color:var(--ink-3);text-transform:uppercase;margin-bottom:10px;display:flex;justify-content:space-between}
 .eq-h span{color:var(--pass)}
 .chips{display:flex;flex-wrap:wrap;gap:5px}
@@ -110,36 +110,34 @@ canvas#stage{display:block;width:100%;height:100%}
   border:1px solid var(--line-soft);border-radius:5px;padding:3px 7px;background:rgba(255,255,255,.012);white-space:nowrap}
 .chip.on{color:var(--pass);border-color:var(--pass-dim);background:rgba(60,230,164,.06)}
 
-/* right: inspection report */
-#report{right:18px;top:118px;width:392px;bottom:18px;border:1px solid var(--line);border-radius:12px;
+/* right: spec-vs-measured + Cpk report */
+#report{right:18px;top:118px;width:402px;bottom:18px;border:1px solid var(--line);border-radius:12px;
   background:var(--panel);backdrop-filter:blur(8px);display:flex;flex-direction:column;overflow:hidden}
 .rp-top{padding:13px 16px 11px;border-bottom:1px solid var(--line)}
 .rp-title{display:flex;align-items:center;gap:9px}
 .rp-title .t{font-size:13.5px;font-weight:800;letter-spacing:.01em}
 .rp-title .badge{margin-left:auto;font-family:var(--mono);font-size:9px;letter-spacing:.16em;color:var(--ink-3);border:1px solid var(--line);border-radius:5px;padding:3px 7px}
-.rp-sub{margin-top:7px;display:flex;gap:16px;font-family:var(--mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.06em}
+.rp-sub{margin-top:7px;display:flex;gap:14px;font-family:var(--mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.04em}
 .rp-sub b{color:var(--ink-2);font-weight:600}
-.rp-head{display:grid;grid-template-columns:1.45fr 1fr 1fr .62fr;gap:6px;padding:8px 16px;
-  font-family:var(--mono);font-size:9px;letter-spacing:.12em;color:var(--ink-3);text-transform:uppercase;
+.rp-head{display:grid;grid-template-columns:1.15fr 1.15fr 1fr .6fr;gap:6px;padding:8px 16px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.1em;color:var(--ink-3);text-transform:uppercase;
   border-bottom:1px solid var(--line-soft)}
 .rp-head .r{text-align:right}
 .rp-body{flex:1;overflow:hidden;padding:2px 0}
-.row{display:grid;grid-template-columns:1.45fr 1fr 1fr .62fr;gap:6px;align-items:center;
-  padding:7.5px 16px;border-bottom:1px solid var(--line-soft);
+.row{display:grid;grid-template-columns:1.15fr 1.15fr 1fr .6fr;gap:6px;align-items:center;
+  padding:7px 16px;border-bottom:1px solid var(--line-soft);
   opacity:0;transform:translateY(6px);transition:opacity .4s ease,transform .4s ease,background .3s}
 .row.show{opacity:1;transform:none}
 .row.flash{background:rgba(60,230,164,.10)}
-.row .feat{font-size:11.5px;color:var(--ink);line-height:1.25}
-.row .feat .ft-sub{display:block;font-family:var(--mono);font-size:8.5px;color:var(--ink-3);letter-spacing:.05em;margin-top:1px}
+.row .feat{font-size:11.5px;color:var(--ink);line-height:1.2}
+.row .feat .ft-sub{display:block;font-family:var(--mono);font-size:8.5px;color:var(--ink-3);letter-spacing:.04em;margin-top:1px}
 .row .spec,.row .meas{font-family:var(--mono);font-size:11px;text-align:right;font-variant-numeric:tabular-nums;color:var(--ink-2)}
 .row .meas{color:var(--ink)}
 .row .jud{text-align:right}
-.tag{font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.08em;padding:3px 7px;border-radius:5px}
+.tag{font-family:var(--mono);font-size:9.5px;font-weight:700;letter-spacing:.06em;padding:3px 6px;border-radius:5px}
 .tag.pass{color:var(--pass);background:rgba(60,230,164,.12);border:1px solid var(--pass-dim)}
 .tag.fail{color:var(--fail);background:rgba(255,93,108,.12);border:1px solid rgba(255,93,108,.4)}
-.tag.remeas{color:var(--amber);background:rgba(255,184,77,.12);border:1px solid rgba(255,184,77,.4)}
 .row.outrow .meas{color:var(--fail)}
-.row.fixedrow .meas{color:var(--pass)}
 
 /* footer of report: Cpk + result */
 .rp-foot{border-top:1px solid var(--line);padding:12px 16px;background:rgba(7,11,16,.5)}
@@ -154,47 +152,47 @@ canvas#stage{display:block;width:100%;height:100%}
 .verdict{margin-top:12px;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;
   border:1px solid var(--line);background:rgba(60,230,164,.04);opacity:.35;transition:opacity .5s, border-color .5s, background .5s}
 .verdict.on{opacity:1;border-color:var(--pass-dim);background:rgba(60,230,164,.09)}
-.verdict .vbig{font-size:18px;font-weight:800;letter-spacing:.06em;color:var(--pass)}
+.verdict .vbig{font-size:17px;font-weight:800;letter-spacing:.04em;color:var(--pass)}
 .verdict .vtx{font-size:10.5px;color:var(--ink-2);line-height:1.4}
 .verdict .vtx b{color:var(--ink)}
 .verdict .stamp{margin-left:auto;font-family:var(--mono);font-size:8.5px;color:var(--pass);
-  border:1.5px solid var(--pass);border-radius:6px;padding:5px 8px;transform:rotate(-7deg);letter-spacing:.1em;text-align:center;
+  border:1.5px solid var(--pass);border-radius:6px;padding:5px 8px;transform:rotate(-7deg);letter-spacing:.08em;text-align:center;
   opacity:0;transition:opacity .4s}
 .verdict.on .stamp{opacity:1}
 
-/* 품질 신념 statement (under verdict) */
+/* 신념 statement */
 .belief{margin-top:11px;padding:10px 12px;border:1px solid var(--line);border-left:3px solid var(--pass);
   border-radius:9px;background:rgba(60,230,164,.045)}
-.belief .bq{font-size:12.5px;font-weight:800;letter-spacing:.01em;color:var(--ink);line-height:1.4}
+.belief .bq{font-size:12px;font-weight:800;letter-spacing:.01em;color:var(--ink);line-height:1.45}
 .belief .bq b{color:var(--pass)}
 .belief .bm{margin-top:6px;display:flex;flex-wrap:wrap;gap:5px}
 .belief .bchip{font-family:var(--mono);font-size:9px;letter-spacing:.04em;color:var(--ink-2);
   border:1px solid var(--line-soft);border-radius:5px;padding:3px 7px;background:rgba(255,255,255,.012)}
 .belief .bchip b{color:var(--pass);font-weight:700}
 
-/* 크로스오버 패널 — 제조 공차 → 소프트웨어 경계 */
-#crossover{right:428px;top:118px;width:330px;padding:0;border:1px solid var(--line);border-radius:12px;
+/* 데이터 정제(cleansing) 패널 — BCR 중복·불일치 */
+#crossover{right:436px;top:118px;width:336px;padding:0;border:1px solid var(--line);border-radius:12px;
   background:var(--panel);backdrop-filter:blur(8px);display:flex;flex-direction:column;overflow:hidden;
   opacity:0;transform:translateY(8px);transition:opacity .6s ease,transform .6s ease;max-height:calc(100vh - 154px)}
 #crossover.on{opacity:1;transform:none}
 .xo-top{padding:12px 15px 10px;border-bottom:1px solid var(--line)}
-.xo-kick{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--datum);text-transform:uppercase}
+.xo-kick{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--amber);text-transform:uppercase}
 .xo-title{margin-top:5px;font-size:13px;font-weight:800;letter-spacing:.01em;line-height:1.3}
-.xo-title b{color:var(--datum)}
+.xo-title b{color:var(--amber)}
 .xo-sub{margin-top:6px;font-family:var(--mono);font-size:9px;color:var(--ink-3);letter-spacing:.04em;line-height:1.5}
 .xo-sub .dat{color:var(--datum)}
-.xo-head{display:grid;grid-template-columns:1.55fr .7fr .5fr;gap:6px;padding:7px 15px;
+.xo-head{display:grid;grid-template-columns:1.4fr .85fr .55fr;gap:6px;padding:7px 15px;
   font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:var(--ink-3);text-transform:uppercase;
   border-bottom:1px solid var(--line-soft)}
 .xo-head .r{text-align:right}
 .xo-body{overflow-y:auto;padding:2px 0}
 .xo-body::-webkit-scrollbar{width:5px}
 .xo-body::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
-.xrow{display:grid;grid-template-columns:1.55fr .7fr .5fr;gap:6px;align-items:center;
+.xrow{display:grid;grid-template-columns:1.4fr .85fr .55fr;gap:6px;align-items:center;
   padding:7px 15px;border-bottom:1px solid var(--line-soft);
   opacity:0;transform:translateY(5px);transition:opacity .4s ease,transform .4s ease}
 .xrow.show{opacity:1;transform:none}
-.xrow .xf{font-size:11px;color:var(--ink);line-height:1.25}
+.xrow .xf{font-size:11px;color:var(--ink);line-height:1.2}
 .xrow .xf .xs{display:block;font-family:var(--mono);font-size:8px;color:var(--ink-3);letter-spacing:.02em;margin-top:1px}
 .xrow .xd{font-family:var(--mono);font-size:9.5px;text-align:right;color:var(--ink-2);font-variant-numeric:tabular-nums}
 .xrow .xj{text-align:right}
@@ -204,8 +202,8 @@ canvas#stage{display:block;width:100%;height:100%}
 .xo-foot .xverdict{margin-top:8px;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9px;
   letter-spacing:.06em;color:var(--ink-3)}
 .xo-foot .xverdict .xstamp{font-weight:700;color:var(--pass);border:1px solid var(--pass-dim);
-  border-radius:5px;padding:3px 7px;letter-spacing:.1em}
-@media (max-width:1480px){#crossover{display:none}}
+  border-radius:5px;padding:3px 7px;letter-spacing:.08em}
+@media (max-width:1520px){#crossover{display:none}}
 
 /* contact bar */
 #contact{left:50%;transform:translateX(-50%);bottom:18px;display:flex;gap:0;align-items:center;
@@ -219,7 +217,7 @@ canvas#stage{display:block;width:100%;height:100%}
 #toast{left:50%;transform:translateX(-50%) translateY(14px);top:178px;opacity:0;
   display:flex;align-items:center;gap:11px;padding:10px 16px;border-radius:10px;
   border:1px solid rgba(255,184,77,.5);background:rgba(28,20,8,.92);backdrop-filter:blur(8px);
-  transition:opacity .45s ease, transform .45s ease;max-width:420px}
+  transition:opacity .45s ease, transform .45s ease;max-width:440px}
 #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 #toast.pass{border-color:var(--pass-dim);background:rgba(8,24,18,.92)}
 #toast .ic{font-size:18px}
@@ -241,61 +239,60 @@ canvas#stage{display:block;width:100%;height:100%}
       <span class="en">PARK YANGHA</span>
     </div>
     <div class="sep"></div>
-    <span class="role">공정기술 엔지니어 · 솔라엣지테크놀로지스코리아 · 2024 Core Value Award</span>
+    <span class="role">공정기술 엔지니어 · 솔라엣지테크놀로지스코리아 · Waterpouch 라인 검사 데이터</span>
     <div class="machine">
-      <span><b>TRACEABILITY</b> S/N 기반 추적성 · Power Apps / Power BI / Power Automate</span>
+      <span><b>INSPECTION DATA PIPELINE</b> 장비 → ETL → DB → Cpk · Excel VBA / SQL / Power BI</span>
       <span class="sep" style="height:18px"></span>
-      <span class="statled" id="statled"><span class="dot"></span><span id="statText">TRACKING</span></span>
+      <span class="statled" id="statled"><span class="dot"></span><span id="statText">INGEST</span></span>
     </div>
   </div>
 
-  <!-- DRO -->
+  <!-- throughput bar -->
   <div class="hud" id="dro">
-    <div class="dro-axis"><span class="ax">X</span><span class="val" id="droX">+000.000</span><span class="un">mm</span></div>
-    <div class="dro-axis"><span class="ax">Y</span><span class="val" id="droY">+000.000</span><span class="un">mm</span></div>
-    <div class="dro-axis"><span class="ax">Z</span><span class="val" id="droZ">+000.000</span><span class="un">mm</span></div>
+    <div class="dro-axis"><span class="ax">수집 S/N</span><span class="val" id="droX">0</span><span class="un">건</span></div>
+    <div class="dro-axis"><span class="ax">정제 제거</span><span class="val" id="droY">0</span><span class="un">중복·불일치</span></div>
+    <div class="dro-axis"><span class="ax">적재</span><span class="val" id="droZ">0</span><span class="un">rows/DB</span></div>
     <div class="dro-meta">
-      <span>등록 S/N <b id="ptCount">0</b> / 248</span>
-      <span>UPLOAD <b>Real-time</b></span>
-      <span>MODE <b>TRACK</b></span>
+      <span>원천 <b>전기검사 · 2D 광학측정</b></span>
+      <span>수집 <b>OPC UA / 장비로그</b></span>
+      <span>MODE <b>ETL</b></span>
       <span id="clock">T+00.0s</span>
     </div>
   </div>
 
-  <!-- 추적성 범례 -->
+  <!-- 파이프라인 범례 -->
   <div class="hud" id="legend">
-    <div class="lg-h">S/N 추적성 체계</div>
-    <div class="lg-row"><div class="lg-sym">🔍</div><div class="lg-tx"><b>S/N 검증</b> 조립 전 부품 일치 확인</div></div>
-    <div class="lg-row"><div class="lg-sym">📋</div><div class="lg-tx"><b>체크리스트</b> 모바일 공정 점검</div></div>
-    <div class="lg-row"><div class="lg-sym">🚫</div><div class="lg-tx"><b>투입 차단</b> 미등록 제품 상위공정 차단</div></div>
-    <div class="lg-row"><div class="lg-sym">📊</div><div class="lg-tx"><b>BI 대시보드</b> 생산 이력 실시간 추적</div></div>
-    <div class="lg-row"><div class="lg-sym">📄</div><div class="lg-tx"><b>자동발행</b> Power Automate 성적서</div></div>
+    <div class="lg-h">검사 데이터 파이프라인</div>
+    <div class="lg-row"><div class="lg-sym">🔌</div><div class="lg-tx"><b>원천 장비</b> OCV/IR 전기검사 · Waterpouch 2D 광학측정</div></div>
+    <div class="lg-row"><div class="lg-sym">🧪</div><div class="lg-tx"><b>수집·ETL</b> 장비로그 + OPC UA · BCR cleansing</div></div>
+    <div class="lg-row"><div class="lg-sym">🗄️</div><div class="lg-tx"><b>DB 적재</b> 정규화 · S/N 단위 inspection_result</div></div>
+    <div class="lg-row"><div class="lg-sym">📈</div><div class="lg-tx"><b>Cpk·시각화</b> 공정능력 산출 · Power BI(.pbix)</div></div>
     <div class="datumtag">
-      <div class="dchip">입고</div><div class="dchip">조립</div><div class="dchip">출하</div>
+      <div class="dchip">원천</div><div class="dchip">ETL</div><div class="dchip">DB</div><div class="dchip">BI</div>
     </div>
   </div>
 
   <!-- 도구 / 역량 -->
   <div class="hud" id="equip">
-    <div class="eq-h"><span>도구 · 역량</span><span id="eqCount">0/24</span></div>
+    <div class="eq-h"><span>도구 · 역량</span><span id="eqCount">0/20</span></div>
     <div class="chips" id="chips"></div>
   </div>
 
-  <!-- inspection report -->
+  <!-- spec-vs-measured + Cpk report -->
   <div class="hud" id="report">
     <div class="rp-top">
       <div class="rp-title">
-        <span class="t">검사 성적서 (자동발행)</span>
-        <span class="badge" id="rpId">TRC-2024-0615</span>
+        <span class="t">검사 측정값 vs 스펙</span>
+        <span class="badge" id="rpId">WP · OA_RESULT</span>
       </div>
       <div class="rp-sub">
-        <span>PROJ <b>솔라엣지-공정추적성</b></span>
-        <span>발행 <b>Power Automate</b></span>
-        <span>S/N <b>PYH-7448</b></span>
+        <span>원천 <b>2D 광학측정 (GW)</b></span>
+        <span>특성 <b>Distance/Angle</b></span>
+        <span>판정 <b>OK/NG</b></span>
       </div>
     </div>
     <div class="rp-head">
-      <span>추적 항목 (TRACE ITEM)</span><span class="r">기준·조건</span><span class="r">결과</span><span class="r">판정</span>
+      <span>검사 특성 (FEATURE)</span><span class="r">스펙 (도면)</span><span class="r">측정값</span><span class="r">판정</span>
     </div>
     <div class="rp-body" id="rpBody"></div>
     <div class="rp-foot">
@@ -304,51 +301,43 @@ canvas#stage{display:block;width:100%;height:100%}
         <div class="cpk-read">
           <div class="lab">공정능력 Cpk</div>
           <div class="num"><span id="cpkVal">0.00</span> <small>(목표 ≥1.33)</small></div>
-          <div class="note" id="cpkNote">측정 대기…</div>
+          <div class="note" id="cpkNote">데이터 수집 대기…</div>
         </div>
       </div>
       <div class="verdict" id="verdict">
-        <span class="vbig">ISSUED</span>
-        <span class="vtx"><b id="passN">0/8</b> 항목 추적 완료 · 전 공정 S/N 검증<br>검사성적서 자동발행 완료 — 2024 Core Value Award</span>
-        <span class="stamp">APPROVED<br>박양하 / 공정</span>
+        <span class="vbig">DB INTEGRATED</span>
+        <span class="vtx"><b id="passN">0/8</b> 특성 적재 완료 · S/N 단위 inspection_result<br>Power BI 공정능력 대시보드 갱신 완료</span>
+        <span class="stamp">PIPELINE<br>박양하 / 공정</span>
       </div>
       <div class="belief">
-        <div class="bq">"<b>S/N 추적성</b>으로 리스크 범위를 측정 가능하게."</div>
+        <div class="bq">"검사를 직접 한 게 아니라, <b>장비가 만든 검사 데이터</b>를 수집·정제·DB통합·Cpk로 시각화하는 파이프라인을 직접 구축."</div>
         <div class="bm">
-          <span class="bchip"><b>수기 관리</b> → 앱 자동화</span>
-          <span class="bchip"><b>Power Apps</b> 모바일 등록</span>
-          <span class="bchip"><b>부품 혼입</b> 원천 차단</span>
+          <span class="bchip"><b>장비로그·OPC UA</b> 수집</span>
+          <span class="bchip"><b>BCR</b> cleansing</span>
+          <span class="bchip"><b>Cpk</b> 공정능력 시각화</span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- 추적성 배경 패널: 문제 발단 → 해결 -->
+  <!-- 데이터 정제 패널: BCR 중복·불일치 cleansing -->
   <div class="hud" id="crossover">
     <div class="xo-top">
-      <div class="xo-kick">TRACEABILITY AUDIT · 문제 발단 → 시스템 구축</div>
-      <div class="xo-title">필드 원자재 불량 —<br><b>S/N 수기 관리</b>로 리스크 범위 측정 불가</div>
+      <div class="xo-kick">DATA CLEANSING · 원천 데이터 무결성</div>
+      <div class="xo-title">장비 로그의 <b>BCR 중복·불일치</b> —<br>정제 없이는 Cpk를 신뢰할 수 없음</div>
       <div class="xo-sub">
-        기준 = <span class="dat">S/N 등록 여부</span> · 검증 대상 = <span class="dat">조립·검사 데이터</span><br>
-        이탈 신호 = <b style="color:var(--fail)">미등록 제품</b> (상위 공정 투입 = 추적 불가 리스크)
+        원천 = <span class="dat">전기검사 + 2D 광학측정 장비 로그</span><br>
+        키 = <span class="dat">BCR(바코드) / S/N</span> · 이상 = <b style="color:var(--fail)">중복·불일치·결측</b>
       </div>
     </div>
     <div class="xo-head">
-      <span>추적성 구축 항목 (6 ITEM)</span><span class="r">구현 수단</span><span class="r">상태</span>
+      <span>정제 단계 (6 STEP)</span><span class="r">처리</span><span class="r">상태</span>
     </div>
     <div class="xo-body" id="xoBody"></div>
     <div class="xo-foot">
-      <div class="xnote"><b>핵심 전환:</b> 수기 S/N 관리의 공백을 Power Apps·Power Automate로 <b>자동화</b>. 공정 품질 검증으로 <b>부품 혼입 원천 차단</b>하고 검사성적서 자동 발행.</div>
-      <div class="xverdict"><span>전 6 항목 구현 완료 · 2024 Core Value Award</span><span class="xstamp" style="margin-left:auto">AWARDED</span></div>
+      <div class="xnote"><b>핵심:</b> 장비 데이터를 OPC UA·로그로 수집 → BCR 중복/불일치 cleansing → 정규화 DB 적재 → Cpk 산출 → Power BI 대시보드로 시각화. <b>검사는 장비가, 파이프라인은 내가.</b></div>
+      <div class="xverdict"><span>전 단계 자동화 · process capability.pbix 운영</span><span class="xstamp" style="margin-left:auto">PIPELINE OK</span></div>
     </div>
-  </div>
-
-  <!-- contact -->
-  <div class="hud" id="contact">
-    <span class="ci">CONTACT</span>
-    <a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a>
-    <a href="https://github.com/64etuor" target="_blank" rel="noopener">github.com/64etuor</a>
-    <a href="tel:01074481791">010-7448-1791</a>
   </div>
 
   <!-- delight toast -->
@@ -360,59 +349,78 @@ canvas#stage{display:block;width:100%;height:100%}
 
 <!-- boot -->
 <div id="boot">
-  <div class="boot-mark">TRACEABILITY MANAGEMENT · S/N TRACKING SYSTEM</div>
-  <div class="boot-title">공정 추적성 시스템 초기화 — S/N 데이터베이스 연결</div>
+  <div class="boot-mark">INSPECTION DATA PIPELINE · ETL → DB → Cpk</div>
+  <div class="boot-title">검사 데이터 파이프라인 초기화 — 장비 데이터 소스 연결</div>
   <div class="boot-bar"><div class="boot-fill" id="bootFill"></div></div>
 </div>
 
 <script>
 "use strict";
 /* ============================================================
-   S/N 기반 공정 추적성 — Canvas 2.5D 아이소메트릭 추적 스테이션
-   박양하 portfolio. 솔라엣지테크놀로지스코리아 공정기술 엔지니어 (2024.03–06).
-   프로브 갠트리가 S/N 추적 항목을 traverse·검증하며 검사성적서 자동발행.
-   2024 Core Value Award 수상.
+   검사 데이터 파이프라인 / 공정능력(Cpk) — Canvas 2D
+   박양하 portfolio. 솔라엣지테크놀로지스코리아 공정기술 엔지니어.
+   REAL WORK: 검사를 직접 수행하지 않음. 장비(OCV/IR 전기검사,
+   Waterpouch 라인 2D 광학측정)가 만든 검사 데이터를
+   수집(OPC UA·장비로그) → 정제(BCR 중복·불일치 cleansing) →
+   정규화 DB 적재(S/N 단위 inspection_result) →
+   Cpk 산출 + Power BI(.pbix) 대시보드로 시각화하는 파이프라인을 직접 구축.
+   참조: references/솔라엣지 Project / 2407_Waterpouch 데이터 시각화.
+   값 출처: Vision_240911 / OA_Result / Duplicate_BCR / WP Database Architecture.
    ============================================================ */
 
-/* ---------- data: 추적 항목 = 공정 추적성 구축 내용 ---------- */
-// 각 항목: 기준(nominal)·허용·결과·판정. 한 곳(S/N 수기 관리 공백)은 OUT→앱 구축→IN.
-// 검사성적서 = 실제 공정 추적성 구현 결과. 정량 퍼센트 지표 강조 제외.
+/* ---------- 파이프라인 4 스테이지 ---------- */
+const STAGES = [
+  {key:"src",  title:"원천 장비",   icon:"🔌", sub:"OCV·IR 전기검사 / 2D 광학측정",
+   tags:["OCV (개방전압)","IR (절연저항)","Distance1–4","Angle1–4"], col:"--c-elen"},
+  {key:"etl",  title:"수집 · ETL",  icon:"🧪", sub:"장비로그 + OPC UA → cleansing",
+   tags:["OPC UA","장비 로그","BCR cleansing","Excel VBA / Python"], col:"--amber"},
+  {key:"db",   title:"DB 적재",     icon:"🗄️", sub:"정규화 · S/N 단위 inspection_result",
+   tags:["PostgreSQL","PRODUCTION","inspection_result","BCR UNIQUE"], col:"--datum"},
+  {key:"bi",   title:"Cpk · 시각화", icon:"📈", sub:"공정능력 산출 · Power BI(.pbix)",
+   tags:["Cpk / Cp","process capability.pbix","공정능력 대시보드","SQL"], col:"--pass"}
+];
+
+/* ---------- spec-vs-measured 표 (원천 = Waterpouch 2D 광학측정) ----------
+   값 근거: references .../Vision_240911.xlsx, OA_Result_*0911.xlsx
+   (Distance/Angle 특성 · OK/NG 판정 · 도면Spec/MAX·MIN Spec).
+   일부 수치는 실측 분포 범위에서 취한 대표값 [확인필요]. */
 const FEATURES = [
-  {key:"opex",  feat:"원자재 불량 발견",   sub:"⌖ 필드 이슈 · S/N 수기 관리 공백",  unit:"건", nom:0, tol:0, meas:1,   remeas:0, dir:"zero", color:"--c-elen", special:true},
-  {key:"st",    feat:"S/N 등록 앱 구축",   sub:"📱 Power Apps · 모바일 실적 등록",   unit:"OK", nom:1, tol:0, meas:1,   dir:"zero", color:"--c-sol"},
-  {key:"ct",    feat:"모바일 체크리스트",   sub:"📋 공정별 점검 · 실시간 기록",        unit:"OK", nom:1, tol:0, meas:1,   dir:"zero", color:"--c-sol"},
-  {key:"weld",  feat:"S/N 검증 로직",      sub:"🔍 조립 전 부품 일치 · S/N 대조",    unit:"OK", nom:1, tol:0, meas:1,   dir:"zero", color:"--c-sol"},
-  {key:"prod",  feat:"투입 차단 규칙",      sub:"🚫 미등록 제품 상위공정 차단",        unit:"OK", nom:1, tol:0, meas:1,   dir:"zero", color:"--c-sol"},
-  {key:"price", feat:"부품 혼입 방지",      sub:"🔒 S/N 대조 · 혼입 원천 차단",       unit:"OK", nom:1, tol:0, meas:1,   dir:"zero", color:"--c-sol"},
-  {key:"office",feat:"Power BI 대시보드",  sub:"📊 생산 이력 · 실시간 추적",          unit:"OK", nom:1, tol:0, meas:1,   dir:"zero", color:"--c-sol"},
-  {key:"defect",feat:"검사성적서 자동발행", sub:"📄 Power Automate · 자동 발행",       unit:"OK", nom:1, tol:0, meas:1,   dir:"zero", color:"--c-mir"}
-];
-const SKILLS = ["Power Apps","Power BI","Power Automate","SharePoint","Excel","S/N 추적","공정 품질","PFMEA","공정기술","생산관리","품질검증","체크리스트","부품 혼입방지","ERP/MES","RPA","Python","SQL","React","TypeScript","Electron","CI/CD","LOB","Jig개발","IATF16949"];
-
-/* ---------- 추적성 구축 6 항목 = 공정 개선 단계 ---------- */
-// 솔라엣지 공정 추적성 구축 실제 이력 기반.
-// 수기 S/N 관리 공백(이탈)→앱 자동화(복구)→검사성적서 자동발행(완료).
-const XSCENARIOS = [
-  {feat:"원자재 불량 발생",        sub:"필드 이슈 → S/N 수기 공백 확인",  dev:"추적 불가",   jud:"fail"},
-  {feat:"리스크 범위 측정 불가",   sub:"수기 관리 → 피해 범위 산정 불가",  dev:"공백 확인",   jud:"fail"},
-  {feat:"Power Apps 앱 기획",      sub:"재발 방지 · 모바일 등록 설계",     dev:"설계 완료",   jud:"pass"},
-  {feat:"S/N 검증 로직 구현",      sub:"조립 전 S/N 대조 · 투입 차단",    dev:"구현 완료",   jud:"pass"},
-  {feat:"Power BI 대시보드",       sub:"생산 이력 실시간 추적 연동",        dev:"운영 중",     jud:"pass"},
-  {feat:"검사성적서 자동발행",     sub:"Power Automate · 이메일 자동 발송", dev:"자동화 완료", jud:"pass"}
+  {key:"d1", feat:"Distance1", sub:"⌖ 2D 광학 · GW",  nom:337, tol:1,   meas:337.29, unit:"mm", out:false},
+  {key:"d2", feat:"Distance2", sub:"⌖ 2D 광학 · GW",  nom:164.4, tol:1.0, meas:164.71, unit:"mm", out:false},
+  {key:"d3", feat:"Distance3", sub:"⌖ 2D 광학 · GW",  nom:163.0, tol:1.0, meas:163.40, unit:"mm", out:false},
+  {key:"d4", feat:"Distance4", sub:"⌖ 2D 광학 · 이상치", nom:165.0, tol:1.0, meas:170.10, unit:"mm", out:true},
+  {key:"a1", feat:"Angle1",    sub:"∠ 2D 광학 · GW",  nom:0.0, tol:0.5,  meas:0.18, unit:"°", out:false},
+  {key:"a2", feat:"Angle2",    sub:"∠ 2D 광학 · GW",  nom:0.0, tol:0.5,  meas:-0.12, unit:"°", out:false},
+  {key:"ocv",feat:"OCV (개방전압)", sub:"🔌 전기검사 장비", nom:3.6, tol:0.2, meas:3.65, unit:"V", out:false},
+  {key:"ir", feat:"IR (절연저항)",  sub:"🔌 전기검사 장비", nom:1000, tol:0, meas:1159, unit:"MΩ", out:false, lower:true}
 ];
 
-// each feature mapped to a physical feature on the part (canvas coords set later)
-function fmtVal(v,unit){
-  if(unit==="OK") return v===1?"완료":"미완";
-  if(unit==="건") return v+"건";
-  const s=(v>0?"+":"")+v;
-  return s+unit;
+const SKILLS = ["Excel VBA","Python","Pandas","SQL","PostgreSQL","Power BI","Power Query","DAX","OPC UA","ETL","데이터 정제","Cpk/Cp","공정능력","데이터 모델링","On-prem Gateway","Matplotlib","Apps Script","BCR/바코드","S/N 추적","대시보드"];
+
+/* ---------- 정제(cleansing) 6 단계 — BCR 중복·불일치 ----------
+   값 근거: Duplicate_BCR_Table.csv / Updated_BCR_Mismatch_Table.csv
+   (ASE-prefix 바코드, ID not unique, BCR vs BCR6 불일치).
+   건수는 샘플 테이블 규모 기반 대표값 [확인필요]. */
+const XSTEPS = [
+  {feat:"장비 로그 수집",      sub:"OPC UA · CSV/Excel 로그 적재",  dev:"raw 수집",   jud:"pass"},
+  {feat:"BCR 중복 검출",       sub:"ID not unique · 동일 BCR 2행",  dev:"중복 제거",   jud:"warn"},
+  {feat:"BCR↔BCR6 불일치",     sub:"한쪽만 존재 · 매핑 결측",        dev:"매핑 보정",   jud:"warn"},
+  {feat:"결측·형식 정규화",     sub:"trim · 타입 캐스팅 · 단위 통일", dev:"정제 완료",   jud:"pass"},
+  {feat:"S/N 단위 통합",       sub:"전기검사 + 광학 + 공정 조인",     dev:"DB 적재",     jud:"pass"},
+  {feat:"Cpk 산출 · BI 연동",  sub:"공정능력 → process capability.pbix", dev:"시각화",  jud:"pass"}
+];
+
+/* ---------- format helpers ---------- */
+function fmtNum(v,unit){
+  if(unit==="°") return (v>=0?"+":"")+v.toFixed(2)+unit;
+  if(unit==="V") return v.toFixed(2)+unit;
+  if(unit==="MΩ") return Math.round(v)+unit;
+  return v.toFixed(2)+unit;
 }
 function specStr(f){
-  if(f.unit==="OK") return "구현 필수";
-  if(f.unit==="건"&&f.tol===0) return "0건 (재발 방지)";
-  if(f.tol===0) return f.nom+f.unit+" max";
-  return (f.nom>0?"+":"")+f.nom+"±"+f.tol+f.unit;
+  if(f.lower) return "≥"+f.nom+f.unit;       // IR: lower-spec only
+  if(f.tol===0) return f.nom+f.unit;
+  return f.nom+"±"+f.tol+f.unit;
 }
 
 /* ---------- canvas setup ---------- */
@@ -426,320 +434,236 @@ function resize(){
   layout();
 }
 window.addEventListener("resize",resize);
+function cssVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
 
-/* ---------- isometric projection ---------- */
-// scene origin & scale, computed in layout()
-let ORI={x:0,y:0}, SCL=1;
-const ISO_X={x:0.866,y:0.5};   // +X screen dir
-const ISO_Y={x:-0.866,y:0.5};  // +Y screen dir (depth)
-function iso(px,py,pz){
-  return {
-    x:ORI.x + (px*ISO_X.x + py*ISO_Y.x)*SCL,
-    y:ORI.y + (px*ISO_X.y + py*ISO_Y.y)*SCL - pz*SCL
+/* ---------- layout: pipeline geometry + histogram region ---------- */
+let NODES=[];        // pipeline stage nodes {x,y,w,h,stage}
+let HIST={x:0,y:0,w:0,h:0};   // Cpk histogram region
+let pktSources=[];   // packet spawn segment endpoints
+function layout(){
+  // usable canvas area: between left panels (~246) and report (~436)
+  const leftPad = (W>1180? 246 : 28);
+  const rightPad = 436;
+  const areaX = leftPad;
+  const areaW = Math.max(W - leftPad - rightPad, 460);
+  const cx = areaX + areaW/2;
+  const top = 150;
+
+  // ----- 4 horizontal pipeline nodes -----
+  const nW = Math.min((areaW-3*46)/4, 168);
+  const nH = 116;
+  const gap = (areaW - nW*4)/3;
+  const ny = top + 36;
+  NODES = STAGES.map((s,i)=>({
+    x: areaX + i*(nW+gap), y: ny, w:nW, h:nH, stage:s
+  }));
+
+  // ----- Cpk histogram region below pipeline (center) -----
+  const hw = Math.min(areaW*0.82, 560);
+  HIST = {
+    x: cx - hw/2,
+    y: ny + nH + 78,
+    w: hw,
+    h: Math.max(Math.min(H - (ny+nH+78) - 40, 240), 150)
   };
 }
 
-/* ---------- the inspected part (career-assy-01) ---------- *
-   A precision block (datum platform) with stepped features:
-   - base plate (datum A) ~ 200x140
-   - raised pads + bores + a cylinder; measurement targets sit on these.
-*/
-// part in part-space units (mm-ish, abstract)
-const PART={
-  bx:200, by:140, baseH:14,            // base plate
-};
-// measurement targets (in part space) — index aligns with FEATURES order
-let TARGETS=[]; // {x,y,z, type, color, f}
-function buildTargets(){
-  TARGETS=[
-    {x:34,  y:30,  z:14, type:"pad",  f:FEATURES[0]},   // opex  - corner datum pad
-    {x:150, y:26,  z:14, type:"bore", f:FEATURES[1]},   // st    - bore
-    {x:100, y:18,  z:14, type:"edge", f:FEATURES[2]},   // ct    - edge slot
-    {x:166, y:96,  z:30, type:"cyl",  f:FEATURES[3]},   // weld  - cylinder (special)
-    {x:64,  y:108, z:22, type:"pad",  f:FEATURES[4]},   // prod  - raised pad
-    {x:118, y:74,  z:18, type:"bore", f:FEATURES[5]},   // price - bore
-    {x:30,  y:80,  z:14, type:"slot", f:FEATURES[6]},   // office- slot
-    {x:104, y:118, z:14, type:"pad",  f:FEATURES[7]}    // defect- pad
-  ];
-  TARGETS.forEach((t,i)=>t.f._tg=t);
+/* ---------- pipeline packets (data flowing src→bi) ---------- */
+let packets=[];   // {seg, t, col, bad}
+function spawnPacket(){
+  if(!bootDone) return;
+  if(NODES.length<2) return;
+  const bad = Math.random()<0.18;   // some packets are dirty (BCR dup/mismatch)
+  packets.push({seg:0, t:0, col: bad? cssVar("--fail"):cssVar("--datum"), bad, cleaned:false});
 }
-buildTargets();
-
-/* point cloud accumulated as probe scans */
-let CLOUD=[]; // {x,y,z,col}
-
-/* ---------- layout: fit part on left ~62% of screen ---------- */
-function layout(){
-  // center the part in the area left of report panel
-  const areaW = W - 392 - 36 - 226; // minus report + margins + left panels approx
-  const cx = 36 + 226 + Math.max(areaW,420)/2 + 20;
-  const cy = H*0.56;
-  // scale based on part diagonal
-  const diag = (PART.bx+PART.by)*0.5;
-  SCL = Math.min((Math.max(areaW,420))/ (diag*1.55), (H-220)/(diag*1.15));
-  SCL = Math.max(SCL, 1.0);
-  // center origin: part centroid at (bx/2,by/2,baseH)
-  const c=iso(PART.bx/2,PART.by/2,8);
-  ORI.x += cx - c.x;
-  ORI.y += cy - c.y;
+function drawPipeline(){
+  if(NODES.length<4) return;
+  // connectors first (behind nodes)
+  for(let i=0;i<NODES.length-1;i++){
+    const a=NODES[i], b=NODES[i+1];
+    const ax=a.x+a.w, ay=a.y+a.h/2, bx=b.x, by=b.y+b.h/2;
+    ctx.strokeStyle="#1d2a3c"; ctx.lineWidth=2;
+    ctx.beginPath(); ctx.moveTo(ax,ay); ctx.lineTo(bx,by); ctx.stroke();
+    // arrow head
+    ctx.fillStyle="#2a3e55";
+    ctx.beginPath(); ctx.moveTo(bx,by); ctx.lineTo(bx-9,by-4); ctx.lineTo(bx-9,by+4); ctx.closePath(); ctx.fill();
+  }
+  // packets along connectors
+  packets.forEach(p=>{
+    const a=NODES[p.seg], b=NODES[p.seg+1];
+    if(!a||!b) return;
+    const ax=a.x+a.w, ay=a.y+a.h/2, bx=b.x, by=b.y+b.h/2;
+    const px=ax+(bx-ax)*p.t, py=ay+(by-ay)*p.t;
+    const col = p.bad && !p.cleaned ? cssVar("--fail") : (p.cleaned?cssVar("--pass"):cssVar("--datum"));
+    ctx.beginPath(); ctx.arc(px,py,3.2,0,Math.PI*2);
+    ctx.fillStyle=col; ctx.shadowColor=col; ctx.shadowBlur=8; ctx.fill(); ctx.shadowBlur=0;
+  });
+  // nodes
+  NODES.forEach((n,i)=>{
+    const s=n.stage, accent=cssVar(s.col);
+    const lit = stageLit[i];
+    // card
+    ctx.fillStyle = "rgba(10,16,24,.92)";
+    roundRect(n.x,n.y,n.w,n.h,11); ctx.fill();
+    ctx.lineWidth=1.2; ctx.strokeStyle = lit? accent : cssVar("--line");
+    if(lit){ ctx.shadowColor=accent; ctx.shadowBlur=12; }
+    roundRect(n.x,n.y,n.w,n.h,11); ctx.stroke(); ctx.shadowBlur=0;
+    // top accent rail
+    ctx.fillStyle=accent; ctx.globalAlpha=lit?1:.4;
+    roundRect(n.x,n.y,n.w,4,2); ctx.fill(); ctx.globalAlpha=1;
+    // stage index
+    ctx.font="700 9px "+cssVar("--mono"); ctx.fillStyle=cssVar("--ink-3");
+    ctx.textAlign="left"; ctx.textBaseline="top";
+    ctx.fillText("STAGE "+(i+1), n.x+13, n.y+13);
+    // icon
+    ctx.font="20px "+cssVar("--sans"); ctx.textAlign="right";
+    ctx.fillText(s.icon, n.x+n.w-12, n.y+10);
+    // title
+    ctx.font="800 14px "+cssVar("--sans"); ctx.fillStyle=cssVar("--ink");
+    ctx.textAlign="left"; ctx.fillText(s.title, n.x+13, n.y+28);
+    // sub
+    ctx.font="9px "+cssVar("--mono"); ctx.fillStyle=cssVar("--ink-2");
+    wrapText(s.sub, n.x+13, n.y+48, n.w-22, 12, 2);
+    // tags
+    ctx.font="8.5px "+cssVar("--mono"); ctx.fillStyle=cssVar("--ink-3");
+    let ty=n.y+74;
+    s.tags.forEach((tg,k)=>{
+      if(k>=3) return;
+      ctx.fillStyle = (lit && k===0)? accent : cssVar("--ink-3");
+      ctx.fillText("· "+tg, n.x+13, ty); ty+=12;
+    });
+  });
 }
-function resetOrigin(){ ORI={x:0,y:0}; layout(); }
+const stageLit=[false,false,false,false];
 
-/* ---------- drawing helpers ---------- */
-function poly(pts,fill,stroke,lw){
+function roundRect(x,y,w,h,r){
   ctx.beginPath();
-  pts.forEach((p,i)=> i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
-  ctx.closePath();
-  if(fill){ctx.fillStyle=fill;ctx.fill();}
-  if(stroke){ctx.lineWidth=lw||1;ctx.strokeStyle=stroke;ctx.stroke();}
+  ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r);
+  ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath();
 }
-// draw a rectangular box (prism) at part-space x,y with size w,d from z0 to z1
-function box(x,y,w,d,z0,z1,topFill,sideR,sideL,stroke){
-  const A=iso(x,y,z1),B=iso(x+w,y,z1),C=iso(x+w,y+d,z1),D=iso(x,y+d,z1);
-  const Ab=iso(x,y,z0),Bb=iso(x+w,y,z0),Cb=iso(x+w,y+d,z0),Db=iso(x,y+d,z0);
-  // right face (B-C)
-  poly([B,C,Cb,Bb],sideR,stroke,1);
-  // left face (A-D? actually front-left D-A)
-  poly([D,A,Ab,Db],sideL,stroke,1);
-  // front face (A-B)
-  poly([A,B,Bb,Ab],sideL,stroke,1);
-  // top
-  poly([A,B,C,D],topFill,stroke,1.1);
-}
-function cssVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
-
-/* part colors */
-const COL={
-  top:"#16202e", topHi:"#1b2a3b", topLight:"#1c2a3b",
-  sideR:"#0f1722", sideL:"#0c121b",
-  edge:"#27384e", edgeHi:"#3a5573",
-  grid:"#0f1824"
-};
-
-/* ---------- ground grid (granite table) ---------- */
-function drawGround(){
-  const g=18, n=14;
-  ctx.lineWidth=1;
-  for(let i=-2;i<=n;i++){
-    const a=iso(i*g - 20,-20,0), b=iso(i*g -20, PART.by+40,0);
-    ctx.strokeStyle = (i%4===0)?"#13202f":"#0d1622";
-    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+function wrapText(text,x,y,maxW,lh,maxLines){
+  const words=text.split(" "); let line="",ln=0;
+  for(let i=0;i<words.length;i++){
+    const test=line+words[i]+" ";
+    if(ctx.measureText(test).width>maxW && line){
+      ctx.fillText(line.trim(),x,y); y+=lh; line=words[i]+" "; ln++;
+      if(ln>=maxLines-1){ // last line, dump rest
+        let rest=words.slice(i).join(" ");
+        if(ctx.measureText(rest).width>maxW){
+          while(ctx.measureText(rest+"…").width>maxW && rest.length>1) rest=rest.slice(0,-1);
+          rest+="…";
+        }
+        ctx.fillText(rest,x,y); return;
+      }
+    } else line=test;
   }
-  for(let j=-2;j<=n;j++){
-    const a=iso(-20, j*g-20,0), b=iso(PART.bx+40, j*g-20,0);
-    ctx.strokeStyle = (j%4===0)?"#13202f":"#0d1622";
-    ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+  ctx.fillText(line.trim(),x,y);
+}
+
+/* ---------- Cpk histogram + normal capability curve ---------- */
+// distribution sample for Distance characteristic (centered ~ in-spec)
+// LSL/USL drawn relative to a nominal spec; data clusters with small sigma.
+const HISTO = (function(){
+  // build a stable, headless-deterministic-ish histogram (seeded)
+  let seed=20240911;
+  function rnd(){ seed=(seed*1103515245+12345)&0x7fffffff; return seed/0x7fffffff; }
+  const N=320, bins=21, mu=10.4, sigma=1.39, lsl=4, usl=16;  // bin units → Cpk≈1.34
+  const arr=new Array(bins).fill(0);
+  for(let i=0;i<N;i++){
+    // Box-Muller-ish from two uniforms
+    const u1=rnd()||1e-6, u2=rnd();
+    const z=Math.sqrt(-2*Math.log(u1))*Math.cos(2*Math.PI*u2);
+    let v=mu+z*sigma;
+    let b=Math.round(v);
+    if(b<0)b=0; if(b>bins-1)b=bins-1;
+    arr[b]++;
   }
-}
+  const max=Math.max(...arr);
+  return {arr,bins,mu,sigma,lsl,usl,max,N};
+})();
+let histReveal=0;   // 0..1 grow animation
 
-/* ---------- draw the part ---------- */
-function drawPart(){
-  // base plate (datum A)
-  box(0,0,PART.bx,PART.by,0,PART.baseH, COL.top, COL.sideR, COL.sideL, COL.edge);
-  // top edge highlight
-  const A=iso(0,0,PART.baseH),B=iso(PART.bx,0,PART.baseH),C=iso(PART.bx,PART.by,PART.baseH),D=iso(0,PART.by,PART.baseH);
-  ctx.lineWidth=1.4;ctx.strokeStyle=COL.edgeHi;
-  ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(B.x,B.y);ctx.lineTo(C.x,C.y);ctx.stroke();
+function drawHistogram(){
+  const {x,y,w,h}=HIST;
+  if(w<=0) return;
+  const {arr,bins,mu,sigma,lsl,usl,max}=HISTO;
+  // panel
+  ctx.fillStyle="rgba(9,13,18,.78)"; roundRect(x-14,y-30,w+28,h+58,12); ctx.fill();
+  ctx.strokeStyle=cssVar("--line"); ctx.lineWidth=1; roundRect(x-14,y-30,w+28,h+58,12); ctx.stroke();
+  // title
+  ctx.font="800 12px "+cssVar("--sans"); ctx.fillStyle=cssVar("--ink"); ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+  ctx.fillText("공정능력 분포 — Distance 특성 (Cpk)", x-2, y-13);
+  ctx.font="9px "+cssVar("--mono"); ctx.fillStyle=cssVar("--ink-3"); ctx.textAlign="right";
+  ctx.fillText("n="+HISTO.N+" · process capability.pbix", x+w, y-13);
 
-  // raised feature geometry per target
-  TARGETS.forEach(t=>{
-    const x=t.x, y=t.y;
-    if(t.type==="pad"||t.type==="edge"||t.type==="slot"){
-      const w=t.type==="slot"?34:26, d=t.type==="slot"?16:26;
-      const measured = t.f._measured;
-      const top = measured ? "#1d3a30" : COL.topLight;
-      box(x-w/2,y-d/2,w,d,PART.baseH,t.z, top, "#101a26","#0c141d","#2a3e55");
-    }
-    if(t.type==="bore"){
-      // raised boss then bore hole
-      box(x-15,y-15,30,30,PART.baseH,t.z,"#1b2a3b","#101a26","#0c141d","#2a3e55");
-      const c=iso(x,y,t.z);
-      const measured=t.f._measured;
-      ctx.beginPath();ctx.ellipse(c.x,c.y,9*SCL/4.2,9*SCL/4.2*0.5,0,0,Math.PI*2);
-      ctx.fillStyle="#070b10";ctx.fill();
-      ctx.lineWidth=1.3;ctx.strokeStyle=measured?cssVar("--pass"):cssVar("--datum");ctx.stroke();
-    }
-    if(t.type==="cyl"){
-      drawCylinder(x,y,PART.baseH,t.z, t);
-    }
-  });
-}
-function drawCylinder(x,y,z0,z1,t){
-  const r=14, seg=22;
-  const measured=t.f._measured, isOut=t.f._showOut;
-  // body
-  const top=iso(x,y,z1), bot=iso(x,y,z0);
-  const rx=r*SCL/4.2, ry=rx*0.5;
-  // side
+  const x2v=(b)=> x + (b/(bins-1))*w;
+  const baseY=y+h;
+  // gridlines
+  ctx.strokeStyle=cssVar("--line-soft"); ctx.lineWidth=1;
+  for(let g=0;g<=4;g++){ const gy=baseY-(h*g/4); ctx.beginPath(); ctx.moveTo(x,gy); ctx.lineTo(x+w,gy); ctx.stroke(); }
+
+  // spec band (LSL..USL) shaded
+  const lx=x2v(lsl), ux=x2v(usl);
+  ctx.fillStyle="rgba(60,230,164,.05)"; ctx.fillRect(lx,y,ux-lx,h);
+
+  // bars
+  const bw=(w/bins)*0.74;
+  for(let b=0;b<bins;b++){
+    const cx2=x2v(b);
+    const inSpec = b>=lsl && b<=usl;
+    const barH=(arr[b]/max)*h*0.92*histReveal;
+    ctx.fillStyle = inSpec? "rgba(60,230,164,.32)" : "rgba(255,93,108,.34)";
+    ctx.fillRect(cx2-bw/2, baseY-barH, bw, barH);
+    ctx.strokeStyle = inSpec? "rgba(60,230,164,.55)" : "rgba(255,93,108,.6)";
+    ctx.lineWidth=1; ctx.strokeRect(cx2-bw/2, baseY-barH, bw, barH);
+  }
+
+  // normal curve overlay
   ctx.beginPath();
-  ctx.moveTo(top.x-rx,top.y);
-  ctx.lineTo(bot.x-rx,bot.y);
-  ctx.arc(bot.x,bot.y,rx,Math.PI,0,true);
-  ctx.lineTo(top.x+rx,top.y);
-  ctx.arc(top.x,top.y,rx,0,Math.PI,true);
-  ctx.closePath();
-  let sfill = isOut ? "rgba(255,93,108,.14)" : (measured?"rgba(60,230,164,.12)":"#13202f");
-  ctx.fillStyle=sfill;ctx.fill();
-  ctx.lineWidth=1.1;ctx.strokeStyle= isOut?cssVar("--fail"):(measured?cssVar("--pass"):"#2a3e55");ctx.stroke();
-  // top ellipse
-  ctx.beginPath();ctx.ellipse(top.x,top.y,rx,ry,0,0,Math.PI*2);
-  ctx.fillStyle= isOut?"#241317":(measured?"#16322a":"#19293a");ctx.fill();
-  ctx.strokeStyle= isOut?cssVar("--fail"):(measured?cssVar("--pass"):cssVar("--edgeHi")||"#3a5573");ctx.stroke();
-}
-
-/* ---------- dimension line between two part points ---------- */
-function dimLine(p1,p2,label,color,offset){
-  const a=iso(p1.x,p1.y,p1.z), b=iso(p2.x,p2.y,p2.z);
-  ctx.save();
-  ctx.strokeStyle=color;ctx.lineWidth=1;ctx.setLineDash([]);
-  // extension ticks
-  ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
-  // arrow heads
-  arrow(a,b,color);arrow(b,a,color);
-  // label box at mid
-  const mx=(a.x+b.x)/2, my=(a.y+b.y)/2 - (offset||0);
-  ctx.font="700 9.5px "+cssVar("--mono");
-  const tw=ctx.measureText(label).width+10;
-  ctx.fillStyle="rgba(7,11,16,.9)";
-  ctx.fillRect(mx-tw/2,my-8,tw,15);
-  ctx.strokeStyle=color;ctx.lineWidth=1;ctx.strokeRect(mx-tw/2,my-8,tw,15);
-  ctx.fillStyle=color;ctx.textAlign="center";ctx.textBaseline="middle";
-  ctx.fillText(label,mx,my);
-  ctx.restore();
-}
-function arrow(from,to,color){
-  const ang=Math.atan2(to.y-from.y,to.x-from.x);
-  ctx.save();ctx.fillStyle=color;
-  ctx.beginPath();ctx.moveTo(from.x,from.y);
-  ctx.lineTo(from.x+Math.cos(ang+0.4)*7,from.y+Math.sin(ang+0.4)*7);
-  ctx.lineTo(from.x+Math.cos(ang-0.4)*7,from.y+Math.sin(ang-0.4)*7);
-  ctx.closePath();ctx.fill();ctx.restore();
-}
-
-/* ---------- GD&T callout (feature control frame) ---------- */
-function calloutFCF(t,sym,frame,judged){
-  const a=iso(t.x,t.y,t.z);
-  // leader line up-right
-  const lx=a.x+38, ly=a.y-46;
-  ctx.save();
-  ctx.strokeStyle=judged?cssVar("--pass"):cssVar("--ink-3");
-  ctx.lineWidth=1;ctx.setLineDash([3,3]);
-  ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(lx,ly);ctx.stroke();
-  ctx.setLineDash([]);
-  // dot on feature
-  ctx.beginPath();ctx.arc(a.x,a.y,2.4,0,Math.PI*2);ctx.fillStyle=judged?cssVar("--pass"):cssVar("--datum");ctx.fill();
-  // frame box
-  ctx.font="700 10px "+cssVar("--mono");
-  const txt=" "+frame+" ";
-  const tw=ctx.measureText(txt).width;
-  const bx=lx, by=ly-9, bh=18, symW=16;
-  ctx.fillStyle="rgba(8,12,18,.94)";
-  ctx.fillRect(bx,by,symW+tw,bh);
-  ctx.strokeStyle=judged?cssVar("--pass-dim"):cssVar("--line");
-  ctx.lineWidth=1;ctx.strokeRect(bx,by,symW+tw,bh);
-  ctx.beginPath();ctx.moveTo(bx+symW,by);ctx.lineTo(bx+symW,by+bh);ctx.stroke();
-  ctx.fillStyle=cssVar("--datum");ctx.textAlign="center";ctx.textBaseline="middle";
-  ctx.font="12px "+cssVar("--mono");
-  ctx.fillText(sym,bx+symW/2,by+bh/2+0.5);
-  ctx.font="700 10px "+cssVar("--mono");
-  ctx.fillStyle=judged?cssVar("--pass"):cssVar("--ink-2");
-  ctx.textAlign="left";
-  ctx.fillText(frame,bx+symW+4,by+bh/2+0.5);
-  ctx.restore();
-}
-
-/* ---------- probe & gantry ---------- */
-const probe={px:0,py:0,pz:80, tpx:0,tpy:0,tpz:80, touch:0};
-function drawGantry(){
-  // gantry: bridge over part in Y, column carrying Z ram down to probe
-  const px=probe.px,py=probe.py,pz=probe.pz;
-  // bridge beam across Y at current X (two columns at y=-18 and y=by+18)
-  const topZ = 96;
-  const c1=iso(px,-22,topZ), c1b=iso(px,-22,0);
-  const c2=iso(px,PART.by+22,topZ), c2b=iso(px,PART.by+22,0);
-  // columns
-  ctx.strokeStyle="#2a3a4f";ctx.lineWidth=4;
-  ctx.beginPath();ctx.moveTo(c1.x,c1.y);ctx.lineTo(c1b.x,c1b.y);ctx.stroke();
-  ctx.beginPath();ctx.moveTo(c2.x,c2.y);ctx.lineTo(c2b.x,c2b.y);ctx.stroke();
-  // bridge beam
-  ctx.strokeStyle="#33455d";ctx.lineWidth=5;
-  ctx.beginPath();ctx.moveTo(c1.x,c1.y);ctx.lineTo(c2.x,c2.y);ctx.stroke();
-  ctx.strokeStyle="#46618a";ctx.lineWidth=1.4;
-  ctx.beginPath();ctx.moveTo(c1.x,c1.y-3);ctx.lineTo(c2.x,c2.y-3);ctx.stroke();
-  // carriage on beam at current Y
-  const car=iso(px,py,topZ);
-  ctx.fillStyle="#2f4258";
-  ctx.fillRect(car.x-9,car.y-7,18,12);
-  ctx.strokeStyle="#5a7da6";ctx.lineWidth=1;ctx.strokeRect(car.x-9,car.y-7,18,12);
-  // Z ram down to probe
-  const tip=iso(px,py,pz);
-  ctx.strokeStyle="#7a93b3";ctx.lineWidth=3.2;
-  ctx.beginPath();ctx.moveTo(car.x,car.y);ctx.lineTo(tip.x,tip.y+6);ctx.stroke();
-  // probe stylus + ruby tip
-  ctx.strokeStyle="#9fb6d4";ctx.lineWidth=1.6;
-  ctx.beginPath();ctx.moveTo(tip.x,tip.y+6);ctx.lineTo(tip.x,tip.y);ctx.stroke();
-  // touch flash
-  if(probe.touch>0){
-    const r=4+probe.touch*16;
-    ctx.beginPath();ctx.arc(tip.x,tip.y,r,0,Math.PI*2);
-    ctx.strokeStyle="rgba(255,211,77,"+probe.touch+")";ctx.lineWidth=2;ctx.stroke();
-    ctx.beginPath();ctx.arc(tip.x,tip.y,r*0.55,0,Math.PI*2);
-    ctx.strokeStyle="rgba(60,230,164,"+probe.touch*0.8+")";ctx.lineWidth=1.4;ctx.stroke();
+  for(let px=0;px<=w;px+=3){
+    const b=(px/w)*(bins-1);
+    const yv=Math.exp(-0.5*Math.pow((b-mu)/sigma,2));
+    const cy2=baseY - yv*h*0.92*histReveal;
+    if(px===0) ctx.moveTo(x+px,cy2); else ctx.lineTo(x+px,cy2);
   }
-  // ruby ball
-  ctx.beginPath();ctx.arc(tip.x,tip.y,3.4,0,Math.PI*2);
-  const grd=ctx.createRadialGradient(tip.x-1,tip.y-1,0,tip.x,tip.y,4);
-  grd.addColorStop(0,"#ffe9a0");grd.addColorStop(1,"#ffb84d");
-  ctx.fillStyle=grd;ctx.fill();
-  ctx.strokeStyle="#fff2c8";ctx.lineWidth=0.8;ctx.stroke();
-  // crosshair vertical drop reference
-  const drop=iso(px,py,0);
-  ctx.strokeStyle="rgba(255,211,77,.25)";ctx.lineWidth=1;ctx.setLineDash([2,4]);
-  ctx.beginPath();ctx.moveTo(tip.x,tip.y);ctx.lineTo(drop.x,drop.y);ctx.stroke();
-  ctx.setLineDash([]);
-  // small + at ground
-  ctx.strokeStyle="rgba(255,211,77,.4)";
-  ctx.beginPath();ctx.moveTo(drop.x-5,drop.y);ctx.lineTo(drop.x+5,drop.y);
-  ctx.moveTo(drop.x,drop.y-3);ctx.lineTo(drop.x,drop.y+3);ctx.stroke();
-}
+  ctx.strokeStyle=cssVar("--datum"); ctx.lineWidth=2; ctx.globalAlpha=histReveal; ctx.stroke(); ctx.globalAlpha=1;
 
-/* ---------- point cloud ---------- */
-function drawCloud(){
-  CLOUD.forEach(p=>{
-    const s=iso(p.x,p.y,p.z);
-    ctx.beginPath();ctx.arc(s.x,s.y,1.1,0,Math.PI*2);
-    ctx.fillStyle=p.col;ctx.fill();
+  // LSL / USL lines
+  [["LSL",lx],["USL",ux]].forEach(([lab,xx])=>{
+    ctx.strokeStyle=cssVar("--ink-2"); ctx.lineWidth=1.4; ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.moveTo(xx,y); ctx.lineTo(xx,baseY); ctx.stroke(); ctx.setLineDash([]);
+    ctx.font="700 9px "+cssVar("--mono"); ctx.fillStyle=cssVar("--ink-2"); ctx.textAlign="center";
+    ctx.fillText(lab, xx, y-2);
   });
-}
+  // mean line
+  const mx=x2v(mu);
+  ctx.strokeStyle=cssVar("--pass"); ctx.lineWidth=1.4; ctx.setLineDash([2,3]);
+  ctx.beginPath(); ctx.moveTo(mx,y); ctx.lineTo(mx,baseY); ctx.stroke(); ctx.setLineDash([]);
+  ctx.font="700 9px "+cssVar("--mono"); ctx.fillStyle=cssVar("--pass"); ctx.textAlign="center";
+  ctx.fillText("x̄", mx, baseY+13);
 
-/* ---------- per-feature measured rings + deviation ---------- */
-function drawMeasuredMarks(){
-  TARGETS.forEach(t=>{
-    if(!t.f._measured) return;
-    const a=iso(t.x,t.y,t.z);
-    const col = t.f._showOut?cssVar("--fail"):cssVar("--pass");
-    // pulse ring
-    const pr = 6 + (1-(t.f._markPulse||0))*10;
-    if(t.f._markPulse>0){
-      ctx.beginPath();ctx.arc(a.x,a.y,pr,0,Math.PI*2);
-      ctx.strokeStyle="rgba("+(t.f._showOut?"255,93,108":"60,230,164")+","+t.f._markPulse+")";
-      ctx.lineWidth=1.4;ctx.stroke();
-    }
-    // small measured marker
-    ctx.beginPath();ctx.arc(a.x,a.y,3,0,Math.PI*2);
-    ctx.fillStyle=col;ctx.fill();
-  });
+  // Cpk annotation box (bottom-right of histogram)
+  const cpk = currentCpk();
+  ctx.font="9px "+cssVar("--mono"); ctx.textAlign="left"; ctx.fillStyle=cssVar("--ink-3");
+  ctx.fillText("Cpk = min(USL−x̄, x̄−LSL) / 3σ", x, baseY+24);
+  ctx.textAlign="right"; ctx.fillStyle = cpk>=1.33?cssVar("--pass"):cpk>=1?cssVar("--amber"):cssVar("--fail");
+  ctx.font="800 11px "+cssVar("--mono");
+  ctx.fillText("Cpk "+cpk.toFixed(2)+(cpk>=1.33?" · 능력 충족":" · 개선 필요"), x+w, baseY+24);
+}
+function currentCpk(){
+  const {mu,sigma,lsl,usl}=HISTO;
+  return Math.min(usl-mu, mu-lsl)/(3*sigma);
 }
 
 /* ====================================================================
-   INSPECTION SEQUENCE (state machine driven by time)
+   RIGHT PANEL — spec-vs-measured rows + Cpk gauge
    ==================================================================== */
 const rpBody=document.getElementById("rpBody");
-let rows=[]; // dom rows by key
+let rows=[];
 function buildRows(){
   FEATURES.forEach(f=>{
     const r=document.createElement("div");
-    r.className="row";r.dataset.key=f.key;
+    r.className="row"; r.dataset.key=f.key;
     r.innerHTML=`<div class="feat">${f.feat}<span class="ft-sub">${f.sub}</span></div>
       <div class="spec">${specStr(f)}</div>
       <div class="meas">— —</div>
@@ -748,16 +672,16 @@ function buildRows(){
     rows[f.key]=r;
   });
 }
-// 크로스오버 rows
+// cleansing rows
 const xoBody=document.getElementById("xoBody");
 let xrows=[];
 function buildXRows(){
-  XSCENARIOS.forEach(s=>{
+  XSTEPS.forEach(s=>{
     const r=document.createElement("div");
     r.className="xrow";
     const tag = s.jud==="pass"
-      ? '<span class="tag pass">PASS</span>'
-      : '<span class="tag fail">FAIL</span>';
+      ? '<span class="tag pass">OK</span>'
+      : '<span class="tag fail">정제</span>';
     r.innerHTML=`<div class="xf">${s.feat}<span class="xs">${s.sub}</span></div>
       <div class="xd">${s.dev}</div>
       <div class="xj">${tag}</div>`;
@@ -772,23 +696,17 @@ const chipsEl=document.getElementById("chips");
 let chipEls=[];
 SKILLS.forEach(s=>{const c=document.createElement("span");c.className="chip";c.textContent=s;chipsEl.appendChild(c);chipEls.push(c);});
 
-/* DRO update */
+/* throughput counters */
 const droX=document.getElementById("droX"),droY=document.getElementById("droY"),droZ=document.getElementById("droZ");
-function setDRO(x,y,z){
-  const f=(v)=>{const s=v>=0?"+":"-";const a=Math.abs(v).toFixed(3).padStart(7,"0");return s+a;};
-  droX.textContent=f(x);droY.textContent=f(y);droZ.textContent=f(z);
-}
 
 /* Cpk gauge */
 const ga=document.getElementById("cpkGauge"),gctx=ga.getContext("2d");
 function drawCpk(val){
   const w=176,h=100;gctx.clearRect(0,0,w,h);
   const cx=w/2,cy=h-8,R=72;
-  // arc background
   gctx.lineWidth=10;gctx.lineCap="round";
   gctx.strokeStyle="#16202e";
   gctx.beginPath();gctx.arc(cx,cy,R,Math.PI,0);gctx.stroke();
-  // value arc (0..2 mapped)
   const t=Math.max(0,Math.min(val/2,1));
   const ang=Math.PI + t*Math.PI;
   let col = val>=1.33? "#3ce6a4" : val>=1.0? "#ffb84d":"#ff5d6c";
@@ -796,12 +714,10 @@ function drawCpk(val){
   g2.addColorStop(0,"#6fb4ff");g2.addColorStop(1,col);
   gctx.strokeStyle=g2;
   gctx.beginPath();gctx.arc(cx,cy,R,Math.PI,ang);gctx.stroke();
-  // 1.33 target tick
   const tt=Math.PI+(1.33/2)*Math.PI;
   gctx.strokeStyle="#94a4bd";gctx.lineWidth=2;
   gctx.beginPath();gctx.moveTo(cx+Math.cos(tt)*(R-9),cy+Math.sin(tt)*(R-9));
   gctx.lineTo(cx+Math.cos(tt)*(R+7),cy+Math.sin(tt)*(R+7));gctx.stroke();
-  // needle
   gctx.strokeStyle=col;gctx.lineWidth=3;
   gctx.beginPath();gctx.moveTo(cx,cy);gctx.lineTo(cx+Math.cos(ang)*(R-14),cy+Math.sin(ang)*(R-14));gctx.stroke();
   gctx.beginPath();gctx.arc(cx,cy,4,0,Math.PI*2);gctx.fillStyle=col;gctx.fill();
@@ -814,19 +730,15 @@ function showToast(html,kind){
   toastTx.innerHTML=html;
   toast.className="hud"+(kind==="pass"?" pass":"");
   toastIc.textContent=kind==="pass"?"✓":"⚠";
-  // force reflow then show
   void toast.offsetWidth;
   toast.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer=setTimeout(()=>toast.classList.remove("show"),kind==="pass"?4200:3800);
 }
 
-/* ---------- sequence steps ---------- */
-let nowMs=0;            // animation clock
+/* ---------- sequence state ---------- */
+let nowMs=0;
 let passCount=0;
-let measuredFeatures=0;
-const ptCountEl=document.getElementById("ptCount");
-const eqCountEl=document.getElementById("eqCount");
 const clockEl=document.getElementById("clock");
 const cpkValEl=document.getElementById("cpkVal");
 const cpkNoteEl=document.getElementById("cpkNote");
@@ -835,235 +747,192 @@ const verdictEl=document.getElementById("verdict");
 const statled=document.getElementById("statled");
 const statText=document.getElementById("statText");
 
-// schedule: each feature inspected sequentially. moveTo then touch then commit.
-let timeline=[];   // {t, fn}
+let timeline=[];
 let cpkTarget=0, cpkShown=0;
-let activeTarget=null;     // current move target for probe
-let scanPts=0;
+// throughput targets
+let snTarget=0, snShown=0, dupTarget=0, dupShown=0, dbTarget=0, dbShown=0;
 
 function genTimeline(){
   timeline=[];
-  let t=900;             // after boot
-  // start position high above part
-  timeline.push({t:200,fn:()=>{probe.tpx=10;probe.tpy=10;probe.tpz=90;}});
+  let t=900;
   // reveal skill chips gradually
   SKILLS.forEach((s,i)=>{
-    timeline.push({t:500+i*55,fn:()=>{chipEls[i].classList.add("on");eqCountEl.textContent=(i+1)+"/24";}});
+    timeline.push({t:500+i*48,fn:()=>{chipEls[i].classList.add("on");eqCountEl.textContent=(i+1)+"/"+SKILLS.length;}});
   });
 
-  FEATURES.forEach((f,idx)=>{
-    const tg=f._tg;
-    // reveal row
-    timeline.push({t:t,fn:()=>{rows[f.key].classList.add("show");}});
-    // move probe above feature
-    timeline.push({t:t+120,fn:()=>{
-      activeTarget=tg; statText.textContent="MOVE → "+f.feat;
-      probe.tpx=tg.x;probe.tpy=tg.y;probe.tpz=tg.z+34;
-    }});
-    // descend & touch
-    timeline.push({t:t+780,fn:()=>{
-      probe.tpz=tg.z+3; statText.textContent="PROBING "+f.sub.replace(/^[^ ]+ /,"");
-    }});
-    timeline.push({t:t+1280,fn:()=>{
-      probe.touch=1;
-      // spawn cloud points around feature
-      for(let k=0;k<26;k++){
-        const a=Math.random()*Math.PI*2, rad=(Math.random()*10+3);
-        CLOUD.push({x:tg.x+Math.cos(a)*rad*0.7,y:tg.y+Math.sin(a)*rad*0.7,z:tg.z+ (Math.random()*3),
-          col: f.special? "rgba(255,93,108,.8)":"rgba(111,180,255,.75)"});
-      }
-      scanPts+=26; ptCountEl.textContent=Math.min(scanPts,248);
-      // commit measurement to row
-      commitFeature(f, f.special? "out":"pass");
-    }});
-    // for special item: show FAIL(수기 공백), toast, then APP 구축으로 PASS
-    if(f.special){
-      timeline.push({t:t+2300,fn:()=>{
-        showToast("⚠ <b>원자재 불량 발견</b> — S/N 수기 관리 미흡 · <b>리스크 범위 측정 불가</b> · 앱 개발 기획","warn");
-        statText.textContent="S/N 공백 — 앱 구축 기획";
-      }});
-      timeline.push({t:t+3600,fn:()=>{
-        // re-probe: descend again
-        probe.tpx=tg.x;probe.tpy=tg.y;probe.tpz=tg.z+3;
-      }});
-      timeline.push({t:t+4100,fn:()=>{
-        probe.touch=1;
-        // recolor cloud green
-        CLOUD.forEach(p=>{ if(Math.abs(p.x-tg.x)<14&&Math.abs(p.y-tg.y)<14) p.col="rgba(60,230,164,.85)"; });
-        remeasureWeld(f);
-        showToast("✓ Power Apps S/N 추적 앱 구축 — <b>재발 방지 · 리스크 범위 추적 가능</b> · PASS","pass");
-      }});
-      t+=4900;
-    }else{
-      t+=2100;
-    }
+  // light pipeline stages sequentially
+  const stageMsgs=["원천 장비 데이터 연결","수집·ETL · BCR cleansing","정규화 DB 적재","Cpk 산출 · BI 시각화"];
+  STAGES.forEach((s,i)=>{
+    timeline.push({t:t+i*620,fn:()=>{ stageLit[i]=true; statText.textContent=stageMsgs[i]; }});
   });
+
+  // ETL: a dirty packet → cleansing toast
+  timeline.push({t:t+1200,fn:()=>{
+    showToast("⚠ <b>BCR 중복·불일치 감지</b> — ID not unique · BCR↔BCR6 결측 · cleansing 적용","warn");
+  }});
+
+  // throughput ramps
+  timeline.push({t:t+1500,fn:()=>{ snTarget=2480; dupTarget=37; dbTarget=2443; }});
+
+  // commit spec-vs-measured rows one by one (=DB 적재)
+  t+=2300;
+  FEATURES.forEach((f,idx)=>{
+    timeline.push({t:t+idx*360,fn:()=>{
+      rows[f.key].classList.add("show");
+      commitFeature(f);
+    }});
+  });
+  t+=FEATURES.length*360+300;
+
+  // Cpk dashboard reveal + histogram grow
+  timeline.push({t:t,fn:()=>{
+    statText.textContent="Cpk 공정능력 시각화";
+    cpkTarget=currentCpk();
+    showToast("✓ 정제된 데이터 DB 적재 완료 — <b>Cpk "+currentCpk().toFixed(2)+"</b> · Power BI 대시보드 갱신","pass");
+  }});
 
   // finalize
-  timeline.push({t:t+200,fn:()=>{
-    statText.textContent="검사성적서 자동발행 중";
-    probe.tpx=PART.bx/2;probe.tpy=-10;probe.tpz=95;
-  }});
-  timeline.push({t:t+1200,fn:()=>{
-    statled.classList.add("done");statText.textContent="TRACEABILITY COMPLETE";
+  timeline.push({t:t+1100,fn:()=>{
+    statled.classList.add("done");statText.textContent="PIPELINE COMPLETE";
     verdictEl.classList.add("on");
-    cpkNoteEl.textContent="전 항목 추적 완료 · 검사성적서 자동발행";
+    const c=currentCpk();
+    cpkNoteEl.textContent=(c>=1.33?"공정능력 충족":"개선 필요")+" · process capability.pbix";
   }});
-  // 추적성 패널 reveal: 추적이 끝나면 배경/경위 보여준다
-  timeline.push({t:t+1700,fn:()=>{ crossoverEl.classList.add("on"); }});
+  // cleansing panel reveal
+  timeline.push({t:t+1500,fn:()=>{ crossoverEl.classList.add("on"); }});
   xrows.forEach((r,i)=>{
-    timeline.push({t:t+2000+i*180,fn:()=>{ r.classList.add("show"); }});
+    timeline.push({t:t+1800+i*170,fn:()=>{ r.classList.add("show"); }});
   });
 }
 
-function commitFeature(f, kind){
+function commitFeature(f){
   const r=rows[f.key];
-  const measVal = (kind==="out"&&f.special)? f.meas : f.meas;
-  r.querySelector(".meas").textContent = fmtVal(measVal,f.unit);
+  r.querySelector(".meas").textContent = fmtNum(f.meas,f.unit);
   const jud=r.querySelector(".jud");
-  f._measured=true; f._markPulse=1;
-  measuredFeatures++;
-  if(kind==="out"){
+  if(f.out){
     r.classList.add("outrow");
-    f._showOut=true;
-    jud.innerHTML='<span class="tag fail">FAIL</span>';
+    jud.innerHTML='<span class="tag fail">NG</span>';
   }else{
     r.classList.add("flash");setTimeout(()=>r.classList.remove("flash"),650);
-    jud.innerHTML='<span class="tag pass">PASS</span>';
+    jud.innerHTML='<span class="tag pass">OK</span>';
     passCount++;
-    bumpCpk();
   }
   updatePassN();
 }
-function remeasureWeld(f){
-  const r=rows[f.key];
-  r.classList.remove("outrow");r.classList.add("fixedrow","flash");
-  setTimeout(()=>r.classList.remove("flash"),650);
-  f._showOut=false; f._markPulse=1;
-  r.querySelector(".meas").textContent = fmtVal(f.remeas,f.unit);
-  r.querySelector(".jud").innerHTML='<span class="tag pass">PASS</span>';
-  passCount++; bumpCpk(); updatePassN();
-  statText.textContent="S/N 앱 구축 완료 — 추적 계속";
-}
-function updatePassN(){ passNEl.textContent=passCount+"/8"; }
-function bumpCpk(){
-  // climb toward 1.67 as passes accumulate
-  cpkTarget = 0.6 + (passCount/8)*1.13; // ends ~1.73
-  if(cpkTarget>1.73)cpkTarget=1.73;
-}
-
-/* ---------- which GD&T sym per target ---------- */
-const SYMS={opex:["⚠","불량 발생"],st:["📱","앱 구축"],ct:["📋","체크리스트"],weld:["🔍","S/N 검증"],
-  prod:["🚫","투입 차단"],price:["🔒","혼입 방지"],office:["📊","BI 추적"],defect:["📄","자동발행"]};
+function updatePassN(){ passNEl.textContent=passCount+"/"+FEATURES.length; }
+const eqCountEl=document.getElementById("eqCount");
 
 /* ====================================================================
    MAIN LOOP
    ==================================================================== */
 let started=0, tlIndex=0;
+let packetTimer=0;
 function tick(ts,dt){
-  // advance using real elapsed time so it works under both rAF (60fps)
-  // and a setInterval fallback (headless virtual-time). ts may be undefined
-  // when called from the interval pump.
   const t = (typeof ts==="number")?ts:performance.now();
   if(dt===undefined)dt=1;
   if(!started)started=t;
   nowMs=t-started;
   updateBoot();
-  // fire timeline events
   while(tlIndex<timeline.length && nowMs>=timeline[tlIndex].t){
     timeline[tlIndex].fn(); tlIndex++;
   }
-  // smooth probe motion — dt-scaled ease so speed is fps-independent
-  const easeBase=0.12;
-  const ef=1-Math.pow(1-easeBase,dt);
-  probe.px+=(probe.tpx-probe.px)*ef;
-  probe.py+=(probe.tpy-probe.py)*ef;
-  probe.pz+=(probe.tpz-probe.pz)*ef;
-  probe.touch*=Math.pow(0.92,dt); if(probe.touch<0.01)probe.touch=0;
-  // mark pulses — dt-scaled decay
-  FEATURES.forEach(f=>{ if(f._markPulse>0){f._markPulse-=0.02*dt; if(f._markPulse<0)f._markPulse=0;} });
-  // cpk smooth — dt-scaled lerp
+
+  // spawn pipeline packets at cadence after boot
+  packetTimer-=dt;
+  if(packetTimer<=0){ spawnPacket(); packetTimer=14+Math.random()*16; }
+  // advance packets through segments
+  packets.forEach(p=>{
+    p.t += 0.018*dt;
+    // mark cleaned once passing into DB segment (seg>=1)
+    if(p.bad && p.seg>=1) p.cleaned=true;
+    if(p.t>=1){ p.t=0; p.seg++; }
+  });
+  packets = packets.filter(p=>p.seg<NODES.length-1);
+
+  // counters ramp
+  snShown  += (snTarget-snShown)*(1-Math.pow(1-0.06,dt));
+  dupShown += (dupTarget-dupShown)*(1-Math.pow(1-0.06,dt));
+  dbShown  += (dbTarget-dbShown)*(1-Math.pow(1-0.06,dt));
+  droX.textContent = Math.round(snShown).toLocaleString();
+  droY.textContent = Math.round(dupShown).toLocaleString();
+  droZ.textContent = Math.round(dbShown).toLocaleString();
+
+  // histogram grow once Cpk stage reached
+  if(cpkTarget>0){ histReveal += (1-histReveal)*(1-Math.pow(1-0.06,dt)); }
+
+  // cpk smooth
   cpkShown+=(cpkTarget-cpkShown)*(1-Math.pow(1-0.08,dt));
-  // live Cpk micro-jitter (only after boot done, only when near target)
   if(bootDone && cpkTarget>0 && Math.abs(cpkTarget-cpkShown)<0.03){
     cpkShown += (Math.random()-0.5)*0.004;
   }
   cpkValEl.textContent=cpkShown.toFixed(2);
-  cpkValEl.parentElement.parentElement.querySelector(".num").style.color =
-    cpkShown>=1.33?cssVar("--pass"):cpkShown>=1?cssVar("--amber"):cssVar("--fail");
+  const numEl=cpkValEl.parentElement;
+  numEl.style.color = cpkShown>=1.33?cssVar("--pass"):cpkShown>=1?cssVar("--amber"):cssVar("--fail");
   drawCpk(cpkShown);
 
-  setDRO(probe.px,probe.py,probe.pz);
   clockEl.textContent="T+"+(nowMs/1000).toFixed(1)+"s";
 
   /* ---- render scene ---- */
   ctx.clearRect(0,0,W,H);
-  drawGround();
-  drawPart();
-  drawCloud();
-  drawMeasuredMarks();
-
-  // GD&T callouts for measured features
-  TARGETS.forEach(t=>{
-    if(t.f._measured){
-      const s=SYMS[t.f.key];
-      calloutFCF(t,s[0],s[1],!t.f._showOut);
-    }
-  });
-
-  // a couple of static dimension lines on the base (datum dims) for blueprint feel
-  dimLine({x:0,y:-8,z:PART.baseH},{x:PART.bx,y:-8,z:PART.baseH},"200.00",cssVar("--datum"),0);
-  dimLine({x:-8,y:0,z:PART.baseH},{x:-8,y:PART.by,z:PART.baseH},"140.00",cssVar("--datum"),0);
-
-  drawGantry();
+  drawBackdrop();
+  drawPipeline();
+  drawHistogram();
 }
 
-/* ---------- driver: rAF for smooth 60fps + interval safety pump ----------
-   Under headless --virtual-time-budget rAF can be starved, so a timer
-   pump guarantees the scene keeps advancing and the boot overlay clears. */
+function drawBackdrop(){
+  // subtle dotted grid
+  ctx.fillStyle="#0c1420";
+  const g=34;
+  for(let yy=120; yy<H; yy+=g){
+    for(let xx=20; xx<W; xx+=g){
+      ctx.fillRect(xx,yy,1,1);
+    }
+  }
+}
+
+/* ---------- driver ---------- */
 let rafLast=0, rafPrev=0;
 function rafLoop(ts){
-  const dt=Math.min((ts-(rafPrev||ts))/16.667,3); // delta in frames, clamped 0..3
+  const dt=Math.min((ts-(rafPrev||ts))/16.667,3);
   rafPrev=ts;
   tick(ts,dt);
   rafLast=performance.now();
   requestAnimationFrame(rafLoop);
 }
 function pump(){
-  // only step if rAF appears stalled (>120ms since last real frame)
   if(performance.now()-rafLast>120){ tick(undefined,1); rafLast=performance.now(); }
 }
 
-/* ---------- boot (driven by rAF clock so it's robust headless) ---------- */
+/* ---------- boot ---------- */
 const bootEl=document.getElementById("boot");
 const bootFill=document.getElementById("bootFill");
 let bootDone=false;
-const BOOT_MS=820;   // boot fills over ~0.8s of animation time
+const BOOT_MS=820;
 function updateBoot(){
   if(bootDone) return;
   const p=Math.min(nowMs/BOOT_MS,1);
   bootFill.style.width=(p*100).toFixed(0)+"%";
   if(p>=1){ bootDone=true; bootEl.classList.add("hide"); setTimeout(function(){ bootEl.style.display="none"; }, 650); }
 }
+
 /* ====================================================================
-   LIVE STREAMING — 가짜 검사 이벤트·S/N 변동 (boot 종료 후 지속)
+   LIVE STREAMING — 검사 데이터 수집 이벤트 로그 (boot 종료 후 지속)
    ==================================================================== */
-// 검사 이벤트 로그 DOM (report 패널 상단 삽입)
 let liveLog=null;
-const LOG_MAX=5; // 최대 표시 행
+const LOG_MAX=5;
 const liveEvents=[
-  {sn:"PYH-{n}",msg:"S/N 검증 완료 — 조립 투입 허가",kind:"pass"},
-  {sn:"SLR-{n}",msg:"모바일 체크리스트 제출",kind:"pass"},
-  {sn:"MIR-{n}",msg:"부품 혼입 차단 — S/N 불일치 감지",kind:"warn"},
-  {sn:"PYH-{n}",msg:"Power Automate 검사성적서 자동발행",kind:"pass"},
-  {sn:"SLR-{n}",msg:"BI 대시보드 추적 갱신",kind:"pass"},
-  {sn:"MIR-{n}",msg:"미등록 S/N 감지 — 상위공정 차단",kind:"warn"},
-  {sn:"PYH-{n}",msg:"원자재 입고 S/N 등록 완료",kind:"pass"},
-  {sn:"SLR-{n}",msg:"공정별 점검 기록 업로드",kind:"pass"},
-  {sn:"MIR-{n}",msg:"리스크 범위 추적 — 이력 조회",kind:"pass"},
-  {sn:"PYH-{n}",msg:"이메일 성적서 자동 발송 완료",kind:"pass"},
+  {sn:"ASE{n}",msg:"OCV/IR 전기검사 결과 수집 — OPC UA",kind:"pass"},
+  {sn:"ASE{n}",msg:"2D 광학측정 Distance/Angle 적재",kind:"pass"},
+  {sn:"ASE{n}",msg:"BCR 중복 감지 — dedup 적용",kind:"warn"},
+  {sn:"ASE{n}",msg:"BCR↔BCR6 불일치 — 매핑 보정",kind:"warn"},
+  {sn:"ASE{n}",msg:"inspection_result PASS 적재 (S/N)",kind:"pass"},
+  {sn:"ASE{n}",msg:"Distance4 USL 초과 — NG 기록",kind:"warn"},
+  {sn:"ASE{n}",msg:"Cpk 재계산 — process capability.pbix",kind:"pass"},
+  {sn:"ASE{n}",msg:"Power BI 공정능력 대시보드 갱신",kind:"pass"},
+  {sn:"ASE{n}",msg:"장비 로그 정규화 · 단위 통일",kind:"pass"},
+  {sn:"ASE{n}",msg:"REWORK 재투입 이력 통합",kind:"pass"},
 ];
-let logQueue=[], logSnBase=7448, logTimer=null;
+let logQueue=[], logSnBase=1470, logTimer=null;
 
 function buildLiveLog(){
   const rpTop=document.querySelector(".rp-top");
@@ -1071,7 +940,7 @@ function buildLiveLog(){
   liveLog.style.cssText="padding:6px 16px 4px;border-bottom:1px solid var(--line-soft);min-height:0;overflow:hidden;";
   const hdr=document.createElement("div");
   hdr.style.cssText="font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px;";
-  hdr.textContent="LIVE EVENT LOG";
+  hdr.textContent="LIVE INGEST LOG";
   liveLog.appendChild(hdr);
   rpTop.parentNode.insertBefore(liveLog,rpTop.nextSibling);
 }
@@ -1079,7 +948,7 @@ function buildLiveLog(){
 function pushLogEvent(){
   if(!liveLog) return;
   const ev=liveEvents[Math.floor(Math.random()*liveEvents.length)];
-  const sn=ev.sn.replace("{n}",logSnBase+(Math.floor(Math.random()*9)));
+  const sn=ev.sn.replace("{n}",String(logSnBase+(Math.floor(Math.random()*60))).padStart(7,"0"));
   const now=new Date();
   const ts=[now.getHours(),now.getMinutes(),now.getSeconds()].map(v=>String(v).padStart(2,"0")).join(":");
   const row=document.createElement("div");
@@ -1091,9 +960,7 @@ function pushLogEvent(){
     "<span style='color:var(--ink-2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'>"+ev.msg+"</span>";
   liveLog.appendChild(row);
   logQueue.push(row);
-  // fade in
   requestAnimationFrame(()=>{ row.style.opacity="1"; });
-  // trim old rows
   while(logQueue.length>LOG_MAX){
     const old=logQueue.shift();
     old.style.opacity="0";
@@ -1103,11 +970,9 @@ function pushLogEvent(){
 
 function startLiveStream(){
   buildLiveLog();
-  // initial burst
   pushLogEvent();
   setTimeout(pushLogEvent,600);
   setTimeout(pushLogEvent,1300);
-  // ongoing random cadence 1.8s ~ 3.2s
   function schedule(){
     const delay=1800+Math.random()*1400;
     logTimer=setTimeout(()=>{ pushLogEvent(); schedule(); },delay);
@@ -1115,26 +980,24 @@ function startLiveStream(){
   schedule();
 }
 
-// 검사성적서 측정값 미세 변동 (pass된 행에만)
+// 측정값 미세 변동 (OK인 수치 행만, 스펙 내 유지)
 let measJitterTimer=null;
 function startMeasJitter(){
   function jitter(){
     FEATURES.forEach(f=>{
-      if(!f._measured||f._showOut) return;
-      if(f.unit==="OK"||f.unit==="건") return; // 수치값만
+      if(f.out) return;
+      if(f.unit==="MΩ") return; // 정수 표시 유지
       const r=rows[f.key];
       if(!r) return;
       const el=r.querySelector(".meas");
-      if(!el) return;
-      const base=f.meas;
-      const noise=(Math.random()-0.5)*0.006;
-      const v=base+noise;
-      const s=(v>=0?"+":"")+v.toFixed(3)+f.unit;
-      el.textContent=s;
+      if(!el || el.textContent==="— —") return;
+      const amp = f.unit==="°" ? 0.01 : (f.unit==="V"?0.005:0.04);
+      const v=f.meas+(Math.random()-0.5)*amp*2;
+      el.textContent=fmtNum(v,f.unit);
     });
     measJitterTimer=setTimeout(jitter,900+Math.random()*700);
   }
-  setTimeout(jitter,1200);
+  setTimeout(jitter,1400);
 }
 
 function boot(){
@@ -1144,18 +1007,15 @@ function boot(){
   genTimeline();
   rafLast=performance.now();
   requestAnimationFrame(rafLoop);
-  setInterval(pump,40);   // safety pump (headless virtual-time)
-  // start live stream after boot overlay clears (~900ms)
+  setInterval(pump,40);
   setTimeout(()=>{
     startLiveStream();
     startMeasJitter();
   },950);
 }
 
-// wait for fonts then boot
 if(document.fonts&&document.fonts.ready){
   document.fonts.ready.then(()=>setTimeout(boot,80));
-  // safety fallback
   setTimeout(()=>{ if(!started) boot(); },1500);
 }else{
   window.addEventListener("load",boot);

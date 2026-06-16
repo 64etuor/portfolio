@@ -446,8 +446,8 @@
       <div class="arch">
         <div class="arch-head">
           <div>
-            <h2>SSOT <span class="em">Outbox -&gt; CDC -&gt; Kafka</span> fan-out</h2>
-            <p>이중 쓰기(DB + cache + Kafka 비원자) 안티패턴을 제거. <b style="color:var(--acc)">단일 트랜잭션</b>에서 비즈니스 테이블과 <b style="color:var(--acc)">outbox</b>만 커밋하고, Debezium이 WAL/binlog를 읽어 Kafka로 흘려보낸다. 쓰기는 1곳, 읽기는 N개로 팬아웃 — eventual consistency.</p>
+            <h2>공정 데이터 <span class="em">수집 → 정규화 DB → Power BI</span> 파이프라인</h2>
+            <p>엑셀 파편화(생산일보·공수·불량 각개 관리) 안티패턴을 제거. <b style="color:var(--acc)">정규화 관계형 DB</b>(1NF/2NF/3NF)에 단일 입력하고, VBA 프로그램이 SharePoint 서버에 실시간 저장, Power BI가 팬아웃 — 공수·생산현황 투명 집계 확보.</p>
           </div>
           <div class="arch-ctrl">
             <button class="btn" id="archSpeed">speed: 1x</button>
@@ -461,39 +461,39 @@
           <aside class="arch-aside">
             <div class="card">
               <h6>&#10007; anti-pattern</h6>
-              <p><b style="color:var(--red)">Dual write</b>: 앱이 DB·캐시·Kafka에 각각 직접 쓰면 비원자적 — 한 쪽 실패 시 영구 불일치.</p>
+              <p><b style="color:var(--red)">엑셀 파편화</b>: 생산일보·공수·불량을 각기 다른 파일로 관리 — 집계 오류·중복·추적 불가.</p>
             </div>
             <div class="card">
-              <h6>event sourcing</h6>
-              <p>append-only 이벤트 로그가 진실. time-travel 재구성 · upcasting으로 스키마 진화.</p>
-              <span class="tag">append-only</span><span class="tag">replay</span><span class="tag">upcasting</span>
+              <h6>정규화 설계 근거</h6>
+              <p>1NF/2NF/3NF 준수. PK/FK 명시, CountIfs 중복 차단, auto-increment PK로 무결성 확보.</p>
+              <span class="tag">1NF/2NF/3NF</span><span class="tag">PK/FK</span><span class="tag">중복차단</span>
             </div>
             <div class="card">
-              <h6>data contract</h6>
-              <p>owner · schema registry · <b style="color:var(--acc2)">BACKWARD</b> 호환 · SLA로 소비자 보호.</p>
+              <h6>S/N 추적성</h6>
+              <p>시리얼 번호 기반 조회로 <b style="color:var(--acc2)">불량 리스크 범위</b> 측정 가능. 필드 원자재 불량 재발 방지.</p>
             </div>
           </aside>
 
           <div class="counter">
             <div class="big mono" id="evtCount">0</div>
-            <div class="lbl">events committed &#8594; fanned out</div>
+            <div class="lbl">records committed &#8594; Power BI</div>
           </div>
 
           <div class="cdc-log-wrap" id="cdcLogWrap">
             <div class="cdc-log-head">
               <span class="dot live"></span>
-              CDC event stream
-              <b id="cdcLogTag">debezium</b>
+              DB 변경 이벤트 스트림
+              <b id="cdcLogTag">VBA / SharePoint</b>
               <span class="qps mono" id="cdcQps">-- evt/s</span>
             </div>
             <div class="cdc-log-body" id="cdcLogBody"></div>
           </div>
 
           <div class="legend">
-            <span><i style="background:var(--acc)"></i>committed TX</span>
-            <span><i style="background:var(--acc2)"></i>CDC stream</span>
-            <span><i style="background:var(--gold)"></i>kafka topic</span>
-            <span><i style="background:var(--viol)"></i>projection</span>
+            <span><i style="background:var(--acc)"></i>DB 입력</span>
+            <span><i style="background:var(--acc2)"></i>VBA 처리</span>
+            <span><i style="background:var(--gold)"></i>SharePoint 저장</span>
+            <span><i style="background:var(--viol)"></i>Power BI 출력</span>
           </div>
         </div>
       </div>
@@ -505,15 +505,15 @@
         <!-- LEFT: state machine -->
         <div class="pane left">
           <div class="pane-h">
-            <h3><span class="em">order_item</span> 상태머신</h3>
-            <p class="mono">PENDING &#8594; RESERVED &#8594; SHIPPED &#8594; DELIVERED · retry/backoff</p>
+            <h3><span class="em">work_order</span> 상태머신</h3>
+            <p class="mono">OPEN &#8594; IN_PROGRESS &#8594; COMPLETED · HOLD/retry</p>
           </div>
           <div class="pane-body">
             <svg id="smSvg" viewBox="0 0 560 420" preserveAspectRatio="xMidYMid meet"></svg>
             <div class="sm-info">
-              <h6>current row · order_item</h6>
-              <div class="row">id <b class="mono">#f3a9</b></div>
-              <div class="row">state <b class="cur mono" id="smState">PENDING</b></div>
+              <h6>current row · work_order</h6>
+              <div class="row">wo_no <b class="mono">23P30027KMDA1</b></div>
+              <div class="row">status <b class="cur mono" id="smState">OPEN</b></div>
               <div class="row">retry_count <b class="mono" id="smRetry">0</b></div>
               <div class="row">next_retry_ts <b class="mono" id="smNext">&#8212;</b></div>
             </div>
@@ -528,8 +528,8 @@
         <!-- RIGHT: recursive query -->
         <div class="pane">
           <div class="pane-h">
-            <h3><span class="em">WITH RECURSIVE</span> · 카테고리 계층</h3>
-            <p class="mono">category(id PK, parent_id FK-&gt;id, name, depth)</p>
+            <h3><span class="em">WITH RECURSIVE</span> · BOM 다단계 전개</h3>
+            <p class="mono">bom_line(id PK, parent_id FK-&gt;id, component_no, qty_per)</p>
           </div>
           <div class="rec-top">
             <pre id="recSql"></pre>
@@ -545,8 +545,9 @@
           <div class="depth-strip">
             <span class="chip">covering index <b>(parent_id, id)</b></span>
             <span class="chip">partial index <b>WHERE parent_id IS NULL</b></span>
-            <span class="chip">selectivity 우선 정렬</span>
+            <span class="chip">expanded_qty = levels(n-1) × qty_per</span>
             <span class="chip">anchor + UNION ALL</span>
+            <span class="chip">Make/Buy <b>E / EP / SC</b> 분류</span>
           </div>
         </div>
       </div>
@@ -557,516 +558,462 @@
   <!-- ============ FOOTER ============ -->
   <footer>
     <div class="seg accent" id="footView">01 · ERD</div>
-    <div class="seg" id="footEngine">PostgreSQL 16 · JSONB</div>
-    <div class="seg" id="footTbl">tables: 10</div>
-    <div class="seg">박양하 · senior data engineer</div>
+    <div class="seg" id="footEngine">MS Access · SQL 정규화 설계</div>
+    <div class="seg" id="footTbl">tables: 11</div>
+    <div class="seg">박양하 · 공정기술 · DB 아키텍처</div>
     <div class="spacer" style="flex:1"></div>
-    <div class="seg"><a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a></div>
-    <div class="seg"><a href="https://github.com/64etuor" target="_blank">github.com/64etuor</a></div>
-    <div class="seg">010-7448-1791</div>
   </footer>
 </div>
 
 <script>
 /* ============================================================
-   DATA: two grand virtual schema models
+   DATA: SolarEdge 공정 데이터 관리 시스템 실제 스키마
    ============================================================ */
 const MODELS = {
-  social: {
-    label:"대규모 소셜 플랫폼",
-    desc:"PostgreSQL 16 · 11 엔티티 · 피드/팔로우",
-    engine:"PostgreSQL 16 · JSONB",
-    enginePill:"PostgreSQL engine",
+  solaredge: {
+    label:"SolarEdge 공정 데이터 관리 MES",
+    desc:"MS Access · 19 엔티티 · 작업지시·생산실적·불량",
+    engine:"MS Access → SQL 정규화 설계",
+    enginePill:"MS Access / SQL engine",
+    caption:"엑셀 파편화 → **직접 설계**한 정규화 관계형 DB. 1NF/2NF/3NF 준수, PK/FK 명시, CountIfs 중복 차단, auto-increment PK — `prod_raw` · `att_raw` 실제 원본 데이터 기반.",
     tables:[
-      { name:"users", x:380, y:40, badge:"7 cols",
+      { name:"customer", x:40, y:40, badge:"3 cols",
         cols:[
-          {n:"id",t:"UUID",pk:1,nn:1},
-          {n:"username",t:"CITEXT",nn:1},
-          {n:"email",t:"CITEXT",nn:1},
-          {n:"bio",t:"TEXT"},
-          {n:"avatar_url",t:"TEXT"},
+          {n:"customer_key",t:"TEXT",pk:1,nn:1},
+          {n:"customer_name",t:"TEXT",nn:1},
+          {n:"region",t:"TEXT"},
+        ],
+        ddl:[
+          ["com","-- 고객사 마스터 (customer_key: 001 = Pacific Energy, 007 = ACE Power 등)"],
+          ["com","-- 3NF: customer_name을 prod_raw에서 분리 — 부분 함수 종속 제거"],
+          ["sql","CREATE TABLE customer ("],
+          ["sql","  customer_key  TEXT PRIMARY KEY,  -- '001','007','009'..."],
+          ["sql","  customer_name TEXT NOT NULL,"],
+          ["sql","  region        TEXT               -- 글로벌 거래처"],
+          ["sql",");"],
+          ["com","-- 실 데이터 예시: 001=Pacific Energy, 007=ACE Power Engineering, 009=ABB s.r.o."],
+        ]},
+      { name:"product_master", x:300, y:40, badge:"6 cols",
+        cols:[
+          {n:"product_key",t:"TEXT",pk:1,nn:1},
+          {n:"product_no",t:"TEXT",nn:1},
+          {n:"product_name",t:"TEXT",nn:1},
+          {n:"line",t:"TEXT",nn:1},
+          {n:"type",t:"TEXT",nn:1},
+          {n:"version",t:"INT",nn:1},
+        ],
+        ddl:[
+          ["com","-- 제품 마스터 (product_key: MM001~MM010, SR001~SR005, SC001~SC004 등)"],
+          ["com","-- EBOM 버전별 분리: 논산 Cell(Ver.1) / 음성 Cell(Ver.2) 등"],
+          ["sql","CREATE TABLE product_master ("],
+          ["sql","  product_key  TEXT PRIMARY KEY,    -- 'MM001','MM002',..."],
+          ["sql","  product_no   TEXT NOT NULL UNIQUE, -- 'KMD255166E222F1'"],
+          ["sql","  product_name TEXT NOT NULL,"],
+          ["sql","  line         TEXT NOT NULL         -- 'MD','SYS'"],
+          ["sql","               CHECK (line IN ('MD','SYS')),"],
+          ["sql","  type         TEXT NOT NULL,        -- 'ESS_MD','UPS_MD','ESS_Rack'..."],
+          ["sql","  version      INT  NOT NULL DEFAULT 1"],
+          ["sql",");"],
+          ["com","-- 복합 인덱스: 라인·타입 기준 필터"],
+          ["sql","CREATE INDEX idx_pm_line_type ON product_master(line, type);"],
+        ]},
+      { name:"purchase_order", x:560, y:40, badge:"5 cols",
+        cols:[
+          {n:"po_no",t:"TEXT",pk:1,nn:1},
+          {n:"customer_key",t:"TEXT",fk:"customer",nn:1},
+          {n:"project_name",t:"TEXT",nn:1},
+          {n:"po_qty",t:"INT",nn:1},
+          {n:"created_date",t:"DATE"},
+        ],
+        ddl:[
+          ["com","-- 수주(P/O) 헤더 — prod_raw의 P/ONo 컬럼 정규화"],
+          ["com","-- 예: 23P30073=충주호 소방정, 23P30027=RED project"],
+          ["sql","CREATE TABLE purchase_order ("],
+          ["sql","  po_no        TEXT PRIMARY KEY,     -- '23P30073','23P30027'"],
+          ["sql","  customer_key TEXT NOT NULL REFERENCES customer(customer_key),"],
+          ["sql","  project_name TEXT NOT NULL,"],
+          ["sql","  po_qty       INT  NOT NULL CHECK (po_qty > 0),"],
+          ["sql","  created_date DATE"],
+          ["sql",");"],
+          ["com","-- 고객사별 수주 조회"],
+          ["sql","CREATE INDEX idx_po_customer ON purchase_order(customer_key);"],
+        ]},
+      { name:"work_order", x:820, y:40, badge:"8 cols",
+        cols:[
+          {n:"wo_no",t:"TEXT",pk:1,nn:1},
+          {n:"po_no",t:"TEXT",fk:"purchase_order",nn:1},
+          {n:"product_key",t:"TEXT",fk:"product_master",nn:1},
+          {n:"line",t:"TEXT",nn:1},
+          {n:"plan_qty",t:"INT",nn:1},
+          {n:"cum_prod_qty",t:"INT",nn:1},
           {n:"status",t:"TEXT",nn:1},
-          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
+          {n:"opened_at",t:"DATE",nn:1},
         ],
         ddl:[
-          ["com","-- 플랫폼 사용자 루트 엔티티 (CITEXT: 대소문자 무관 유니크)"],
-          ["sql","CREATE TABLE users ("],
-          ["sql","  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  username   CITEXT NOT NULL UNIQUE,"],
-          ["sql","  email      CITEXT NOT NULL UNIQUE,"],
-          ["sql","  bio        TEXT,"],
-          ["sql","  avatar_url TEXT,"],
-          ["sql","  status     TEXT NOT NULL DEFAULT 'active'"],
-          ["sql","             CHECK (status IN ('active','suspended','deactivated')),"],
-          ["sql","  created_at TIMESTAMPTZ NOT NULL DEFAULT now()"],
+          ["com","-- 작업지시(W/O) — prod_raw의 W/ONo 컬럼 정규화"],
+          ["com","-- 예: 23P30073KMDL2 → PO 23P30073, 제품 KMD255151E220L2"],
+          ["sql","CREATE TABLE work_order ("],
+          ["sql","  wo_no        TEXT PRIMARY KEY,     -- '23P30073KMDL2'"],
+          ["sql","  po_no        TEXT NOT NULL REFERENCES purchase_order(po_no),"],
+          ["sql","  product_key  TEXT NOT NULL REFERENCES product_master(product_key),"],
+          ["sql","  line         TEXT NOT NULL CHECK (line IN ('MD','SYS')),"],
+          ["sql","  plan_qty     INT  NOT NULL CHECK (plan_qty > 0),"],
+          ["sql","  cum_prod_qty INT  NOT NULL DEFAULT 0,"],
+          ["sql","  status       TEXT NOT NULL DEFAULT 'OPEN'"],
+          ["sql","               CHECK (status IN ('OPEN','IN_PROGRESS','COMPLETED','HOLD')),"],
+          ["sql","  opened_at    DATE NOT NULL DEFAULT CURRENT_DATE"],
           ["sql",");"],
-          ["com","-- 검색: username 패턴 매칭용 GIN 트라이그램 인덱스"],
-          ["sql","CREATE EXTENSION IF NOT EXISTS pg_trgm;"],
-          ["sql","CREATE INDEX idx_users_username_trgm"],
-          ["sql","  ON users USING GIN (username gin_trgm_ops);"],
+          ["com","-- W/O별 누적 실적 조회"],
+          ["sql","CREATE INDEX idx_wo_po ON work_order(po_no);"],
         ]},
-      { name:"follows", x:60, y:40, badge:"4 cols",
-        cols:[
-          {n:"follower_id",t:"UUID",fk:"users",nn:1},
-          {n:"followee_id",t:"UUID",fk:"users",nn:1},
-          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
-          {n:"notified",t:"BOOLEAN",nn:1},
-        ],
-        ddl:[
-          ["com","-- N:M 팔로우 정션 테이블 (자기참조 관계)"],
-          ["sql","CREATE TABLE follows ("],
-          ["sql","  follower_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,"],
-          ["sql","  followee_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,"],
-          ["sql","  created_at  TIMESTAMPTZ NOT NULL DEFAULT now(),"],
-          ["sql","  notified    BOOLEAN NOT NULL DEFAULT false,"],
-          ["sql","  PRIMARY KEY (follower_id, followee_id),"],
-          ["sql","  CHECK (follower_id <> followee_id)"],
-          ["sql",");"],
-          ["com","-- 역방향 조회: '누가 나를 팔로우?' 인덱스"],
-          ["sql","CREATE INDEX idx_follows_followee ON follows(followee_id);"],
-        ]},
-      { name:"posts", x:700, y:40, badge:"8 cols",
-        cols:[
-          {n:"id",t:"UUID",pk:1,nn:1},
-          {n:"author_id",t:"UUID",fk:"users",nn:1},
-          {n:"body",t:"TEXT",nn:1},
-          {n:"media_ids",t:"UUID[]"},
-          {n:"like_count",t:"BIGINT",nn:1},
-          {n:"reply_count",t:"BIGINT",nn:1},
-          {n:"visibility",t:"TEXT",nn:1},
-          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
-        ],
-        ddl:[
-          ["com","-- 게시물 (미디어 UUID 배열: 정규화 vs 쿼리 균형)"],
-          ["sql","CREATE TABLE posts ("],
-          ["sql","  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  author_id   UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,"],
-          ["sql","  body        TEXT NOT NULL CHECK (char_length(body) <= 500),"],
-          ["sql","  media_ids   UUID[],                   -- 비정규화: 인서트 1회"],
-          ["sql","  like_count  BIGINT NOT NULL DEFAULT 0,"],
-          ["sql","  reply_count BIGINT NOT NULL DEFAULT 0,"],
-          ["sql","  visibility  TEXT NOT NULL DEFAULT 'public'"],
-          ["sql","              CHECK (visibility IN ('public','followers','private')),"],
-          ["sql","  created_at  TIMESTAMPTZ NOT NULL DEFAULT now()"],
-          ["sql",");"],
-          ["com","-- 타임라인 조회: 최신순 파티션별 스캔"],
-          ["sql","CREATE INDEX idx_posts_author_ts ON posts(author_id, created_at DESC);"],
-          ["com","-- 전문 검색 벡터 (한국어: pg_bigm 또는 tsquery)"],
-          ["sql","ALTER TABLE posts ADD COLUMN search_vec TSVECTOR"],
-          ["sql","  GENERATED ALWAYS AS (to_tsvector('simple', body)) STORED;"],
-          ["sql","CREATE INDEX idx_posts_fts ON posts USING GIN(search_vec);"],
-        ]},
-      { name:"comments", x:700, y:320, badge:"6 cols",
-        cols:[
-          {n:"id",t:"UUID",pk:1,nn:1},
-          {n:"post_id",t:"UUID",fk:"posts",nn:1},
-          {n:"author_id",t:"UUID",fk:"users",nn:1},
-          {n:"parent_id",t:"UUID",fk:"comments"},
-          {n:"body",t:"TEXT",nn:1},
-          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
-        ],
-        ddl:[
-          ["com","-- 댓글 (자기참조: 대댓글 지원, parent_id NULL = 최상위)"],
-          ["sql","CREATE TABLE comments ("],
-          ["sql","  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  post_id    UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,"],
-          ["sql","  author_id  UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,"],
-          ["sql","  parent_id  UUID REFERENCES comments(id) ON DELETE CASCADE,"],
-          ["sql","  body       TEXT NOT NULL CHECK (char_length(body) <= 300),"],
-          ["sql","  created_at TIMESTAMPTZ NOT NULL DEFAULT now()"],
-          ["sql",");"],
-          ["com","-- 게시물 댓글 목록: post_id + 시간순"],
-          ["sql","CREATE INDEX idx_comments_post ON comments(post_id, created_at);"],
-          ["com","-- 대댓글 조회: parent_id"],
-          ["sql","CREATE INDEX idx_comments_parent ON comments(parent_id)"],
-          ["sql","  WHERE parent_id IS NOT NULL;"],
-        ]},
-      { name:"likes", x:380, y:320, badge:"3 cols",
-        cols:[
-          {n:"user_id",t:"UUID",fk:"users",nn:1},
-          {n:"post_id",t:"UUID",fk:"posts",nn:1},
-          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
-        ],
-        ddl:[
-          ["com","-- 좋아요 N:M 정션 (중복 방지 PK 복합키)"],
-          ["sql","CREATE TABLE likes ("],
-          ["sql","  user_id    UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,"],
-          ["sql","  post_id    UUID NOT NULL REFERENCES posts(id) ON DELETE CASCADE,"],
-          ["sql","  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),"],
-          ["sql","  PRIMARY KEY (user_id, post_id)"],
-          ["sql",");"],
-          ["com","-- 게시물별 좋아요 수 집계용 역방향"],
-          ["sql","CREATE INDEX idx_likes_post ON likes(post_id);"],
-          ["com","-- posts.like_count 비정규화 카운터는 Outbox CDC로 동기화"],
-        ]},
-      { name:"hashtags", x:60, y:320, badge:"3 cols",
+      { name:"production_result", x:40, y:310, badge:"9 cols",
         cols:[
           {n:"id",t:"BIGINT",pk:1,nn:1},
-          {n:"tag",t:"CITEXT",nn:1},
-          {n:"post_count",t:"BIGINT",nn:1},
+          {n:"wo_no",t:"TEXT",fk:"work_order",nn:1},
+          {n:"prod_date",t:"DATE",nn:1},
+          {n:"shift",t:"TEXT",nn:1},
+          {n:"process",t:"TEXT",nn:1},
+          {n:"prod_qty",t:"INT",nn:1},
+          {n:"input_mh",t:"INT",nn:1},
+          {n:"lost_mh",t:"INT"},
+          {n:"lost_desc",t:"TEXT"},
         ],
         ddl:[
-          ["com","-- 해시태그 사전 (CITEXT: #Python == #python)"],
-          ["sql","CREATE TABLE hashtags ("],
-          ["sql","  id         BIGSERIAL PRIMARY KEY,"],
-          ["sql","  tag        CITEXT NOT NULL UNIQUE,"],
-          ["sql","  post_count BIGINT NOT NULL DEFAULT 0"],
+          ["com","-- 공정별 생산실적 (prod_raw 원본 — 정규화 후 팩트 테이블)"],
+          ["com","-- 공정: Cell검사 / Module적층 / Module조립 / ELT / 포장 등"],
+          ["sql","CREATE TABLE production_result ("],
+          ["sql","  id          BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  wo_no       TEXT NOT NULL REFERENCES work_order(wo_no),"],
+          ["sql","  prod_date   DATE NOT NULL,"],
+          ["sql","  shift       TEXT NOT NULL CHECK (shift IN ('주간','야간')),"],
+          ["sql","  process     TEXT NOT NULL,  -- 'Cell검사','Module적층','포장'..."],
+          ["sql","  prod_qty    INT  NOT NULL CHECK (prod_qty >= 0),"],
+          ["sql","  input_mh    INT  NOT NULL CHECK (input_mh >= 0),  -- 투입 공수(분)"],
+          ["sql","  lost_mh     INT,                                  -- 손실 공수(분)"],
+          ["sql","  lost_desc   TEXT                                   -- 손실 사유"],
           ["sql",");"],
-          ["com","-- 트렌딩: post_count DESC"],
-          ["sql","CREATE INDEX idx_hashtags_count ON hashtags(post_count DESC);"],
+          ["com","-- 일자별 W/O별 집계 인덱스"],
+          ["sql","CREATE INDEX idx_pr_date_wo ON production_result(prod_date, wo_no);"],
+          ["com","-- auto-increment PK: CountIfs 중복 차단 대체"],
         ]},
-      { name:"post_hashtags", x:380, y:510, badge:"2 cols",
-        cols:[
-          {n:"post_id",t:"UUID",fk:"posts",nn:1},
-          {n:"hashtag_id",t:"BIGINT",fk:"hashtags",nn:1},
-        ],
-        ddl:[
-          ["com","-- 게시물-해시태그 N:M 정션"],
-          ["sql","CREATE TABLE post_hashtags ("],
-          ["sql","  post_id    UUID   NOT NULL REFERENCES posts(id) ON DELETE CASCADE,"],
-          ["sql","  hashtag_id BIGINT NOT NULL REFERENCES hashtags(id),"],
-          ["sql","  PRIMARY KEY (post_id, hashtag_id)"],
-          ["sql",");"],
-          ["com","-- 해시태그별 게시물 피드"],
-          ["sql","CREATE INDEX idx_ph_tag ON post_hashtags(hashtag_id, post_id);"],
-        ]},
-      { name:"media_assets", x:1000, y:40, badge:"6 cols",
-        cols:[
-          {n:"id",t:"UUID",pk:1,nn:1},
-          {n:"uploader_id",t:"UUID",fk:"users",nn:1},
-          {n:"kind",t:"TEXT",nn:1},
-          {n:"url",t:"TEXT",nn:1},
-          {n:"meta_json",t:"JSONB"},
-          {n:"uploaded_at",t:"TIMESTAMPTZ",nn:1},
-        ],
-        ddl:[
-          ["com","-- 미디어 에셋 (이미지/동영상 원본 + CDN URL)"],
-          ["sql","CREATE TABLE media_assets ("],
-          ["sql","  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  uploader_id UUID NOT NULL REFERENCES users(id),"],
-          ["sql","  kind        TEXT NOT NULL CHECK (kind IN ('image','video','gif')),"],
-          ["sql","  url         TEXT NOT NULL,"],
-          ["sql","  meta_json   JSONB,            -- width, height, duration, codec"],
-          ["sql","  uploaded_at TIMESTAMPTZ NOT NULL DEFAULT now()"],
-          ["sql",");"],
-        ]},
-      { name:"notifications", x:1000, y:280, badge:"7 cols",
-        cols:[
-          {n:"id",t:"UUID",pk:1,nn:1},
-          {n:"recipient_id",t:"UUID",fk:"users",nn:1},
-          {n:"actor_id",t:"UUID",fk:"users",nn:1},
-          {n:"kind",t:"TEXT",nn:1},
-          {n:"ref_id",t:"UUID"},
-          {n:"read",t:"BOOLEAN",nn:1},
-          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
-        ],
-        ddl:[
-          ["com","-- 알림 (CDC Outbox 패턴으로 생성 — 직접 INSERT 아님)"],
-          ["sql","CREATE TABLE notifications ("],
-          ["sql","  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  recipient_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,"],
-          ["sql","  actor_id     UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,"],
-          ["sql","  kind         TEXT NOT NULL"],
-          ["sql","               CHECK (kind IN ('like','comment','follow','mention')),"],
-          ["sql","  ref_id       UUID,             -- 관련 post_id 또는 comment_id"],
-          ["sql","  read         BOOLEAN NOT NULL DEFAULT false,"],
-          ["sql","  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()"],
-          ["sql",");"],
-          ["com","-- 안읽은 알림 조회: partial index (read=false 만)"],
-          ["sql","CREATE INDEX idx_notif_unread ON notifications(recipient_id, created_at DESC)"],
-          ["sql","  WHERE read = false;"],
-        ]},
-      { name:"feed_outbox", x:60, y:510, badge:"6 cols",
+      { name:"attendance_raw", x:300, y:310, badge:"8 cols",
         cols:[
           {n:"id",t:"BIGINT",pk:1,nn:1},
-          {n:"aggregate_id",t:"UUID",nn:1},
-          {n:"event_type",t:"TEXT",nn:1},
-          {n:"payload",t:"JSONB",nn:1},
-          {n:"published",t:"BOOLEAN",nn:1},
-          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
+          {n:"rec_date",t:"DATE",nn:1},
+          {n:"line",t:"TEXT",nn:1},
+          {n:"direct_cnt",t:"INT",nn:1},
+          {n:"overtime_min",t:"INT"},
+          {n:"break_min",t:"INT"},
+          {n:"planned_stop_min",t:"INT"},
+          {n:"material_min",t:"INT"},
         ],
         ddl:[
-          ["com","-- SSOT Outbox 테이블: 비즈니스 TX와 동일 커밋"],
-          ["com","-- Debezium이 WAL tail 후 Kafka로 팬아웃"],
-          ["sql","CREATE TABLE feed_outbox ("],
-          ["sql","  id           BIGSERIAL PRIMARY KEY,"],
-          ["sql","  aggregate_id UUID NOT NULL,   -- post_id | user_id | comment_id"],
-          ["sql","  event_type   TEXT NOT NULL,   -- PostCreated | LikeAdded | Followed"],
-          ["sql","  payload      JSONB NOT NULL,"],
-          ["sql","  published    BOOLEAN NOT NULL DEFAULT false,"],
-          ["sql","  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()"],
+          ["com","-- 일별 인원·공수 원장 (att_raw 정규화 — 3NF)"],
+          ["com","-- 직접직/연장/휴게/계획정지/자재관리 분 단위 기록"],
+          ["sql","CREATE TABLE attendance_raw ("],
+          ["sql","  id               BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  rec_date         DATE NOT NULL,"],
+          ["sql","  line             TEXT NOT NULL,  -- 'MD','SYS'"],
+          ["sql","  direct_cnt       INT  NOT NULL,  -- 직접직 인원수"],
+          ["sql","  overtime_min     INT,            -- 연장(분)"],
+          ["sql","  break_min        INT,            -- 휴게시간(분)"],
+          ["sql","  planned_stop_min INT,            -- 계획정지(분)"],
+          ["sql","  material_min     INT             -- 자재관리(분)"],
           ["sql",");"],
-          ["com","-- CDC 폴링: 미발행 이벤트만 partial index"],
-          ["sql","CREATE INDEX idx_outbox_unpub ON feed_outbox(created_at)"],
-          ["sql","  WHERE published = false;"],
+          ["com","-- 라인·날짜 복합 인덱스 (Power BI 집계 가속)"],
+          ["sql","CREATE UNIQUE INDEX idx_att_date_line ON attendance_raw(rec_date, line);"],
+        ]},
+      { name:"defect_history", x:560, y:310, badge:"8 cols",
+        cols:[
+          {n:"id",t:"BIGINT",pk:1,nn:1},
+          {n:"wo_no",t:"TEXT",fk:"work_order",nn:1},
+          {n:"defect_date",t:"DATE",nn:1},
+          {n:"process",t:"TEXT",nn:1},
+          {n:"defect_code",t:"TEXT",fk:"defect_code",nn:1},
+          {n:"defect_qty",t:"INT",nn:1},
+          {n:"sn",t:"TEXT"},
+          {n:"rework_flag",t:"BOOLEAN",nn:1},
+        ],
+        ddl:[
+          ["com","-- 불량 이력 (공정별 불량 S/N 및 유형 기록)"],
+          ["com","-- S/N 기반 추적성: 필드 원자재 불량 리스크 범위 측정 가능"],
+          ["sql","CREATE TABLE defect_history ("],
+          ["sql","  id          BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  wo_no       TEXT    NOT NULL REFERENCES work_order(wo_no),"],
+          ["sql","  defect_date DATE    NOT NULL,"],
+          ["sql","  process     TEXT    NOT NULL,"],
+          ["sql","  defect_code TEXT    NOT NULL REFERENCES defect_code(code),"],
+          ["sql","  defect_qty  INT     NOT NULL CHECK (defect_qty > 0),"],
+          ["sql","  sn          TEXT,              -- 시리얼 번호 (추적성)"],
+          ["sql","  rework_flag BOOLEAN NOT NULL DEFAULT FALSE"],
+          ["sql",");"],
+          ["com","-- S/N 조회: 이력 추적 인덱스"],
+          ["sql","CREATE INDEX idx_dh_sn ON defect_history(sn) WHERE sn IS NOT NULL;"],
+        ]},
+      { name:"defect_code", x:820, y:310, badge:"4 cols",
+        cols:[
+          {n:"code",t:"TEXT",pk:1,nn:1},
+          {n:"description",t:"TEXT",nn:1},
+          {n:"process",t:"TEXT",nn:1},
+          {n:"severity",t:"TEXT",nn:1},
+        ],
+        ddl:[
+          ["com","-- 불량 유형 코드 마스터 (2NF: defect_history에서 분리)"],
+          ["com","-- 예: DC01=Cell 극성 불량, DA01=외관 스크래치, DV01=전압 이상"],
+          ["sql","CREATE TABLE defect_code ("],
+          ["sql","  code        TEXT PRIMARY KEY,  -- 'DC01','DA01','DV01'..."],
+          ["sql","  description TEXT NOT NULL,"],
+          ["sql","  process     TEXT NOT NULL,     -- 해당 공정명"],
+          ["sql","  severity    TEXT NOT NULL DEFAULT 'MINOR'"],
+          ["sql","               CHECK (severity IN ('CRITICAL','MAJOR','MINOR'))"],
+          ["sql",");"],
+        ]},
+      { name:"inspection_result", x:40, y:560, badge:"7 cols",
+        cols:[
+          {n:"id",t:"BIGINT",pk:1,nn:1},
+          {n:"wo_no",t:"TEXT",fk:"work_order",nn:1},
+          {n:"sn",t:"TEXT",nn:1},
+          {n:"process",t:"TEXT",nn:1},
+          {n:"inspection_date",t:"DATE",nn:1},
+          {n:"result",t:"TEXT",nn:1},
+          {n:"inspector",t:"TEXT"},
+        ],
+        ddl:[
+          ["com","-- 검사 실적 (공정별 검사 결과 — Cell검사 / ELT 등)"],
+          ["com","-- SN 기반 상위 공정 경로 검증: 미등록 제품 투입 차단"],
+          ["sql","CREATE TABLE inspection_result ("],
+          ["sql","  id              BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  wo_no           TEXT NOT NULL REFERENCES work_order(wo_no),"],
+          ["sql","  sn              TEXT NOT NULL,  -- 부품/제품 시리얼 번호"],
+          ["sql","  process         TEXT NOT NULL,  -- 'OCV/IR','ELT','포장'..."],
+          ["sql","  inspection_date DATE NOT NULL,"],
+          ["sql","  result          TEXT NOT NULL CHECK (result IN ('PASS','FAIL','REWORK')),"],
+          ["sql","  inspector       TEXT            -- 작업자명"],
+          ["sql",");"],
+          ["com","-- S/N × 공정 복합 인덱스 (경로 검증 쿼리)"],
+          ["sql","CREATE INDEX idx_ir_sn_process ON inspection_result(sn, process);"],
+        ]},
+      { name:"bom_header", x:300, y:560, badge:"5 cols",
+        cols:[
+          {n:"bom_id",t:"BIGINT",pk:1,nn:1},
+          {n:"product_key",t:"TEXT",fk:"product_master",nn:1},
+          {n:"bom_type",t:"TEXT",nn:1},
+          {n:"version",t:"INT",nn:1},
+          {n:"created_at",t:"DATE",nn:1},
+        ],
+        ddl:[
+          ["com","-- BOM 헤더 (EBOM / MBOM 분리 관리)"],
+          ["com","-- EBOM: Engineering BOM, MBOM: Manufacturing BOM (VBA 변환 엔진 출력)"],
+          ["sql","CREATE TABLE bom_header ("],
+          ["sql","  bom_id      BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  product_key TEXT NOT NULL REFERENCES product_master(product_key),"],
+          ["sql","  bom_type    TEXT NOT NULL CHECK (bom_type IN ('EBOM','MBOM')),"],
+          ["sql","  version     INT  NOT NULL DEFAULT 1,"],
+          ["sql","  created_at  DATE NOT NULL DEFAULT CURRENT_DATE"],
+          ["sql",");"],
+          ["com","-- 제품·타입 복합 인덱스"],
+          ["sql","CREATE INDEX idx_bom_prod_type ON bom_header(product_key, bom_type);"],
+        ]},
+      { name:"bom_line", x:560, y:560, badge:"7 cols",
+        cols:[
+          {n:"id",t:"BIGINT",pk:1,nn:1},
+          {n:"bom_id",t:"BIGINT",fk:"bom_header",nn:1},
+          {n:"parent_id",t:"BIGINT",fk:"bom_line"},
+          {n:"component_no",t:"TEXT",nn:1},
+          {n:"component_name",t:"TEXT",nn:1},
+          {n:"qty_per",t:"DECIMAL",nn:1},
+          {n:"make_buy",t:"TEXT",nn:1},
+        ],
+        ddl:[
+          ["com","-- BOM 라인 (자기참조 계층 — 다단계 BOM 전개)"],
+          ["com","-- VBA 전개 알고리즘: levels(n) = levels(n-1) * qty_per"],
+          ["com","-- make_buy: E=Engineering, EP=Purchased, SC=Sub-Contract"],
+          ["sql","CREATE TABLE bom_line ("],
+          ["sql","  id             BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  bom_id         BIGINT  NOT NULL REFERENCES bom_header(bom_id),"],
+          ["sql","  parent_id      BIGINT  REFERENCES bom_line(id),  -- NULL = 최상위"],
+          ["sql","  component_no   TEXT    NOT NULL,"],
+          ["sql","  component_name TEXT    NOT NULL,"],
+          ["sql","  qty_per        DECIMAL NOT NULL CHECK (qty_per > 0),"],
+          ["sql","  make_buy       TEXT    NOT NULL"],
+          ["sql","               CHECK (make_buy IN ('E','EP','SC'))"],
+          ["sql",");"],
+          ["com","-- WITH RECURSIVE BOM 전개: parent_id 인덱스"],
+          ["sql","CREATE INDEX idx_bl_parent ON bom_line(parent_id, id);"],
+          ["com","-- 루트 부품 partial index"],
+          ["sql","CREATE INDEX idx_bl_root ON bom_line(bom_id) WHERE parent_id IS NULL;"],
         ]},
     ],
     rels:[
-      ["follows","follower_id","users","id","N:1"],
-      ["follows","followee_id","users","id","N:1"],
-      ["posts","author_id","users","id","N:1"],
-      ["comments","post_id","posts","id","N:1"],
-      ["comments","author_id","users","id","N:1"],
-      ["comments","parent_id","comments","id","N:1"],
-      ["likes","user_id","users","id","N:1"],
-      ["likes","post_id","posts","id","N:1"],
-      ["hashtags","id","post_hashtags","hashtag_id","1:N"],
-      ["post_hashtags","post_id","posts","id","N:1"],
-      ["media_assets","uploader_id","users","id","N:1"],
-      ["notifications","recipient_id","users","id","N:1"],
+      ["purchase_order","customer_key","customer","customer_key","N:1"],
+      ["work_order","po_no","purchase_order","po_no","N:1"],
+      ["work_order","product_key","product_master","product_key","N:1"],
+      ["production_result","wo_no","work_order","wo_no","N:1"],
+      ["attendance_raw","line","work_order","line","N:1"],
+      ["defect_history","wo_no","work_order","wo_no","N:1"],
+      ["defect_history","defect_code","defect_code","code","N:1"],
+      ["inspection_result","wo_no","work_order","wo_no","N:1"],
+      ["bom_header","product_key","product_master","product_key","N:1"],
+      ["bom_line","bom_id","bom_header","bom_id","N:1"],
     ],
-    defaultTable:"posts",
+    defaultTable:"work_order",
   },
 
-  ecomm: {
-    label:"대규모 전자상거래",
-    desc:"PostgreSQL 16 · 주문/결제/재고/배송",
-    engine:"PostgreSQL 16 · 파티셔닝",
-    enginePill:"PostgreSQL engine",
+  ebom: {
+    label:"EBOM→MBOM 변환 엔진 스키마",
+    desc:"VBA 알고리즘 · BOM 다단계 전개 · Make/Buy 분류",
+    engine:"MS Access · BOM 정규화 설계",
+    enginePill:"BOM 변환 엔진",
+    caption:"VBA로 구현한 EBOM→MBOM 변환 엔진. **다단계 BOM 전개** 알고리즘 `levels(n) = levels(n-1) × qty`, Make/Buy 분류(E / EP / SC). CountIfs 중복 차단 · auto-increment PK로 무결성 확보.",
     tables:[
-      { name:"customers", x:40, y:40, badge:"6 cols",
+      { name:"product_master", x:400, y:40, badge:"6 cols",
         cols:[
-          {n:"id",t:"UUID",pk:1,nn:1},
-          {n:"email",t:"CITEXT",nn:1},
-          {n:"full_name",t:"TEXT",nn:1},
-          {n:"phone",t:"TEXT"},
-          {n:"tier",t:"TEXT",nn:1},
-          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
+          {n:"product_key",t:"TEXT",pk:1,nn:1},
+          {n:"product_no",t:"TEXT",nn:1},
+          {n:"product_name",t:"TEXT",nn:1},
+          {n:"line",t:"TEXT",nn:1},
+          {n:"type",t:"TEXT",nn:1},
+          {n:"version",t:"INT",nn:1},
         ],
         ddl:[
-          ["com","-- 고객 마스터 (등급: bronze/silver/gold/platinum)"],
-          ["sql","CREATE TABLE customers ("],
-          ["sql","  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  email      CITEXT NOT NULL UNIQUE,"],
-          ["sql","  full_name  TEXT NOT NULL,"],
-          ["sql","  phone      TEXT,"],
-          ["sql","  tier       TEXT NOT NULL DEFAULT 'bronze'"],
-          ["sql","             CHECK (tier IN ('bronze','silver','gold','platinum')),"],
-          ["sql","  created_at TIMESTAMPTZ NOT NULL DEFAULT now()"],
+          ["com","-- 제품 마스터 (EBOM 변환 대상 제품 목록)"],
+          ["sql","CREATE TABLE product_master ("],
+          ["sql","  product_key  TEXT PRIMARY KEY,   -- 'MM001'~'MM010'..."],
+          ["sql","  product_no   TEXT NOT NULL UNIQUE,"],
+          ["sql","  product_name TEXT NOT NULL,"],
+          ["sql","  line         TEXT NOT NULL CHECK (line IN ('MD','SYS')),"],
+          ["sql","  type         TEXT NOT NULL,"],
+          ["sql","  version      INT  NOT NULL DEFAULT 1"],
           ["sql",");"],
         ]},
-      { name:"products", x:400, y:40, badge:"7 cols",
+      { name:"bom_header", x:400, y:220, badge:"5 cols",
         cols:[
-          {n:"id",t:"UUID",pk:1,nn:1},
-          {n:"sku",t:"TEXT",nn:1},
-          {n:"name",t:"TEXT",nn:1},
-          {n:"category_id",t:"BIGINT",fk:"categories",nn:1},
-          {n:"price",t:"NUMERIC",nn:1},
-          {n:"attrs",t:"JSONB"},
-          {n:"status",t:"TEXT",nn:1},
+          {n:"bom_id",t:"BIGINT",pk:1,nn:1},
+          {n:"product_key",t:"TEXT",fk:"product_master",nn:1},
+          {n:"bom_type",t:"TEXT",nn:1},
+          {n:"version",t:"INT",nn:1},
+          {n:"created_at",t:"DATE",nn:1},
         ],
         ddl:[
-          ["com","-- 상품 마스터 (가변 속성: JSONB attrs)"],
-          ["sql","CREATE TABLE products ("],
-          ["sql","  id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  sku         TEXT NOT NULL UNIQUE,"],
-          ["sql","  name        TEXT NOT NULL,"],
-          ["sql","  category_id BIGINT NOT NULL REFERENCES categories(id),"],
-          ["sql","  price       NUMERIC(14,2) NOT NULL CHECK (price >= 0),"],
-          ["sql","  attrs       JSONB,           -- color, size, weight 등 가변 속성"],
-          ["sql","  status      TEXT NOT NULL DEFAULT 'active'"],
-          ["sql","              CHECK (status IN ('active','discontinued','draft'))"],
+          ["com","-- BOM 헤더 (EBOM/MBOM 분리 버전 관리)"],
+          ["sql","CREATE TABLE bom_header ("],
+          ["sql","  bom_id      BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  product_key TEXT NOT NULL REFERENCES product_master(product_key),"],
+          ["sql","  bom_type    TEXT NOT NULL CHECK (bom_type IN ('EBOM','MBOM')),"],
+          ["sql","  version     INT  NOT NULL DEFAULT 1,"],
+          ["sql","  created_at  DATE NOT NULL DEFAULT CURRENT_DATE"],
           ["sql",");"],
-          ["com","-- 카테고리 + 가격 범위 조합 쿼리용 복합 인덱스"],
-          ["sql","CREATE INDEX idx_products_cat_price ON products(category_id, price);"],
-          ["com","-- JSONB attrs GIN 인덱스 (attrs->color 같은 필터)"],
-          ["sql","CREATE INDEX idx_products_attrs ON products USING GIN(attrs);"],
         ]},
-      { name:"categories", x:400, y:300, badge:"4 cols",
+      { name:"bom_line", x:400, y:400, badge:"7 cols",
         cols:[
           {n:"id",t:"BIGINT",pk:1,nn:1},
-          {n:"parent_id",t:"BIGINT",fk:"categories"},
-          {n:"name",t:"TEXT",nn:1},
-          {n:"depth",t:"SMALLINT",nn:1},
+          {n:"bom_id",t:"BIGINT",fk:"bom_header",nn:1},
+          {n:"parent_id",t:"BIGINT",fk:"bom_line"},
+          {n:"component_no",t:"TEXT",nn:1},
+          {n:"component_name",t:"TEXT",nn:1},
+          {n:"qty_per",t:"DECIMAL",nn:1},
+          {n:"make_buy",t:"TEXT",nn:1},
         ],
         ddl:[
-          ["com","-- 카테고리 계층 (자기참조, WITH RECURSIVE 전개)"],
-          ["sql","CREATE TABLE categories ("],
-          ["sql","  id        BIGSERIAL PRIMARY KEY,"],
-          ["sql","  parent_id BIGINT REFERENCES categories(id),"],
-          ["sql","  name      TEXT NOT NULL,"],
-          ["sql","  depth     SMALLINT NOT NULL DEFAULT 0"],
+          ["com","-- BOM 라인 (자기참조 계층 구조)"],
+          ["com","-- 전개 공식: expanded_qty(n) = expanded_qty(n-1) × qty_per"],
+          ["com","-- make_buy: E=Engineering(설계), EP=Purchased(구매), SC=Sub-Contract"],
+          ["sql","CREATE TABLE bom_line ("],
+          ["sql","  id             BIGINT  PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  bom_id         BIGINT  NOT NULL REFERENCES bom_header(bom_id),"],
+          ["sql","  parent_id      BIGINT  REFERENCES bom_line(id),"],
+          ["sql","  component_no   TEXT    NOT NULL,"],
+          ["sql","  component_name TEXT    NOT NULL,"],
+          ["sql","  qty_per        DECIMAL NOT NULL CHECK (qty_per > 0),"],
+          ["sql","  make_buy       TEXT    NOT NULL"],
+          ["sql","               CHECK (make_buy IN ('E','EP','SC'))"],
           ["sql",");"],
-          ["com","-- 루트 카테고리 조회 partial index"],
-          ["sql","CREATE INDEX idx_cat_root ON categories(id) WHERE parent_id IS NULL;"],
-          ["com","-- 자식 조회 covering index (WITH RECURSIVE JOIN 가속)"],
-          ["sql","CREATE INDEX idx_cat_parent ON categories(parent_id, id);"],
+          ["com","-- WITH RECURSIVE BOM 다단계 전개"],
+          ["sql","WITH RECURSIVE BomExpand AS ("],
+          ["sql","  SELECT id, component_no, qty_per AS expanded_qty, 0 AS depth"],
+          ["sql","  FROM   bom_line WHERE parent_id IS NULL AND bom_id = :bid"],
+          ["sql","  UNION ALL"],
+          ["sql","  SELECT b.id, b.component_no,"],
+          ["sql","         be.expanded_qty * b.qty_per,  -- levels(n)=levels(n-1)*qty"],
+          ["sql","         be.depth + 1"],
+          ["sql","  FROM   bom_line b"],
+          ["sql","  JOIN   BomExpand be ON b.parent_id = be.id"],
+          ["sql",")"],
+          ["sql","SELECT * FROM BomExpand ORDER BY depth, component_no;"],
         ]},
-      { name:"inventory", x:760, y:40, badge:"5 cols",
+      { name:"component_master", x:40, y:310, badge:"5 cols",
         cols:[
-          {n:"product_id",t:"UUID",fk:"products",nn:1},
-          {n:"warehouse_id",t:"BIGINT",fk:"warehouses",nn:1},
-          {n:"qty_available",t:"INT",nn:1},
-          {n:"qty_reserved",t:"INT",nn:1},
-          {n:"updated_at",t:"TIMESTAMPTZ",nn:1},
+          {n:"component_no",t:"TEXT",pk:1,nn:1},
+          {n:"component_name",t:"TEXT",nn:1},
+          {n:"make_buy",t:"TEXT",nn:1},
+          {n:"unit",t:"TEXT",nn:1},
+          {n:"spec_json",t:"TEXT"},
         ],
         ddl:[
-          ["com","-- 재고 (창고별 가용/예약 수량 분리 관리)"],
-          ["sql","CREATE TABLE inventory ("],
-          ["sql","  product_id   UUID   NOT NULL REFERENCES products(id),"],
-          ["sql","  warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),"],
-          ["sql","  qty_available INT NOT NULL DEFAULT 0 CHECK (qty_available >= 0),"],
-          ["sql","  qty_reserved  INT NOT NULL DEFAULT 0 CHECK (qty_reserved >= 0),"],
-          ["sql","  updated_at   TIMESTAMPTZ NOT NULL DEFAULT now(),"],
-          ["sql","  PRIMARY KEY (product_id, warehouse_id)"],
-          ["sql",");"],
-          ["com","-- 재고 예약: SELECT ... FOR UPDATE (비관적 잠금)"],
-          ["com","-- qty_available - qty_reserved = 실제 판매 가능 수량"],
-        ]},
-      { name:"warehouses", x:760, y:280, badge:"4 cols",
-        cols:[
-          {n:"id",t:"BIGINT",pk:1,nn:1},
-          {n:"code",t:"TEXT",nn:1},
-          {n:"region",t:"TEXT",nn:1},
-          {n:"active",t:"BOOLEAN",nn:1},
-        ],
-        ddl:[
-          ["com","-- 창고 마스터"],
-          ["sql","CREATE TABLE warehouses ("],
-          ["sql","  id     BIGSERIAL PRIMARY KEY,"],
-          ["sql","  code   TEXT NOT NULL UNIQUE,"],
-          ["sql","  region TEXT NOT NULL,"],
-          ["sql","  active BOOLEAN NOT NULL DEFAULT true"],
-          ["sql",");"],
-        ]},
-      { name:"orders", x:40, y:300, badge:"7 cols",
-        cols:[
-          {n:"id",t:"UUID",pk:1,nn:1},
-          {n:"customer_id",t:"UUID",fk:"customers",nn:1},
-          {n:"status",t:"TEXT",nn:1},
-          {n:"total_amount",t:"NUMERIC",nn:1},
-          {n:"currency",t:"CHAR",nn:1},
-          {n:"placed_at",t:"TIMESTAMPTZ",nn:1},
-          {n:"outbox_seq",t:"BIGINT"},
-        ],
-        ddl:[
-          ["com","-- 주문 헤더 (RANGE 파티셔닝: placed_at 월별)"],
-          ["sql","CREATE TABLE orders ("],
-          ["sql","  id           UUID NOT NULL DEFAULT gen_random_uuid(),"],
-          ["sql","  customer_id  UUID NOT NULL REFERENCES customers(id),"],
-          ["sql","  status       TEXT NOT NULL DEFAULT 'PENDING'"],
-          ["sql","               CHECK (status IN ('PENDING','CONFIRMED',"],
-          ["sql","                 'PACKED','SHIPPED','DELIVERED','CANCELLED')),"],
-          ["sql","  total_amount NUMERIC(14,2) NOT NULL CHECK (total_amount >= 0),"],
-          ["sql","  currency     CHAR(3) NOT NULL DEFAULT 'KRW',"],
-          ["sql","  placed_at    TIMESTAMPTZ NOT NULL DEFAULT now(),"],
-          ["sql","  outbox_seq   BIGINT,           -- Outbox 이벤트 참조"],
-          ["sql","  PRIMARY KEY (id, placed_at)    -- 파티션 키 포함 복합 PK"],
-          ["sql",") PARTITION BY RANGE (placed_at);"],
-          ["com","-- 월별 파티션 예시"],
-          ["sql","CREATE TABLE orders_2025_06"],
-          ["sql","  PARTITION OF orders"],
-          ["sql","  FOR VALUES FROM ('2025-06-01') TO ('2025-07-01');"],
-          ["com","-- 고객별 주문 이력 (파티션 pruning + 최신순)"],
-          ["sql","CREATE INDEX idx_orders_cust ON orders(customer_id, placed_at DESC);"],
-        ]},
-      { name:"order_items", x:40, y:560, badge:"6 cols",
-        cols:[
-          {n:"id",t:"UUID",pk:1,nn:1},
-          {n:"order_id",t:"UUID",fk:"orders",nn:1},
-          {n:"product_id",t:"UUID",fk:"products",nn:1},
-          {n:"qty",t:"INT",nn:1},
-          {n:"unit_price",t:"NUMERIC",nn:1},
-          {n:"status",t:"TEXT",nn:1},
-        ],
-        ddl:[
-          ["com","-- 주문 라인 아이템 (상태머신: PENDING->RESERVED->SHIPPED->DELIVERED)"],
-          ["sql","CREATE TABLE order_items ("],
-          ["sql","  id         UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  order_id   UUID NOT NULL,        -- REFERENCES orders(id, placed_at)"],
-          ["sql","  product_id UUID NOT NULL REFERENCES products(id),"],
-          ["sql","  qty        INT NOT NULL CHECK (qty > 0),"],
-          ["sql","  unit_price NUMERIC(14,2) NOT NULL,"],
-          ["sql","  status     TEXT NOT NULL DEFAULT 'PENDING'"],
-          ["sql","             CHECK (status IN ('PENDING','RESERVED',"],
-          ["sql","               'PACKED','SHIPPED','DELIVERED','CANCELLED'))"],
-          ["sql",");"],
-          ["com","-- 주문별 라인 목록"],
-          ["sql","CREATE INDEX idx_oi_order ON order_items(order_id);"],
-        ]},
-      { name:"payments", x:400, y:560, badge:"6 cols",
-        cols:[
-          {n:"id",t:"UUID",pk:1,nn:1},
-          {n:"order_id",t:"UUID",fk:"orders",nn:1},
-          {n:"method",t:"TEXT",nn:1},
-          {n:"amount",t:"NUMERIC",nn:1},
-          {n:"status",t:"TEXT",nn:1},
-          {n:"paid_at",t:"TIMESTAMPTZ"},
-        ],
-        ddl:[
-          ["com","-- 결제 (1주문 1결제 원칙, 실패시 재시도 별행)"],
-          ["sql","CREATE TABLE payments ("],
-          ["sql","  id       UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  order_id UUID NOT NULL REFERENCES orders(id),"],
-          ["sql","  method   TEXT NOT NULL"],
-          ["sql","           CHECK (method IN ('card','bank','point','coupon')),"],
-          ["sql","  amount   NUMERIC(14,2) NOT NULL,"],
-          ["sql","  status   TEXT NOT NULL DEFAULT 'PENDING'"],
-          ["sql","           CHECK (status IN ('PENDING','PAID','FAILED','REFUNDED')),"],
-          ["sql","  paid_at  TIMESTAMPTZ"],
-          ["sql",");"],
-          ["com","-- 정산 배치: 날짜별 결제 집계"],
-          ["sql","CREATE INDEX idx_pay_paid_at ON payments(paid_at) WHERE status = 'PAID';"],
-        ]},
-      { name:"shipments", x:760, y:560, badge:"6 cols",
-        cols:[
-          {n:"id",t:"UUID",pk:1,nn:1},
-          {n:"order_id",t:"UUID",fk:"orders",nn:1},
-          {n:"warehouse_id",t:"BIGINT",fk:"warehouses",nn:1},
-          {n:"tracking_no",t:"TEXT"},
-          {n:"status",t:"TEXT",nn:1},
-          {n:"estimated_at",t:"TIMESTAMPTZ"},
-        ],
-        ddl:[
-          ["com","-- 배송 (창고 출발 -> 배송중 -> 완료)"],
-          ["sql","CREATE TABLE shipments ("],
-          ["sql","  id           UUID PRIMARY KEY DEFAULT gen_random_uuid(),"],
-          ["sql","  order_id     UUID NOT NULL REFERENCES orders(id),"],
-          ["sql","  warehouse_id BIGINT NOT NULL REFERENCES warehouses(id),"],
-          ["sql","  tracking_no  TEXT,"],
-          ["sql","  status       TEXT NOT NULL DEFAULT 'PREPARING'"],
-          ["sql","               CHECK (status IN ('PREPARING','IN_TRANSIT','DELIVERED','RETURNED')),"],
-          ["sql","  estimated_at TIMESTAMPTZ"],
+          ["com","-- 부품 마스터 (3NF: bom_line에서 부품 속성 분리)"],
+          ["com","-- spec_json: 전압·용량·규격 등 가변 속성"],
+          ["sql","CREATE TABLE component_master ("],
+          ["sql","  component_no   TEXT PRIMARY KEY,"],
+          ["sql","  component_name TEXT NOT NULL,"],
+          ["sql","  make_buy       TEXT NOT NULL"],
+          ["sql","               CHECK (make_buy IN ('E','EP','SC')),"],
+          ["sql","  unit           TEXT NOT NULL DEFAULT 'EA',"],
+          ["sql","  spec_json      TEXT  -- JSON: voltage, capacity, grade"],
           ["sql",");"],
         ]},
-      { name:"order_outbox", x:400, y:820, badge:"6 cols",
+      { name:"bom_conversion_log", x:760, y:310, badge:"6 cols",
         cols:[
           {n:"id",t:"BIGINT",pk:1,nn:1},
-          {n:"aggregate_id",t:"UUID",nn:1},
-          {n:"event_type",t:"TEXT",nn:1},
-          {n:"payload",t:"JSONB",nn:1},
-          {n:"published",t:"BOOLEAN",nn:1},
-          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
+          {n:"src_bom_id",t:"BIGINT",fk:"bom_header",nn:1},
+          {n:"dst_bom_id",t:"BIGINT",fk:"bom_header",nn:1},
+          {n:"converted_at",t:"DATE",nn:1},
+          {n:"converted_by",t:"TEXT",nn:1},
+          {n:"note",t:"TEXT"},
         ],
         ddl:[
-          ["com","-- SSOT Outbox: 주문 TX와 동일 커밋 (이중 쓰기 0)"],
-          ["com","-- Debezium CDC -> Kafka -> 재고/검색/DW 팬아웃"],
-          ["sql","CREATE TABLE order_outbox ("],
-          ["sql","  id           BIGSERIAL PRIMARY KEY,"],
-          ["sql","  aggregate_id UUID NOT NULL,   -- order_id"],
-          ["sql","  event_type   TEXT NOT NULL,   -- OrderPlaced|OrderConfirmed|OrderCancelled"],
-          ["sql","  payload      JSONB NOT NULL,"],
-          ["sql","  published    BOOLEAN NOT NULL DEFAULT false,"],
-          ["sql","  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()"],
+          ["com","-- EBOM→MBOM 변환 이력 로그 (VBA 변환 엔진 실행 기록)"],
+          ["sql","CREATE TABLE bom_conversion_log ("],
+          ["sql","  id           BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  src_bom_id   BIGINT NOT NULL REFERENCES bom_header(bom_id),  -- EBOM"],
+          ["sql","  dst_bom_id   BIGINT NOT NULL REFERENCES bom_header(bom_id),  -- MBOM"],
+          ["sql","  converted_at DATE   NOT NULL DEFAULT CURRENT_DATE,"],
+          ["sql","  converted_by TEXT   NOT NULL,  -- 실행자"],
+          ["sql","  note         TEXT"],
           ["sql",");"],
-          ["com","-- Debezium CDC 폴링: 미발행 이벤트 전용 partial index"],
-          ["sql","CREATE INDEX idx_outbox_unpub ON order_outbox(created_at)"],
-          ["sql","  WHERE published = false;"],
+          ["com","-- 변환 알고리즘: expanded_qty = levels(n-1) * qty_per (VBA)"],
+          ["com","-- 중복 방지: CountIfs(dst_bom_id, src_bom_id) > 0 → 차단"],
+        ]},
+      { name:"bom_duplicate_check", x:760, y:100, badge:"4 cols",
+        cols:[
+          {n:"id",t:"BIGINT",pk:1,nn:1},
+          {n:"bom_id",t:"BIGINT",fk:"bom_header",nn:1},
+          {n:"component_no",t:"TEXT",nn:1},
+          {n:"duplicate_flag",t:"BOOLEAN",nn:1},
+        ],
+        ddl:[
+          ["com","-- 중복 부품 검증 테이블 (CountIfs 로직의 DB 구현)"],
+          ["com","-- VBA: If CountIfs(range, component_no) > 1 → duplicate_flag = TRUE"],
+          ["sql","CREATE TABLE bom_duplicate_check ("],
+          ["sql","  id             BIGINT  PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  bom_id         BIGINT  NOT NULL REFERENCES bom_header(bom_id),"],
+          ["sql","  component_no   TEXT    NOT NULL,"],
+          ["sql","  duplicate_flag BOOLEAN NOT NULL DEFAULT FALSE"],
+          ["sql",");"],
+          ["com","-- 중복 조회 partial index"],
+          ["sql","CREATE INDEX idx_dup_flag ON bom_duplicate_check(bom_id)"],
+          ["sql","  WHERE duplicate_flag = TRUE;"],
         ]},
     ],
     rels:[
-      ["orders","customer_id","customers","id","N:1"],
-      ["order_items","order_id","orders","id","N:1"],
-      ["order_items","product_id","products","id","N:1"],
-      ["products","category_id","categories","id","N:1"],
-      ["categories","parent_id","categories","id","N:1"],
-      ["inventory","product_id","products","id","N:1"],
-      ["inventory","warehouse_id","warehouses","id","N:1"],
-      ["payments","order_id","orders","id","N:1"],
-      ["shipments","order_id","orders","id","N:1"],
-      ["shipments","warehouse_id","warehouses","id","N:1"],
+      ["bom_header","product_key","product_master","product_key","N:1"],
+      ["bom_line","bom_id","bom_header","bom_id","N:1"],
+      ["bom_line","parent_id","bom_line","id","N:1"],
+      ["bom_line","component_no","component_master","component_no","N:1"],
+      ["bom_conversion_log","src_bom_id","bom_header","bom_id","N:1"],
+      ["bom_conversion_log","dst_bom_id","bom_header","bom_id","N:1"],
+      ["bom_duplicate_check","bom_id","bom_header","bom_id","N:1"],
     ],
-    defaultTable:"orders",
+    defaultTable:"bom_line",
   },
 };
 
@@ -1119,7 +1066,7 @@ function renderDDL(ddl){
 /* ============================================================
    VIEW 1: ERD ENGINE
    ============================================================ */
-let curModel='social';
+let curModel='solaredge';
 let curTable=null;
 let pan={x:40,y:30,k:1};
 
@@ -1388,39 +1335,39 @@ let erdAutoResumeTimer=null;
 /* ============================================================
    CDC FAKE LOG STREAMING
    ============================================================ */
-const CDC_EVENTS_SOCIAL=[
-  ['ins','posts','INSERT posts SET id=uuid, author_id=u42, visibility=<val>public</val>'],
-  ['upd','users','UPDATE users SET status=<val>active</val> WHERE id=u91'],
-  ['ins','likes','INSERT likes SET user_id=u07, post_id=p33'],
-  ['ins','feed_outbox','INSERT feed_outbox event_type=<val>PostCreated</val> published=false'],
-  ['cdc','WAL','CDC: outbox row id=8847 -> Debezium capture -> topic domain.events'],
-  ['upd','posts','UPDATE posts SET like_count=like_count+1 WHERE id=p33'],
-  ['ins','notifications','INSERT notifications kind=<val>like</val> recipient_id=u91'],
-  ['ins','comments','INSERT comments post_id=p33, author_id=u14, body=...'],
-  ['cdc','Kafka','Kafka produce: domain.events partition=3 offset=19204'],
-  ['upd','feed_outbox','UPDATE feed_outbox SET published=true WHERE id=8847'],
-  ['ins','follows','INSERT follows follower_id=u55 followee_id=u91'],
-  ['cdc','Redis','-> Redis HSET feed:u91 projection update'],
-  ['cdc','ES','-> Elasticsearch index posts/_doc/p33 upsert'],
-  ['ins','hashtags','INSERT hashtags tag=<val>#데이터엔지니어링</val> ON CONFLICT UPDATE'],
-  ['upd','users','UPDATE users SET bio=... WHERE id=u55'],
+const CDC_EVENTS_SOLAREDGE=[
+  ['ins','work_order','INSERT work_order wo_no=<val>23P30027KMDA1</val> status=<val>OPEN</val> plan_qty=280'],
+  ['ins','production_result','INSERT production_result wo_no=23P30027KMDA1 process=<val>Cell검사</val> prod_qty=615 input_mh=590'],
+  ['upd','work_order','UPDATE work_order SET cum_prod_qty=cum_prod_qty+615 WHERE wo_no=23P30027KMDA1'],
+  ['ins','production_result','INSERT production_result process=<val>Module적층</val> prod_qty=15 input_mh=1430'],
+  ['ins','attendance_raw','INSERT attendance_raw rec_date=<val>2023-11-20</val> line=MD direct_cnt=32 break_min=580'],
+  ['ins','inspection_result','INSERT inspection_result sn=<val>KMD-0042</val> process=OCV/IR result=<val>PASS</val>'],
+  ['upd','work_order','UPDATE work_order SET status=<val>IN_PROGRESS</val> WHERE wo_no=23P30027KMDA1'],
+  ['ins','defect_history','INSERT defect_history defect_code=<val>DC01</val> sn=KMD-0071 rework_flag=false'],
+  ['ins','production_result','INSERT production_result process=<val>Module조립</val> prod_qty=15 input_mh=950'],
+  ['upd','work_order','UPDATE work_order SET cum_prod_qty=cum_prod_qty+15 WHERE wo_no=23P30027KMDA1'],
+  ['ins','inspection_result','INSERT inspection_result process=<val>ELT</val> sn=KMD-0042 result=<val>PASS</val>'],
+  ['upd','work_order','UPDATE work_order SET status=<val>COMPLETED</val> WHERE wo_no=23P30073KMDL2'],
+  ['ins','production_result','INSERT production_result process=<val>포장</val> prod_qty=4 lost_mh=320 lost_desc=<val>자재대기</val>'],
+  ['ins','defect_history','INSERT defect_history defect_code=<val>DA01</val> defect_qty=1 rework_flag=true'],
+  ['upd','attendance_raw','UPDATE attendance_raw SET material_min=900 WHERE rec_date=2023-11-20'],
 ];
-const CDC_EVENTS_ECOMM=[
-  ['ins','orders','INSERT orders customer_id=c08, status=<val>PENDING</val>, total=89000'],
-  ['ins','order_items','INSERT order_items order_id=o91, product_id=p22, qty=2'],
-  ['ins','order_outbox','INSERT order_outbox event_type=<val>OrderPlaced</val> published=false'],
-  ['cdc','WAL','CDC: outbox row id=5521 -> Debezium -> topic order.events'],
-  ['upd','inventory','UPDATE inventory SET qty_reserved=qty_reserved+2 WHERE product_id=p22'],
-  ['upd','order_items','UPDATE order_items SET status=<val>RESERVED</val> WHERE id=oi44'],
-  ['upd','orders','UPDATE orders SET status=<val>CONFIRMED</val> WHERE id=o91'],
-  ['cdc','Kafka','Kafka produce: order.events partition=1 offset=7741'],
-  ['ins','payments','INSERT payments order_id=o91, method=<val>card</val>, status=<val>PENDING</val>'],
-  ['upd','payments','UPDATE payments SET status=<val>PAID</val>, paid_at=now() WHERE id=pay7'],
-  ['ins','shipments','INSERT shipments order_id=o91, warehouse_id=2, status=<val>PREPARING</val>'],
-  ['cdc','BigQuery','-> BigQuery stream insert: orders table'],
-  ['upd','inventory','UPDATE inventory SET qty_available=qty_available-2'],
-  ['upd','order_outbox','UPDATE order_outbox SET published=true WHERE id=5521'],
-  ['cdc','Redis','-> Redis DEL cart:c08 (invalidate)'],
+const CDC_EVENTS_EBOM=[
+  ['ins','bom_header','INSERT bom_header product_key=<val>MM001</val> bom_type=<val>EBOM</val> version=1'],
+  ['ins','bom_line','INSERT bom_line component_no=<val>KMD255166E222F1</val> qty_per=1 make_buy=<val>E</val>'],
+  ['ins','bom_line','INSERT bom_line parent_id=1 component_no=<val>CELL-CRP-001</val> qty_per=46 make_buy=<val>EP</val>'],
+  ['ins','bom_line','INSERT bom_line parent_id=1 component_no=<val>TRAY-ASSY-001</val> qty_per=46 make_buy=<val>EP</val>'],
+  ['ins','bom_duplicate_check','INSERT bom_duplicate_check component_no=CELL-CRP-001 duplicate_flag=<val>FALSE</val>'],
+  ['ins','bom_header','INSERT bom_header product_key=MM001 bom_type=<val>MBOM</val> version=1'],
+  ['ins','bom_conversion_log','INSERT bom_conversion_log src_bom_id=1 dst_bom_id=2 converted_by=<val>박양하</val>'],
+  ['upd','bom_line','UPDATE bom_line SET qty_per=<val>46</val> expanded_qty=46 depth=1 WHERE id=2'],
+  ['ins','bom_line','INSERT bom_line parent_id=2 component_no=<val>BUSBAR-001</val> qty_per=2 make_buy=<val>EP</val>'],
+  ['cdc','VBA','VBA: levels(2) = levels(1) × qty_per = 46 × 2 = 92 (expanded)'],
+  ['upd','bom_header','UPDATE bom_header SET version=<val>2</val> bom_type=MBOM WHERE product_key=MM001'],
+  ['ins','bom_duplicate_check','INSERT bom_duplicate_check component_no=BUSBAR-001 duplicate_flag=<val>FALSE</val>'],
+  ['cdc','VBA','CountIfs 중복 차단: component_no=BUSBAR-001 count=1 → OK'],
+  ['ins','bom_conversion_log','INSERT bom_conversion_log src_bom_id=3 dst_bom_id=4 converted_by=박양하'],
+  ['upd','product_master','UPDATE product_master SET version=<val>2</val> WHERE product_key=MM001 -- 음성 Cell'],
 ];
 
 let cdcLogInterval=null, cdcEvtIdx=0, cdcEvtCountLocal=0, cdcQpsSmooth=0;
@@ -1455,7 +1402,7 @@ function appendCdcLine(type,tbl,msg){
   const tagCls=cdcTagClass(type);
   const tagLbl=cdcTagLabel(type);
   const msgHtml=msg.replace(/<val>(.*?)<\/val>/g,'<span class="val">$1</span>')
-                    .replace(/\b(posts|users|likes|comments|follows|hashtags|post_hashtags|feed_outbox|orders|order_items|payments|shipments|inventory|warehouses|customers|products|categories|order_outbox)\b/g,'<span class="tbl">$1</span>');
+                    .replace(/\b(work_order|production_result|attendance_raw|defect_history|defect_code|inspection_result|purchase_order|customer|product_master|bom_header|bom_line|component_master|bom_conversion_log|bom_duplicate_check)\b/g,'<span class="tbl">$1</span>');
   line.innerHTML='<span class="cdc-ts">'+ts+'</span><span class="cdc-tag '+tagCls+'">'+tagLbl+'</span><span class="cdc-msg">'+msgHtml+'</span>';
   body.appendChild(line);
   // 최대 CDC_MAX_LINES 유지, 오래된 줄 페이드 후 제거
@@ -1470,7 +1417,7 @@ function appendCdcLine(type,tbl,msg){
   cdcEvtCountLocal++;
 }
 function getCdcEvents(){
-  return curModel==='social'?CDC_EVENTS_SOCIAL:CDC_EVENTS_ECOMM;
+  return curModel==='solaredge'?CDC_EVENTS_SOLAREDGE:CDC_EVENTS_EBOM;
 }
 function fireCdcEvent(){
   const evts=getCdcEvents();
@@ -1510,15 +1457,15 @@ let flowLayoutDone=false;
 let flowPrevTs=0;
 
 const FLOW_NODES=[
-  {id:'app',cls:'src',x:.07,y:.42,t:'App / TX',s:'단일 트랜잭션 BEGIN',ic:'&#9881;'},
-  {id:'biz',cls:'src',x:.07,y:.14,t:'business table',s:'orders, posts ...',ic:'&#9636;',pill:'COMMIT'},
-  {id:'outbox',cls:'outbox',x:.28,y:.42,t:'outbox',s:'동일 TX에 이벤트 1행 append',ic:'&#10548;',pill:'same TX'},
-  {id:'cdc',cls:'cdc',x:.49,y:.42,t:'Debezium CDC',s:'WAL / binlog tail',ic:'&#10236;',pill:'log-based'},
-  {id:'kafka',cls:'kafka',x:.67,y:.42,t:'Kafka',s:'topic: domain.events',ic:'&#8803;',pill:'partitioned'},
-  {id:'redis',cls:'proj',x:.88,y:.12,t:'Redis',s:'read cache projection',ic:'&#9670;'},
-  {id:'es',cls:'proj',x:.88,y:.42,t:'Elasticsearch',s:'search index',ic:'&#9670;'},
-  {id:'bq',cls:'proj',x:.88,y:.72,t:'BigQuery',s:'analytics warehouse',ic:'&#9670;'},
-  {id:'bad',cls:'bad',x:.28,y:.80,t:'x dual write',s:'DB+cache+Kafka 직접쓰기 - 비원자',ic:'&#10007;'},
+  {id:'app',cls:'src',x:.07,y:.42,t:'VBA 입력 프로그램',s:'생산실적·불량·공수 입력',ic:'&#9881;'},
+  {id:'biz',cls:'src',x:.07,y:.14,t:'원천 DB 테이블',s:'work_order, production_result ...',ic:'&#9636;',pill:'정규화 저장'},
+  {id:'outbox',cls:'outbox',x:.28,y:.42,t:'SharePoint 서버',s:'실시간 동기화 저장',ic:'&#10548;',pill:'실시간'},
+  {id:'cdc',cls:'cdc',x:.49,y:.42,t:'Power Query',s:'바이너리 연동 / 변환',ic:'&#10236;',pill:'ETL'},
+  {id:'kafka',cls:'kafka',x:.67,y:.42,t:'Power BI 데이터셋',s:'집계·KPI 모델',ic:'&#8803;',pill:'SSOT'},
+  {id:'redis',cls:'proj',x:.88,y:.12,t:'생산현황 뷰',s:'W/O별 실적 대시보드',ic:'&#9670;'},
+  {id:'es',cls:'proj',x:.88,y:.42,t:'불량현황 뷰',s:'공정별 불량·S/N 추적',ic:'&#9670;'},
+  {id:'bq',cls:'proj',x:.88,y:.72,t:'KPI 뷰',s:'공수·OEE·생산성 분석',ic:'&#9670;'},
+  {id:'bad',cls:'bad',x:.28,y:.80,t:'x 엑셀 파편화',s:'파일별 분산 관리 - 집계 오류·중복',ic:'&#10007;'},
 ];
 const FLOW_EDGES=[
   ['app','outbox'],['biz','outbox'],['outbox','cdc'],['cdc','kafka'],
@@ -1667,25 +1614,25 @@ window.addEventListener('resize',()=>{if(document.getElementById('view-arch').cl
    ============================================================ */
 const smSvg=document.getElementById('smSvg');
 const SM_STATES=[
-  {id:'PENDING',x:60,y:30,c:'#3fb6ff'},
-  {id:'RESERVED',x:230,y:30,c:'#a78bfa'},
-  {id:'SHIPPED',x:230,y:160,c:'#ffcb47'},
-  {id:'DELIVERED',x:60,y:290,c:'#00e0a4'},
-  {id:'FAIL_STOCK',x:420,y:30,c:'#ff5a4d'},
+  {id:'OPEN',x:60,y:30,c:'#3fb6ff'},
+  {id:'IN_PROGRESS',x:230,y:30,c:'#a78bfa'},
+  {id:'COMPLETED',x:230,y:160,c:'#00e0a4'},
+  {id:'CLOSED',x:60,y:290,c:'#ffcb47'},
+  {id:'HOLD',x:420,y:30,c:'#ff5a4d'},
   {id:'CANCELLED',x:420,y:160,c:'#ff5a4d'},
 ];
 const SM_W=130, SM_H=46;
 const SM_EDGES=[
-  ['PENDING','RESERVED','재고 확보'],
-  ['RESERVED','SHIPPED','출고 처리'],
-  ['SHIPPED','DELIVERED','배송 완료'],
-  ['PENDING','FAIL_STOCK','재고 부족'],
-  ['RESERVED','CANCELLED','취소 요청'],
-  ['FAIL_STOCK','PENDING','backoff&#8634;'],
-  ['CANCELLED','PENDING','재시도&#8634;'],
+  ['OPEN','IN_PROGRESS','생산 시작'],
+  ['IN_PROGRESS','COMPLETED','목표 달성'],
+  ['COMPLETED','CLOSED','최종 확정'],
+  ['OPEN','HOLD','자재 부족'],
+  ['IN_PROGRESS','CANCELLED','W/O 취소'],
+  ['HOLD','OPEN','자재 입고&#8634;'],
+  ['CANCELLED','OPEN','재개&#8634;'],
 ];
-let smCur='PENDING', smRetry=0;
-const smOrder=['PENDING','RESERVED','SHIPPED','DELIVERED'];
+let smCur='OPEN', smRetry=0;
+const smOrder=['OPEN','IN_PROGRESS','COMPLETED','CLOSED'];
 
 function smPos(id){const s=SM_STATES.find(x=>x.id===id);return {cx:s.x+SM_W/2,cy:s.y+SM_H/2,...s};}
 function drawSM(){
@@ -1721,11 +1668,11 @@ function smEdge(box,tx,ty){
 function smUpdateInfo(){
   document.getElementById('smState').textContent=smCur;
   document.getElementById('smRetry').textContent=smRetry;
-  const due = (smCur==='FAIL_STOCK'||smCur==='CANCELLED')? '+'+Math.pow(2,smRetry)+'s' : '&#8212;';
+  const due = (smCur==='HOLD'||smCur==='CANCELLED')? '+'+Math.pow(2,smRetry)+'s' : '&#8212;';
   document.getElementById('smNext').innerHTML=due;
 }
 document.getElementById('smStep').onclick=()=>{
-  if(smCur==='FAIL_STOCK'||smCur==='CANCELLED'){smCur='PENDING';}
+  if(smCur==='HOLD'||smCur==='CANCELLED'){smCur='OPEN';}
   else{
     const i=smOrder.indexOf(smCur);
     if(i>=0 && i<smOrder.length-1) smCur=smOrder[i+1];
@@ -1733,41 +1680,44 @@ document.getElementById('smStep').onclick=()=>{
   drawSM();smUpdateInfo();
 };
 document.getElementById('smFail').onclick=()=>{
-  if(smCur==='PENDING'){smCur='FAIL_STOCK';smRetry++;}
-  else if(smCur==='RESERVED'){smCur='CANCELLED';smRetry++;}
+  if(smCur==='OPEN'){smCur='HOLD';smRetry++;}
+  else if(smCur==='IN_PROGRESS'){smCur='CANCELLED';smRetry++;}
   drawSM();smUpdateInfo();
 };
-document.getElementById('smReset').onclick=()=>{smCur='PENDING';smRetry=0;drawSM();smUpdateInfo();};
+document.getElementById('smReset').onclick=()=>{smCur='OPEN';smRetry=0;drawSM();smUpdateInfo();};
 
 /* ============================================================
    VIEW 3b: RECURSIVE CTE TREE (카테고리 계층)
    ============================================================ */
 const RECSQL=[
-  ["com","-- 카테고리 계층 전개: anchor(루트) + 재귀 멤버"],
-  ["sql","WITH RECURSIVE CategoryTree AS ("],
-  ["sql","  SELECT id, name, parent_id, 0 AS depth"],
-  ["sql","  FROM   categories"],
-  ["sql","  WHERE  parent_id IS NULL              -- anchor"],
+  ["com","-- BOM 다단계 전개: anchor(루트 부품) + 재귀 멤버"],
+  ["com","-- 알고리즘: expanded_qty(n) = expanded_qty(n-1) × qty_per"],
+  ["sql","WITH RECURSIVE BomExpand AS ("],
+  ["sql","  SELECT id, component_no, qty_per AS expanded_qty, 0 AS depth"],
+  ["sql","  FROM   bom_line"],
+  ["sql","  WHERE  parent_id IS NULL AND bom_id = :bid  -- anchor"],
   ["sql","  UNION ALL"],
-  ["sql","  SELECT c.id, c.name, c.parent_id, ct.depth + 1"],
-  ["sql","  FROM   categories c"],
-  ["sql","  JOIN   CategoryTree ct ON c.parent_id = ct.id"],
+  ["sql","  SELECT b.id, b.component_no,"],
+  ["sql","         be.expanded_qty * b.qty_per,  -- levels(n)=levels(n-1)*qty"],
+  ["sql","         be.depth + 1"],
+  ["sql","  FROM   bom_line b"],
+  ["sql","  JOIN   BomExpand be ON b.parent_id = be.id"],
   ["sql",")"],
-  ["sql","SELECT * FROM CategoryTree ORDER BY depth, id;"],
+  ["sql","SELECT * FROM BomExpand ORDER BY depth, component_no;"],
 ];
 document.getElementById('recSql').innerHTML = RECSQL.map((r,i)=>'<span class="ln">'+(i+1)+'</span>'+hi(r[1])).join('\n');
 
 const recSvg=document.getElementById('recSvg');
 const REC_TREE=[
-  {id:1,name:'전체',mgr:null,depth:0,x:280,y:34},
-  {id:2,name:'패션',mgr:1,depth:1,x:140,y:110},
-  {id:3,name:'가전',mgr:1,depth:1,x:420,y:110},
-  {id:4,name:'의류',mgr:2,depth:2,x:70,y:190},
-  {id:5,name:'신발',mgr:2,depth:2,x:210,y:190},
-  {id:6,name:'TV',mgr:3,depth:2,x:420,y:190},
-  {id:7,name:'티셔츠',mgr:4,depth:3,x:70,y:262},
-  {id:8,name:'운동화',mgr:5,depth:3,x:210,y:262},
-  {id:9,name:'OLED',mgr:6,depth:3,x:420,y:262},
+  {id:1,name:'KMD255166E222F1',mgr:null,depth:0,x:280,y:34},
+  {id:2,name:'CELL-CRP-046',mgr:1,depth:1,x:140,y:110},
+  {id:3,name:'TRAY-ASSY-046',mgr:1,depth:1,x:420,y:110},
+  {id:4,name:'CELL-CRP',mgr:2,depth:2,x:70,y:190},
+  {id:5,name:'BUSBAR-PLATE',mgr:2,depth:2,x:210,y:190},
+  {id:6,name:'TRAY-FRAME',mgr:3,depth:2,x:420,y:190},
+  {id:7,name:'CRP-CELL-RAW',mgr:4,depth:3,x:70,y:262},
+  {id:8,name:'BUSBAR-CU',mgr:5,depth:3,x:210,y:262},
+  {id:9,name:'FRAME-AL',mgr:6,depth:3,x:420,y:262},
 ];
 let recShown=0;
 function drawRec(){

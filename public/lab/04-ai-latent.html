@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>박양하 · vault semantic map (BGE-M3 → UMAP → HDBSCAN)</title>
+<title>박양하 · 볼트 의미지도 — 학습을 구조로 (BGE-M3 → UMAP → HDBSCAN)</title>
 <style>
 /* ───────────────────────── reset / tokens ───────────────────────── */
 :root{
@@ -278,7 +278,7 @@ footer .links{display:flex;gap:20px;flex-wrap:wrap}
     <!-- ───────── LATENT SPACE ───────── -->
     <section class="card" id="latentCard">
       <div class="card-h">
-        <div class="tt"><span class="sq"></span> semantic_map.py — Obsidian vault 의미지도</div>
+        <div class="tt"><span class="sq"></span> semantic_map.py — 학습 노트의 의미 군집화</div>
         <div>BGE-M3 1024d → UMAP 2d · HDBSCAN</div>
       </div>
       <div id="latentWrap">
@@ -355,11 +355,6 @@ footer .links{display:flex;gap:20px;flex-wrap:wrap}
   <!-- ───────── footer ───────── -->
   <footer>
     <div class="who"><b>박양하</b> — 관성에 따라 일하지 않는다 · 품질과 타협하지 않는다 · 불합리를 방치하지 않는다</div>
-    <div class="links">
-      <a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a>
-      <a href="https://github.com/64etuor" target="_blank" rel="noopener">github.com/64etuor</a>
-      <a href="tel:01074481791">010-7448-1791</a>
-    </div>
   </footer>
 </div>
 
@@ -418,11 +413,11 @@ const RETRIEVE = {
    ════════════════════════════════════════════════════════════════ */
 const ANSWERS = {
   who:
-`이 지도는 비유가 아니다. 박양하가 자기 **Obsidian vault**에 직접 돌리는 [[000_System/scripts/semantic_map.py|실제 스크립트]] 의 출력이다 — **BGE-M3** 임베딩(1024d) → **UMAP** 차원축소(2d) → **HDBSCAN** 클러스터링.
+`이 지도는 비유가 아니다. 박양하가 데이터분석·SW 부트캠프 기간(2024) 축적한 학습 노트를 **Obsidian vault** 에 모아, [[000_System/scripts/semantic_map.py|실제 스크립트]] 로 돌린 출력이다 — **BGE-M3** 임베딩(1024d) → **UMAP** 차원축소(2d) → **HDBSCAN** 클러스터링.
 
-클러스터는 그의 실제 지식 도메인이다 — **제조/공정**(PFMEA·MES·IATF16949)에서 출발해 **데이터/SQL**, **AI Agent**(LLM Wiki·GraphRAG·MCP)로 확장하고, 동시에 **철학**(비트겐슈타인·들뢰즈·콰인)·**심리학**(융 개성화)·**경영전략**·**지식공학**(온톨로지·표상비용)·**의사결정**을 한 벡터공간 안에서 잇는다.
+클러스터는 그 학습의 실제 도메인 구조다 — **제조/공정**(PFMEA·MES·IATF16949)을 기반으로 **데이터/SQL**, **AI Agent**(LLM Wiki·GraphRAG·MCP)로 확장하며, 동시에 **철학**(비트겐슈타인·들뢰즈·콰인)·**심리학**(융 개성화)·**경영전략**·**지식공학**(온톨로지·표상비용)·**의사결정**을 한 벡터공간 안에서 잇는다.
 
-원칙은 셋이다 — **관성에 따라 일하지 않는다. 품질과 타협하지 않는다. 불합리를 방치하지 않는다.**`,
+학습을 흘려보내지 않고 **의미 군집으로 구조화**한 것 — 지식의 운영화다.`,
 
   meaning:
 `핵심 렌즈는 비트겐슈타인의 명제다 — [[의미는 사용이다|Philosophical Investigations §43]]. 단어의 의미는 정의가 아니라 **언어게임 안의 쓰임**에서 나온다.

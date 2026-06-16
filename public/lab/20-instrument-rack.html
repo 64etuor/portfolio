@@ -3,17 +3,15 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>박양하 · 생산원가 계측 랙 / Production Cost Rack</title>
+<title>박양하 · 원가 제1원칙 해부 보드 / OPEX −85% First-Principles Ledger</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   :root{
     --bg:#070809;
-    --rack:#15181c;          /* rack rail metal */
     --rail:#0c0e10;
-    --panel:#1c2127;         /* brushed front panel */
+    --panel:#1c2127;
     --panel2:#161a1f;
-    --panelhi:#2a313a;
     --bezel:#040506;
     --line:#262d35;
     --line2:#323b45;
@@ -25,10 +23,8 @@
     --greend:#1bd96a;
     --red:#ff4d4d;
     --cyan:#5cd8ff;
-    --vfd:#39ff9e;          /* 7-seg phosphor */
-    --vfdoff:#0c2419;
     --blue:#4f86ff;
-    --screw:#3a424b;
+    --paper2:#11151b;
   }
   html,body{height:100%}
   body{
@@ -42,23 +38,20 @@
     overflow-x:hidden;
   }
   .mono{font-family:"DM Mono","SF Mono",ui-monospace,"Cascadia Code",Menlo,monospace}
-  .seg{font-family:"DSEG7 Classic","DM Mono",ui-monospace,monospace}
 
   /* ===== rack shell ===== */
   .wrap{max-width:1500px;margin:0 auto;padding:clamp(14px,2vw,30px)}
   .rack{
     position:relative;
-    background:
-      linear-gradient(180deg,#1a1e23 0%, #0f1216 100%);
+    background:linear-gradient(180deg,#1a1e23 0%, #0f1216 100%);
     border:1px solid #2b333c;
     border-radius:14px;
     padding:clamp(10px,1.3vw,18px);
     box-shadow:0 50px 130px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.05);
   }
-  .rack::before,.rack::after{ /* the two 19" rails */
+  .rack::before,.rack::after{
     content:"";position:absolute;top:14px;bottom:14px;width:26px;
-    background:
-      linear-gradient(90deg,#0a0c0e,#22272e 40%,#14181c 60%,#0a0c0e);
+    background:linear-gradient(90deg,#0a0c0e,#22272e 40%,#14181c 60%,#0a0c0e);
     border:1px solid #2c333b;border-radius:5px;
     box-shadow:inset 0 0 8px rgba(0,0,0,.6);
   }
@@ -66,27 +59,24 @@
   .rack::after{right:14px}
   .rackinner{position:relative;margin:0 32px;display:flex;flex-direction:column;gap:11px;z-index:1}
 
-  /* rail screw holes overlay */
   .railholes{position:absolute;top:0;bottom:0;width:26px;z-index:0;display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;padding:10px 0}
   .railholes.l{left:14px} .railholes.r{right:14px}
   .rhole{width:8px;height:8px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#000,#1a1f24);box-shadow:inset 0 1px 2px rgba(0,0,0,.9),0 1px 0 rgba(255,255,255,.04)}
 
-  /* ===== generic U-module ===== */
+  /* ===== U-module ===== */
   .u{
     position:relative;
-    background:
-      linear-gradient(180deg,var(--panel) 0%,var(--panel2) 100%);
+    background:linear-gradient(180deg,var(--panel) 0%,var(--panel2) 100%);
     border:1px solid var(--line2);
     border-radius:8px;
     padding:14px 16px;
     box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 8px 22px rgba(0,0,0,.4);
   }
-  .u::before{ /* brushed metal texture */
+  .u::before{
     content:"";position:absolute;inset:0;border-radius:8px;pointer-events:none;
     background:repeating-linear-gradient(90deg,rgba(255,255,255,.014) 0 1px,transparent 1px 3px);
     mix-blend-mode:overlay;
   }
-  /* ear screws */
   .ear{position:absolute;width:11px;height:11px;border-radius:50%;
     background:radial-gradient(circle at 35% 30%,#586069,#2a3037);
     box-shadow:inset 0 0 0 1px #1b2026,0 1px 1px rgba(0,0,0,.6)}
@@ -95,14 +85,12 @@
   .ear.tl{top:7px;left:7px}.ear.tr{top:7px;right:7px}
   .ear.bl{bottom:7px;left:7px}.ear.br{bottom:7px;right:7px}
 
-  .ulabel{position:absolute;top:6px;left:50%;transform:translateX(-50%);
-    font-size:9px;letter-spacing:.32em;color:var(--muted2);text-transform:uppercase;font-weight:700}
-  .modtitle{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .modtitle{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
   .modtitle .uno{font-size:9.5px;letter-spacing:.14em;color:var(--amber);border:1px solid #4a3a12;background:#1c160a;border-radius:4px;padding:2px 7px;font-weight:800}
   .modtitle h3{font-size:13.5px;font-weight:800;letter-spacing:-.01em}
   .modtitle .sub{font-size:10px;color:var(--muted);letter-spacing:.05em;margin-left:auto;text-align:right}
 
-  /* ===== header / brand U ===== */
+  /* ===== header ===== */
   .head{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
   .logo{width:50px;height:50px;border-radius:11px;flex:0 0 auto;
     background:radial-gradient(circle at 35% 30%,#143b2c,#06120c);
@@ -121,145 +109,99 @@
   @keyframes blink{50%{opacity:.22}}
   .pill .dot.warn{background:var(--amber);box-shadow:0 0 8px var(--amber)}
 
-  /* ===== DMM (the hero) ===== */
-  .grid2{display:grid;grid-template-columns:1.55fr 1fr;gap:11px}
-  @media(max-width:1080px){.grid2{grid-template-columns:1fr}}
+  /* ===== thesis creed ===== */
+  .creed{font-size:11.5px;color:var(--muted);line-height:1.65;
+    border-left:2px solid #2c5a48;padding:3px 0 3px 12px;letter-spacing:.01em}
+  .creed b{color:var(--green);font-weight:700}
+  .creed .q{color:var(--ink);font-weight:700}
 
-  .dmm{display:grid;grid-template-columns:1fr 220px;gap:16px;align-items:stretch}
-  @media(max-width:760px){.dmm{grid-template-columns:1fr}}
+  /* ===== main two-pane ===== */
+  .board2{display:grid;grid-template-columns:1.08fr 1fr;gap:11px}
+  @media(max-width:1040px){.board2{grid-template-columns:1fr}}
 
-  .vfdpanel{
-    position:relative;border-radius:9px;padding:16px 18px 14px;
-    background:
-      linear-gradient(180deg,#03130c,#020a07);
-    border:1px solid #0b2a1e;
-    box-shadow:inset 0 0 40px rgba(0,0,0,.85), inset 0 0 0 1px rgba(57,255,138,.05);
-    overflow:hidden;
-  }
-  .vfdpanel::after{ /* glass glare */
-    content:"";position:absolute;inset:0;pointer-events:none;
-    background:linear-gradient(160deg,rgba(255,255,255,.06) 0%,transparent 30%);
-  }
-  .annun{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:6px}
-  .an{font-size:9.5px;letter-spacing:.16em;font-weight:700;color:var(--vfdoff);transition:color .2s,text-shadow .2s}
-  .an.on{color:var(--vfd);text-shadow:0 0 8px rgba(57,255,158,.7)}
-  .readout{display:flex;align-items:flex-end;justify-content:flex-end;gap:8px;min-height:78px}
-  .digits{font-family:"DM Mono",ui-monospace,monospace;font-weight:700;
-    font-size:clamp(48px,7vw,84px);line-height:.9;letter-spacing:.02em;
-    color:var(--vfd);text-shadow:0 0 14px rgba(57,255,158,.55),0 0 3px rgba(57,255,158,.9);
-    font-variant-numeric:tabular-nums}
-  .digits .neg{opacity:.95}
-  .unit{font-family:"DM Mono",ui-monospace,monospace;font-weight:700;font-size:clamp(20px,2.4vw,30px);
-    color:var(--vfd);text-shadow:0 0 10px rgba(57,255,158,.5);padding-bottom:8px;min-width:46px}
-  .barrow{display:flex;align-items:center;gap:8px;margin-top:10px}
-  .barlabel{font-size:9px;color:#1f6b4a;letter-spacing:.1em;font-weight:700}
-  .bargraph{flex:1;height:10px;border-radius:3px;background:#041a11;border:1px solid #0b2a1e;overflow:hidden;position:relative}
-  .barfill{position:absolute;left:0;top:0;bottom:0;width:30%;
-    background:linear-gradient(90deg,#0c5a39,var(--vfd));box-shadow:0 0 10px rgba(57,255,158,.5);transition:width .35s ease}
-  .metricname{margin-top:11px;font-size:11px;color:#2a8a60;letter-spacing:.04em;font-weight:700}
-  .metricname b{color:var(--vfd)}
+  /* ===== LEDGER (left) ===== */
+  .ledger{display:flex;flex-direction:column;gap:7px}
+  .ledhead{display:grid;grid-template-columns:1fr 78px 92px;gap:8px;padding:0 11px 6px;
+    font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);font-weight:700}
+  .ledhead .r{text-align:right}
+  .ledrow{
+    display:grid;grid-template-columns:1fr 78px 92px;gap:8px;align-items:center;
+    background:#0e1216;border:1px solid var(--line);border-radius:6px;
+    padding:9px 11px;cursor:pointer;transition:border-color .15s,background .15s;
+    font-family:inherit;color:inherit;text-align:left;width:100%}
+  .ledrow:hover{border-color:#3f6b58;background:#0c1812}
+  .ledrow.active{border-color:var(--green);box-shadow:0 0 0 1px rgba(57,255,138,.25),inset 0 0 14px rgba(57,255,138,.06)}
+  .ledrow .li{display:flex;align-items:center;gap:9px;min-width:0}
+  .ledrow .led{width:8px;height:8px;border-radius:50%;background:#243038;box-shadow:inset 0 0 3px #000;flex:0 0 auto;transition:.15s}
+  .ledrow.active .led,.ledrow:hover .led{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .ledrow .nm{font-size:11.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ledrow .q{font-size:8.5px;color:var(--muted2);letter-spacing:.04em;font-family:"DM Mono",monospace}
+  .ledrow .base{font-family:"DM Mono",monospace;font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+  .ledrow .cut{font-family:"DM Mono",monospace;font-size:12px;font-weight:700;color:var(--green);text-align:right;font-variant-numeric:tabular-nums}
+  .ledrow .cut.zero{color:var(--muted2)}
+  .ledtot{display:grid;grid-template-columns:1fr 78px 92px;gap:8px;align-items:center;
+    margin-top:3px;padding:10px 11px;border-radius:6px;
+    background:linear-gradient(180deg,#0c2417,#08160e);border:1px solid #1c5a3c}
+  .ledtot .nm{font-size:11.5px;font-weight:800;color:var(--ink)}
+  .ledtot .base{font-family:"DM Mono",monospace;font-size:12px;color:var(--muted);text-align:right}
+  .ledtot .cut{font-family:"DM Mono",monospace;font-size:15px;font-weight:800;color:var(--green);text-align:right;text-shadow:0 0 10px rgba(57,255,138,.4)}
 
-  /* function selector */
-  .selector{display:flex;flex-direction:column;gap:10px;justify-content:center}
-  .dial-wrap{display:flex;align-items:center;gap:12px}
-  .dial{position:relative;width:120px;height:120px;flex:0 0 auto}
-  .knobtxt{flex:1}
-  .knobtxt .kt{font-size:10px;letter-spacing:.18em;color:var(--muted);text-transform:uppercase;font-weight:700}
-  .knobtxt .kv{font-size:16px;font-weight:800;color:var(--green);margin-top:2px}
-  .selbtns{display:flex;flex-direction:column;gap:5px}
-  .selbtn{
-    display:flex;align-items:center;gap:9px;cursor:pointer;
-    background:linear-gradient(180deg,#1f252c,#171c22);border:1px solid var(--line2);
-    border-radius:6px;padding:7px 10px;transition:.15s;text-align:left;
-    font-family:inherit;color:var(--ink);width:100%;
-  }
-  .selbtn:hover{border-color:#3f6b58;background:linear-gradient(180deg,#232b33,#1a2027)}
-  .selbtn.active{border-color:var(--green);box-shadow:0 0 0 1px rgba(57,255,138,.3),inset 0 0 14px rgba(57,255,138,.08)}
-  .selbtn .led{width:8px;height:8px;border-radius:50%;background:#143226;box-shadow:inset 0 0 3px #000;flex:0 0 auto;transition:.15s}
-  .selbtn.active .led{background:var(--green);box-shadow:0 0 8px var(--green)}
-  .selbtn .nm{font-size:11.5px;font-weight:700}
-  .selbtn .ds{font-size:9px;color:var(--muted);letter-spacing:.08em;margin-left:auto}
+  /* interrogation panel */
+  .interro{margin-top:9px;border:1px solid var(--line);border-radius:7px;background:#0b0f12;
+    padding:11px 13px;min-height:96px}
+  .interro .qh{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .interro .qh .qt{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .interro .qh .qn{margin-left:auto;font-family:"DM Mono",monospace;font-size:9.5px;color:var(--green)}
+  .interro .qq{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em}
+  .interro .qq::before{content:"❯ ";color:var(--green);font-family:"DM Mono",monospace}
+  .interro .qa{font-size:10.5px;color:var(--muted);line-height:1.6}
+  .interro .qa b{color:var(--cyan);font-weight:700}
+  .interro .qlev{display:inline-block;margin-top:8px;font-family:"DM Mono",monospace;font-size:9px;
+    color:var(--green);border:1px solid #1c5a3c;background:#0a2417;border-radius:4px;padding:3px 8px;letter-spacing:.04em}
 
-  /* jacks */
-  .jacks{display:flex;gap:18px;margin-top:14px;padding-top:13px;border-top:1px dashed var(--line)}
-  .jack{display:flex;flex-direction:column;align-items:center;gap:5px}
-  .jhole{width:26px;height:26px;border-radius:50%;border:2px solid #3a434c;
-    background:radial-gradient(circle at 40% 35%,#2a3138,#06080a 70%);box-shadow:inset 0 0 6px #000}
-  .jhole.red{border-color:#7a2a2a;box-shadow:inset 0 0 6px #000,0 0 6px rgba(255,77,77,.25)}
-  .jhole.black{border-color:#444}
-  .jlbl{font-size:8.5px;color:var(--muted2);letter-spacing:.1em;font-weight:700}
-  .bnc{width:24px;height:24px;border-radius:50%;border:2px solid #4a525b;
-    background:conic-gradient(from 0deg,#2a3138,#10141a,#2a3138,#10141a,#2a3138);box-shadow:inset 0 0 5px #000}
+  /* ===== WATERFALL (right) ===== */
+  .wfwrap{display:flex;flex-direction:column;gap:10px}
+  .wfchart{position:relative;border:1px solid var(--line);border-radius:8px;background:#020806;
+    padding:16px 14px 10px;overflow:hidden;
+    box-shadow:inset 0 0 40px rgba(0,0,0,.85)}
+  .wfchart .ovl{position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 2px,transparent 2px 4px)}
+  .wfcorner{position:absolute;font-size:9px;color:#2a8a60;letter-spacing:.1em;font-weight:700;font-family:"DM Mono",monospace}
+  .wfcorner.tl{top:8px;left:11px}.wfcorner.tr{top:8px;right:11px;color:var(--amber)}
+  .wfcorner.br{bottom:6px;right:11px;color:var(--green)}
+  .wfsvg{display:block;width:100%;height:auto;position:relative;z-index:1}
+  .wfaxis{font-family:"DM Mono",monospace;font-size:8px;fill:#2a8a60}
+  .wfcap{font-family:"Pretendard Variable",Pretendard,sans-serif;font-size:8.5px;fill:#8aa39a;font-weight:600}
+  .wfval{font-family:"DM Mono",monospace;font-size:9px;font-weight:700}
 
-  /* ===== CAL routine (delight) ===== */
-  .calbody{display:flex;flex-direction:column;gap:12px}
-  .caltop{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-  .calreadbox{
-    flex:1;min-width:150px;border-radius:8px;padding:11px 14px;position:relative;overflow:hidden;
-    background:linear-gradient(180deg,#120605,#0a0403);border:1px solid #3a1414;transition:border-color .5s,background .5s;
-  }
-  .calreadbox.pass{background:linear-gradient(180deg,#03130c,#020a07);border-color:#0b2a1e}
-  .calread-lbl{font-size:9px;letter-spacing:.16em;color:var(--muted);font-weight:700;text-transform:uppercase}
-  .calread{font-family:"DM Mono",ui-monospace,monospace;font-weight:700;font-size:38px;line-height:1;margin-top:6px;
-    color:var(--red);text-shadow:0 0 12px rgba(255,77,77,.5);font-variant-numeric:tabular-nums;transition:color .5s}
-  .calreadbox.pass .calread{color:var(--vfd);text-shadow:0 0 12px rgba(57,255,158,.55)}
-  .specrow{display:flex;align-items:center;gap:8px;margin-top:7px;font-size:9.5px;color:var(--muted)}
-  .verdict{font-size:11px;font-weight:800;letter-spacing:.12em;padding:3px 9px;border-radius:4px;
-    background:#2a0d0d;color:var(--red);border:1px solid #5a1a1a}
-  .verdict.pass{background:#0a2417;color:var(--green);border-color:#1c5a3c}
+  .wfsteps{display:flex;flex-direction:column;gap:6px}
+  .wfstep{display:grid;grid-template-columns:18px 1fr 64px;gap:9px;align-items:center;
+    background:#0e1216;border:1px solid var(--line);border-radius:6px;padding:8px 11px}
+  .wfstep .si{font-family:"DM Mono",monospace;font-size:10px;font-weight:800;color:var(--amber);text-align:center}
+  .wfstep .sn{font-size:11px;font-weight:700}
+  .wfstep .sd{font-size:9px;color:var(--muted);letter-spacing:.02em;margin-top:2px}
+  .wfstep .sv{font-family:"DM Mono",monospace;font-size:12px;font-weight:700;color:var(--green);text-align:right;font-variant-numeric:tabular-nums}
+  .wfstep.baseline{background:#161013;border-color:#3a2a14}
+  .wfstep.baseline .si{color:var(--muted)}
+  .wfstep.baseline .sv{color:var(--amber)}
+  .wfstep.final{background:linear-gradient(180deg,#0c2417,#08160e);border-color:#1c5a3c}
+  .wfstep.final .si{color:var(--green)}
+  .wfstep.final .sv{font-size:14px;font-weight:800;text-shadow:0 0 10px rgba(57,255,138,.4)}
 
-  .lamp{width:44px;height:44px;border-radius:50%;flex:0 0 auto;position:relative;
-    background:radial-gradient(circle at 38% 32%,#3a1414,#180808);border:2px solid #2a1010;transition:.4s}
-  .lamp .glass{position:absolute;inset:5px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#5a1c1c,#240a0a)}
-  .lamp.pass{background:radial-gradient(circle at 38% 32%,#0c3a24,#04140d);border-color:#0c3a24;box-shadow:0 0 26px rgba(57,255,138,.6)}
-  .lamp.pass .glass{background:radial-gradient(circle at 40% 35%,#7dffbf,#16c46a);box-shadow:0 0 16px rgba(57,255,138,.9)}
-  .lamplbl{font-size:8.5px;text-align:center;margin-top:5px;letter-spacing:.1em;color:var(--muted);font-weight:700}
+  .illnote{font-size:9px;color:var(--muted);line-height:1.55;letter-spacing:.01em;
+    background:#0e1216;border:1px solid var(--line);border-radius:5px;padding:8px 10px}
+  .illnote .flag{color:var(--amber);font-weight:700;font-family:"DM Mono",monospace}
+  .illnote b{color:var(--green)}
 
-  .calbtn{
-    display:flex;align-items:center;gap:9px;cursor:pointer;align-self:flex-start;
-    background:linear-gradient(180deg,#243b2f,#16241c);border:1px solid #2c5a44;color:var(--ink);
-    border-radius:7px;padding:9px 16px;font-family:inherit;font-weight:800;font-size:12px;letter-spacing:.04em;
-    transition:.15s;box-shadow:inset 0 1px 0 rgba(255,255,255,.06)}
-  .calbtn:hover{border-color:var(--green);box-shadow:0 0 0 1px rgba(57,255,138,.25)}
-  .calbtn:disabled{opacity:.5;cursor:not-allowed}
-  .calbtn .ico{width:14px;height:14px;border-radius:50%;border:2px solid var(--green);position:relative}
-  .calbtn .ico::after{content:"";position:absolute;left:50%;top:1px;width:2px;height:5px;background:var(--green);transform:translateX(-50%)}
-  .calsteps{font-size:10px;color:var(--muted);line-height:1.7;letter-spacing:.02em}
-  .calsteps b{color:var(--cyan)}
-  .calsteps .step{display:flex;gap:8px;align-items:center}
-  .calsteps .step .sd{width:6px;height:6px;border-radius:50%;background:#243038;flex:0 0 auto;transition:.2s}
-  .calsteps .step.done .sd{background:var(--green);box-shadow:0 0 6px var(--green)}
-  .calsteps .step.done{color:var(--ink)}
+  /* ===== levers strip ===== */
+  .levgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+  @media(max-width:760px){.levgrid{grid-template-columns:repeat(2,1fr)}}
+  .lev{background:#0e1216;border:1px solid var(--line);border-radius:6px;padding:10px 11px}
+  .lev .lk{font-family:"DM Mono",monospace;font-size:9px;color:var(--amber);letter-spacing:.06em;font-weight:700}
+  .lev .lt{font-size:11.5px;font-weight:700;margin-top:5px;line-height:1.3}
+  .lev .ld{font-size:9.5px;color:var(--muted);margin-top:5px;line-height:1.45}
 
-  /* ===== scope (CRT) ===== */
-  .scopewrap{display:grid;grid-template-columns:1fr 188px;gap:14px}
-  @media(max-width:640px){.scopewrap{grid-template-columns:1fr}}
-  .crt{position:relative;border-radius:8px;overflow:hidden;background:#020806;
-    border:1px solid #0b2a1e;box-shadow:inset 0 0 40px rgba(0,0,0,.85)}
-  .crt canvas{display:block;width:100%;height:170px}
-  .crt .ovl{position:absolute;inset:0;pointer-events:none;
-    background:repeating-linear-gradient(0deg,rgba(0,0,0,.18) 0 2px,transparent 2px 4px)}
-  .crt .corner{position:absolute;font-size:9px;color:#2a8a60;letter-spacing:.1em;font-weight:700;font-family:"DM Mono",monospace}
-  .crt .c-tl{top:7px;left:9px}.crt .c-tr{top:7px;right:9px}.crt .c-bl{bottom:7px;left:9px}.crt .c-br{bottom:7px;right:9px;color:var(--amber)}
-  .scopeside{display:flex;flex-direction:column;gap:8px}
-  .srow{display:flex;align-items:center;justify-content:space-between;font-size:10px;
-    background:#0e1216;border:1px solid var(--line);border-radius:5px;padding:7px 9px}
-  .srow .k{color:var(--muted);letter-spacing:.08em}
-  .srow .v{font-family:"DM Mono",monospace;color:var(--green);font-weight:700}
-  .srow .v.amb{color:var(--amber)} .srow .v.cy{color:var(--cyan)}
-
-  /* ===== DAQ / telemetry ===== */
-  .daqgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
-  @media(max-width:760px){.daqgrid{grid-template-columns:repeat(2,1fr)}}
-  .tcell{background:#0e1216;border:1px solid var(--line);border-radius:6px;padding:10px 11px}
-  .tcell .tk{font-size:9px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-weight:700}
-  .tcell .tv{font-family:"DM Mono",monospace;font-size:19px;font-weight:700;color:var(--cyan);margin-top:5px;font-variant-numeric:tabular-nums}
-  .tcell .tu{font-size:10px;color:var(--muted2);margin-left:3px}
-  .tcell.g .tv{color:var(--green)} .tcell.a .tv{color:var(--amber)}
-  .opcrow{display:flex;align-items:center;gap:8px;margin-top:11px;font-size:10px;color:var(--muted);flex-wrap:wrap}
-  .tag{font-family:"DM Mono",monospace;font-size:9.5px;background:#0c1d28;color:var(--cyan);border:1px solid #16384a;border-radius:4px;padding:3px 7px}
-
-  /* ===== device inventory ===== */
+  /* ===== inventory ===== */
   .inv{display:flex;flex-direction:column;gap:7px}
   .invrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;
     background:#0e1216;border:1px solid var(--line);border-radius:6px;padding:8px 11px}
@@ -268,10 +210,9 @@
   .stled{display:flex;align-items:center;gap:6px;font-size:9px;font-weight:700;letter-spacing:.1em}
   .stled .d{width:7px;height:7px;border-radius:50%}
   .stled.ok{color:var(--green)} .stled.ok .d{background:var(--green);box-shadow:0 0 6px var(--green)}
-  .stled.cal{color:var(--amber)} .stled.cal .d{background:var(--amber);box-shadow:0 0 6px var(--amber);animation:blink 1s steps(2,end) infinite}
-  .stled.idle{color:var(--muted)} .stled.idle .d{background:var(--muted2)}
+  .stled.amb{color:var(--amber)} .stled.amb .d{background:var(--amber);box-shadow:0 0 6px var(--amber)}
 
-  /* ===== stack chips + contact ===== */
+  /* ===== footer ===== */
   .footu{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   .chips{display:flex;gap:7px;flex-wrap:wrap}
   .chip{font-size:10px;font-family:"DM Mono",monospace;color:var(--muted);
@@ -282,87 +223,8 @@
     border:1px solid var(--line2);border-radius:6px;padding:7px 12px;background:#0e1216;display:flex;align-items:center;gap:7px;transition:.15s}
   .cbtn:hover{border-color:var(--green);color:var(--green)}
   .cbtn .d{width:6px;height:6px;border-radius:50%;background:var(--amber)}
-
   .label-strip{font-size:9px;color:var(--muted2);letter-spacing:.3em;text-transform:uppercase;
     text-align:center;font-weight:700;padding:2px 0 6px}
-
-  /* ===== OBS-1U observability ===== */
-  .obscreed{font-size:10px;color:var(--muted);line-height:1.6;margin-bottom:12px;
-    border-left:2px solid #2c5a48;padding:2px 0 2px 11px;letter-spacing:.01em}
-  .obscreed b{color:var(--green);font-weight:700}
-  .obscreed .vs{color:var(--amber);font-weight:700}
-  .obsgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px}
-  @media(max-width:900px){.obsgrid{grid-template-columns:1fr}}
-  .obspane{background:#0b0f12;border:1px solid var(--line);border-radius:7px;padding:11px 12px}
-  .obspane .ph{display:flex;align-items:center;gap:8px;margin-bottom:9px}
-  .obspane .ph .pt{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);font-weight:700}
-  .obspane .ph .pn{margin-left:auto;font-family:"DM Mono",monospace;font-size:9.5px;color:var(--muted2)}
-
-  /* 3-tier readout: metric / log / trace */
-  .tier{display:flex;align-items:center;gap:9px;padding:7px 9px;border-radius:5px;
-    background:#0e1216;border:1px solid var(--line);margin-bottom:6px;transition:.2s;cursor:default}
-  .tier:last-child{margin-bottom:0}
-  .tier .tl{width:8px;height:8px;border-radius:50%;flex:0 0 auto;background:#243038;transition:.2s}
-  .tier .tn{font-size:11px;font-weight:700;min-width:54px}
-  .tier .td{font-family:"DM Mono",monospace;font-size:9.5px;color:var(--muted);letter-spacing:.01em}
-  .tier .tx{margin-left:auto;font-family:"DM Mono",monospace;font-size:9px;color:var(--muted2)}
-  .tier.act{border-color:#2c5a48;background:#0c1812;box-shadow:inset 0 0 12px rgba(57,255,138,.06)}
-  .tier.act .tl{background:var(--green);box-shadow:0 0 8px var(--green)}
-  .tier.act .tn{color:var(--green)}
-  .tier.m .tn{color:var(--cyan)} .tier.l .tn{color:var(--amber)} .tier.t .tn{color:#c79bff}
-  .drillnote{font-size:9px;color:var(--muted2);letter-spacing:.06em;margin-top:8px;font-family:"DM Mono",monospace}
-  .drillnote b{color:var(--green)}
-
-  /* cardinality meter */
-  .cardrow{display:flex;flex-direction:column;gap:10px}
-  .cardmeter{position:relative}
-  .cardmeter .cl{display:flex;justify-content:space-between;font-size:9.5px;color:var(--muted);font-weight:700;letter-spacing:.04em;margin-bottom:4px}
-  .cardmeter .cl .cv{font-family:"DM Mono",monospace;font-weight:700}
-  .cardtrack{height:12px;border-radius:4px;background:#04140d;border:1px solid #0b2a1e;overflow:hidden;position:relative}
-  .cardfill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;transition:width .8s cubic-bezier(.4,0,.2,1)}
-  .cardfill.ctl{background:linear-gradient(90deg,#0c5a39,var(--vfd));box-shadow:0 0 8px rgba(57,255,158,.4);width:8%}
-  .cardfill.rich{background:linear-gradient(90deg,#16384a,var(--cyan));box-shadow:0 0 8px rgba(92,216,255,.4);width:88%}
-  .cardmeter.agg .cv{color:var(--green)} .cardmeter.raw .cv{color:var(--cyan)}
-  .cardlaw{font-size:9px;color:var(--muted);line-height:1.5;letter-spacing:.01em;
-    background:#0e1216;border:1px solid var(--line);border-radius:5px;padding:8px 9px;margin-top:2px}
-  .cardlaw b{color:var(--green)} .cardlaw .w{color:var(--red);font-weight:700}
-
-  /* RED + USE gauges */
-  .gaugegrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-  .gauge{background:#0e1216;border:1px solid var(--line);border-radius:6px;padding:8px 6px;text-align:center}
-  .gauge svg{display:block;margin:0 auto}
-  .gauge .gk{font-size:8.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:700;margin-top:4px}
-  .gauge .gv{font-family:"DM Mono",monospace;font-size:12px;font-weight:700;color:var(--green);margin-top:1px}
-  .gauge .gv.a{color:var(--amber)} .gauge .gv.c{color:var(--cyan)} .gauge .gv.r{color:var(--red)}
-  .gsub{font-size:9px;color:var(--muted2);letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin:2px 0 7px}
-
-  /* SLO / error-budget burn bar */
-  .slobar{margin-top:4px}
-  .sloline{display:flex;justify-content:space-between;align-items:baseline;font-size:10px;color:var(--muted);font-weight:700;margin-bottom:5px}
-  .sloline .sv{font-family:"DM Mono",monospace;color:var(--green);font-size:13px}
-  .burntrack{height:14px;border-radius:4px;background:#0e1216;border:1px solid var(--line);overflow:hidden;position:relative;display:flex}
-  .burnused{height:100%;background:linear-gradient(90deg,#7a2a2a,var(--red));box-shadow:0 0 8px rgba(255,77,77,.3);width:32%;transition:width .8s ease}
-  .burnleft{height:100%;background:linear-gradient(90deg,#0c5a39,var(--vfd));flex:1;opacity:.85}
-  .burnlabels{display:flex;justify-content:space-between;font-family:"DM Mono",monospace;font-size:9px;color:var(--muted2);margin-top:4px}
-  .burnlabels b{color:var(--amber)}
-
-  /* trace span waterfall */
-  .wf{display:flex;flex-direction:column;gap:5px}
-  .wfrow{display:flex;align-items:center;gap:8px;font-size:9.5px}
-  .wfname{width:108px;flex:0 0 auto;font-family:"DM Mono",monospace;color:var(--muted);
-    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .wftrack{flex:1;height:11px;border-radius:3px;background:#0e1216;border:1px solid var(--line);position:relative;overflow:hidden}
-  .wfspan{position:absolute;top:1px;bottom:1px;border-radius:2px;
-    background:linear-gradient(90deg,#16384a,var(--cyan));box-shadow:0 0 6px rgba(92,216,255,.3);
-    transform:scaleX(0);transform-origin:left;transition:transform .5s ease}
-  .wfspan.err{background:linear-gradient(90deg,#7a2a2a,var(--red));box-shadow:0 0 6px rgba(255,77,77,.4)}
-  .wfspan.shown{transform:scaleX(1)}
-  .wfms{width:42px;flex:0 0 auto;text-align:right;font-family:"DM Mono",monospace;color:var(--muted2)}
-  .wftrace{font-family:"DM Mono",monospace;font-size:9px;color:var(--cyan);margin-bottom:8px;letter-spacing:.02em}
-  .wftrace b{color:var(--amber)}
-  .antip{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px}
-  .antip .a{font-family:"DM Mono",monospace;font-size:9px;color:var(--red);border:1px solid #5a1a1a;
-    background:#2a0d0d;border-radius:4px;padding:3px 7px;letter-spacing:.01em}
 </style>
 </head>
 <body>
@@ -372,296 +234,176 @@
     <div class="railholes r" aria-hidden="true"></div>
     <div class="rackinner">
 
-      <!-- ===== U1: brand / power ===== -->
+      <!-- ===== U1: brand / header ===== -->
       <section class="u" aria-label="시스템 헤더">
         <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
         <div class="head">
           <div class="logo" aria-hidden="true">
-            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#39ff8a" stroke-width="2" stroke-linecap="round">
-              <path d="M3 12h4l2 6 4-14 2 8h6"/>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#39ff8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 20V4"/><path d="M4 20h16"/>
+              <path d="M7 14l3-4 3 3 4-7"/>
             </svg>
           </div>
           <div class="brand">
-            <h1>박양하 <span style="color:var(--muted);font-weight:600;font-size:.7em">／ PRODUCTION COST RACK</span></h1>
-            <div class="role">은성에스아이티 · 생산관리 과장 <b>2차전지 배터리팩 생산 총괄</b> · 2020.08–2022.11</div>
+            <h1>박양하 <span style="color:var(--muted);font-weight:600;font-size:.7em">／ 원가 제1원칙 해부 보드</span></h1>
+            <div class="role">은성에스아이티 · 생산관리과장 <b>운영경비(OPEX) −85% 절감</b> · 2020.08–2022.11</div>
           </div>
           <div class="topmeta">
             <span class="pill"><span class="dot run"></span> OPEX&nbsp;−85%</span>
-            <span class="pill"><span class="dot"></span> 불량&nbsp;0건</span>
+            <span class="pill"><span class="dot"></span> 0불량</span>
             <span class="pill mono"><span class="dot warn"></span> IATF&nbsp;16949</span>
           </div>
         </div>
       </section>
 
-      <!-- ===== U2-3: DMM (hero) ===== -->
-      <section class="u" aria-label="디지털 멀티미터">
+      <!-- ===== U2: thesis ===== -->
+      <section class="u" aria-label="제1원칙 선언">
         <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
         <div class="modtitle">
-          <span class="uno">2U · DMM</span>
-          <h3>운영원가 계측기 — 라인 경비 정밀 측정</h3>
-          <span class="sub mono">MODEL PC-8500 · 셀렉터로 성과지표 전환 · 은성에스아이티 2020–2022</span>
+          <span class="uno">DOCTRINE</span>
+          <h3>제1원칙 — 모든 원가를 처음부터 다시 본다</h3>
+          <span class="sub mono">FIRST-PRINCIPLES COST TEARDOWN · 은성에스아이티 2020–2022</span>
         </div>
-
-        <div class="dmm">
-          <!-- VFD display -->
-          <div class="vfdpanel">
-            <div class="annun" id="annun">
-              <span class="an" data-an="AUTO">AUTO</span>
-              <span class="an" data-an="HOLD">HOLD</span>
-              <span class="an on" data-an="DCV">REL</span>
-              <span class="an" data-an="PCT">%</span>
-              <span class="an" data-an="MV">건</span>
-              <span class="an" data-an="OHM">원</span>
-              <span class="an" data-an="MIN">MIN</span>
-              <span class="an on" data-an="REC">REC</span>
-            </div>
-            <div class="readout">
-              <span class="digits" id="dmmDigits">−85.00</span>
-              <span class="unit" id="dmmUnit">%</span>
-            </div>
-            <div class="barrow">
-              <span class="barlabel">BAR</span>
-              <div class="bargraph"><div class="barfill" id="dmmBar"></div></div>
-            </div>
-            <div class="metricname" id="dmmName">측정항목 · <b>운영경비 절감</b></div>
-          </div>
-
-          <!-- selector -->
-          <div class="selector">
-            <div class="dial-wrap">
-              <div class="dial" aria-hidden="true">
-                <svg viewBox="0 0 120 120" width="120" height="120">
-                  <circle cx="60" cy="60" r="56" fill="#0d1115" stroke="#2c333b" stroke-width="2"/>
-                  <circle cx="60" cy="60" r="40" fill="url(#kg)" stroke="#3a434c" stroke-width="2"/>
-                  <defs><radialGradient id="kg" cx="38%" cy="32%"><stop offset="0" stop-color="#2c343d"/><stop offset="1" stop-color="#11151a"/></radialGradient></defs>
-                  <g id="dialMarks"></g>
-                  <g id="dialPtr"><rect x="58.5" y="22" width="3" height="20" rx="1.5" fill="#39ff8a" style="filter:drop-shadow(0 0 4px #39ff8a)"/></g>
-                  <circle cx="60" cy="60" r="6" fill="#0a0d10" stroke="#3a434c"/>
-                </svg>
-              </div>
-              <div class="knobtxt">
-                <div class="kt">FUNCTION</div>
-                <div class="kv" id="dialFn">DC&nbsp;%</div>
-              </div>
-            </div>
-            <div class="selbtns" id="selbtns" role="group" aria-label="측정항목 선택"></div>
-          </div>
-        </div>
-
-        <div class="jacks" aria-hidden="true">
-          <div class="jack"><div class="jhole red"></div><div class="jlbl">HI / VΩ</div></div>
-          <div class="jack"><div class="jhole black"></div><div class="jlbl">LO / COM</div></div>
-          <div class="jack"><div class="jhole"></div><div class="jlbl">SENSE Hi</div></div>
-          <div class="jack"><div class="jhole"></div><div class="jlbl">SENSE Lo</div></div>
-          <div class="jack" style="margin-left:auto"><div class="bnc"></div><div class="jlbl">EXT TRIG</div></div>
-          <div class="jack"><div class="bnc"></div><div class="jlbl">REF OUT</div></div>
+        <div class="creed">
+          <span class="q">"이 비용은 관행이 아니라, 꼭 필요해서 존재하는가?"</span><br>
+          운영경비(OPEX)를 결과가 아니라 <b>구조</b>로 본다 — 항목을 한 줄씩 원장에 펼치고, 각 줄을 심문한다.
+          답이 "관행"이면 레버를 건다. 조달단가 재협상 · 라인 운영구조 재설계 · 비전검사 0불량 · 인원·공수·생산계획·재고 개선으로
+          기준 OPEX를 단계적으로 깎아 <b>−85%</b>까지 내렸다.
         </div>
       </section>
 
-      <!-- ===== row: CAL unit + scope ===== -->
-      <div class="grid2">
-        <!-- CAL routine -->
-        <section class="u" aria-label="원가 재협상 루틴">
-          <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
-          <div class="modtitle">
-            <span class="uno">1U · CAL</span>
-            <h3>원가 보정 루틴 — 제조원가 구조 재협상</h3>
-            <span class="sub mono">실투입 자원 분석 → 협력사 단가 재협상 → 기존 계약 무효화</span>
-          </div>
-          <div class="calbody">
-            <div class="caltop">
-              <div class="lamp" id="calLamp" aria-hidden="true"><div class="glass"></div></div>
-              <div style="display:flex;flex-direction:column;align-items:center"><div class="lamplbl">PASS</div></div>
-              <div class="calreadbox" id="calBox">
-                <div class="calread-lbl">단가 반영 편차 · MEASURED</div>
-                <div class="calread" id="calRead">−30.0<span style="font-size:.6em"> %</span></div>
-                <div class="specrow">
-                  <span class="verdict" id="calVerdict">OUT-OF-SPEC</span>
-                  <span class="mono">실투입 미반영 · 기존 계약 단가 저평가</span>
-                </div>
+      <!-- ===== U3: ledger + waterfall ===== -->
+      <section class="u" aria-label="원가 원장 및 워터폴">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="modtitle">
+          <span class="uno">LEDGER · WATERFALL</span>
+          <h3>운영경비 원장 해부 → 단계 절감 워터폴</h3>
+          <span class="sub mono">왼쪽: 항목별 심문 · 오른쪽: 100 → 15 계단식 하강</span>
+        </div>
+
+        <div class="board2">
+          <!-- LEFT: ledger -->
+          <div>
+            <div class="ledger" role="group" aria-label="원가 원장">
+              <div class="ledhead">
+                <span>원가 항목 · 심문 대상</span>
+                <span class="r">기준 비중</span>
+                <span class="r">절감 후</span>
+              </div>
+              <div id="ledRows"></div>
+              <div class="ledtot">
+                <span class="nm">운영경비 합계 (지수)</span>
+                <span class="base">100</span>
+                <span class="cut" id="ledTot">15</span>
               </div>
             </div>
-            <button class="calbtn" id="calBtn"><span class="ico"></span> 원가 재협상 루틴 실행</button>
-            <div class="calsteps" id="calSteps">
-              <div class="step" data-s="0"><span class="sd"></span> 제조원가·운영비 구조 분석 · 실투입 자원 목록화</div>
-              <div class="step" data-s="1"><span class="sd"></span> 단가 미반영 항목 확인 · 편차 산출</div>
-              <div class="step" data-s="2"><span class="sd"></span> 협력사 원가 재협상 · 기존 계약 무효화</div>
-              <div class="step" data-s="3"><span class="sd"></span> 단가 +30% 이상 인상 관철 · PASS</div>
+
+            <div class="interro" id="interro" aria-live="polite">
+              <div class="qh">
+                <span class="qt">심문 패널 · INTERROGATION</span>
+                <span class="qn" id="interroIdx">항목 01 / 06</span>
+              </div>
+              <div class="qq" id="interroQ"></div>
+              <div class="qa" id="interroA"></div>
+              <span class="qlev" id="interroLev"></span>
             </div>
           </div>
-        </section>
 
-        <!-- scope -->
-        <section class="u" aria-label="배터리셀 검사 모듈">
-          <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
-          <div class="modtitle">
-            <span class="uno">1U · SCOPE</span>
-            <h3>배터리셀 검사 — OCV / IR 파형</h3>
-            <span class="sub mono">비전 검사 시스템 · 역방향 삽입 쇼트 방지</span>
-          </div>
-          <div class="scopewrap">
-            <div class="crt">
-              <canvas id="scopeCv" width="640" height="340"></canvas>
+          <!-- RIGHT: waterfall -->
+          <div class="wfwrap">
+            <div class="wfchart">
               <div class="ovl"></div>
-              <span class="corner c-tl mono">CH1 OCV</span>
-              <span class="corner c-tr mono">CH2 IR</span>
-              <span class="corner c-bl mono">2ms/div</span>
-              <span class="corner c-br mono">PASS</span>
+              <span class="wfcorner tl mono">OPEX INDEX</span>
+              <span class="wfcorner tr mono">illustrative [확인필요]</span>
+              <span class="wfcorner br mono">ENDPOINT −85%</span>
+              <svg class="wfsvg" id="wfSvg" viewBox="0 0 520 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="운영경비 워터폴 차트 — 100에서 15까지 단계 하강"></svg>
             </div>
-            <div class="scopeside">
-              <div class="srow"><span class="k">OCV</span><span class="v">3.642 V</span></div>
-              <div class="srow"><span class="k">IR (절연)</span><span class="v cy">> 500 MΩ</span></div>
-              <div class="srow"><span class="k">판정</span><span class="v">IN-SPEC</span></div>
-              <div class="srow"><span class="k">비전 검사</span><span class="v amb">역방향 쇼트 0건</span></div>
-              <div class="srow"><span class="k">고객 불량</span><span class="v cy">0건</span></div>
-            </div>
-          </div>
-        </section>
-      </div>
 
-      <!-- ===== U: DAQ telemetry ===== -->
-      <section class="u" aria-label="생산 데이터 수집">
-        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
-        <div class="modtitle">
-          <span class="uno">1U · DAQ</span>
-          <h3>생산현황 · 데이터 수집 — ERP 텔레메트리</h3>
-          <span class="sub mono">ERP · 생산현황 · 자재현황 시스템 도입</span>
-        </div>
-        <div class="daqgrid" id="daqGrid">
-          <div class="tcell g"><div class="tk">운영경비 절감</div><div class="tv">−85<span class="tu">%</span></div></div>
-          <div class="tcell g"><div class="tk">단가 인상</div><div class="tv">+30<span class="tu">%↑</span></div></div>
-          <div class="tcell a"><div class="tk">고객·필드 불량</div><div class="tv">0<span class="tu">건</span></div></div>
-          <div class="tcell"><div class="tk">인증 관리</div><div class="tv" id="tManhr">3<span class="tu">종</span></div></div>
-        </div>
-        <div class="opcrow">
-          <span class="tag">erp://production.line:8080</span>
-          <span class="tag" id="opcNode">배터리팩·정수기·와이어링하네스</span>
-          <span style="color:var(--green);font-weight:700">● STREAMING</span>
-          <span class="mono" id="opcSeq">seq 0001</span>
-          <span style="margin-left:auto" class="mono">last poll <span id="opcTime" style="color:var(--cyan)">00:00</span> ago</span>
-        </div>
-      </section>
+            <div class="wfsteps" id="wfSteps"></div>
 
-      <!-- ===== U: OBS 생산품질 모니터 ===== -->
-      <section class="u" aria-label="생산품질 모니터">
-        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
-        <div class="modtitle">
-          <span class="uno">1U · OBS</span>
-          <h3>생산품질 모니터 — 원가·불량·인증 현황판</h3>
-          <span class="sub mono">운영경비 · 불량 · 단가 · 인증 · 비전검사</span>
-        </div>
-
-        <div class="obscreed">
-          <b>"실투입 자원이 단가에 반영되지 않으면, 원가는 측정값이 아니라 추측값이다."</b><br>
-          제조원가 구조 분석 → 협력사 <b>단가 +30% 이상</b> 관철 · 기존 계약 무효화.
-          배터리셀 역방향 삽입 쇼트 위험 → 외부 네트워크 활용 <b>저비용 비전 검사 시스템</b> 도입.
-          고객 불량·필드 불량 <span class="vs">0건</span> 유지.
-        </div>
-
-        <div class="obsgrid">
-          <!-- left: 원가절감 3단계 -->
-          <div class="obspane">
-            <div class="ph"><span class="dot"></span><span class="pt">원가 절감 단계 · Drilldown</span><span class="pn" id="obsDrill">분석 → 협상 → 검증</span></div>
-            <div class="tier m act" data-tier="0"><span class="tl"></span><span class="tn">분석</span><span class="td">제조원가·운영비 구조 분석 · 실투입 확인</span><span class="tx">MEASURE</span></div>
-            <div class="tier t" data-tier="1"><span class="tl"></span><span class="tn">협상</span><span class="td">협력사 원가 재협상 · 기존 계약 무효화</span><span class="tx">CALIBRATE</span></div>
-            <div class="tier l" data-tier="2"><span class="tl"></span><span class="tn">검증</span><span class="td">단가 인상 관철 · 불량 0건 유지 확인</span><span class="tx">VERIFY</span></div>
-            <div class="drillnote">결과: 라인 운영경비 <b id="obsAnom">−85%</b> · 단가 <b>+30%↑</b> · 불량 <b>0건</b></div>
-          </div>
-
-          <!-- right: 절감율 미터 -->
-          <div class="obspane">
-            <div class="ph"><span class="dot warn" style="background:var(--cyan);box-shadow:0 0 8px var(--cyan)"></span><span class="pt">원가 절감율 미터</span><span class="pn">cost reduction</span></div>
-            <div class="cardrow">
-              <div class="cardmeter agg">
-                <div class="cl"><span>라인 운영경비 절감 (초기 대비)</span><span class="cv" id="cardAgg">−85%</span></div>
-                <div class="cardtrack"><div class="cardfill ctl" id="cardAggBar" style="width:85%"></div></div>
-              </div>
-              <div class="cardmeter raw">
-                <div class="cl"><span>협력사 단가 인상 관철</span><span class="cv" id="cardRaw">+30%↑</span></div>
-                <div class="cardtrack"><div class="cardfill rich" id="cardRawBar" style="width:30%"></div></div>
-              </div>
-              <div class="cardlaw">운영 규율 — <b>실투입 자원을 단가에 반영하고, 불량은 현장에서 원천 차단.</b>
-                비전 검사 도입으로 <span class="w">역방향 삽입 쇼트</span> 위험 제거.</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 성과 게이지 + 인증/시스템 -->
-        <div class="obsgrid" style="margin-top:11px">
-          <div class="obspane">
-            <div class="ph"><span class="dot"></span><span class="pt">성과 지표 · 생산품질</span><span class="pn">Quality/Cost/Delivery</span></div>
-            <div class="gaugegrid" id="redGauges"></div>
-            <div class="ph" style="margin:13px 0 9px"><span class="dot" style="background:var(--amber);box-shadow:0 0 8px var(--amber)"></span><span class="pt">자원 활용 · 시스템</span><span class="pn">ERP/Vision/Cert</span></div>
-            <div class="gaugegrid" id="useGauges"></div>
-          </div>
-
-          <div class="obspane">
-            <div class="ph"><span class="dot"></span><span class="pt">불량 예산 소진율</span><span class="pn">불량 0건 목표</span></div>
-            <div class="slobar">
-              <div class="sloline"><span>품질 목표 달성율</span><span class="sv" id="sloVal">100%</span></div>
-              <div class="burntrack"><div class="burnused" id="burnUsed" style="width:0%"></div><div class="burnleft"></div></div>
-              <div class="burnlabels"><span>불량 <b id="burnPct">0건</b></span><span>잔여 예산 <span id="burnRem">전액 보존</span></span></div>
-            </div>
-            <div class="ph" style="margin:14px 0 8px"><span class="dot" style="background:#c79bff;box-shadow:0 0 8px #c79bff"></span><span class="pt">원가절감 프로세스 Waterfall</span><span class="pn">단계별 진행</span></div>
-            <div class="wftrace">process_id <b id="wfTid">cost-reduction-2021</b> · 분석→협상→검증</div>
-            <div class="wf" id="wfRows"></div>
-            <div class="antip">
-              <span class="a">✕ 단가 미반영 계약</span>
-              <span class="a">✕ 역방향 셀 삽입</span>
-              <span class="a">✕ 현장 불량 방치</span>
+            <div class="illnote">
+              <span class="flag">[확인필요]</span> 총 <b>운영경비 −85%</b>(지수 100→15)와 레버 항목은 실제 성과·실제 활동.
+              단, <b>레버별 절감 분해 비율</b>은 정확히 알 수 없어 워터폴 각 단계값은 illustrative(예시) 지수로 표기 — 실제 원화 총액 아님.
             </div>
           </div>
         </div>
       </section>
 
-      <!-- ===== U: DUT bay / 생산 시스템 인벤토리 ===== -->
-      <section class="u" aria-label="생산 시스템 인벤토리">
+      <!-- ===== U4: levers ===== -->
+      <section class="u" aria-label="절감 레버">
         <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
         <div class="modtitle">
-          <span class="uno">2U · DUT BAY</span>
-          <h3>생산 시스템 · 도입 현황</h3>
-          <span class="sub mono">status · capabilities · 은성에스아이티 2020–2022</span>
+          <span class="uno">LEVERS</span>
+          <h3>제1원칙으로 건 4개 레버 — 실제 활동</h3>
+          <span class="sub mono">분해 비율은 illustrative · 활동 자체는 실제</span>
+        </div>
+        <div class="levgrid">
+          <div class="lev">
+            <div class="lk">LEVER ①</div>
+            <div class="lt">조달단가 재협상</div>
+            <div class="ld">실투입 자원 기준으로 협력사 공급단가를 재산정 · 마진 구조를 개선해 재료·조달원가를 끌어내림.</div>
+          </div>
+          <div class="lev">
+            <div class="lk">LEVER ②</div>
+            <div class="lt">라인 운영구조 재설계</div>
+            <div class="ld">공정·배치·운영 흐름을 다시 설계해 직접 공수와 간접 운영비를 줄임.</div>
+          </div>
+          <div class="lev">
+            <div class="lk">LEVER ③</div>
+            <div class="lt">비전검사 도입 → 0불량</div>
+            <div class="ld">외부 네트워크 활용 저비용 비전검사로 역방향 삽입 등 불량을 원천 차단 · 불량·재작업·폐기 비용 제거.</div>
+          </div>
+          <div class="lev">
+            <div class="lk">LEVER ④</div>
+            <div class="lt">인원·공수·계획·재고 개선</div>
+            <div class="ld">생산계획·인원 운영·재고 관리를 정비해 재고 유지비와 운영 낭비를 축소.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== U5: quality system inventory ===== -->
+      <section class="u" aria-label="품질·시스템 현황">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="modtitle">
+          <span class="uno">SYSTEMS</span>
+          <h3>품질체계 · 운영 시스템 — 절감을 떠받친 기반</h3>
+          <span class="sub mono">은성에스아이티 2020–2022</span>
         </div>
         <div class="inv">
           <div class="invrow">
-            <div><div class="nm">배터리팩 생산라인 · 운영경비 계측</div><div class="cap">초기 대비 −85% 절감 · 라인 운영경비 구조 개선</div></div>
+            <div><div class="nm">운영경비(OPEX) 구조 재검토</div><div class="cap">제1원칙으로 전 항목 재산정 · 라인 운영구조 재설계</div></div>
             <div class="cap">생산관리 총괄</div>
             <div class="stled ok"><span class="d"></span> −85% 달성</div>
           </div>
           <div class="invrow">
-            <div><div class="nm">비전 검사 시스템 · 셀 역방향 삽입 방지</div><div class="cap">배터리셀 역방향 삽입 쇼트 위험 → 저비용 비전검사 도입</div></div>
+            <div><div class="nm">비전검사 시스템 · 0불량</div><div class="cap">셀 역방향 삽입 등 불량 원천 차단 · 재작업·폐기 제거</div></div>
             <div class="cap">외부 네트워크 활용</div>
-            <div class="stled ok"><span class="d"></span> 쇼트 0건</div>
+            <div class="stled ok"><span class="d"></span> 0불량</div>
           </div>
           <div class="invrow">
-            <div><div class="nm">ERP · 생산현황 · 자재현황 시스템</div><div class="cap">배터리팩·정수기 부품·자동차 와이어링 하네스 생산운영</div></div>
-            <div class="cap">시스템 도입</div>
-            <div class="stled ok"><span class="d"></span> ONLINE</div>
-          </div>
-          <div class="invrow">
-            <div><div class="nm">SQ · ISO · IATF 16949 인증 관리</div><div class="cap">고객 불량·필드 불량 0건 유지 · 품질시스템 운영</div></div>
+            <div><div class="nm">SQ · ISO · IATF 16949 품질체계</div><div class="cap">자동차 품질표준 운영 · 고객·필드 불량 0건 유지</div></div>
             <div class="cap">인증 관리</div>
-            <div class="stled ok"><span class="d"></span> 불량 0건</div>
+            <div class="stled ok"><span class="d"></span> 적합</div>
+          </div>
+          <div class="invrow">
+            <div><div class="nm">조달단가 재협상 · 계약 갱신</div><div class="cap">실투입 기준 공급단가 재산정 · 마진 구조 개선</div></div>
+            <div class="cap">협력사 협상</div>
+            <div class="stled amb"><span class="d"></span> 재산정</div>
           </div>
         </div>
       </section>
 
-      <!-- ===== U: stack + contact ===== -->
+      <!-- ===== U6: stack + contact ===== -->
       <section class="u" aria-label="기술 스택 / 연락처">
         <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
         <div class="footu">
           <div class="chips">
-            <span class="chip"><b>생산관리</b></span><span class="chip">원가분석</span><span class="chip">ERP 도입</span>
-            <span class="chip">비전검사</span><span class="chip"><b>IATF&nbsp;16949</b></span><span class="chip">SQ·ISO</span>
-            <span class="chip">협력사 협상</span><span class="chip">배터리팩</span><span class="chip">와이어링 하네스</span><span class="chip">정수기 부품</span>
-          </div>
-          <div class="contact">
-            <a class="cbtn" href="mailto:64etuor@gmail.com"><span class="d"></span> 64etuor@gmail.com</a>
-            <a class="cbtn" href="https://github.com/64etuor" target="_blank" rel="noopener"><span class="d"></span> github.com/64etuor</a>
-            <a class="cbtn" href="tel:01074481791"><span class="d"></span> 010-7448-1791</a>
+            <span class="chip"><b>원가 제1원칙</b></span><span class="chip">OPEX 절감</span><span class="chip">조달단가 재협상</span>
+            <span class="chip">라인 운영구조</span><span class="chip">비전검사</span><span class="chip"><b>IATF&nbsp;16949</b></span><span class="chip">SQ·ISO</span>
+            <span class="chip">생산계획·재고</span><span class="chip">배터리팩</span><span class="chip">와이어링 하네스</span>
           </div>
         </div>
-        <div class="label-strip" style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px">박양하 · 은성에스아이티 2020.08–2022.11 · 운영경비 −85% · MEASURE · CALIBRATE · VERIFY</div>
+        <div class="label-strip" style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px">박양하 · 은성에스아이티 2020.08–2022.11 · OPEX −85% · 제1원칙 · 측정 · 심문 · 절감</div>
       </section>
 
     </div>
@@ -672,468 +414,225 @@
 (function(){
   "use strict";
 
-  /* ===== 공용 rAF 루프 (단일 루프, dt 클램프) ===== */
-  var RAF_CBS = [];
-  var _lastRaf = 0;
-  function rafLoop(now){
-    var dt = Math.min((now - _lastRaf) / 1000, 0.1); // 최대 100ms 클램프
-    _lastRaf = now;
-    for(var _i=0;_i<RAF_CBS.length;_i++) RAF_CBS[_i](dt, now);
-    requestAnimationFrame(rafLoop);
-  }
-  requestAnimationFrame(function(now){ _lastRaf=now; requestAnimationFrame(rafLoop); });
-
-  /* ===== 노이즈 유틸 ===== */
-  function rnd(){ return Math.random()*2-1; } // -1..1
-
-  /* ---------- DMM function selector ---------- */
-  var METRICS = [
-    {fn:"DC %",   nm:"라인 운영경비 절감",   val:-85.00, unit:"%",  pct:0.85, ann:["PCT"]},
-    {fn:"단가 %", nm:"협력사 단가 인상",      val:+30.00, unit:"%",  pct:0.30, ann:["PCT","DCV"]},
-    {fn:"불량 건",nm:"고객·필드 불량",        val:0,      unit:"건", pct:0.0,  ann:["MV"]},
-    {fn:"OCV V",  nm:"배터리셀 OCV",          val:+3.642, unit:"V",  pct:0.73, ann:["DCV"]},
-    {fn:"IR MΩ",  nm:"절연 저항 (IR)",        val:+500.00,unit:"MΩ", pct:0.92, ann:["OHM"]},
-    {fn:"인증",   nm:"SQ·ISO·IATF 16949",    val:3,      unit:"건", pct:0.60, ann:["OHM","MV"]},
-    {fn:"시스템", nm:"ERP·생산·자재 도입",    val:3,      unit:"건", pct:0.60, ann:["PCT"]}
+  /* ============================================================
+     DATA
+     - LEDGER: 운영경비 항목(지수 비중 합 100). 항목·심문은 실제 구조,
+       기준 비중(base)/절감후(cut)는 illustrative [확인필요].
+     - WATERFALL: 기준 100 → 레버별 단계 감액 → 최종 15 (= −85%, 실제).
+       단계 분해값은 illustrative.
+  ============================================================ */
+  var LEDGER = [
+    { nm:"재료비 · 조달단가",  base:38, cut:11, lever:"LEVER ① 조달단가 재협상",
+      q:"이 공급단가는 실투입 자원에 근거한 값인가, 관행 단가인가?",
+      a:"실투입 자원 기준으로 단가를 재산정하고 <b>협력사와 재협상</b> · 마진 구조를 개선해 재료·조달원가를 끌어내렸다." },
+    { nm:"직접 공수",          base:22, cut:7,  lever:"LEVER ② 라인 운영구조 재설계",
+      q:"이 공수는 제품이 요구하는가, 라인 배치가 만들어낸 낭비인가?",
+      a:"<b>라인 운영구조를 재설계</b>해 불필요한 직접 공수를 제거하고 흐름을 단축했다." },
+    { nm:"자재 · 소모품",      base:12, cut:5,  lever:"LEVER ① · ② 단가·운영 개선",
+      q:"이 소모량은 표준인가, 누구도 묻지 않은 초과분인가?",
+      a:"소모품 사용을 재산정하고 단가·운영구조 개선분에 함께 묶어 정비했다." },
+    { nm:"재고 유지비",        base:10, cut:3,  lever:"LEVER ④ 생산계획·재고 개선",
+      q:"이 재고는 수요가 부른 것인가, 계획 부재가 쌓아둔 것인가?",
+      a:"<b>생산계획·재고 관리</b>를 정비해 과잉 재고와 유지비를 축소했다." },
+    { nm:"불량 · 재작업 · 폐기", base:11, cut:0, lever:"LEVER ③ 비전검사 → 0불량",
+      q:"이 폐기·재작업 비용은 불가피한가, 검사로 없앨 수 있는가?",
+      a:"저비용 <b>비전검사를 도입</b>해 역방향 삽입 등 불량을 원천 차단 · <b>0불량</b>으로 이 항목 비용을 제거했다." },
+    { nm:"간접 · 운영",        base:7,  cut:4,  lever:"LEVER ② · ④ 운영 정비",
+      q:"이 간접비는 운영에 필수인가, 줄지 않아서 그대로 둔 것인가?",
+      a:"인원·공수 운영을 정비하고 간접 운영비를 다시 들여다봐 축소했다." }
   ];
-  var selBtns = document.getElementById("selbtns");
-  var dmmDigits = document.getElementById("dmmDigits");
-  var dmmUnit = document.getElementById("dmmUnit");
-  var dmmBar = document.getElementById("dmmBar");
-  var dmmName = document.getElementById("dmmName");
-  var dialFn = document.getElementById("dialFn");
-  var dialPtr = document.getElementById("dialPtr");
-  var dialMarks = document.getElementById("dialMarks");
-  var annunEls = Array.prototype.slice.call(document.querySelectorAll("#annun .an"));
-  var curIdx = 0;
+  // base 합 = 100, cut 합 = 30 → 표기상 합계 100→15 (−85%) 로 정규화하여 표시.
+  // (지수는 illustrative; 실제는 총 OPEX −85% 만 확정)
 
-  // DMM 상태 (rAF 루프용)
-  var dmm = {
-    cur: -85.00,      // 현재 표시값 (보간 중)
-    target: -85.00,   // 목표값
-    unit: "%",
-    rolling: false,
-    rollFrom: -85.00,
-    rollT0: 0,
-    rollDur: 520,
-    // 정착 후 미세 떨림
-    jitterAmp: 0.0,   // 정착 후 ±amp 변동
-    jitterPhase: 0,
-    // 다이얼 포인터 현재 각도 (보간)
-    dialCur: -135,
-    dialTarget: -135,
-  };
+  /* ---------- ledger render ---------- */
+  var ledRows = document.getElementById("ledRows");
+  var interroQ = document.getElementById("interroQ");
+  var interroA = document.getElementById("interroA");
+  var interroLev = document.getElementById("interroLev");
+  var interroIdx = document.getElementById("interroIdx");
+  var rowEls = [];
 
-  // dial marks
+  function showInterro(i){
+    var it = LEDGER[i];
+    rowEls.forEach(function(el,j){ el.classList.toggle("active", j===i); });
+    interroQ.textContent = it.q;
+    interroA.innerHTML = it.a;
+    interroLev.textContent = it.lever;
+    interroIdx.textContent = "항목 " + String(i+1).padStart(2,"0") + " / " + String(LEDGER.length).padStart(2,"0");
+  }
+
+  LEDGER.forEach(function(it,i){
+    var b = document.createElement("button");
+    b.className = "ledrow";
+    b.type = "button";
+    var cutTxt = it.cut === 0 ? "0" : String(it.cut);
+    var cutCls = it.cut === 0 ? "cut zero" : "cut";
+    b.innerHTML =
+      '<span class="li"><span class="led"></span>'+
+        '<span style="min-width:0"><span class="nm">'+it.nm+'</span></span></span>'+
+      '<span class="base">'+it.base+'</span>'+
+      '<span class="'+cutCls+'">'+cutTxt+'</span>';
+    b.addEventListener("click", function(){ showInterro(i); });
+    b.addEventListener("focus", function(){ showInterro(i); });
+    ledRows.appendChild(b);
+    rowEls.push(b);
+  });
+  // static-correct default: first item interrogated
+  showInterro(0);
+
+  /* ---------- waterfall steps (text list, static-correct) ---------- */
+  // 단계 분해값 illustrative — 합산 감액 85 → 최종 15
+  var STEPS = [
+    { kind:"baseline", si:"100", nm:"기준 운영경비", sd:"제1원칙 재검토 이전 · 지수 100", val:100, drop:0 },
+    { kind:"step", si:"①", nm:"조달단가 재협상", sd:"재료·조달원가 재산정", drop:27 },
+    { kind:"step", si:"②", nm:"라인 운영구조 재설계", sd:"직접 공수·간접비 축소", drop:22 },
+    { kind:"step", si:"③", nm:"비전검사 → 0불량", sd:"불량·재작업·폐기 비용 제거", drop:24 },
+    { kind:"step", si:"④", nm:"인원·공수·계획·재고", sd:"재고 유지비·운영 낭비 축소", drop:12 },
+    { kind:"final", si:"=15", nm:"최종 운영경비", sd:"기준 대비 −85% · 실제 성과", val:15, drop:0 }
+  ];
+  // 누적값 계산 (100 - 누적 drop)
   (function(){
-    var svgns="http://www.w3.org/2000/svg", N=METRICS.length, span=270, start=-135;
-    for(var i=0;i<N;i++){
-      var a=(start + span*(i/(N-1)))*Math.PI/180;
-      var r1=44,r2=50;
-      var mx1=60+Math.cos(a-Math.PI/2)*r1, my1=60+Math.sin(a-Math.PI/2)*r1;
-      var mx2=60+Math.cos(a-Math.PI/2)*r2, my2=60+Math.sin(a-Math.PI/2)*r2;
-      var ln=document.createElementNS(svgns,"line");
-      ln.setAttribute("x1",mx1.toFixed(1));ln.setAttribute("y1",my1.toFixed(1));
-      ln.setAttribute("x2",mx2.toFixed(1));ln.setAttribute("y2",my2.toFixed(1));
-      ln.setAttribute("stroke","#4a545d");ln.setAttribute("stroke-width","2");
-      dialMarks.appendChild(ln);
-    }
-  })();
-  function dialAngle(i){var N=METRICS.length;return -135 + 270*(i/(N-1));}
-
-  // build selector buttons
-  METRICS.forEach(function(m,i){
-    var b=document.createElement("button");
-    b.className="selbtn"+(i===0?" active":"");
-    b.innerHTML='<span class="led"></span><span class="nm">'+m.nm+'</span><span class="ds">'+m.fn+'</span>';
-    b.addEventListener("click",function(){selectMetric(i);});
-    selBtns.appendChild(b);
-  });
-  var selButtonEls = Array.prototype.slice.call(selBtns.children);
-
-  function setAnnun(list){
-    annunEls.forEach(function(el){
-      var key=el.getAttribute("data-an");
-      if(key==="AUTO"||key==="REC"){ el.classList.add("on"); return; }
-      if(list.indexOf(key)>=0) el.classList.add("on"); else el.classList.remove("on");
+    var running = 100;
+    STEPS.forEach(function(s){
+      if(s.kind==="step"){ running -= s.drop; s.val = running; }
     });
-  }
+  })();
 
-  function renderDigits(v, unit, target){
-    var txt;
-    if(unit==="건"){ txt=Math.abs(Math.round(v)).toFixed(0); }
-    else if(unit==="V"){ txt=(target>=0?"+":"−")+Math.abs(v).toFixed(3); }
-    else { txt=(target>0?"+":(target<0?"−":""))+Math.abs(v).toFixed(2); }
-    dmmDigits.textContent=txt;
-  }
+  var wfSteps = document.getElementById("wfSteps");
+  STEPS.forEach(function(s){
+    var row = document.createElement("div");
+    row.className = "wfstep " + (s.kind!=="step" ? s.kind : "");
+    var valTxt;
+    if(s.kind==="baseline") valTxt = String(s.val);
+    else if(s.kind==="final") valTxt = String(s.val);
+    else valTxt = "−"+s.drop+" → "+s.val;
+    row.innerHTML =
+      '<span class="si">'+s.si+'</span>'+
+      '<span><div class="sn">'+s.nm+'</div><div class="sd">'+s.sd+'</div></span>'+
+      '<span class="sv">'+valTxt+'</span>';
+    wfSteps.appendChild(row);
+  });
 
-  function selectMetric(i){
-    curIdx=i;
-    var m=METRICS[i];
-    selButtonEls.forEach(function(el,j){el.classList.toggle("active",j===i);});
-    dialFn.innerHTML = m.fn.replace(" ","&nbsp;");
-    dmmUnit.textContent=m.unit;
-    dmmName.innerHTML="측정항목 · <b>"+m.nm+"</b>";
-    setAnnun(m.ann);
-    dmmBar.style.width=(Math.max(4,m.pct*100)).toFixed(0)+"%";
-    // 롤 시작
-    dmm.rollFrom = dmm.cur;
-    dmm.target = m.val;
-    dmm.unit = m.unit;
-    dmm.rolling = true;
-    dmm.rollT0 = performance.now();
-    dmm.rollDur = 520;
-    dmm.jitterAmp = 0;
-    // 다이얼 목표 각도
-    dmm.dialTarget = dialAngle(i);
-  }
+  /* ---------- waterfall SVG (static, headless-safe) ---------- */
+  (function(){
+    var svg = document.getElementById("wfSvg");
+    var NS = "http://www.w3.org/2000/svg";
+    var W = 520, H = 300;
+    var padL = 34, padR = 12, padT = 18, padB = 40;
+    var plotW = W - padL - padR, plotH = H - padT - padB;
+    var maxV = 100;
+    function yOf(v){ return padT + plotH * (1 - v/maxV); }
 
-  // DMM rAF 업데이트
-  RAF_CBS.push(function(dt, now){
-    // 다이얼 포인터 부드러운 보간 (스프링 느낌)
-    var daDiff = dmm.dialTarget - dmm.dialCur;
-    dmm.dialCur += daDiff * Math.min(1, dt * 8);
-    // 미세 떨림 (±0.4도)
-    var dialWobble = Math.sin(now * 0.003) * 0.4 + Math.cos(now * 0.007) * 0.2;
-    dialPtr.setAttribute("transform","rotate("+(dmm.dialCur + dialWobble).toFixed(2)+" 60 60)");
-
-    if(dmm.rolling){
-      var p = Math.min(1, (now - dmm.rollT0) / dmm.rollDur);
-      var e = 1 - Math.pow(1-p, 3); // ease-out cubic
-      var jitter = p < 0.95 ? rnd() * Math.abs(dmm.target - dmm.rollFrom) * 0.025 * (1-p) : 0;
-      dmm.cur = dmm.rollFrom + (dmm.target - dmm.rollFrom) * e;
-      renderDigits(dmm.cur + jitter, dmm.unit, dmm.target);
-      if(p >= 1){
-        dmm.rolling = false;
-        dmm.cur = dmm.target;
-        // 정착 후 마지막 자리 미세변동 설정
-        dmm.jitterAmp = (dmm.unit==="건") ? 0 : (Math.abs(dmm.target) > 10 ? 0.03 : 0.002);
-        dmm.jitterPhase = Math.random()*Math.PI*2;
-      }
-    } else {
-      // 정착 후 미세 변동 (퍼린 느낌 2개 사인 합성)
-      if(dmm.jitterAmp > 0){
-        var j = Math.sin(now*0.00087 + dmm.jitterPhase)*dmm.jitterAmp
-              + Math.sin(now*0.00213 + dmm.jitterPhase*1.7)*dmm.jitterAmp*0.4;
-        renderDigits(dmm.cur + j, dmm.unit, dmm.target);
-      }
+    function el(tag, attrs){
+      var e = document.createElementNS(NS, tag);
+      for(var k in attrs){ e.setAttribute(k, attrs[k]); }
+      return e;
     }
-  });
 
-  // initial render
-  dmm.dialCur = dialAngle(0);
-  dmm.dialTarget = dialAngle(0);
-  dialPtr.setAttribute("transform","rotate("+dialAngle(0).toFixed(1)+" 60 60)");
-  dmmBar.style.width="85%";
-  selectMetric(0);
+    // gridlines + axis labels (0,25,50,75,100)
+    [0,25,50,75,100].forEach(function(v){
+      var y = yOf(v);
+      svg.appendChild(el("line",{x1:padL,y1:y.toFixed(1),x2:(W-padR),y2:y.toFixed(1),
+        stroke:"rgba(57,255,138,0.10)","stroke-width":1}));
+      var t = el("text",{x:(padL-6),y:(y+3).toFixed(1),"text-anchor":"end","class":"wfaxis"});
+      t.textContent = v;
+      svg.appendChild(t);
+    });
 
-  /* ---------- CAL routine ---------- */
-  var calBtn=document.getElementById("calBtn");
-  var calRead=document.getElementById("calRead");
-  var calBox=document.getElementById("calBox");
-  var calLamp=document.getElementById("calLamp");
-  var calVerdict=document.getElementById("calVerdict");
-  var calSteps=Array.prototype.slice.call(document.querySelectorAll("#calSteps .step"));
-  var calBusy=false, calState="fail";
+    // build bars: baseline (full), 4 floating step bars, final (full)
+    var bars = STEPS.filter(function(s){ return s.kind!=="? "; }); // all 6
+    var n = bars.length;
+    var gap = 10;
+    var bw = (plotW - gap*(n-1)) / n;
 
-  // CAL 수치 tween 상태
-  var cal = { cur:-30.0, target:-30.0, tweening:false, t0:0, dur:400, from:-30.0 };
+    var prevTop = null; // for connector lines
 
-  RAF_CBS.push(function(dt, now){
-    if(!cal.tweening) return;
-    var p = Math.min(1,(now-cal.t0)/cal.dur);
-    var e = p<0.5 ? 2*p*p : 1-Math.pow(-2*p+2,2)/2; // ease-in-out quad
-    cal.cur = cal.from + (cal.target - cal.from)*e;
-    var sign = cal.cur>=0 ? "+" : "";
-    calRead.innerHTML = sign+cal.cur.toFixed(1)+'<span style="font-size:.6em"> %</span>';
-    if(cal.cur >= 0) calRead.style.color="var(--vfd)"; else calRead.style.color="";
-    if(p>=1){ cal.tweening=false; cal.cur=cal.target; }
-  });
+    bars.forEach(function(s, i){
+      var x = padL + i*(bw+gap);
+      var topV, botV, fill, glow;
 
-  function calTweenTo(v, delay_ms){
-    setTimeout(function(){
-      cal.from = cal.cur; cal.target = v;
-      cal.t0 = performance.now(); cal.tweening = true;
-    }, delay_ms||0);
-  }
-
-  function beep(freq,dur){
-    try{
-      var AC=window.AudioContext||window.webkitAudioContext; if(!AC) return;
-      window._ac=window._ac||new AC();
-      var ac=window._ac; if(ac.state==="suspended") ac.resume();
-      var o=ac.createOscillator(),g=ac.createGain();
-      o.type="square";o.frequency.value=freq;
-      g.gain.setValueAtTime(0.0001,ac.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.08,ac.currentTime+0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001,ac.currentTime+dur);
-      o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+dur+0.02);
-    }catch(e){}
-  }
-
-  function runCal(){
-    if(calBusy) return; calBusy=true; calBtn.disabled=true;
-    calState="fail";
-    calBox.classList.remove("pass"); calLamp.classList.remove("pass");
-    calVerdict.classList.remove("pass"); calVerdict.textContent="OUT-OF-SPEC";
-    calRead.style.color="";
-    // 초기화 tween: 현재값 → -30
-    calTweenTo(-30.0, 0);
-    cal.dur=300;
-    calSteps.forEach(function(s){s.classList.remove("done");});
-
-    var seq=[-30.0,-18.5,-8.2,+30.0];
-    var i=0;
-    function step(){
-      if(i<calSteps.length){
-        calSteps[i].classList.add("done");
-        beep(660+i*120,0.05);
-        cal.dur=380;
-        calTweenTo(seq[i], 60);
-        i++; setTimeout(step,520);
+      if(s.kind==="baseline"){
+        topV = s.val; botV = 0;
+        fill = "#3a2a14"; // amber-ish baseline
+      } else if(s.kind==="final"){
+        topV = s.val; botV = 0;
+        fill = "url(#wfGrad)";
       } else {
-        beep(990,0.04); setTimeout(function(){beep(1320,0.12);},60);
-        calBox.classList.add("pass"); calLamp.classList.add("pass");
-        calVerdict.classList.add("pass"); calVerdict.textContent="IN-SPEC";
-        calState="pass";
-        calBusy=false; calBtn.disabled=false;
+        // floating bar showing the drop from previous level to new level
+        botV = s.val;        // new (lower) level
+        topV = s.val + s.drop; // previous (higher) level
+        fill = "#0c5a39";
       }
-    }
-    setTimeout(step, 350);
-  }
-  calBtn.addEventListener("click",runCal);
 
-  /* ---------- OPC 텔레메트리 (rAF 통합) ---------- */
-  var opcSeq=document.getElementById("opcSeq"), opcTime=document.getElementById("opcTime");
-  var _opcSeq=1, _opcElapsed=0, _lastOpcSec=-1;
-  RAF_CBS.push(function(dt){
-    _opcElapsed += dt;
-    var totalSec = Math.floor(_opcElapsed) % 300;
-    if(totalSec === _lastOpcSec) return;
-    _lastOpcSec = totalSec;
-    var mm=String(Math.floor(totalSec/60)).padStart(2,"0"), ss=String(totalSec%60).padStart(2,"0");
-    opcTime.textContent=mm+":"+ss;
-    if(totalSec%5===0){ _opcSeq++; opcSeq.textContent="seq "+String(_opcSeq).padStart(4,"0"); }
-  });
+      var yTop = yOf(topV), yBot = yOf(botV);
+      var h = Math.max(2, yBot - yTop);
 
-  /* ---------- 항목 리스트 이벤트 로그 스트리밍 ---------- */
-  (function(){
-    var LOG_ITEMS = [
-      {tag:"OPEX",  col:"var(--green)", msgs:["운영경비 계측 완료","절감율 −85% 확인","라인 경비 정상","비용 구조 분석 OK","운영경비 목표 달성"]},
-      {tag:"UNIT",  col:"var(--amber)", msgs:["단가 인상 관철 +30%","협력사 계약 갱신","단가 편차 0.1% 이내","재협상 타결 확인","단가 기준선 갱신"]},
-      {tag:"QC",    col:"var(--cyan)",  msgs:["불량 0건 유지","비전검사 Pass","역방향 삽입 0건","셀 OCV 정상","IR > 500MΩ 확인"]},
-      {tag:"OCV",   col:"var(--green)", msgs:["OCV 3.642V 측정","셀 전압 범위 IN","OCV 편차 <0.5mV","배터리 셀 정상","OCV Pass"]},
-      {tag:"IR",    col:"var(--cyan)",  msgs:["IR > 500MΩ 측정","절연 저항 정상","IR 측정 완료","절연 Pass","IR 기준 충족"]},
-      {tag:"IATF",  col:"var(--amber)", msgs:["IATF 16949 적합","감사 기록 갱신","인증 상태 정상","SQ/ISO 확인","품질 기준 충족"]},
-      {tag:"ERP",   col:"var(--blue)",  msgs:["ERP 데이터 동기화","생산현황 갱신","자재현황 업데이트","배치 처리 완료","ERP 연결 정상"]}
-    ];
+      // bar
+      var rect = el("rect",{x:x.toFixed(1),y:yTop.toFixed(1),width:bw.toFixed(1),height:h.toFixed(1),
+        rx:2, fill:fill});
+      if(s.kind==="baseline"){ rect.setAttribute("stroke","#5a4422"); rect.setAttribute("stroke-width","1"); }
+      else { rect.setAttribute("stroke","rgba(57,255,158,0.5)"); rect.setAttribute("stroke-width","1"); rect.setAttribute("filter","url(#wfGlow)"); }
+      svg.appendChild(rect);
 
-    // 로그 컨테이너 생성
-    var logWrap = document.createElement("div");
-    logWrap.style.cssText="margin-top:10px;padding:8px 10px;background:#0a0d0f;border:1px solid #1a2228;border-radius:6px;overflow:hidden;height:96px;position:relative;";
-    var logInner = document.createElement("div");
-    logInner.style.cssText="display:flex;flex-direction:column;gap:3px;";
-    logWrap.appendChild(logInner);
-    // fade top/bottom
-    var fadeTop=document.createElement("div");
-    fadeTop.style.cssText="position:absolute;top:0;left:0;right:0;height:22px;background:linear-gradient(to bottom,#0a0d0f,transparent);pointer-events:none;z-index:1;";
-    var fadeBtm=document.createElement("div");
-    fadeBtm.style.cssText="position:absolute;bottom:0;left:0;right:0;height:22px;background:linear-gradient(to top,#0a0d0f,transparent);pointer-events:none;z-index:1;";
-    logWrap.appendChild(fadeTop); logWrap.appendChild(fadeBtm);
-
-    // 삽입 위치: DMM 유닛 섹션 하단 (jacks 위)
-    var jacksEl = document.querySelector(".jacks");
-    if(jacksEl && jacksEl.parentNode){
-      jacksEl.parentNode.insertBefore(logWrap, jacksEl);
-    }
-
-    var logLines=[];
-    var ts = { h:9, m:14, s:0 };
-
-    function tsStr(){
-      return String(ts.h).padStart(2,"0")+":"+String(ts.m).padStart(2,"0")+":"+String(ts.s).padStart(2,"0");
-    }
-    function tickTs(){
-      ts.s = (ts.s+1)%60;
-      if(ts.s===0){ ts.m=(ts.m+1)%60; if(ts.m===0) ts.h=(ts.h+1)%24; }
-    }
-
-    function addLog(){
-      var item = LOG_ITEMS[Math.floor(Math.random()*LOG_ITEMS.length)];
-      var msg = item.msgs[Math.floor(Math.random()*item.msgs.length)];
-      tickTs();
-      var line = document.createElement("div");
-      line.style.cssText="display:flex;gap:6px;align-items:center;font-family:'DM Mono',monospace;font-size:9px;opacity:0;transition:opacity .35s;white-space:nowrap;";
-      line.innerHTML=
-        '<span style="color:#3a454e;flex:0 0 auto">'+tsStr()+'</span>'+
-        '<span style="color:'+item.col+';font-weight:700;flex:0 0 auto;background:rgba(0,0,0,.4);border-radius:3px;padding:0 4px">'+item.tag+'</span>'+
-        '<span style="color:#5a6a62;overflow:hidden;text-overflow:ellipsis">'+msg+'</span>';
-      logInner.appendChild(line);
-      logLines.push(line);
-      requestAnimationFrame(function(){ line.style.opacity="1"; });
-
-      // 최대 8줄 유지
-      if(logLines.length > 8){
-        var old = logLines.shift();
-        old.style.opacity="0";
-        setTimeout(function(){ if(old.parentNode) old.parentNode.removeChild(old); }, 380);
+      // connector from previous bar top-of-drop
+      if(prevTop !== null){
+        var conn = el("line",{x1:prevTop.x.toFixed(1),y1:prevTop.y.toFixed(1),
+          x2:x.toFixed(1),y2:yTop.toFixed(1),
+          stroke:"rgba(126,140,135,0.55)","stroke-width":1,"stroke-dasharray":"3 3"});
+        svg.appendChild(conn);
       }
-    }
-
-    // 초기 3줄 즉시 채우기
-    addLog(); addLog(); addLog();
-
-    // 불규칙 스트리밍 (1.2~3.5초 간격)
-    function scheduleLog(){
-      var delay = 1200 + Math.random()*2300;
-      setTimeout(function(){ addLog(); scheduleLog(); }, delay);
-    }
-    scheduleLog();
-  })();
-
-  /* ---------- CRT scope (OCV / IR waveform) ---------- */
-  var cv=document.getElementById("scopeCv"), ctx=cv.getContext("2d");
-  var W=cv.width, H=cv.height, scopeT=0;
-  function drawGrid(){
-    ctx.clearRect(0,0,W,H);
-    var g=ctx.createLinearGradient(0,0,0,H);
-    g.addColorStop(0,"#031309");g.addColorStop(1,"#020806");
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-    ctx.strokeStyle="rgba(57,255,138,.10)";ctx.lineWidth=1;
-    var dx=W/10, dy=H/6;
-    for(var x=0;x<=W+1;x+=dx){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke();}
-    for(var y=0;y<=H+1;y+=dy){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke();}
-    ctx.strokeStyle="rgba(57,255,138,.22)";
-    ctx.beginPath();ctx.moveTo(0,H/2);ctx.lineTo(W,H/2);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(W/2,0);ctx.lineTo(W/2,H);ctx.stroke();
-    ctx.strokeStyle="rgba(57,255,138,.3)";
-    for(var xx=0;xx<=W;xx+=dx/5){ctx.beginPath();ctx.moveTo(xx,H/2-3);ctx.lineTo(xx,H/2+3);ctx.stroke();}
-  }
-  RAF_CBS.push(function(dt){
-    scopeT += dt * 1.0; // dt 기반 속도
-    drawGrid();
-    // CH1 OCV
-    ctx.lineWidth=2.2;ctx.strokeStyle="#39ff8a";ctx.shadowBlur=10;ctx.shadowColor="rgba(57,255,138,.7)";
-    ctx.beginPath();
-    for(var x=0;x<=W;x++){
-      var ph=(x/W)*Math.PI*4 + scopeT;
-      var env=0.55*(1-Math.exp(-(x/W)*3));
-      var y=H/2 - (env*Math.sin(ph)*H*0.30) - (0.06*H*Math.sin(scopeT*0.6));
-      x===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
-    }
-    ctx.stroke();
-    // CH2 IR
-    ctx.strokeStyle="#ffb01f";ctx.shadowColor="rgba(255,176,31,.6)";ctx.lineWidth=1.8;
-    ctx.beginPath();
-    for(var x2=0;x2<=W;x2++){
-      var ph2=(x2/W)*Math.PI*6 + scopeT*0.7;
-      var sq=Math.tanh(Math.sin(ph2)*3)*0.5;
-      var y2=H*0.74 - sq*H*0.14;
-      x2===0?ctx.moveTo(x2,y2):ctx.lineTo(x2,y2);
-    }
-    ctx.stroke();
-    ctx.shadowBlur=0;
-    // sweep dot
-    var sx=((scopeT*40)%W);
-    ctx.fillStyle="rgba(57,255,138,.9)";
-    ctx.beginPath();ctx.arc(sx,H/2,2.5,0,Math.PI*2);ctx.fill();
-  });
-  drawGrid();
-
-  /* ---------- OBS observability module ---------- */
-  (function(){
-    function gauge(parent, label, sub, val, klass){
-      var ns="http://www.w3.org/2000/svg";
-      var wrap=document.createElement("div"); wrap.className="gauge";
-      var svg=document.createElementNS(ns,"svg");
-      svg.setAttribute("width","52"); svg.setAttribute("height","32"); svg.setAttribute("viewBox","0 0 52 32");
-      var cx=26, cy=28, r=22, frac=Math.max(0,Math.min(1,val));
-      function arc(p0,p1,color,w){
-        var a0=Math.PI*(1-p0), a1=Math.PI*(1-p1);
-        var x0=cx+r*Math.cos(a0), y0=cy-r*Math.sin(a0);
-        var x1=cx+r*Math.cos(a1), y1=cy-r*Math.sin(a1);
-        var pth=document.createElementNS(ns,"path");
-        pth.setAttribute("d","M"+x0.toFixed(1)+" "+y0.toFixed(1)+" A"+r+" "+r+" 0 0 1 "+x1.toFixed(1)+" "+y1.toFixed(1));
-        pth.setAttribute("fill","none"); pth.setAttribute("stroke",color);
-        pth.setAttribute("stroke-width",w); pth.setAttribute("stroke-linecap","round");
-        svg.appendChild(pth);
+      // for steps/final, the connector should hop at the level the bar starts (top)
+      prevTop = { x: x+bw, y: yTop };
+      if(s.kind!=="baseline" && s.kind!=="final"){
+        // next connector should start at the NEW (lower) level = bottom of float
+        prevTop = { x: x+bw, y: yBot };
       }
-      arc(0,1,"#1a2228",4);
-      var stroke = klass==="r"?"#ff4d4d":klass==="a"?"#ffb01f":klass==="c"?"#5cd8ff":"#39ff8a";
-      if(frac>0.01) arc(0,frac,stroke,4);
-      wrap.appendChild(svg);
-      var k=document.createElement("div"); k.className="gk"; k.textContent=label; wrap.appendChild(k);
-      var v=document.createElement("div"); v.className="gv "+(klass||""); v.textContent=sub; wrap.appendChild(v);
-      parent.appendChild(wrap);
-      return {svg:svg, frac:frac, stroke:stroke, cx:cx, cy:cy, r:r, arc:arc};
-    }
-    var red=document.getElementById("redGauges");
-    if(red){
-      gauge(red,"OPEX절감","−85%",0.85,"");
-      gauge(red,"불량","0건",0.0,"");
-      gauge(red,"단가인상","+30%",0.30,"a");
-    }
-    var use=document.getElementById("useGauges");
-    if(use){
-      gauge(use,"ERP","도입",1.0,"c");
-      gauge(use,"비전검사","도입",1.0,"c");
-      gauge(use,"인증","3종",0.80,"");
-    }
+      if(s.kind==="baseline"){
+        prevTop = { x: x+bw, y: yTop }; // baseline top = 100 level
+      }
 
-    // animate cardinality + burn bars on first frame
-    requestAnimationFrame(function(){
-      var ab=document.getElementById("cardAggBar"); if(ab) ab.style.width="85%";
-      var rb=document.getElementById("cardRawBar"); if(rb) rb.style.width="30%";
-      var bu=document.getElementById("burnUsed"); if(bu) bu.style.width="0%";
+      // value label above bar
+      var lblV = el("text",{x:(x+bw/2).toFixed(1),y:(yTop-4).toFixed(1),
+        "text-anchor":"middle","class":"wfval"});
+      lblV.setAttribute("fill", s.kind==="baseline" ? "#ffb01f" : "#39ff8a");
+      lblV.textContent = (s.kind==="step") ? ("−"+s.drop) : String(s.val);
+      svg.appendChild(lblV);
+
+      // caption under axis
+      var cap = el("text",{x:(x+bw/2).toFixed(1),y:(H-padB+14).toFixed(1),
+        "text-anchor":"middle","class":"wfcap"});
+      cap.textContent = s.si;
+      svg.appendChild(cap);
+      var cap2 = el("text",{x:(x+bw/2).toFixed(1),y:(H-padB+25).toFixed(1),
+        "text-anchor":"middle","class":"wfcap"});
+      cap2.setAttribute("fill","#5a665f");
+      // shorten name for axis
+      var short = s.nm.length>7 ? s.nm.slice(0,6)+"…" : s.nm;
+      if(s.kind==="baseline") short="기준";
+      if(s.kind==="final") short="−85%";
+      cap2.textContent = short;
+      svg.appendChild(cap2);
     });
 
-    // span waterfall: 원가절감 프로세스
-    var spans=[
-      {n:"원가구조 분석",   o:0,   w:1.00, err:false, ms:"4주"},
-      {n:"실투입 목록화",   o:.05, w:.25,  err:false, ms:"1주"},
-      {n:"단가 편차 산출",  o:.30, w:.20,  err:true,  ms:"−30%"},
-      {n:"협력사 재협상",   o:.50, w:.30,  err:false, ms:"2주"},
-      {n:"계약 무효·관철", o:.80, w:.20,  err:false, ms:"+30%"}
-    ];
-    var wf=document.getElementById("wfRows");
-    if(wf){
-      spans.forEach(function(s){
-        var row=document.createElement("div"); row.className="wfrow";
-        var nm=document.createElement("div"); nm.className="wfname"; nm.textContent=s.n;
-        var tr=document.createElement("div"); tr.className="wftrack";
-        var sp=document.createElement("div"); sp.className="wfspan"+(s.err?" err":"");
-        sp.style.left=(s.o*100).toFixed(1)+"%"; sp.style.width=(s.w*100).toFixed(1)+"%";
-        tr.appendChild(sp);
-        var ms=document.createElement("div"); ms.className="wfms"; ms.textContent=s.ms;
-        row.appendChild(nm); row.appendChild(tr); row.appendChild(ms);
-        wf.appendChild(row);
-      });
-      requestAnimationFrame(function(){
-        Array.prototype.forEach.call(wf.querySelectorAll(".wfspan"),function(el,i){
-          setTimeout(function(){el.classList.add("shown");}, 120+i*90);
-        });
-      });
-    }
-
-    // drilldown cycle
-    var tiers=Array.prototype.slice.call(document.querySelectorAll(".tier"));
-    var anomEl=document.getElementById("obsAnom"), labels=["−85%","+30%","0건"];
-    var di=0;
-    if(tiers.length){
-      // rAF 기반 타이머 (setInterval 대신)
-      var drillAcc=0;
-      RAF_CBS.push(function(dt){
-        drillAcc+=dt;
-        if(drillAcc < 2.4) return;
-        drillAcc=0;
-        di=(di+1)%tiers.length;
-        tiers.forEach(function(el,j){el.classList.toggle("act",j===di);});
-        if(anomEl) anomEl.textContent=labels[di];
-      });
-    }
+    // defs: gradient + glow (append last so they exist)
+    var defs = el("defs",{});
+    var grad = el("linearGradient",{id:"wfGrad",x1:"0",y1:"0",x2:"0",y2:"1"});
+    grad.appendChild(el("stop",{offset:"0","stop-color":"#39ff8a"}));
+    grad.appendChild(el("stop",{offset:"1","stop-color":"#0c5a39"}));
+    defs.appendChild(grad);
+    var filt = el("filter",{id:"wfGlow",x:"-30%",y:"-30%",width:"160%",height:"160%"});
+    var blur = el("feGaussianBlur",{stdDeviation:"2","in":"SourceGraphic",result:"b"});
+    var merge = el("feMerge",{});
+    merge.appendChild(el("feMergeNode",{"in":"b"}));
+    merge.appendChild(el("feMergeNode",{"in":"SourceGraphic"}));
+    filt.appendChild(blur); filt.appendChild(merge);
+    defs.appendChild(filt);
+    svg.insertBefore(defs, svg.firstChild);
   })();
 
-  if(document.fonts && document.fonts.ready){ document.fonts.ready.then(function(){}); }
+  /* ---------- gentle ambient pulse on header dot only (no heavy loops) ---------- */
+  // (CSS handles .dot.run blink; nothing else required — final state is static-correct)
+
 })();
 </script>
 </body>

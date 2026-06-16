@@ -596,26 +596,15 @@ function heatScale(v){
 }
 
 /* ---- 연락처 sheet ---- */
-const CONTACT=[
-  {a:"Email",  b:"64etuor@gmail.com"},
-  {a:"GitHub", b:"github.com/64etuor"},
-  {a:"Phone",  b:"010-7448-1791"},
-];
 function buildContact(){
   const pane=document.createElement("div"); pane.className="sheetpane"; pane.dataset.sheet="contact";
   const {t,tb}=tableShell([160,420]);
   let r=addRow(tb,1,true);
   ["항목","값(=HYPERLINK)"].forEach((h,i)=>regCell(cell(r,h),COLNAME(i)+"1"));
-  CONTACT.forEach((c,idx)=>{
-    const rn=idx+2; const tr=addRow(tb,rn); const z=idx%2?"zebra":"";
-    regCell(cell(tr,c.a,"title "+z),`A${rn}`);
-    const cB=cell(tr,`<span style="color:var(--num);font-family:var(--mono)">${c.b}</span>`,z);
-    regCell(cB,`B${rn}`,{formula:`=HYPERLINK("${c.b}")`, explain:`연락처 셀`, isFormula:true});
-  });
-  const sr=addRow(tb,CONTACT.length+2);
-  regCell(cell(sr,"<b>=CONCAT()</b>","title formula"),`A${CONTACT.length+2}`);
+  const sr=addRow(tb,2);
+  regCell(cell(sr,"<b>=CONCAT()</b>","title formula"),`A2`);
   const cB=cell(sr,"박양하 - 현장의 불합리를 코드로 바꾼 개발자","muted");
-  regCell(cB,`B${CONTACT.length+2}`,{
+  regCell(cB,`B2`,{
     formula:`=CONCAT(이름, " - ", 한줄소개)`,
     explain:`자기소개 결합 셀`,
     isFormula:true,

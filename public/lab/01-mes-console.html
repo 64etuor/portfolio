@@ -280,13 +280,13 @@ svg text{fill:var(--txt-dim);font-family:'JetBrains Mono';font-size:9px}
     </div>
     <div class="philo-cell">
       <div class="pname"><span class="pj">⚙</span> 데이터 수집 · ETL LAYER</div>
-      <div class="ptag">OPC UA · TCP/IP · OCV/IR 검사장비 · MS Access</div>
-      <div class="pdesc">구형 OCV/IR 검사장비 <em>Python 드라이버</em> + OPC UA 설비 태그 수집 + TCP/IP 비전 데이터. MS Access → PostgreSQL 마이그레이션.</div>
+      <div class="ptag">OPC UA · TCP/IP 비전 · OCV/IR 검사장비 · MS Access DB</div>
+      <div class="pdesc">구형 OCV/IR 검사장비 <em>Python 드라이버</em>(MS Access DB) + OPC UA 설비 태그 수집 + TCP/IP 비전 데이터. 수집 데이터 → <em>PostgreSQL</em> 중앙 적재.</div>
     </div>
     <div class="philo-cell">
       <div class="pname"><span class="pj">⬡</span> 풀스택 아키텍처 · FULL-STACK</div>
       <div class="ptag">Django REST · React · TypeScript · Electron · PostgreSQL · Dash</div>
-      <div class="pdesc">Backend DRF API · Frontend React/TS/Electron · DB PostgreSQL · 실시간 대시보드 Python Dash. <em>1인 설계·구현.</em> 아래 화면은 해당 MES가 표시하는 운영 현황.</div>
+      <div class="pdesc">Backend DRF API · Frontend React/TS/Electron · DB PostgreSQL · 실시간 대시보드 Python Dash. 계층형 S/N 바코드 체계 자체 설계. <em>기획·개발 리딩 (자체 개발).</em></div>
     </div>
   </div>
 
@@ -413,12 +413,19 @@ svg text{fill:var(--txt-dim);font-family:'JetBrains Mono';font-size:9px}
           <span class="chip"><span class="led a"></span>React/Electron 앱</span>
           <span class="chip"><span class="led c"></span>Python Dash 대시보드</span>
           <span class="chip"><span class="led"></span>OPC UA ETL 파이프라인</span>
+          <span class="chip"><span class="led c"></span>계층형 S/N 바코드 체계</span>
+        </div>
+        <div class="stat-cat">하드웨어 · 인프라</div>
+        <div class="chips" style="margin-bottom:12px">
+          <span class="chip"><span class="led a"></span>Zebra DS2208 바코드 스캐너</span>
+          <span class="chip"><span class="led a"></span>RAID1 서버</span>
         </div>
         <div class="stat-cat">공정 문서 산출물</div>
         <table class="dtable">
           <tr><td style="color:var(--txt-dim)">PFMEA</td><td>신제품 라인 고장모드분석 (국·영문)</td></tr>
           <tr><td style="color:var(--txt-dim)">CP · PFD</td><td>관리계획서 · 공정흐름도</td></tr>
           <tr><td style="color:var(--txt-dim)">SOP</td><td>표준작업절차서 번역·작성</td></tr>
+          <tr><td style="color:var(--txt-dim)">MES Spec</td><td>MES 스펙시트 자체 작성 (R0·R1)</td></tr>
         </table>
       </div>
     </div>
@@ -427,9 +434,6 @@ svg text{fill:var(--txt-dim);font-family:'JetBrains Mono';font-size:9px}
   <!-- footer / contact -->
   <div class="footer">
     <div class="fcell"><div class="fk">Operator</div><div class="fv">박양하 (Park Yangha)</div></div>
-    <div class="fcell"><div class="fk">E-mail</div><div class="fv"><a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a></div></div>
-    <div class="fcell"><div class="fk">Repository</div><div class="fv"><a href="https://github.com/64etuor" target="_blank">github.com/64etuor</a></div></div>
-    <div class="fcell"><div class="fk">Direct Line</div><div class="fv">010-7448-1791</div></div>
     <div class="fcell"><div class="fk">Console Build</div><div class="fv" style="color:var(--txt-faint)">MES-SOLAREDGE v1.0 · DAQ@1Hz · 자체개발</div></div>
   </div>
 
@@ -763,7 +767,8 @@ drawTrend();
 /* ============ Skills / MES stack health ============ */
 const skillGroups=[
   {cat:'설비 · 라인 상태',items:[['OCV 검사 1호',''],['IR 검사 2호',''],['조립 A라인','a'],['비전검사 B라인','a'],['출하검사',''],['야간배치 ETL','c']]},
-  {cat:'MES 스택 · 자체개발',items:[['Django REST',''],['PostgreSQL',''],['OPC UA ETL','a'],['React · Electron',''],['Python Dash','a'],['TCP/IP 비전','c'],['PFMEA · CP · SOP','a']]},
+  {cat:'MES 스택 · 자체개발',items:[['Django REST Framework',''],['PostgreSQL',''],['OPC UA 수집','a'],['React · TS · Electron',''],['Python Dash','a'],['TCP/IP 비전 ETL','c'],['MS Access DB 드라이버','c']]},
+  {cat:'하드웨어 · 인프라',items:[['Zebra DS2208','a'],['RAID1 서버','a'],['계층형 S/N 바코드','c']]},
 ];
 function buildSkills(){
   const root=$('#skills');

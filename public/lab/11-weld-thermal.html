@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>박양하 · THERMAL-CAM / 용접 공정 조건 설계</title>
+<title>박양하 · THERMAL-CAM / 접합 공정 기술 — 스팟·레이저·초음파</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -226,7 +226,7 @@
   <!-- bottom-right -->
   <div class="hud" id="br">
     <div id="clock"><b>--:--:--.--</b></div>
-    <div><span class="lbl">SITE</span> <b>WELD-LINE / SPOT &amp; LASER</b></div>
+    <div><span class="lbl">SITE</span> <b>이랜텍 WELD-LINE / RSW · LW · USW</b></div>
     <div><span class="lbl">OP</span> <b>PARK Y.</b> &nbsp; <span class="lbl">CAM</span> <b>IR-07</b></div>
   </div>
 
@@ -243,17 +243,17 @@
 
   <!-- process condition control -->
   <div id="doe">
-    <div id="doebtn">&#9654; <span class="blink">SIM</span> 공정 조건 전환 &nbsp;스팟 -&gt; 레이저</div>
+    <div id="doebtn">&#9654; <span class="blink">SIM</span> 공법 전환 시뮬레이션 &nbsp;초음파 -&gt; 레이저</div>
     <div id="doestate"></div>
   </div>
 
   <!-- identity -->
   <div id="identity">
-    <div class="ey">INFRARED THERMOGRAPHY . 용접 공정 조건 설계</div>
-    <h1>박양하<span class="sub">산업용접 기법 -- 스팟.레이저.초음파 . 공정 파라미터 설계 &amp; 검증</span></h1>
+    <div class="ey">INFRARED THERMOGRAPHY . 접합 공정 기술 — 이랜텍</div>
+    <h1>박양하<span class="sub">저항 스팟 · Nd:YAG 레이저 · 초음파 융착 — 세 가지 접합 원리를 모두 직접 조건 설정</span></h1>
     <div class="tags">
-      <span>스팟 용접 . 너겟 형성</span><span>레이저 용접 . 키홀/전도</span><span>초음파 용착</span>
-      <span>공정 조건 검증</span><span>HAZ 제어</span><span>전극 마모 관리</span>
+      <span>저항(스팟) 용접 · 너겟 형성</span><span>Nd:YAG 레이저 · 키홀/전도</span><span>초음파 융착 · 수지 접합</span>
+      <span>공정 DOE · CP 기준서</span><span>HAZ 제어 · 기공 관리</span><span>초음파→레이저 공법 전환</span>
     </div>
   </div>
 
@@ -277,9 +277,6 @@
 
   <!-- contact -->
   <div id="contact">
-    <a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a><span class="sep">|</span>
-    <a href="https://github.com/64etuor" target="_blank" rel="noopener">github.com/64etuor</a><span class="sep">|</span>
-    <span>010-7448-1791</span>
   </div>
 </div>
 
@@ -378,18 +375,18 @@ function layoutScale(){
    HEAT SOURCES (career weld passes) + arc
    ============================================================ */
 const PASSES = [
-  { yr:'SPOT WELDING', co:'저항 용접 (스팟)', ro:'너겟 형성 . HAZ 제어',
+  { yr:'RESISTANCE SPOT', co:'저항(스팟) 용접', ro:'전류·가압력·통전시간 3대 인자',
     x:0.20, y:0.40, peak:980,
-    desc:'<b>스팟 용접 파라미터</b>: 용접 전류 <b>8.5 kA</b> . 가압력 <b>3.2 kN</b> . 통전 시간 <b>14 cycle</b>. 전극 마모 모니터링으로 <b>너겟 직경</b> 균일 유지 . <b>HAZ</b> 최소화 조건 설계.' },
-  { yr:'LASER WELDING', co:'레이저 용접', ro:'키홀/전도 모드 . 조건 설계',
+    desc:'<b>저항 스팟 용접 원리</b>: 전극으로 모재를 <b>가압</b>한 뒤 대전류를 흘려 접촉 저항 발열로 <b>너겟(nugget)</b>을 형성하는 방식. 3대 제어 인자는 <b>용접 전류 · 가압력 · 통전 시간</b>. 너겟 직경은 인장·박리(peel) 시험과 외관 검사로 확인. 메탈 케이스 및 시트 접합에 적용. 전극 마모에 따른 접촉 면적 변화가 너겟 품질에 직결되므로 전극 드레싱 주기를 관리 항목에 등록.' },
+  { yr:'Nd:YAG LASER', co:'레이저 용접', ro:'키홀/전도 모드 · 기공 관리',
     x:0.40, y:0.56, peak:1480, signature:true,
-    desc:'<b>레이저 용접 파라미터</b>: 출력 <b>2400 W</b> . 용접 속도 <b>45 mm/s</b> . 초점 위치 <b>-0.5 mm</b>. <span class="hot">키홀 모드</span> 전환 조건 설계 . 보호가스 Ar 15 L/min . 기공 억제 조건 검증.' },
-  { yr:'ULTRASONIC', co:'초음파 용착', ro:'진폭 . 가압 . 용착 시간',
+    desc:'<b>Nd:YAG 레이저 용접 원리</b>: 고에너지 밀도 빔을 조사해 모재를 용융·접합. 저출력에서는 <b>전도(conduction) 모드</b>(넓고 얕은 용융지), 고출력·고속에서는 <b>키홀(keyhole) 모드</b>(깊고 좁은 용입)로 전환. 기공(porosity)과 스패터는 초점 위치·보호가스 유량으로 제어. <span class="hot">초음파 용착 공정을 레이저로 전환</span>하는 신공법 라인 구성(부착기 2 × 레이저 3 = 1라인)에 직접 참여, 조건 설계 및 검증 수행.' },
+  { yr:'ULTRASONIC', co:'초음파 융착', ro:'혼·앤빌 · 수지 마찰열 융착',
     x:0.60, y:0.40, peak:1120,
-    desc:'<b>초음파 용착 파라미터</b>: 진폭 <b>60 %</b> . 가압력 <b>1.8 kN</b> . 용착 시간 <b>0.8 s</b>. 공정 조건 범위 설정 . <b>CP 기준서</b> 작성 . PFMEA 관리 항목 등록.' },
-  { yr:'PROCESS VERIFY', co:'공정 조건 검증', ro:'PFMEA . CP . PFD 기반',
+    desc:'<b>초음파 융착 원리</b>: 초음파 진동(혼/앤빌)과 가압으로 <b>수지(플라스틱) 분자 간 마찰열</b>을 발생시켜 접합면을 용융·융착. 금속 용접과 달리 별도 열원 없이 진동 에너지만으로 접합. 3대 제어 인자는 <b>진폭 · 가압력 · 용착 시간</b>. 사출 케이스 접합에 적용. DOE로 조건 범위를 설정하고 불량율을 <span class="hot">15% → 0%대</span>로 감소시킨 뒤 CP 기준서에 관리 항목 등록.' },
+  { yr:'DOE · CP · PFMEA', co:'공정 조건 설계 &amp; 검증', ro:'세 공법 통합 관리',
     x:0.80, y:0.56, peak:1320,
-    desc:'<b>공정 조건 검증</b>: PFMEA 위험 인자 식별 . 관리계획서(CP) 측정 항목 설정 . <b>열화상 모니터링</b>으로 용접부 온도 분포 실시간 추적 . 이상 조건 즉시 검출.' }
+    desc:'<b>공정 기술 역량 요약</b>: 저항 스팟 · Nd:YAG 레이저 · 초음파 융착 — <b>세 가지 접합 원리를 모두 이해하고 현장 조건을 직접 설정</b>. PFMEA로 위험 인자 식별, 관리계획서(CP)에 측정 항목·관리 한계 등록, PFD 기반 공정 흐름 문서화. 초음파→레이저 <span class="hot">공법 전환</span> 시 신규 라인 조건 설계·검증까지 수행한 현장 공정기술 경험.' }
 ];
 let activePass = 1;
 
@@ -478,26 +475,32 @@ const MAX_LOG_ROWS = 6;
 
 // Template event pool -- realistic weld process events
 const EVENT_POOL = [
-  { msg:'<span class="ehot">아크 점화</span> -- 전류 도달 {I}kA', cat:'arc' },
+  // 저항 스팟 용접
+  { msg:'<span class="ehot">통전 개시</span> -- 접촉저항 발열 / 전류 {I}kA', cat:'arc' },
   { msg:'너겟 형성 개시 -- 직경 추정 {d}mm', cat:'nugget' },
   { msg:'HAZ 온도 {T}C -- 목표 범위 내', cat:'haz' },
   { msg:'전극 가압 확인 -- {F}kN 안정', cat:'force' },
   { msg:'<span class="eamb">통전 {c}cycle</span> 완료 -- 냉각 개시', cat:'cycle' },
-  { msg:'열화상 최고 온도 <span class="ehot">{T}C</span>', cat:'temp' },
-  { msg:'너겟 직경 {d}mm -- <span class="eok">기준 충족</span>', cat:'nugget' },
+  { msg:'너겟 직경 {d}mm -- <span class="eok">박리 시험 기준 충족</span>', cat:'nugget' },
   { msg:'HAZ 경계 추적 -- {r}mm 반경', cat:'haz' },
-  { msg:'키홀 모드 감지 -- 출력 {P}W', cat:'keyhole' },
+  { msg:'전극 마모 체크 -- 드레싱 주기 확인', cat:'electrode' },
+  { msg:'너겟 편심율 {e}% -- <span class="eok">합격</span>', cat:'nugget' },
+  { msg:'통전 경로 저항 {R}uOhm -- 접촉 상태 정상', cat:'arc' },
+  // Nd:YAG 레이저 용접
+  { msg:'<span class="ehot">키홀 모드</span> 전환 감지 -- 출력 {P}W', cat:'keyhole' },
+  { msg:'레이저 출력 <span class="ehot">{P}W</span> 안정화', cat:'laser' },
   { msg:'용접 속도 <span class="eok">{v}mm/s</span> 유지', cat:'speed' },
   { msg:'비드 균일도 체크 -- 표준편차 {s}C', cat:'bead' },
-  { msg:'전극 온도 {Te}C -- 마모 모니터링', cat:'electrode' },
-  { msg:'보호가스 유량 <span class="eok">{g}L/min</span> 정상', cat:'gas' },
-  { msg:'<span class="eamb">공정 조건 고정</span> -- CP 기준서 적용', cat:'cp' },
-  { msg:'초점 위치 -0.5mm -- 키홀/전도 경계', cat:'focus' },
+  { msg:'보호가스(Ar) 유량 <span class="eok">{g}L/min</span> 정상', cat:'gas' },
+  { msg:'초점 위치 -0.5mm -- 키홀/전도 경계 확인', cat:'focus' },
+  { msg:'기공(porosity) 감지 {n}건 -- 임계값 미만', cat:'spatter' },
+  { msg:'열화상 최고 온도 <span class="ehot">{T}C</span>', cat:'temp' },
+  // 초음파 융착
+  { msg:'<span class="eamb">초음파 진동 개시</span> -- 혼/앤빌 가압 / 진폭 설정값', cat:'usw' },
+  { msg:'수지 마찰열 발생 -- 융착면 온도 상승 감지', cat:'usw' },
+  // 공통
+  { msg:'<span class="eamb">공정 조건 고정</span> -- CP 기준서 관리 항목 등록', cat:'cp' },
   { msg:'HAZ 면적 <span class="eok">{a}mm2</span> -- 목표 이하', cat:'haz' },
-  { msg:'스패터 감지 {n}건 -- 임계값 미만', cat:'spatter' },
-  { msg:'레이저 출력 <span class="ehot">{P}W</span> 안정화', cat:'laser' },
-  { msg:'너겟 편심율 {e}% -- <span class="eok">합격</span>', cat:'nugget' },
-  { msg:'통전 경로 저항 {R}uOhm 정상', cat:'arc' },
 ];
 
 function fillTemplate(msg){
@@ -744,11 +747,11 @@ function doeStep(now,dt){
     } else {
       inject(gx,gy, 6, 700);
     }
-    doeState.textContent='SPOT MODE . 스팟 용접 조건 주입 -- 전류 8.5 kA / 가압력 3.2 kN';
+    doeState.textContent='USW MODE . 초음파 용착 조건 -- 불량율 15% 발생 / 조건 이탈 감지';
     if(f>=1){ doe.phase='scan'; doe.t=0; }
   }
   else if(doe.phase==='scan'){
-    doeState.textContent='THERMAL SCAN . 열화상 분석 -- 온도 이상 ' + doe.defects.length + '개소 검출';
+    doeState.textContent='THERMAL SCAN . 열화상 분석 -- 융착 이상 ' + doe.defects.length + '개소 검출 / 공법 전환 검토';
     arc.power=0;
     if(doe.t>1.8){ doe.phase='reweld'; doe.t=0; }
   }
@@ -761,11 +764,11 @@ function doeStep(now,dt){
     for(const dfc of doe.defects){
       coolSpot(dfc.x, dfc.y, 8, 0.16);
     }
-    doeState.textContent='LASER MODE . 레이저 용접 전환 -- 출력 2400 W / 속도 45 mm/s / 키홀 모드';
+    doeState.textContent='LASER MODE . Nd:YAG 레이저 전환 -- 키홀 모드 / 기공 억제 조건 설계 / 라인 구성 부착기2×레이저3';
     if(f>=1){ doe.phase='done'; doe.t=0; }
   }
   else if(doe.phase==='done'){
-    doeState.textContent='VERIFIED . 레이저 균일 비드 검증 완료 -- 조건 고정 / CP 기준서 등록';
+    doeState.textContent='VERIFIED . 레이저 균일 비드 검증 완료 -- 초음파→레이저 공법 전환 완료 / CP 기준서 등록';
     if(doe.t>2.2){
       doe.active=false; doe.phase='idle'; doe.defects=[];
       doeState.textContent='';

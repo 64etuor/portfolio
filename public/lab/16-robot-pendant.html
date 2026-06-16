@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>박양하 · 티칭 펜던트 — 스킬 프로그램 PROG[SKILL]</title>
+<title>박양하 · 티칭 펜던트 — 스팟 용접 교시 PROG[SPOT_WLD]</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
 :root{
@@ -210,7 +210,7 @@ body{
 .lcd-top .sp{margin-left:auto}
 .lcd-top .pct{color:var(--amber);font-weight:700}
 
-.lcd-body{display:grid;grid-template-columns:1fr 300px;min-height:0}
+.lcd-body{display:grid;grid-template-columns:1fr 384px;min-height:0}
 /* program listing */
 .prog{position:relative;overflow:hidden;font-family:var(--mono);padding:6px 0 6px 0}
 .prog-scroll{position:absolute;inset:0;overflow-y:auto;padding:2px 4px 8px}
@@ -220,7 +220,7 @@ body{
   display:grid;grid-template-columns:34px 1fr;
   gap:8px;padding:4px 10px;font-size:12.5px;line-height:1.3;
   color:var(--ink-dim);cursor:pointer;border-radius:4px;
-  position:relative;white-space:nowrap;
+  position:relative;white-space:nowrap;font-variant-numeric:tabular-nums;
 }
 .pline:hover{background:rgba(60,230,122,.05)}
 .pline .ln{color:var(--ink-3);text-align:right}
@@ -245,8 +245,8 @@ body{
 
 /* detail pane on right of LCD */
 .detail{
-  border-left:1px solid var(--lcd-grid);padding:9px 11px;overflow:hidden;
-  display:flex;flex-direction:column;gap:7px;min-height:0;
+  border-left:1px solid var(--lcd-grid);padding:8px 10px;overflow:hidden;
+  display:flex;flex-direction:column;gap:5px;min-height:0;height:100%;
   background:linear-gradient(180deg,rgba(0,0,0,.18),transparent);
 }
 .detail .dtag{
@@ -257,16 +257,85 @@ body{
 .detail h3{font-size:15px;font-weight:800;color:var(--white);line-height:1.2;letter-spacing:-.01em}
 .detail .role{font-family:var(--mono);font-size:10px;color:var(--amber);letter-spacing:.04em}
 .detail .period{font-family:var(--mono);font-size:9.5px;color:var(--ink-dim)}
-.detail .desc{font-size:11.5px;line-height:1.55;color:#a9d8bd;flex-shrink:1;overflow-y:auto}
+.detail .desc{font-size:11.5px;line-height:1.55;color:#a9d8bd;flex:1 1 0;min-height:0;overflow-y:auto}
 .detail .desc::-webkit-scrollbar{width:6px}
 .detail .desc::-webkit-scrollbar-thumb{background:#1e3a2b;border-radius:3px}
-.regs{display:flex;flex-wrap:wrap;gap:5px;margin-top:auto}
+.regs{display:flex;flex-wrap:wrap;gap:5px;flex:none;align-content:flex-start;
+  min-height:52px;max-height:52px;overflow:hidden}
 .reg{
   font-family:var(--mono);font-size:9.5px;font-weight:700;
-  padding:3px 7px;border-radius:5px;
+  padding:3px 7px;border-radius:5px;font-variant-numeric:tabular-nums;
   background:rgba(60,230,122,.08);border:1px solid rgba(60,230,122,.22);color:var(--ink);
 }
 .reg b{color:var(--amber)}
+
+/* ===== dense TP value panels in detail pane ===== */
+/* fixed-height stack: holds all live value cards; internal scroll if overflow.
+   keeps .desc visible while value containers never reflow the layout. */
+.tpstack{
+  flex:none;height:286px;overflow-y:auto;overflow-x:hidden;
+  display:flex;flex-direction:column;gap:5px;padding-right:2px;
+}
+.tpstack::-webkit-scrollbar{width:6px}
+.tpstack::-webkit-scrollbar-thumb{background:#1e3a2b;border-radius:3px}
+.tpcard{
+  flex:none;border:1px solid #14271c;border-radius:7px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(0,0,0,.28),rgba(0,0,0,.10));
+}
+.tpcard .tph{
+  display:flex;align-items:center;justify-content:space-between;
+  font-family:var(--mono);font-size:8px;letter-spacing:.16em;font-weight:700;
+  color:var(--ink-3);padding:4px 8px;border-bottom:1px solid #11221a;
+  background:linear-gradient(180deg,rgba(60,230,122,.05),transparent);
+}
+.tpcard .tph b{color:var(--amber);letter-spacing:.04em}
+.tpcard .tph .chk{color:#c79a3a;font-weight:700;letter-spacing:.02em}
+
+/* World / Joint position readouts — 3-col grid, tabular-nums */
+.posg{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:#0c1813}
+.poscell{padding:2px 6px;background:#0a1410;font-family:var(--mono);font-variant-numeric:tabular-nums;
+  display:flex;justify-content:space-between;align-items:baseline}
+.poscell .ax{font-size:7.5px;color:var(--ink-3);letter-spacing:.06em;font-weight:700}
+.poscell .v{font-size:11px;color:var(--ink);font-weight:700;font-variant-numeric:tabular-nums}
+.poscell.j1 .v,.poscell.j4 .v{color:#ff8a8e}
+.poscell.j2 .v,.poscell.j5 .v{color:#7dffa6}
+.poscell.j3 .v,.poscell.j6 .v{color:#7fc4ff}
+
+/* weld schedule rows */
+.wsg{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#0c1813}
+.wscell{padding:2px 8px;background:#0a1410;font-family:var(--mono);
+  display:flex;justify-content:space-between;align-items:baseline}
+.wscell .k{font-size:8.5px;color:#6f8a7b;letter-spacing:.04em}
+.wscell .v{font-size:11px;color:var(--amber);font-weight:700;font-variant-numeric:tabular-nums}
+.wscell .v small{font-size:7.5px;color:var(--ink-3);font-weight:600}
+
+/* I/O lamp grid */
+.iog{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#0c1813}
+.iocell{padding:2px 7px;background:#0a1410;display:flex;align-items:center;gap:6px;
+  font-family:var(--mono);font-size:8.5px;letter-spacing:.02em;color:#6f8a7b}
+.iocell .iolamp{width:8px;height:8px;border-radius:50%;flex:none;
+  background:#16271d;box-shadow:0 0 0 1px #000 inset;transition:all .25s}
+.iocell .iotag{color:var(--ink-dim);font-weight:700;font-variant-numeric:tabular-nums}
+.iocell.on{color:var(--ink)}
+.iocell.on .iolamp{background:#3ce67a;box-shadow:0 0 7px 1px #3ce67a}
+.iocell.on.r .iolamp{background:#ff4d52;box-shadow:0 0 7px 1px #ff4d52}
+.iocell .iov{margin-left:auto;font-weight:700;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.iocell.on .iov{color:#3ce67a}
+.iocell.on.r .iov{color:#ff4d52}
+
+/* PLC sequence — internal fixed-height scroll region */
+.plcwrap{height:46px;overflow:hidden;position:relative}
+.plcscroll{position:absolute;inset:0;overflow-y:auto;padding:2px 0}
+.plcscroll::-webkit-scrollbar{width:5px}
+.plcscroll::-webkit-scrollbar-thumb{background:#1e3a2b;border-radius:3px}
+.plcrow{display:grid;grid-template-columns:30px 1fr auto;gap:5px;
+  font-family:var(--mono);font-size:8.5px;line-height:1.55;padding:0 8px;
+  color:var(--ink-dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+.plcrow .stp{color:#7fc4ff;font-weight:700}
+.plcrow .cond{color:#a9d8bd;overflow:hidden;text-overflow:ellipsis}
+.plcrow .out{color:var(--amber);font-weight:700}
+.plcrow.act .cond{color:#fff}
+.plcrow.act .stp{color:#3ce67a}
 
 .lcd-status{
   display:flex;align-items:center;gap:0;border-top:1px solid var(--lcd-grid);
@@ -531,7 +600,7 @@ body{
   /* sits inside the lcd-body as an overlay strip at the bottom */
 }
 .log-strip{
-  position:absolute;bottom:0;left:0;right:300px;height:64px;
+  position:absolute;bottom:0;left:0;right:384px;height:64px;
   overflow:hidden;pointer-events:none;
   background:linear-gradient(0deg,rgba(4,16,10,.95) 55%,transparent 100%);
   padding:4px 10px 5px;
@@ -563,14 +632,14 @@ body{
 <body>
 <div id="device">
   <div class="contact">
-    <b>박양하 PARK YANGHA</b><br>64etuor@gmail.com · 010-0000-0000<br>github.com/64etuor
+    <b>박양하 PARK YANGHA</b>
   </div>
   <div id="faultflash"></div>
 
   <!-- ===== 스킬 상세 / 교시 기술 overlay ===== -->
   <div id="harnessOv">
     <div class="hx-top">
-      <div class="hx-tt">로봇 티칭 · 레시피 설계<small>SKILL DETAIL · TEACH PROGRAM</small></div>
+      <div class="hx-tt">설비·로봇 티칭 · PLC 시퀀스 제어<small>SPOT WELD TEACH · PLC SEQUENCE CONTROL</small></div>
       <div class="hx-env"><span class="led c" style="width:8px;height:8px;border-radius:50%;background:#54d6ff;box-shadow:0 0 8px #54d6ff"></span>MODE: <span id="hx-mode">T1</span> · OVR <span id="hx-ovr">100%</span></div>
       <div class="hx-close" id="hxClose">x CLOSE</div>
     </div>
@@ -578,35 +647,35 @@ body{
       <div class="hx-left">
         <div class="hx-paradox">
           <div class="lbl">핵심 역량 · CORE SKILL</div>
-          <div class="big">펜던트로 <b>직접 교시</b>하고 레시피를 설계한다 —<br>좌표계·속도·I/O 인터록까지 현장에서 완결.</div>
+          <div class="big">스팟 용접 포인트를 <b>티치펜던트로 직접 교시</b>하고,<br>취출·단축 로봇 동작을 <b>PLC 시퀀스</b>로 제어한다.</div>
         </div>
 
-        <div class="hx-sec-h">5대 교시 역량 / 티칭 프로그램 설계 <b>waypoint = 설비 역량</b></div>
+        <div class="hx-sec-h">5대 현장 역량 / 티칭·PLC 시퀀스 <b>waypoint = 설비 역량</b></div>
         <div class="hx-pillars" id="hxPillars">
           <div class="hx-pillar on" data-pillar="teach">
             <span class="plamp"></span>
-            <div class="pmain"><div class="pname">직접 교시<small>DIRECT TEACH</small></div><div class="pdesc">펜던트로 로봇 암을 직접 조작해 pick/place·검사 경로의 waypoint를 교시한다.</div></div>
-            <div class="pmap">jog → P[ ] 기록<br>= 직접 위치 교시</div>
+            <div class="pmain"><div class="pname">스팟 용접 포인트 교시<small>SPOT WELD TEACH</small></div><div class="pdesc">티치펜던트로 스팟 용접 건의 포인트별 위치(P1, P2, …)를 직접 교시한다. 이동 경로·자세(W/P/R)·속도·가압 타이밍을 점 단위로 등록한다.</div></div>
+            <div class="pmap">jog → P[ ] 기록<br>= 용접 포인트 교시</div>
           </div>
-          <div class="hx-pillar on" data-pillar="coord">
+          <div class="hx-pillar on" data-pillar="plc">
             <span class="plamp"></span>
-            <div class="pmain"><div class="pname">좌표계 설정<small>FRAME SETUP</small></div><div class="pdesc">base / tool / user frame을 설정해 공구 중심점(TCP)과 작업 기준계를 정밀하게 정의한다.</div></div>
-            <div class="pmap">UFRAME / UTOOL<br>= 좌표계 교정</div>
+            <div class="pmain"><div class="pname">PLC 시퀀스 제어<small>PLC SEQUENCE</small></div><div class="pdesc">단축로봇·취출로봇 동작을 PLC 스텝 시퀀스로 제어한다. 취출로봇 31대 개조·개선, 모터 구동 시퀀스 설정, 인터락 조건 설계.</div></div>
+            <div class="pmap">STEP / 조건 / 출력<br>= 인터락 시퀀스</div>
           </div>
-          <div class="hx-pillar on" data-pillar="recipe">
+          <div class="hx-pillar on" data-pillar="extract">
             <span class="plamp"></span>
-            <div class="pmain"><div class="pname">레시피 설계<small>RECIPE DESIGN</small></div><div class="pdesc">속도·가속도·블렌딩(CNT/FINE)과 I/O 인터록을 조합해 작업 프로그램(레시피)을 완성한다.</div></div>
-            <div class="pmap">SPD / CNT / FINE<br>= I/O 인터록 설계</div>
+            <div class="pmain"><div class="pname">취출 로봇 개조·개선<small>EXTRACTION ROBOT</small></div><div class="pdesc">취출(取出)로봇 31대 개조 및 동작 개선. Pin Point GATE 취출 동작 중 커팅 시퀀스를 PLC 인터락과 연동해 사출 불량 없이 안정 취출한다.</div></div>
+            <div class="pmap">GATE 커팅 / EJECT<br>= 취출 인터락</div>
           </div>
-          <div class="hx-pillar on" data-pillar="vision">
+          <div class="hx-pillar on" data-pillar="jig">
             <span class="plamp"></span>
-            <div class="pmain"><div class="pname">비전 검사 연동<small>VISION INSPECT</small></div><div class="pdesc">카메라 트리거 타이밍과 판정 신호를 레시피에 통합해 비전 검사를 인라인으로 자동화한다.</div></div>
-            <div class="pmap">CAM TRIG / NG 판정<br>= 인라인 비전 연동</div>
+            <div class="pmain"><div class="pname">엔드밀 사상 JIG 연동<small>JIG INTERLOCK</small></div><div class="pdesc">엔드밀 사상 JIG와 로봇 동작을 PLC 인터락으로 연동한다. JIG 클램프 완료 신호 확인 후 로봇 진입, 사상 완료 후 자동 후퇴 시퀀스를 구성한다.</div></div>
+            <div class="pmap">CLAMP CHK / 진입<br>= JIG 연동 시퀀스</div>
           </div>
-          <div class="hx-pillar on" data-pillar="pm">
+          <div class="hx-pillar on" data-pillar="weld-seq">
             <span class="plamp"></span>
-            <div class="pmain"><div class="pname">설비 PM / BM<small>MAINTENANCE</small></div><div class="pdesc">예방 보전(PM) 주기 설정, 사후 보전(BM) 대응, 4M 관리로 설비 가동률을 유지한다.</div></div>
-            <div class="pmap">PM 주기 / BM 대응<br>= 4M 관리</div>
+            <div class="pmain"><div class="pname">용접 동작 시퀀스<small>WELD SEQUENCE</small></div><div class="pdesc">스팟 용접 동작을 가압→통전→유지→해제 4단계로 분리해 각 단계별 시간·전류 조건을 티칭 프로그램 내 I/O로 제어한다.</div></div>
+            <div class="pmap">가압→통전→유지<br>= I/O 타이밍 제어</div>
           </div>
         </div>
 
@@ -614,33 +683,34 @@ body{
         <div class="hx-env-cap">스킬 충족도 <b id="hxEnvPct">100%</b> · 5대 역량 중 <b id="hxEnvN">5</b>개 확인</div>
 
         <div class="hx-cap">
-          <b>현장에서 완결하는 기술.</b> 로봇 티칭은 좌표 입력이 아니라
-          <b>작업 레시피 전체를 설계</b>하는 과정이다 — pick&amp;place 경로, 비전 검사 인터록, 속도·블렌딩,
-          I/O 시퀀스까지. <b>설비를 멈추지 않고 개선하는 것이 현장 엔지니어의 핵심 역량이다.</b>
+          <b>현장에서 완결하는 기술.</b> 스팟 용접 티칭은 좌표 등록이 아니라
+          <b>가압→통전→유지 시퀀스 전체를 포인트 단위로 설계</b>하는 과정이다 — 이동 경로·자세·속도·I/O 인터락까지.
+          취출로봇 31대 개조·PLC 시퀀스 설계 경험이 설비 정지 없는 개선을 가능하게 한다.
+          <b>[확인필요: 좌표 수치는 실제 작업 방식을 기반으로 한 예시값임]</b>
         </div>
       </div>
 
       <div class="hx-right">
-        <div class="hx-sec-h" style="margin-bottom:2px">스킬 READOUTS</div>
+        <div class="hx-sec-h" style="margin-bottom:2px">작업 READOUTS</div>
         <div class="hx-read moat">
-          <div class="rt">ROBOT TEACH · 티칭 역량</div>
-          <div class="rv">FANUC 계열 펜던트로 <b>직접 교시 및 레시피 작성</b> 경험 보유.</div>
-          <div class="rmono">TEACH P[ ] → RUN RECIPE</div>
-          <div class="rv" style="margin-top:6px;font-size:11px;color:#8fb8a2">pick&amp;place / 검사 경로 / 좌표계 설정 직접 수행.</div>
+          <div class="rt">SPOT WELD TEACH · 스팟 용접 교시</div>
+          <div class="rv">티치펜던트로 용접 건의 <b>포인트별 위치를 직접 교시</b>. 이동 경로·자세·속도·가압 타이밍을 P[ ] 단위로 등록.</div>
+          <div class="rmono">TEACH P[n] → 가압 → 통전 → 유지</div>
+          <div class="rv" style="margin-top:6px;font-size:11px;color:#8fb8a2">좌표 수치는 예시값 [확인필요] — 교시 방법과 시퀀스 구조는 실제 작업 기반.</div>
         </div>
         <div class="hx-read fail">
-          <div class="rt">VISION INSPECT · 비전 검사</div>
-          <div class="rv">비전 검사 <b>인라인 자동화</b> 설계 및 출하 품질 개선 적용.</div>
-          <div class="rv" style="margin-top:6px;font-size:11px;color:#8fb8a2">→ 카메라 트리거 타이밍과 <b style="color:#ff8a8e">NG 판정 인터록</b>을 레시피에 통합.</div>
+          <div class="rt">PLC SEQUENCE · 취출 로봇 시퀀스</div>
+          <div class="rv">단축로봇·취출로봇 <b>31대 개조·개선</b>. PLC 스텝 시퀀스로 모터 구동·인터락·Pin Point GATE 커팅 제어.</div>
+          <div class="rv" style="margin-top:6px;font-size:11px;color:#8fb8a2">→ <b style="color:#ff8a8e">취출 동작 중 커팅</b> 시퀀스 + 엔드밀 사상 JIG 인터락 연동 직접 설계.</div>
         </div>
         <div class="hx-read">
-          <div class="rt">MAPPING · 펜던트 → 스킬</div>
+          <div class="rt">MAPPING · 펜던트 → 현장 작업</div>
           <div class="rv" style="font-family:var(--mono);font-size:10px;line-height:1.9;color:#a9d8bd">
-            T1/T2/AUTO&nbsp;&nbsp;= 운전 모드 전환<br>
-            jog 좌표계&nbsp;&nbsp;= UFRAME/UTOOL 설정<br>
-            CNT/FINE&nbsp;&nbsp;&nbsp;&nbsp;= 블렌딩 조건 설계<br>
-            teach P[ ]&nbsp;&nbsp;&nbsp;= waypoint 직접 교시<br>
-            I/O 인터록&nbsp;&nbsp;= 비전/설비 연동
+            T1 교시 모드&nbsp;&nbsp;&nbsp;= 포인트 직접 등록<br>
+            jog + 기록&nbsp;&nbsp;&nbsp;&nbsp;= 용접 포인트 위치 확정<br>
+            DO/DI 인터락&nbsp;= 가압·통전·유지 타이밍<br>
+            PLC STEP&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;= 취출·커팅 시퀀스<br>
+            JIG CLAMP CHK = 로봇 진입 조건 인터락
           </div>
         </div>
         <div class="hx-read" style="border-color:rgba(255,193,77,.22)">
@@ -661,7 +731,7 @@ body{
     <div class="topbar">
       <div class="brand">
         <div class="logo">PY</div>
-        <div class="nm">티칭 펜던트 · 스킬 프로그램<small>PROG[SKILL] · PARK YANGHA</small></div>
+        <div class="nm">티칭 펜던트 · 스팟 용접 교시<small>PROG[SPOT_WLD] · PARK YANGHA</small></div>
       </div>
       <div class="lamps">
         <div class="lamp on" id="l-run"><span class="led g"></span>RUNNING</div>
@@ -687,16 +757,16 @@ body{
       <div class="panel" style="flex:1;display:flex;flex-direction:column">
         <div class="phead">PROGRAM INFO</div>
         <div class="metaP">
-          <div class="mrow"><span class="k">PROG</span><span class="v amb">SKILL.TP</span></div>
+          <div class="mrow"><span class="k">PROG</span><span class="v amb">SPOT_WLD.TP</span></div>
           <div class="mrow"><span class="k">LINES</span><span class="v" id="mi-lines">— / —</span></div>
           <div class="mrow"><span class="k">CURRENT</span><span class="v amb" id="mi-cur">P[1]</span></div>
           <div class="mrow"><span class="k">GROUP</span><span class="v">GP1</span></div>
-          <div class="mrow"><span class="k">UFRAME</span><span class="v">UF:0</span></div>
+          <div class="mrow"><span class="k">UFRAME</span><span class="v">UF:1</span></div>
           <div class="mrow"><span class="k">UTOOL</span><span class="v">UT:1</span></div>
-          <div class="mrow"><span class="k">PAYLOAD</span><span class="v">12.0 kg</span></div>
+          <div class="mrow"><span class="k">PAYLOAD</span><span class="v">용접 건</span></div>
           <div class="mrow"><span class="k">CYCLE</span><span class="v" id="mi-cyc">000124</span></div>
-          <div class="mrow"><span class="k">REACH</span><span class="v">1632 mm</span></div>
-          <div class="mrow"><span class="k">CTRL</span><span class="v">R-30iB+</span></div>
+          <div class="mrow"><span class="k">ROBOT</span><span class="v">스팟용접 로봇</span></div>
+          <div class="mrow"><span class="k">PLC</span><span class="v">취출로봇 ×31</span></div>
           <div class="mrow" style="margin-top:auto;border-top:1px solid #0d0e0f;padding-top:8px"><span class="k">SKILL SET</span><span class="v" id="mi-skill">TOOL[01..18]</span></div>
         </div>
       </div>
@@ -720,10 +790,10 @@ body{
           <div class="log-strip" id="logStrip"></div>
         </div>
         <div class="lcd-status">
-          <div class="seg">TOOL <b id="st-tool">UT:1 [PICK-TCP]</b></div>
+          <div class="seg">TOOL <b id="st-tool">UT:1 [WELD-GUN]</b></div>
           <div class="seg amb">SPD <b id="st-spd">100%</b></div>
           <div class="seg">MOTN <b id="st-motn">FINE</b></div>
-          <div class="seg grow" id="st-msg">ROBOT TEACH · 4 WAYPOINTS TAUGHT</div>
+          <div class="seg grow" id="st-msg">SPOT WELD TEACH · P[4] 포인트 교시 완료</div>
         </div>
       </div>
     </div>
@@ -736,7 +806,7 @@ body{
           <div class="vp-ov">
             <span class="tl">VIEW · WORLD FRAME</span>
             <span class="tr" id="vp-pt">▸ AT P[1]</span>
-            <span class="bl" id="vp-st">6-AXIS · SERVO ON</span>
+            <span class="bl" id="vp-st">스팟용접 로봇 · SERVO ON</span>
           </div>
         </div>
       </div>
@@ -804,7 +874,7 @@ body{
     </div>
 
   </div>
-  <div class="minitag">FANUC-STYLE iPENDANT · SKILL.TP · v2025.08</div>
+  <div class="minitag">티칭펜던트 · SPOT_WLD.TP · 취출로봇 PLC SEQ · v2025.08</div>
 </div>
 <div id="toast"></div>
 
@@ -814,59 +884,207 @@ body{
    SKILL PROGRAM  — waypoints (skill areas)
    ============================================================ */
 const COMPANY = {
-  eun:{name:"로봇 티칭", color:"#ff7a8a", cls:"b-eun"},
-  elen:{name:"비전 검사", color:"#ffb454", cls:"b-elen"},
-  sol:{name:"설비 PM/BM", color:"#54d6ff", cls:"b-sol"},
-  mir:{name:"레시피 설계", color:"#c9a3ff", cls:"b-mir"},
+  eun:{name:"스팟 용접 교시", color:"#ff7a8a", cls:"b-eun"},
+  elen:{name:"PLC 시퀀스", color:"#ffb454", cls:"b-elen"},
+  sol:{name:"취출 로봇 개조", color:"#54d6ff", cls:"b-sol"},
+  mir:{name:"JIG 연동", color:"#c9a3ff", cls:"b-mir"},
 };
 
+/* Each waypoint carries authentic teach-pendant readouts.
+   world = [X,Y,Z (mm), W,P,R (deg)]  · joint = [J1..J6 (deg)]
+   weld  = 스팟 용접 스케줄(예시값 [확인필요]) — 가압력/전류/통전/홀드
+   [확인필요] 모든 좌표·관절각·용접조건은 실제 작업 방식 기반 예시값(실측 아님). */
 const WAYPOINTS = [
   {
-    id:1, co:"eun", speed:100, motn:"FINE",
-    code:[["mv","J"],["pt"," P[1]"],["sp"," 100% FINE"],["cm","  ; 직접 교시 — pick&place 경로"]],
-    company:"로봇 티칭", role:"waypoint 교시 · 좌표계 설정",
-    period:"DIRECT TEACH · UFRAME/UTOOL",
-    desc:"펜던트를 직접 조작해 pick·place 포인트를 교시하고 작업 경로를 설계한다. base frame / tool frame / user frame을 정의하고 TCP(공구 중심점)를 교정해 재현성을 확보한다.",
-    regs:[["직접 교시","pick/place"],["UFRAME","좌표계 설정"],["TCP","공구 중심 교정"],["재현성","위치 정밀도"]],
-    tool:"UT:1 [PICK-TCP]",
-    pose:[ -42, 28, -38, 0, 35, 10 ]
+    id:1, co:"eun", speed:30, motn:"FINE",
+    code:[["mv","J"],["pt"," P[1]"],["sp"," 30% FINE"],["cm","  ; 용접 접근 — 가압 전 위치 교시"]],
+    company:"스팟 용접 포인트 교시", role:"티치펜던트 직접 교시 · 용접 접근점",
+    period:"SPOT WELD TEACH · P[1] APPROACH",
+    desc:"티치펜던트로 용접 건의 접근 포인트(P[1])를 직접 교시. 간섭 없는 자세(W/P/R)와 경로를 조그 조작으로 확정·기록한다. [좌표는 예시값]",
+    regs:[["P[1]","접근 포인트"],["JOG→기록","직접 교시"],["W/P/R","경로 확정"]],
+    tool:"UT:1 [WELD-GUN]",
+    pose:[ -42, 28, -38, 0, 35, 10 ],
+    world:[ 537.2, 164.4, 312.8, 178.5, 1.2, -90.0 ],
+    joint:[ -42.0, 28.4, -38.1, 0.2, 35.6, 9.8 ],
   },
   {
-    id:2, co:"elen", speed:75, motn:"CNT50", weld:true,
-    code:[["mv","L"],["pt"," P[2]"],["sp"," 75% CNT50"],["cm","  ; 비전 검사 — 인터록 연동"]],
-    company:"비전 검사", role:"인라인 비전 연동 · 판정 인터록",
-    period:"VISION INSPECT · I/O INTERLOCK",
-    desc:"카메라 트리거 타이밍을 레시피에 삽입하고 OK/NG 판정 신호를 I/O 인터록으로 연결한다. 출하 전 자동 검사 시퀀스를 설계해 불량 유출을 차단하고 품질 시스템(IATF16949)과 연동했다.",
-    regs:[["CAM 트리거","레시피 삽입"],["OK/NG","I/O 판정"],["IATF16949","품질 연동"],["불량","자동 배출"]],
-    tool:"UT:2 [CAM-TRIG]",
-    pose:[ -8, 52, -64, 5, 40, -12 ]
+    id:2, co:"eun", speed:10, motn:"FINE", weld:true,
+    code:[["mv","L"],["pt"," P[2]"],["sp"," 10% FINE"],["cm","  ; 용접점#1 — SPOT[SD=1] 가압→통전→유지"]],
+    company:"스팟 용접 동작 시퀀스", role:"용접점#1 교시 · 가압→통전→유지 I/O 제어",
+    period:"SPOT WELD SEQ · 가압 DO[1] / 통전 DO[2]",
+    desc:"P[2] 도달 후 DO[1]=ON(가압)→통전 대기→DO[2]=ON(통전)→유지→DO[2]/DO[1]=OFF 순으로 I/O 제어. 단계별 지연은 건 사양에 따라 조정. [좌표·용접조건 예시값]",
+    regs:[["DO[1]","가압"],["DO[2]","통전"],["유지 200ms",""],["FINE",""]],
+    tool:"UT:1 [WELD-GUN]",
+    pose:[ -8, 52, -64, 5, 40, -12 ],
+    world:[ 612.0, 88.6, 241.5, 179.2, 0.4, -90.4 ],
+    joint:[ -8.0, 52.1, -64.3, 5.1, 40.2, -12.4 ],
+    weld:{ force:2.45, cur:9.6, on:14, hold:10 },
   },
   {
-    id:3, co:"sol", speed:50, motn:"FINE",
-    code:[["mv","J"],["pt"," P[3]"],["sp"," 50% FINE"],["cm","  ; 설비 PM/BM — 4M 관리"]],
-    company:"설비 PM/BM", role:"예방 보전 · 4M 관리",
-    period:"PREVENTIVE / BREAKDOWN MAINT.",
-    desc:"예방 보전(PM) 주기를 설정하고 점검 항목을 표준화한다. 사후 보전(BM) 발생 시 근본 원인을 분석해 재발 방지 대책을 수립한다. Man/Machine/Material/Method 4M 관리로 설비 가동률을 유지하고 유휴 설비를 재활용해 자산화한다.",
-    regs:[["PM","예방 보전 주기"],["BM","근본 원인 분석"],["4M","가동률 관리"],["유휴 설비","재활용·자산화"]],
-    tool:"UT:1 [MAINT-TCP]",
-    pose:[ 30, 40, -50, -8, 30, 24 ]
+    id:3, co:"eun", speed:10, motn:"FINE", weld:true,
+    code:[["mv","L"],["pt"," P[3]"],["sp"," 10% FINE"],["cm","  ; 용접점#2 — SPOT[SD=2] 박판 저전류"]],
+    company:"스팟 용접점#2 교시", role:"박판 구간 · 저전류 스케줄 SD=2",
+    period:"SPOT WELD SEQ · SD=2 (박판)",
+    desc:"박판 적층부 용접점(P[3]). 표면 압흔·날림(expulsion) 방지를 위해 전류·가압을 낮춘 별도 스케줄(SD=2)을 적용. 통전 시간 단축. [용접조건 예시값]",
+    regs:[["SD=2","박판"],["저전류",""],["압흔 방지",""]],
+    tool:"UT:1 [WELD-GUN]",
+    pose:[ 6, 44, -56, -3, 38, -6 ],
+    world:[ 648.3, 12.1, 268.9, 179.8, -0.6, -89.7 ],
+    joint:[ 6.0, 44.2, -56.0, -3.1, 38.4, -6.2 ],
+    weld:{ force:1.90, cur:7.8, on:9, hold:8 },
   },
   {
-    id:4, co:"mir", speed:100, motn:"FINE",
-    code:[["mv","J"],["pt"," P[4]"],["sp"," 100% FINE"],["cm","  ; 레시피 설계 — 속도·블렌딩·I/O"]],
-    company:"레시피 설계", role:"작업 프로그램 · Jig/기구 설계",
-    period:"RECIPE DESIGN · JIG DEVELOP",
-    desc:"속도·가속도·블렌딩 조건(CNT/FINE)과 I/O 시퀀스를 조합해 작업 프로그램(레시피)을 설계한다. Jig 개발과 기구 설계(Draftsight/QueryCAD)를 병행해 치구-로봇 간 인터페이스를 최적화하고 사이클타임을 단축한다.",
-    regs:[["CNT/FINE","블렌딩 설계"],["I/O","시퀀스 설계"],["Jig","개발·기구 설계"],["CAD","Draftsight/QueryCAD"]],
+    id:4, co:"eun", speed:25, motn:"CNT10", weld:true,
+    code:[["mv","L"],["pt"," P[4]"],["sp"," 25% CNT10"],["cm","  ; 용접점#3 — SPOT[SD=1] 본딩"]],
+    company:"스팟 용접점#3 교시", role:"본딩 구간 · CNT10 블렌딩 이동",
+    period:"SPOT WELD SEQ · SD=1 / CNT10",
+    desc:"용접점 간 이동은 CNT10으로 블렌딩해 사이클 단축, 용접점 자체는 FINE 정지로 위치 정밀 확보. 가압→통전→유지 표준 스케줄(SD=1). [좌표·조건 예시값]",
+    regs:[["CNT10","블렌딩"],["SD=1",""],["사이클↓",""]],
+    tool:"UT:1 [WELD-GUN]",
+    pose:[ 22, 36, -48, -6, 34, 4 ],
+    world:[ 690.7, -64.2, 290.1, 178.9, 1.0, -90.2 ],
+    joint:[ 22.0, 36.3, -48.1, -6.0, 34.1, 4.4 ],
+    weld:{ force:2.45, cur:9.4, on:14, hold:10 },
+  },
+  {
+    id:5, co:"eun", speed:30, motn:"FINE",
+    code:[["mv","J"],["pt"," P[5]"],["sp"," 30% FINE"],["cm","  ; 건 후퇴 — 팁 드레싱 위치 회피"]],
+    company:"용접 건 후퇴 / 팁 점검", role:"건 후퇴 · TIP DRESS 위치 회피",
+    period:"GUN RETRACT · RO[2] 후퇴 확인",
+    desc:"용접 완료 후 건 후퇴(RO[2]=ON 확인). 팁 마모 누적 시 드레싱 위치로 이동하는 분기를 인터락으로 구성. 후퇴 미완료 시 다음 이동 금지. [좌표 예시값]",
+    regs:[["RO[2]","후퇴 확인"],["TIP DRESS",""],["인터락",""]],
+    tool:"UT:1 [WELD-GUN]",
+    pose:[ 18, 30, -42, 0, 30, 8 ],
+    world:[ 661.4, -52.0, 360.6, 179.0, 0.2, -90.0 ],
+    joint:[ 18.0, 30.1, -42.2, 0.1, 30.3, 8.2 ],
+  },
+  {
+    id:6, co:"elen", speed:50, motn:"CNT30",
+    code:[["mv","J"],["pt"," P[6]"],["sp"," 50% CNT30"],["cm","  ; PLC 시퀀스 — 취출 로봇 제어"]],
+    company:"PLC 시퀀스 · 취출 로봇", role:"취출로봇 31대 개조·개선 · 모터 구동",
+    period:"PLC SEQ · STEP 제어 · 인터락",
+    desc:"단축·취출로봇 동작을 PLC 스텝 시퀀스로 제어. 취출로봇 31대 개조·모터 구동 시퀀스 재설정. 인터락: DI[10](금형 열림)=ON 후 취출 개시.",
+    regs:[["취출×31","개조"],["PLC STEP",""],["DI[10]","인터락"]],
+    tool:"UT:2 [EXTRACT-ARM]",
+    pose:[ 30, 40, -50, -8, 30, 24 ],
+    world:[ 502.8, -210.5, 232.0, 174.6, -2.4, -78.1 ],
+    joint:[ 30.0, 40.2, -50.1, -8.2, 30.0, 24.3 ],
+  },
+  {
+    id:7, co:"sol", speed:60, motn:"CNT30",
+    code:[["mv","L"],["pt"," P[7]"],["sp"," 60% CNT30"],["cm","  ; Pin Point GATE 취출 중 커팅"]],
+    company:"GATE 취출 / 커팅", role:"Pin Point GATE 취출 동작 중 커팅",
+    period:"EXTRACT · DO[6] GATE 커팅",
+    desc:"Pin Point GATE 취출 동작 중 커팅 시퀀스. 취출 전진(DO[5])→GATE 커팅(DO[6])→후퇴를 PLC 인터락과 연동, 사출 불량 없이 안정 취출. [동작 예시]",
+    regs:[["DO[5]","전진"],["DO[6]","커팅"],["GATE",""]],
+    tool:"UT:2 [EXTRACT-ARM]",
+    pose:[ 44, 30, -42, -4, 26, 30 ],
+    world:[ 430.1, -298.7, 270.4, 171.0, -3.8, -70.5 ],
+    joint:[ 44.0, 30.4, -42.0, -4.1, 26.2, 30.1 ],
+  },
+  {
+    id:8, co:"mir", speed:80, motn:"FINE",
+    code:[["mv","J"],["pt"," P[8]"],["sp"," 80% FINE"],["cm","  ; JIG 연동 — CLAMP CHK 후 진입"]],
+    company:"엔드밀 사상 JIG 연동", role:"JIG 인터락 · 진입/후퇴 시퀀스",
+    period:"JIG INTERLOCK · CLAMP CHK → 진입",
+    desc:"엔드밀 사상 JIG 클램프 완료(DI[15]=ON) 확인 후 진입(P[8]). 사상 완료(DI[16]=ON) 시 자동 후퇴. 신호 미수신 시 WAIT — 강제 진입 금지 인터락. [좌표 예시값]",
+    regs:[["DI[15]","CLAMP"],["WAIT",""],["진입 금지",""]],
     tool:"UT:3 [JIG-EOAT]",
-    pose:[ 64, 18, -30, 12, 48, -20 ]
+    pose:[ 64, 18, -30, 12, 48, -20 ],
+    world:[ 318.5, -402.9, 188.7, 165.2, -6.1, -58.3 ],
+    joint:[ 64.0, 18.3, -30.2, 12.1, 48.0, -20.4 ],
   },
+  {
+    id:9, co:"mir", speed:80, motn:"FINE",
+    code:[["mv","L"],["pt"," P[9]"],["sp"," 80% FINE"],["cm","  ; 사상 완료 — DI[16] 확인 후 후퇴"]],
+    company:"사상 완료 / 자동 후퇴", role:"DI[16] 확인 → 자동 후퇴 경로",
+    period:"JIG · DI[16]=ON → RETRACT",
+    desc:"엔드밀 사상 완료 신호(DI[16]=ON) 수신 시 후퇴 경로(P[9]) 실행. 후퇴 완료(RO[3]) 확인 후 다음 사이클 대기. JIG 클램프 해제 신호 연동. [좌표 예시값]",
+    regs:[["DI[16]","사상완료"],["RO[3]","후퇴"],["해제",""]],
+    tool:"UT:3 [JIG-EOAT]",
+    pose:[ 50, 24, -36, 6, 40, -10 ],
+    world:[ 372.0, -344.1, 256.3, 168.7, -4.0, -64.9 ],
+    joint:[ 50.0, 24.2, -36.1, 6.0, 40.3, -10.2 ],
+  },
+  {
+    id:10, co:"elen", speed:60, motn:"FINE",
+    code:[["mv","J"],["pt"," P[10]"],["sp"," 60% FINE"],["cm","  ; 홈 복귀 — 사이클 종료"]],
+    company:"홈 복귀 / 사이클 종료", role:"HOME 복귀 · 사이클 카운트",
+    period:"HOME · END OF CYCLE",
+    desc:"전 공정 완료 후 홈 포지션(P[10]) 복귀, 사이클 카운터 +1. 안전 영역 확인 후 다음 투입 대기. T1(교시)→T2(검증)→AUTO(양산) 단계 전환. [좌표 예시값]",
+    regs:[["HOME",""],["CYCLE +1",""],["대기",""]],
+    tool:"UT:1 [WELD-GUN]",
+    pose:[ 0, 12, -18, 0, 22, 0 ],
+    world:[ 480.0, 0.0, 480.0, 180.0, 0.0, -90.0 ],
+    joint:[ 0.0, 12.0, -18.0, 0.0, 22.0, 0.0 ],
+  },
+];
+
+/* full teach program listing (TP syntax) — order-of-execution.
+   wp = index into WAYPOINTS for move/spot lines that drive arm+detail.
+   [확인필요] illustrative speeds/signals — structure reflects real teach workflow. */
+const PROGRAM = [
+  {t:"hdr",  code:[["cm","/PROG  SPOT_WLD"]]},
+  {t:"hdr",  code:[["cm","/ATTR  GROUP[1] · 6AX · PAYLOAD 용접건"]]},
+  {t:"set",  code:[["sp","UFRAME[1]"],["sp"," UTOOL[1]"],["cm","   ; 차체 지그 기준 / 용접건 TCP"]]},
+  {t:"set",  code:[["sp","PAYLOAD[2]"],["cm","            ; SERVO GUN 92kg"]]},
+  {t:"cm",   code:[["cm","; ===== 스팟 용접 #1~#3 좌표 교시 ====="]]},
+  {t:"mv", wp:0},
+  {t:"mv", wp:1},
+  {t:"io",   code:[["sp","  SPOT[SD=1,P=1,t=1]"],["cm"," ; 가압→통전→유지"]]},
+  {t:"mv", wp:2},
+  {t:"io",   code:[["sp","  SPOT[SD=2,P=1,t=2]"],["cm"," ; 박판 저전류"]]},
+  {t:"mv", wp:3},
+  {t:"io",   code:[["sp","  SPOT[SD=1,P=1,t=3]"],["cm"," ; 본딩"]]},
+  {t:"mv", wp:4},
+  {t:"io",   code:[["sp","  WAIT RO[2]=ON"],["cm"],["cm","  ; 건 후퇴 확인"]]},
+  {t:"cm",   code:[["cm","; ===== PLC 연동 / 취출·JIG 인터락 ====="]]},
+  {t:"mv", wp:5},
+  {t:"io",   code:[["sp","  WAIT DI[10]=ON"],["cm"],["cm","  ; 금형 열림"]]},
+  {t:"mv", wp:6},
+  {t:"io",   code:[["sp","  DO[6]=ON"],["cm"],["cm","        ; GATE 커팅"]]},
+  {t:"io",   code:[["sp","  WAIT DI[15]=ON"],["cm"],["cm","  ; JIG CLAMP"]]},
+  {t:"mv", wp:7},
+  {t:"io",   code:[["sp","  WAIT DI[16]=ON"],["cm"],["cm","  ; 사상 완료"]]},
+  {t:"mv", wp:8},
+  {t:"mv", wp:9},
+  {t:"end",  code:[["sp","[ END ]"]]},
 ];
 
 const HOME = [0, 12, -18, 0, 22, 0];
 
 /* second "program" = SKILL / TOOL register list */
-const SKILLS = ["로봇 티칭","직접 교시","좌표계 설정","TCP 교정","비전 검사","I/O 인터록","레시피 설계","CNT/FINE","설비 PM","설비 BM","4M 관리","Jig 개발","기구 설계","Draftsight","QueryCAD","PFMEA/CP","SOP 작성","IATF16949","라인 밸런싱","DOE"];
+const SKILLS = ["스팟 용접 교시","티치펜던트 직접 교시","포인트 교시 P[ ]","자세 W/P/R 설정","가압→통전→유지","I/O DO/DI 인터락","PLC 시퀀스 설계","취출로봇 개조×31","모터 구동 시퀀스","Pin Point GATE 커팅","엔드밀 사상 JIG 연동","WAIT 조건 인터락","CNT/FINE 블렌딩","설비 PM/BM","4M 관리","Jig 개발","Draftsight","PFMEA/CP","SOP 작성","IATF16949"];
+
+/* ===== I/O 상태 패널 (DI/DO) ===== fixed set, lamp state toggled live */
+const IO_MAP = [
+  {id:"DO[1]", lab:"용접 가압",  k:"do1"},
+  {id:"DO[2]", lab:"통전 신호",  k:"do2", r:true},
+  {id:"RO[2]", lab:"건 후퇴",    k:"ro2"},
+  {id:"DO[5]", lab:"취출 전진",  k:"do5"},
+  {id:"DO[6]", lab:"GATE 커팅",  k:"do6", r:true},
+  {id:"DI[10]",lab:"금형 열림",  k:"di10"},
+  {id:"DI[15]",lab:"JIG CLAMP", k:"di15"},
+  {id:"DI[16]",lab:"사상 완료",  k:"di16"},
+  {id:"DI[1]", lab:"안전 인터락",k:"di1"},
+  {id:"DO[8]", lab:"취출 완료",  k:"do8"},
+];
+/* live I/O bit map — flipped by bg events + per-waypoint */
+const IOST = {do1:0,do2:0,ro2:1,do5:0,do6:0,di10:0,di15:0,di16:0,di1:1,do8:0};
+
+/* ===== PLC 시퀀스 (단축·취출로봇) ===== STEP / 조건 / 출력 */
+const PLC_SEQ = [
+  {s:"01", c:"운전 준비 · 원점 확인",          o:"M100"},
+  {s:"02", c:"DI[10] 금형 열림 = ON",          o:"M101"},
+  {s:"03", c:"취출로봇 전진 (단축 SV ON)",      o:"DO[5]"},
+  {s:"04", c:"Pin Point GATE 커팅 실행",        o:"DO[6]"},
+  {s:"05", c:"커팅 완료 · 취출 후퇴",            o:"DO[7]"},
+  {s:"06", c:"DI[15] JIG CLAMP = ON 대기",      o:"TIM05"},
+  {s:"07", c:"로봇 JIG 진입 허가",              o:"DO[9]"},
+  {s:"08", c:"DI[16] 사상 완료 = ON",           o:"M108"},
+  {s:"09", c:"자동 후퇴 · 취출 완료 신호",       o:"DO[8]"},
+  {s:"10", c:"인터락 OK · 다음 사이클 RST",      o:"M110"},
+];
 
 /* ============================================================
    STATE
@@ -903,32 +1121,93 @@ const detail = $("detail");
 const toastEl = $("toast");
 
 /* ============================================================
+   I/O PANEL + PLC SEQUENCE  (HTML builders + live update)
+   ============================================================ */
+function ioGridHtml(){
+  return IO_MAP.map(io=>{
+    const on = !!IOST[io.k];
+    return `<div class="iocell${on?" on":""}${io.r?" r":""}" data-io="${io.k}">`+
+      `<span class="iolamp"></span><span class="iotag">${io.id}</span>`+
+      `<span style="overflow:hidden;text-overflow:ellipsis">${io.lab}</span>`+
+      `<span class="iov">${on?"ON":"OFF"}</span></div>`;
+  }).join("");
+}
+function refreshIO(){
+  document.querySelectorAll(".iocell").forEach(el=>{
+    const on = !!IOST[el.dataset.io];
+    el.classList.toggle("on", on);
+    const v = el.querySelector(".iov"); if(v) v.textContent = on?"ON":"OFF";
+  });
+}
+let plcActStep = 0;
+function plcRowsHtml(){
+  return PLC_SEQ.map((p,i)=>
+    `<div class="plcrow${i===plcActStep?" act":""}" data-step="${i}">`+
+    `<span class="stp">S${p.s}</span><span class="cond">${p.c}</span><span class="out">${p.o}</span></div>`).join("");
+}
+function setPlcStep(i){
+  plcActStep = ((i%PLC_SEQ.length)+PLC_SEQ.length)%PLC_SEQ.length;
+  document.querySelectorAll(".plcrow").forEach(r=>{
+    const act = (+r.dataset.step===plcActStep);
+    r.classList.toggle("act", act);
+    if(act) r.scrollIntoView({block:"nearest"});
+  });
+}
+/* per-waypoint I/O + PLC step state (illustrative of the live sequence) */
+const WP_IO = [
+  /* P1 */ {set:{ro2:1}, plc:0},
+  /* P2 */ {set:{do1:1,do2:1,ro2:0}, plc:0},
+  /* P3 */ {set:{do1:1,do2:1}, plc:0},
+  /* P4 */ {set:{do1:1,do2:1}, plc:0},
+  /* P5 */ {set:{do1:0,do2:0,ro2:1}, plc:1},
+  /* P6 */ {set:{di10:1,do5:1}, plc:2},
+  /* P7 */ {set:{do6:1,do5:0}, plc:3},
+  /* P8 */ {set:{di15:1,do6:0}, plc:6},
+  /* P9 */ {set:{di16:1,do8:1}, plc:8},
+  /* P10*/ {set:{do1:0,do2:0,do5:0,do6:0,di10:0,di15:0,di16:0,do8:0,ro2:1}, plc:9},
+];
+function applyWaypointIO(i){
+  const m = WP_IO[i]; if(!m) return;
+  Object.assign(IOST, m.set);
+  refreshIO();
+  setPlcStep(m.plc);
+}
+
+/* ============================================================
    BUILD PROGRAM LISTING
    ============================================================ */
 function buildProgram(){
   progScroll.innerHTML = "";
-  // header pseudo-lines
-  WAYPOINTS.forEach((wp, i)=>{
+  let ln = 0;
+  PROGRAM.forEach(row=>{
     const line = document.createElement("div");
-    line.className = "pline " + COMPANY[wp.co].cls;
-    line.dataset.idx = i;
-    const codeHtml = wp.code.map(c=>`<span class="${c[0]}">${c[1]}</span>`).join("");
+    let cls = "pline";
+    const isMove = (row.t==="mv");
+    if(isMove) cls += " " + COMPANY[WAYPOINTS[row.wp].co].cls;
+    line.className = cls;
+    // line number: real lines numbered; pure comment/header lines blank
+    let lnLabel;
+    if(row.t==="hdr"){ lnLabel=""; }
+    else { ln++; lnLabel = String(ln).padStart(3,"0")+":"; }
+    // build code html (from waypoint for moves, else from row.code)
+    const codeArr = isMove ? WAYPOINTS[row.wp].code : (row.code||[]);
+    const codeHtml = codeArr.map(c=>`<span class="${c[0]}">${c[1]!==undefined?c[1]:""}</span>`).join("");
     line.innerHTML =
-      `<span class="ln">${String(i+1).padStart(4,"0")}</span>`+
-      `<span class="code">${codeHtml}<span class="cursor"></span></span>`;
-    line.addEventListener("click", ()=>selectLine(i, true));
+      `<span class="ln">${lnLabel}</span>`+
+      `<span class="code">${codeHtml}${isMove?'<span class="cursor"></span>':""}</span>`;
+    if(isMove){
+      line.dataset.idx = row.wp;
+      line.addEventListener("click", ()=>selectLine(row.wp, true));
+    } else if(row.t==="hdr"||row.t==="cm"){
+      line.style.cursor="default";
+    }
     progScroll.appendChild(line);
   });
-  // END marker
-  const end = document.createElement("div");
-  end.className = "pline";
-  end.innerHTML = `<span class="ln">${String(WAYPOINTS.length+1).padStart(4,"0")}</span><span class="code"><span class="sp">[ END ]</span></span>`;
-  progScroll.appendChild(end);
-  // skills as a register comment block
+  // register / tool comment block
   const reg = document.createElement("div");
   reg.className="pline";
-  reg.style.opacity=".6";reg.style.cursor="default";
-  reg.innerHTML=`<span class="ln">R[]</span><span class="code"><span class="cm">; TOOL/REGISTER — ${SKILLS.length} SKILLS LOADED</span></span>`;
+  reg.style.opacity=".55";reg.style.cursor="default";
+  reg.innerHTML=`<span class="ln"></span><span class="code"><span class="cm">; TOOL/REG — ${SKILLS.length} SKILLS · UT[1..3] · UF[1] · ${WAYPOINTS.length} PR[ ]</span></span>`;
   progScroll.appendChild(reg);
 }
 
@@ -944,13 +1223,44 @@ function selectLine(i, fromUser){
   if(el){ el.classList.add("sel"); el.scrollIntoView({block:"nearest"}); }
   // detail pane
   const c = COMPANY[wp.co];
+  const w = wp.world, jt = wp.joint;
+  const f1 = v => (v>=0?" ":"") + v.toFixed(1);   // sign-aligned 1dp
+  const worldCells =
+    `<div class="poscell j1"><div class="ax">X mm</div><div class="v" id="dw-x">${f1(w[0])}</div></div>`+
+    `<div class="poscell j2"><div class="ax">Y mm</div><div class="v" id="dw-y">${f1(w[1])}</div></div>`+
+    `<div class="poscell j3"><div class="ax">Z mm</div><div class="v" id="dw-z">${f1(w[2])}</div></div>`+
+    `<div class="poscell j4"><div class="ax">W °</div><div class="v" id="dw-w">${f1(w[3])}</div></div>`+
+    `<div class="poscell j5"><div class="ax">P °</div><div class="v" id="dw-p">${f1(w[4])}</div></div>`+
+    `<div class="poscell j6"><div class="ax">R °</div><div class="v" id="dw-r">${f1(w[5])}</div></div>`;
+  const jointCells = jt.map((v,k)=>
+    `<div class="poscell j${k+1}"><div class="ax">J${k+1} °</div><div class="v" id="dj-${k}">${f1(v)}</div></div>`).join("");
+  // weld schedule card (only at weld points)
+  let weldCard = "";
+  if(wp.weld && wp.weld.force!==undefined){
+    const wd = wp.weld;
+    weldCard =
+      `<div class="tpcard"><div class="tph">WELD SCHEDULE <span class="chk">[확인필요 · 예시값]</span></div>`+
+      `<div class="wsg">`+
+      `<div class="wscell"><span class="k">가압력</span><span class="v">${wd.force.toFixed(2)}<small> kN</small></span></div>`+
+      `<div class="wscell"><span class="k">전류</span><span class="v">${wd.cur.toFixed(1)}<small> kA</small></span></div>`+
+      `<div class="wscell"><span class="k">통전</span><span class="v">${wd.on}<small> cyc</small></span></div>`+
+      `<div class="wscell"><span class="k">홀드</span><span class="v">${wd.hold}<small> cyc</small></span></div>`+
+      `</div></div>`;
+  }
   detail.innerHTML =
-    `<div class="dtag"><span><span class="dot" style="background:${c.color};box-shadow:0 0 8px ${c.color}"></span>P[${wp.id}] WAYPOINT</span><span>${wp.speed}% ${wp.motn}</span></div>`+
+    `<div class="dtag"><span><span class="dot" style="background:${c.color};box-shadow:0 0 8px ${c.color}"></span>P[${wp.id}] WAYPOINT · ${wp.tool}</span><span>${wp.speed}% ${wp.motn}</span></div>`+
     `<div class="role">${wp.role}</div>`+
     `<h3>${wp.company}</h3>`+
-    `<div class="period">${wp.period}</div>`+
+    `<div class="period">UF:1 · UT:${wp.tool.match(/UT:(\d)/)?wp.tool.match(/UT:(\d)/)[1]:"1"} · GP1 · ${wp.period}</div>`+
     `<div class="desc">${wp.desc}</div>`+
-    `<div class="regs">${wp.regs.map(r=>`<span class="reg">${r[0]} <b>${r[1]}</b></span>`).join("")}</div>`;
+    `<div class="tpstack">`+
+      `<div class="tpcard"><div class="tph">CURRENT POS · WORLD <b>UF:1</b></div><div class="posg">${worldCells}</div></div>`+
+      `<div class="tpcard"><div class="tph">JOINT · J1~J6 <b>UT:1</b></div><div class="posg">${jointCells}</div></div>`+
+      weldCard+
+      `<div class="tpcard"><div class="tph">I/O 상태 · DI/DO</div><div class="iog" id="ioGrid">${ioGridHtml()}</div></div>`+
+      `<div class="tpcard"><div class="tph">PLC 시퀀스 · 취출/단축 <span class="chk">STEP/조건/출력</span></div><div class="plcwrap"><div class="plcscroll" id="plcScroll">${plcRowsHtml()}</div></div></div>`+
+    `</div>`+
+    `<div class="regs">${wp.regs.filter(r=>r[0]).map(r=>`<span class="reg">${r[0]}${r[1]?" <b>"+r[1]+"</b>":""}</span>`).join("")}</div>`;
   // info panel + status
   $("mi-cur").textContent = `P[${wp.id}]`;
   $("lt-line").textContent = String(i+1).padStart(4,"0");
@@ -984,6 +1294,7 @@ function gotoLine(i){
   S.dwellLeft = 0;
   setRunLine(i);
   selectLine(i,false);
+  applyWaypointIO(i);
   $("mi-cur").textContent = `P[${WAYPOINTS[i].id}]`;
   // trigger weld re-teach delight on P[2]
   if(WAYPOINTS[i].weld && !S.weldDone){ startWeldReteach(); }
@@ -1005,8 +1316,8 @@ function tickAutoPlay(dt){
     const dwellMs = 520 + (wp.motn==="FINE"?280:80);
     S.dwellLeft = dwellMs;
     pushLog(`P[${wp.id}] REACHED · ${wp.company} · ${wp.motn}`);
-    if(wp.motn==="FINE") pushLog(`FINE STOP: I/O CHK DO[${wp.id+10}] = ON`);
-    else pushLog(`CNT BLEND: 통과 — 감속 없음`);
+    if(wp.motn==="FINE") pushLog(`FINE STOP: P[${wp.id}] 위치 확정 · DO[${wp.id}] CHK`);
+    else pushLog(`CNT BLEND: P[${wp.id}] 통과 — 감속 없음`);
   }
 
   if(S.arrived){
@@ -1017,7 +1328,7 @@ function tickAutoPlay(dt){
         // cycle complete
         $("lt-state").textContent="■ CYCLE DONE";
         $("lt-state").style.color="var(--cyan)";
-        toast("CYCLE COMPLETE · 4/4 WAYPOINTS");
+        toast("CYCLE COMPLETE · P[1]→P[4] 용접·취출 완료");
         S.cycle++; $("mi-cyc").textContent=String(S.cycle).padStart(6,"0");
         WAYPOINTS.forEach((_,idx)=>{
           const el=progScroll.querySelector(`.pline[data-idx="${idx}"]`);
@@ -1051,7 +1362,7 @@ function play(){
   // if at end, rewind to start
   if(S.running >= WAYPOINTS.length-1){ S.running = -1; }
   const next = Math.max(0, S.running+1);
-  pushLog(`PROG[SKILL] START · P[${WAYPOINTS[next].id}] 이동`);
+  pushLog(`PROG[SPOT_WLD] START · P[${WAYPOINTS[next].id}] 이동`);
   gotoLine(next);
   S.autoPlay = true;
 }
@@ -1096,21 +1407,21 @@ function setMode(m){
    ============================================================ */
 function startWeldReteach(){
   S.weldFx = 1;            // engage spark fx in canvas
-  $("st-msg").textContent = "비전 검사 트리거 — CAM 위치 교정 중";
-  toast("! 위치 편차 검출 — 재교시(RE-TEACH) 실행", true);
-  pushLog("! P[2] 위치 편차 검출 — RE-TEACH 시작", "ev-warn");
+  $("st-msg").textContent = "P[2] 용접점 편차 검출 — 재교시 실행 중";
+  toast("! 용접점 위치 편차 — 재교시(RE-TEACH) 실행", true);
+  pushLog("! P[2] 용접점 편차 검출 — RE-TEACH 시작", "ev-warn");
   let pct = 15;
   const t = setInterval(()=>{
     pct -= 3;
     if(pct<=0){
       pct=0; clearInterval(t);
       S.weldFx = 0; S.weldDone = true;
-      $("st-msg").textContent = "RE-TEACH 완료 · 비전 인터록 수렴";
-      toast("P[2] 재교시 완료 — 비전 판정 정상");
-      pushLog("RE-TEACH DONE · 편차 0.00mm · 비전 PASS", "ev-reach");
+      $("st-msg").textContent = "RE-TEACH 완료 · 용접점 위치 수렴 OK";
+      toast("P[2] 재교시 완료 — 용접점 정상 등록");
+      pushLog("RE-TEACH DONE · 위치편차 0.00mm · 가압 OK", "ev-reach");
     } else {
-      $("st-msg").textContent = `CAM 위치 교정 중… 편차 ${(pct/100).toFixed(2)}mm`;
-      pushLog(`CAM CORR ${(pct/100).toFixed(2)}mm 수렴 중`, "ev-warn");
+      $("st-msg").textContent = `용접점 위치 교정 중… 편차 ${(pct/100).toFixed(2)}mm`;
+      pushLog(`P[2] 위치 보정 ${(pct/100).toFixed(2)}mm 수렴 중`, "ev-warn");
     }
   }, 320);
 }
@@ -1146,20 +1457,24 @@ const LOG_MAX = 4;
 
 // Fake background I/O events that fire independently
 const BG_EVENTS = [
-  {cls:"ev-io",  t:"I/O DO[14]=ON · 그리퍼 열림"},
-  {cls:"ev-io",  t:"I/O DI[22] CHK · 부품 검출"},
-  {cls:"ev-reach",t:"VISION OK · 판정 PASS"},
-  {cls:"ev-io",  t:"I/O DO[15]=OFF · 그리퍼 닫힘"},
-  {cls:"ev-warn", t:"SPD OVR 100% · 속도 상한"},
-  {cls:"ev-io",  t:"I/O DO[11]=ON · 컨베이어 정지"},
-  {cls:"ev-reach",t:"INSPECT CHK — NG 0 / OK 1"},
-  {cls:"ev-io",  t:"I/O DI[30] READY · 다음 부품"},
-  {cls:"ev-warn", t:"PAYLOAD 12.0kg CHK OK"},
-  {cls:"ev-io",  t:"TOOL CHK UT:1 VALID"},
-  {cls:"ev-reach",t:"TCP ERR < 0.05mm OK"},
-  {cls:"ev-io",  t:"CAM TRIG · 촬영 완료"},
-  {cls:"ev-warn", t:"CYCLE TIME 4.8s < TAKT OK"},
-  {cls:"ev-io",  t:"I/O DO[20]=ON · 배출 컨베이어"},
+  {cls:"ev-io",   t:"DO[1]=ON · 용접 건 가압 시작"},
+  {cls:"ev-io",   t:"WAIT 0.30s · 가압 안정 대기"},
+  {cls:"ev-io",   t:"DO[2]=ON · 통전 개시"},
+  {cls:"ev-io",   t:"WAIT 0.50s · 용접 유지"},
+  {cls:"ev-io",   t:"DO[2]=OFF · 통전 해제"},
+  {cls:"ev-io",   t:"DO[1]=OFF · 가압 해제 · 이동 재개"},
+  {cls:"ev-reach",t:"P[2] 용접 완료 · FINE STOP OK"},
+  {cls:"ev-io",   t:"DI[10]=ON CHK · 금형 열림 확인"},
+  {cls:"ev-io",   t:"PLC STEP 03 → 취출 동작 개시"},
+  {cls:"ev-io",   t:"DO[5]=ON · 취출 로봇 전진"},
+  {cls:"ev-io",   t:"DO[6]=ON · GATE 커팅 실행"},
+  {cls:"ev-reach",t:"GATE 커팅 완료 · 취출 로봇 후퇴"},
+  {cls:"ev-io",   t:"DI[15]=ON CHK · JIG 클램프 완료"},
+  {cls:"ev-io",   t:"PLC STEP 07 → 로봇 JIG 진입"},
+  {cls:"ev-reach",t:"DI[16]=ON · 사상 완료 · 후퇴 실행"},
+  {cls:"ev-warn", t:"인터락 CHK: DI[10] 미수신 · 대기 중"},
+  {cls:"ev-io",   t:"DO[3]=ON · 단축 로봇 모터 구동"},
+  {cls:"ev-reach",t:"CYCLE 정상 완료 · 다음 STEP 대기"},
 ];
 let bgEvIdx = 0;
 let bgEvNext = 1800; // ms until next bg event
@@ -1259,7 +1574,7 @@ function drawGrid(){
   ctx.globalAlpha=1;
   // company color zones along floor (waypoint cells)
   WAYPOINTS.forEach((wp,i)=>{
-    const cx = CW*(0.16 + i*0.22);
+    const cx = CW*(0.08 + i*(0.84/Math.max(1,WAYPOINTS.length-1)));
     ctx.fillStyle = COMPANY[wp.co].color+"18";
     ctx.fillRect(cx-26, CH-30, 52, 8);
     ctx.fillStyle = COMPANY[wp.co].color;
@@ -1398,6 +1713,23 @@ function updateDRO(tcp){
   const r = (j[5]).toFixed(1);
   $("d-x").textContent=x; $("d-y").textContent=y; $("d-z").textContent=z;
   $("d-w").textContent=w; $("d-p").textContent=p; $("d-r").textContent=r;
+
+  // ----- detail-pane CURRENT POS (WORLD) + JOINT readouts (live, tabular) -----
+  const wp = WAYPOINTS[S.selected]; if(!wp) return;
+  const f1 = v => (v>=0?" ":"") + v.toFixed(1);
+  // joint readout = live joint angles (animate toward target → converge to authored)
+  const djEls = ["dj-0","dj-1","dj-2","dj-3","dj-4","dj-5"];
+  for(let i=0;i<6;i++){ const el=$(djEls[i]); if(el) el.textContent=f1(j[i]); }
+  // world readout = authored target + small live drift from arm-error & jog
+  const errFrac = (()=>{ let e=0; for(let i=0;i<6;i++) e+=Math.abs(S.jntCur[i]-S.jntTgt[i]); return Math.min(1,e/40); })();
+  const wld = wp.world;
+  const dwIds = ["dw-x","dw-y","dw-z","dw-w","dw-p","dw-r"];
+  const drift = [errFrac*9.4, -errFrac*6.1, errFrac*7.7, errFrac*0.6, -errFrac*0.5, errFrac*0.7];
+  const jogD  = [S.jogOff.x, S.jogOff.y, S.jogOff.z, 0,0,0];
+  for(let i=0;i<6;i++){
+    const el=$(dwIds[i]); if(!el) continue;
+    el.textContent = f1(wld[i] + (i<3?jogD[i]:0) + drift[i]*(i<3?1:1));
+  }
 }
 
 /* main animation loop */
@@ -1622,8 +1954,8 @@ function init(){
   requestAnimationFrame(loop);
   // seed initial log lines so strip is not empty
   setTimeout(()=>{
-    pushLog("PROG[SKILL] LOADED · 4 WAYPOINTS", "ev-reach");
-    pushLog("SERVO ON · R-30iB+ READY", "ev-io");
+    pushLog("PROG[SPOT_WLD] LOADED · P[1]~P[4] 교시 완료", "ev-reach");
+    pushLog("SERVO ON · 스팟용접 로봇 READY", "ev-io");
   }, 200);
   // auto-start: begin waypoint traversal after layout settles
   setTimeout(()=>{ play(); }, 800);

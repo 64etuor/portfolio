@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>박양하 · 디지털 트윈 — 크로스도메인 융합 플랜트</title>
+<title>박양하 · 디지털 트윈 — 연결된 도메인 = 조직·공정의 트윈</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
 :root{
@@ -202,9 +202,9 @@ canvas{display:block;outline:none}
 
 <!-- boot -->
 <div id="boot">
-  <div class="boot-mark">Digital Twin · Cross-Domain Fusion</div>
-  <div class="boot-title">도메인 융합 플랜트 동기화 중</div>
-  <div class="boot-sub">제조 현장 + 개발/데이터 + AI — 세 도메인이 한 화면에서 실시간 융합됩니다</div>
+  <div class="boot-mark">Digital Twin · Connected Domains</div>
+  <div class="boot-title">도메인 연결 상태 초기화 중</div>
+  <div class="boot-sub">제조 · 데이터 · AI 도메인이 한 사람 안에서 연결되면 — 그 자체가 조직·공정의 디지털 트윈이 된다</div>
   <div class="boot-bar"><div class="boot-fill" id="bootFill"></div></div>
 </div>
 
@@ -212,11 +212,11 @@ canvas{display:block;outline:none}
 <div class="hud" id="topbar">
   <div class="brand">
     <span class="nm">박양하 · Park Yangha</span>
-    <span class="role">제조 현장 + 개발 + AI · 크로스도메인</span>
-    <span class="tw"><span class="dot"></span>DIGITAL TWIN · CROSS-DOMAIN LIVE</span>
+    <span class="role">연결된 도메인 = 조직·공정의 디지털 트윈</span>
+    <span class="tw"><span class="dot"></span>DOMAIN TWIN · SILO→CONNECTED LIVE</span>
   </div>
   <div class="top-right">
-    <span>3-Layer Fusion</span>
+    <span>Silo→Connected State</span>
     <span class="clock" id="clock">--:--:--</span>
   </div>
 </div>
@@ -227,32 +227,32 @@ canvas{display:block;outline:none}
 <!-- layer legend + control panel (left) -->
 <div class="hud" id="control">
   <div class="ctl-h">
-    <span class="t">레이어 제어반</span>
-    <span class="sub">3-Domain Overlay</span>
+    <span class="t">도메인 연결 상태</span>
+    <span class="sub">Silo→Connected Overlay</span>
   </div>
   <div class="ctl-body">
     <!-- 3-layer legend -->
     <div>
-      <div style="font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;margin-bottom:8px">Domain Layers</div>
+      <div style="font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;margin-bottom:8px">Domain Layers — 사일로 시 오류(🔴), 연결 시 정합(🟢)</div>
       <div class="layer-row">
         <div class="layer-dot" style="background:var(--c-mfg);box-shadow:0 0 7px var(--c-mfg)"></div>
         <div>
           <div class="layer-label" style="color:var(--c-mfg)">제조 현장</div>
-          <div class="layer-sub">설비 · 공정 · OEE · 물류</div>
+          <div class="layer-sub">은성·이랜텍·솔라엣지 — 설비·공정·OEE·물류</div>
         </div>
       </div>
       <div class="layer-row">
         <div class="layer-dot" style="background:var(--c-dev);box-shadow:0 0 7px var(--c-dev)"></div>
         <div>
-          <div class="layer-label" style="color:var(--c-dev)">개발 / 데이터</div>
-          <div class="layer-sub">MES · 파이프라인 · SSOT · 대시보드</div>
+          <div class="layer-label" style="color:var(--c-dev)">데이터 / 개발</div>
+          <div class="layer-sub">MES·파이프라인·SSOT — 현장을 코드로 구조화</div>
         </div>
       </div>
       <div class="layer-row">
         <div class="layer-dot" style="background:var(--c-ai);box-shadow:0 0 7px var(--c-ai)"></div>
         <div>
-          <div class="layer-label" style="color:var(--c-ai)">AI 에이전트</div>
-          <div class="layer-sub">예측 · 이상탐지 · 의사결정 보조</div>
+          <div class="layer-label" style="color:var(--c-ai)">AI 도메인</div>
+          <div class="layer-sub">예측·이상탐지·에이전트 — 모델로 도메인을 연결</div>
         </div>
       </div>
     </div>
@@ -265,7 +265,7 @@ canvas{display:block;outline:none}
       <span class="lab">라인 속도 <b id="spdVal">1.0x</b></span>
     </div>
     <input type="range" class="slider" id="spd" min="0" max="200" value="100" />
-    <button class="btn" id="syncBtn">Sync Pulse : 3-Domain</button>
+    <button class="btn" id="syncBtn">Sync Pulse : 사일로 → 연결</button>
     <div class="divider"></div>
     <div style="font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px">Stations</div>
     <div class="legend" id="legend"></div>
@@ -281,8 +281,8 @@ canvas{display:block;outline:none}
 <!-- cross-domain sync panel (right) -->
 <div class="hud" id="xdpanel">
   <div class="xd-h">
-    <div class="t">Cross-Domain Fusion <span class="badge">LIVE</span></div>
-    <div class="sub">Manufacturing + Dev + AI</div>
+    <div class="t">도메인 트윈 상태 <span class="badge">LIVE</span></div>
+    <div class="sub">사일로 → 연결 · 오류 → 정합 전파</div>
   </div>
   <div class="xd-body">
     <!-- 3-layer fusion diagram -->
@@ -291,45 +291,46 @@ canvas{display:block;outline:none}
         <div class="fl-icon">🏭</div>
         <div class="fl-info">
           <div class="fl-label mfg">제조 현장</div>
-          <div class="fl-sub">OEE · Takt · 안돈 · 물류 흐름</div>
+          <div class="fl-sub">사일로 시: 공정 문제가 데이터에 미반영 · 누락</div>
         </div>
-        <div class="fl-val mfg" id="flMfg">92.4%</div>
+        <div class="fl-val mfg" id="flMfg">연결</div>
       </div>
       <div class="fusion-layer dev">
         <div class="fl-icon">💻</div>
         <div class="fl-info">
-          <div class="fl-label dev">개발 / 데이터</div>
-          <div class="fl-sub">MES · SSOT · 파이프라인 · BI</div>
+          <div class="fl-label dev">데이터 / 개발</div>
+          <div class="fl-sub">사일로 시: 현장 맥락 없는 지표 — 판단 오류</div>
         </div>
         <div class="fl-val dev" id="flDev">LIVE</div>
       </div>
       <div class="fusion-layer ai">
         <div class="fl-icon">🤖</div>
         <div class="fl-info">
-          <div class="fl-label ai">AI 에이전트</div>
-          <div class="fl-sub">예측 · 이상탐지 · 의사결정 보조</div>
+          <div class="fl-label ai">AI 도메인</div>
+          <div class="fl-sub">사일로 시: 도메인 없는 모델 — 오탐·오분류</div>
         </div>
         <div class="fl-val ai" id="flAi">ON</div>
       </div>
     </div>
 
     <div class="xd-cap">
-      현장을 아는 사람이 개발과 AI를 다룰 때,<br>
-      <b>도메인 지식이 결정적 레버</b>가 된다.
+      세 도메인이 한 사람 안에서 연결되면<br>
+      <b>부서 간 통역 + 경계의 숨은 문제 식별</b>이 가능해진다.<br>
+      단일 도메인 전문가는 보지 못하는 영역이다.
     </div>
 
     <!-- live sync stream (rolling, JS-driven) -->
     <div class="xd-stream">
-      <div class="rqh">Domain Sync Stream</div>
+      <div class="rqh">Domain Link Stream — 사일로 해제 피드</div>
       <div id="streamRows"></div>
     </div>
 
     <div class="xd-state">
-      <span class="lbl">Fusion State</span>
+      <span class="lbl">Twin State</span>
       <span class="val" id="xdState">SYNCED</span>
     </div>
     <div class="xd-port">
-      <b>관점:</b> 현장의 문제는 숫자만으로 안 보이고,<br>감으로만 풀 수도 없다. <span class="ph">관찰 + 구조화 + 실행</span>이 세 도메인을 잇는다.
+      <b>근거:</b> 시대는 변한다, 사람도 변해야 한다.<br>제조 현장(은성·이랜텍·솔라엣지) → 데이터/SW → AI —<br><span class="ph">도메인을 코드와 모델로 잇는 사람</span>이 조직의 트윈이 된다.
     </div>
   </div>
 </div>
@@ -342,98 +343,98 @@ import { CSS2DRenderer, CSS2DObject } from "https://esm.sh/three@0.184.0/example
 /* ───────────────────── DATA: 3-layer cross-domain stations ───────────────────── */
 const STATIONS = [
   {
-    id:"mfg-cell", station:"MFG CELL 01", label:"제조 현장", color:0xff7a8a, css:"--c-mfg", layer:"mfg",
-    role:"설비 · 공정 · 품질 레이어", period:"공정기술 / 생산운영 PM",
+    id:"mfg-cell", station:"MFG CELL 01", label:"제조 현장 레이어", color:0xff7a8a, css:"--c-mfg", layer:"mfg",
+    role:"은성·이랜텍·솔라엣지 — 공정·설비·품질·물류 도메인", period:"생산운영 PM / 공정기술 엔지니어",
     kind:"machine",
     metrics:[
       {v:"OEE 92%", l:"종합설비효율"},
       {v:"Takt 42s", l:"표준 사이클타임"},
-      {v:"WIP 14ea", l:"재공품 재고"},
-      {v:"GREEN", l:"안돈 상태"},
+      {v:"사일로 시", l:"데이터에 공정 맥락 미반영"},
+      {v:"연결 시", l:"현장 변수가 모델·코드로 전파"},
     ],
     log:[
-      "설비 <b>OEE 92.4%</b> — 가동률 98.1% 유지",
-      "<b>Takt Time 42s</b> 기반 라인밸런싱 최적화",
-      "안돈(Andon) 이상 시 <b>AI 에이전트 즉시 알람</b>",
-      "물류 흐름 시각화 — WIP 재공 실시간 추적",
-      "공정 변수 전 수기 → <b>디지털 수집으로 전환</b>",
+      "사일로 시: 공정 이상이 <b>데이터 레이어에 도달하지 않음</b> — 누락·오분류",
+      "연결 시: 현장 OEE·Takt·안돈 신호가 <b>파이프라인으로 즉시 반영</b>",
+      "은성·이랜텍·솔라엣지 현장 경험 — <b>공정 변수의 실제 의미</b>를 안다",
+      "수기 관리 → 디지털 전환 — <b>현장 도메인 지식이 설계를 결정</b>",
+      "단일 데이터 전문가는 이 맥락 없이 <b>지표 해석 오류 발생</b>",
     ],
-    chips:["OEE","Andon","Takt Time","WIP","LOB","공정표준화","PFMEA/CP"],
+    chips:["OEE","Andon","Takt Time","LOB","PFMEA/CP","공정표준화","현장 도메인"],
     kpis:[{k:"OEE",v:"92.4%",c:"mfg"},{k:"Takt",v:"42s",c:""},{k:"가동률",v:"98.1%",c:""}],
   },
   {
-    id:"dev-cell", station:"DEV CELL 02", label:"개발 / 데이터", color:0x6fb4ff, css:"--c-dev", layer:"dev",
-    role:"MES · 파이프라인 · SSOT 레이어", period:"데이터 엔지니어링 / 시스템 구축",
+    id:"dev-cell", station:"DEV CELL 02", label:"데이터 / 개발 레이어", color:0x6fb4ff, css:"--c-dev", layer:"dev",
+    role:"MES · 파이프라인 · SSOT — 현장을 코드로 구조화", period:"데이터 엔지니어링 / 시스템 구축",
     kind:"data",
     metrics:[
-      {v:"MES", l:"생산실행시스템"},
-      {v:"SSOT", l:"단일 진실 출처"},
-      {v:"CI/CD", l:"배포 파이프라인"},
-      {v:"BI Live", l:"실시간 대시보드"},
+      {v:"MES", l:"현장 공정을 코드로 구조화"},
+      {v:"SSOT", l:"단일 진실 출처 — 사일로 제거"},
+      {v:"사일로 시", l:"현장 맥락 없는 지표 — 판단 오류"},
+      {v:"연결 시", l:"공정 변수가 파이프라인에 정합 반영"},
     ],
     log:[
-      "<b>MES 구축</b> — 수기 기록 제거, 공정 데이터 SSOT화",
-      "검사성적서 <b>자동발행</b> 파이프라인 설계",
-      "<b>BI 대시보드</b>로 현장 지표 실시간 가시화",
-      "<b>SQL · DB</b> 기반 공정 데이터 구조화 및 조회 자동화",
-      "API 파이프라인 — 현장 → 클라우드 <b>실시간 동기화</b>",
+      "사일로 시: <b>현장 맥락 없는 BI 지표</b> — 수치는 있으나 해석 오류",
+      "연결 시: 제조 도메인 지식이 <b>스키마 설계·ETL 로직에 반영</b>",
+      "<b>MES 자체 개발</b>(솔라엣지) — 현장을 아는 사람만 설계 가능한 구조",
+      "검사성적서 자동발행 · S/N 추적성 — <b>공정 도메인이 코드를 결정</b>",
+      "데이터 전문가만으로는 <b>현장 변수의 의미를 파이프라인에 담지 못함</b>",
     ],
-    chips:["MES","SQL","BI 대시보드","FastAPI","CI/CD","SSOT","데이터 DB","LOB분석"],
+    chips:["MES","SQL","BI 대시보드","FastAPI","CI/CD","SSOT","ETL","도메인 기반 설계"],
     kpis:[{k:"파이프라인",v:"OK",c:"dev"},{k:"SSOT",v:"LIVE",c:"dev"},{k:"동기화",v:"<40ms",c:"amber"}],
   },
   {
-    id:"ai-cell", station:"AI CELL 03", label:"AI 에이전트", color:0xc9a3ff, css:"--c-ai", layer:"ai",
-    role:"예측 · 이상탐지 · 의사결정 보조 레이어", period:"AI 전환 / AX 추진",
+    id:"ai-cell", station:"AI CELL 03", label:"AI 도메인 레이어", color:0xc9a3ff, css:"--c-ai", layer:"ai",
+    role:"예측 · 이상탐지 · 에이전트 — 모델로 도메인을 연결", period:"AI 전환 / AX 추진",
     kind:"ax",
     metrics:[
-      {v:"94.1%", l:"AI 예측 정확도"},
-      {v:"<2s", l:"이상탐지 반응"},
-      {v:"RPA", l:"반복업무 자동화"},
-      {v:"MCP", l:"AI 에이전트 하네스"},
+      {v:"사일로 시", l:"도메인 없는 모델 — 오탐·오분류"},
+      {v:"연결 시", l:"공정 맥락 주입 — 정합 추론"},
+      {v:"RPA", l:"반복업무 자동화 (경계 업무 식별)"},
+      {v:"MCP", l:"현장 컨텍스트 주입 에이전트"},
     ],
     log:[
-      "<b>AI 에이전트</b> 기반 설비 이상 사전 탐지",
-      "예측 모델 — 공정 변수로 <b>품질 불량 예측</b>",
-      "<b>RPA</b>로 반복 행정업무 자동화 (전사 AX)",
-      "<b>MCP 하네스</b> — 현장 데이터 컨텍스트 주입 AI",
-      "의사결정 보조: 현장 감이 AI 판단의 <b>검증 레이어</b>",
+      "사일로 시: <b>현장·데이터 맥락 없는 AI</b> — 오탐·무의미한 예측",
+      "연결 시: 공정 변수·도메인 지식이 <b>모델 피처·프롬프트에 반영</b>",
+      "<b>경계에 숨은 문제</b>: 현장⟷코드⟷데이터 접점에서 단독 전문가가 놓치는 오류",
+      "<b>MCP 컨텍스트 주입</b> — 현장 도메인 지식이 AI 판단의 검증 레이어",
+      "도메인을 코드와 모델로 잇는 사람 — <b>조직·공정의 디지털 트윈</b>",
     ],
-    chips:["AI MCP","RPA","이상탐지","예측모델","Claude API","에이전트 하네스","AX"],
+    chips:["AI MCP","RPA","이상탐지","예측모델","Claude API","도메인 컨텍스트","AX"],
     kpis:[{k:"AI 정확도",v:"94.1%",c:"ai"},{k:"이상탐지",v:"<2s",c:"ai"},{k:"RPA",v:"ON",c:""}],
   },
   {
-    id:"fusion-hub", station:"FUSION HUB", label:"크로스도메인 허브", color:0x46e6b0, css:"--signal", layer:"hub",
-    role:"3-Domain Convergence · 도메인 융합 허브", period:"현장 + 개발 + AI 통합 운영",
+    id:"fusion-hub", station:"DOMAIN TWIN HUB", label:"연결된 도메인 = 조직의 트윈", color:0x46e6b0, css:"--signal", layer:"hub",
+    role:"제조 · 데이터 · AI 도메인 연결 — 사일로 오류를 잡는 허브", period:"시대는 변한다, 사람도 변해야 한다",
     kind:"hub",
     metrics:[
-      {v:"3", l:"융합 도메인"},
-      {v:"LIVE", l:"실시간 동기화"},
+      {v:"3", l:"연결된 도메인 수"},
+      {v:"LIVE", l:"사일로→연결 상태"},
       {v:"SSOT", l:"단일 진실 출처"},
-      {v:"OK", l:"전 레이어 정상"},
+      {v:"트윈", l:"조직·공정의 거울"},
     ],
     log:[
-      "제조 현장 → 개발/데이터 → AI — <b>3 도메인 실시간 융합</b>",
-      "현장 문제는 숫자만으로 안 보이고 <b>감으로만 풀 수도 없다</b>",
-      "관찰 · 구조화 · 실행 — <b>크로스도메인 문제해결 루프</b>",
-      "특정 도구가 아닌 <b>현장 문제 중심</b> 수단 선택",
-      "도메인 지식이 AI 시대의 <b>결정적 레버</b>가 된다",
+      "디지털 트윈이 현실을 거울처럼 비추듯 — <b>연결된 도메인이 조직을 비춘다</b>",
+      "효과 ①: 부서 간 통역 — <b>사일로 커뮤니케이션 오류</b>를 줄인다",
+      "효과 ②: 현장⟷코드⟷데이터 <b>경계에 숨은 문제 식별</b> (단일 전문가는 못 보는)",
+      "레이어가 끊기면(사일로) — 오류·누락 발생 / 연결되면 — <b>정합·전파</b>",
+      "시대는 변한다, 사람도 변해야 한다 — <b>변해서 도메인을 전부 연결함</b>",
     ],
-    chips:["크로스도메인","현장 이해","구조화","도메인 지식","AI 활용","실행력","관찰"],
-    kpis:[{k:"Fusion",v:"LIVE",c:""},{k:"레이어",v:"3/3",c:""},{k:"상태",v:"SYNCED",c:""}],
+    chips:["사일로→연결","도메인 트윈","부서 간 통역","경계 문제 식별","크로스도메인","AX","실행"],
+    kpis:[{k:"Twin",v:"LIVE",c:""},{k:"도메인",v:"3/3",c:""},{k:"상태",v:"SYNCED",c:""}],
   },
 ];
 
 const PLANT_KPIS = [
+  {k:"제조 레이어",v:"연결",c:"mfg"},
   {k:"OEE",v:"92.4%",c:"mfg"},
-  {k:"Takt",v:"42s",c:""},
-  {k:"WIP",v:"14ea",c:"amber"},
-  {k:"라인밸런스",v:"96%",c:"dev"},
-  {k:"AI 정확도",v:"94.1%",c:"ai"},
+  {k:"데이터 레이어",v:"LIVE",c:"dev"},
+  {k:"SSOT",v:"정합",c:"dev"},
+  {k:"AI 레이어",v:"ON",c:"ai"},
   {k:"이상탐지",v:"<2s",c:"ai"},
-  {k:"동기화 지연",v:"<40ms",c:"amber"},
-  {k:"파이프라인",v:"OK",c:"dev"},
-  {k:"안돈",v:"GREEN",c:""},
-  {k:"Fusion",v:"LIVE",c:""},
+  {k:"사일로 오류",v:"0",c:""},
+  {k:"경계 식별",v:"ACTIVE",c:"amber"},
+  {k:"도메인",v:"3/3",c:""},
+  {k:"Twin State",v:"SYNCED",c:""},
 ];
 
 /* ───────────────────── HUD build ───────────────────── */
@@ -909,9 +910,7 @@ detailEl.innerHTML = `
     </div>
   </div>
   <div class="dt-foot">
-    <span>박양하 · Park Yangha -- Cross-Domain Digital Twin</span>
-    <a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a>
-    <a href="https://github.com/64etuor" target="_blank">github.com/64etuor</a>
+    <span>박양하 · Park Yangha — 연결된 도메인 = 조직·공정의 디지털 트윈</span>
   </div>
 `;
 document.body.appendChild(detailEl);
@@ -1019,7 +1018,7 @@ function triggerCrossDomainPulse(stationIdx){
   // animate layer values
   const labels = ["MES","RPA","AI","API","BI","ML"];
   const flAiEl = document.getElementById("flAi");
-  const frames = ["INFER","PRED","SYNC","OK"];
+  const frames = ["LINK","SYNC","TWIN","OK"];
   let k=0;
   const iv = setInterval(()=>{
     if(flAiEl) flAiEl.textContent = frames[k++]||"ON";
@@ -1040,21 +1039,21 @@ function reconcileXD(){
 
 /* ───────────────────── Domain Sync Stream (rolling live feed) ───────────────────── */
 const STREAM_MSGS = [
-  {c:"var(--c-mfg)", t:"<b>현장</b> Takt {takt}s — 라인밸런스 {lb}%"},
-  {c:"var(--c-dev)", t:"<b>MES</b> WIP {wip}ea — 파이프라인 OK"},
-  {c:"var(--c-ai)",  t:"<b>AI</b> 예측 정확도 {acc}% — 이상없음"},
-  {c:"var(--signal)",t:"<b>SSOT</b> 동기화 지연 &lt;{lag}ms"},
-  {c:"var(--c-mfg)", t:"<b>현장</b> OEE {oee}% — 가동 정상"},
-  {c:"var(--c-dev)", t:"<b>파이프라인</b> API 응답 {api}ms — OK"},
-  {c:"var(--c-ai)",  t:"<b>AI</b> 이상탐지 대기 — 신호 정상"},
-  {c:"var(--c-mfg)", t:"<b>안돈</b> GREEN — 라인 이상 없음"},
-  {c:"var(--signal)",t:"<b>SSOT</b> 3-Domain 동기 완료"},
-  {c:"var(--c-dev)", t:"<b>MES</b> CI/CD 배포 완료 — LIVE"},
-  {c:"var(--c-ai)",  t:"<b>AI</b> 예측 모델 갱신 — v{ver}"},
-  {c:"var(--c-mfg)", t:"<b>현장</b> Takt {takt}s — WIP {wip}ea"},
-  {c:"var(--signal)",t:"<b>Fusion</b> 크로스도메인 동기 {lag}ms"},
-  {c:"var(--c-ai)",  t:"<b>RPA</b> 반복업무 자동화 실행 중"},
-  {c:"var(--c-dev)", t:"<b>BI</b> 대시보드 갱신 — OEE {oee}%"},
+  {c:"var(--c-mfg)", t:"<b>제조</b> OEE {oee}% — 공정 변수 데이터 레이어로 전파"},
+  {c:"var(--c-dev)", t:"<b>데이터</b> MES WIP {wip}ea — 현장 맥락 포함 SSOT 반영"},
+  {c:"var(--c-ai)",  t:"<b>AI</b> 도메인 컨텍스트 주입 — 오탐 {acc}% 감소"},
+  {c:"var(--signal)",t:"<b>연결</b> 사일로 해제 — 3-Domain 동기 지연 &lt;{lag}ms"},
+  {c:"var(--c-mfg)", t:"<b>제조</b> Takt {takt}s — 단일 전문가 미식별 경계 신호 감지"},
+  {c:"var(--c-dev)", t:"<b>데이터</b> 파이프라인 API {api}ms — 현장→코드 정합"},
+  {c:"var(--c-ai)",  t:"<b>AI</b> 경계 이상 식별 — 현장⟷코드⟷데이터 접점"},
+  {c:"var(--c-mfg)", t:"<b>제조</b> 안돈 신호 — AI 레이어로 즉시 연결"},
+  {c:"var(--signal)",t:"<b>Twin</b> 도메인 연결 완료 — 조직 거울 상태 SYNCED"},
+  {c:"var(--c-dev)", t:"<b>데이터</b> CI/CD 배포 — 공정 도메인 지식 반영 완료"},
+  {c:"var(--c-ai)",  t:"<b>AI</b> 모델 갱신 v{ver} — 제조 피처 재적용"},
+  {c:"var(--c-mfg)", t:"<b>제조</b> WIP {wip}ea — 부서 간 통역 오류 0건"},
+  {c:"var(--signal)",t:"<b>Twin</b> 사일로→연결 전환 — 경계 오류 차단 {lag}ms"},
+  {c:"var(--c-ai)",  t:"<b>RPA</b> 경계 업무 자동화 — 도메인 식별 기반"},
+  {c:"var(--c-dev)", t:"<b>BI</b> 현장 맥락 포함 대시보드 갱신 — OEE {oee}%"},
 ];
 function renderStreamMsg(tmpl){
   return tmpl
@@ -1124,10 +1123,10 @@ document.getElementById("syncBtn").addEventListener("click",()=>{
 
 /* ───────────────────── live KPI lerp (dt-based, no snap) ───────────────────── */
 const kpiEls = document.querySelectorAll("#kpis .kpi .v");
-const kpiBase  = [92.4, 42, 14, 96, 94.1, 1.8, 38, null, null, null];
+const kpiBase  = [null, 92.4, null, null, null, 1.8, null, null, null, null];
 // displayed values lerp toward targets
-const kpiCur   = [92.4, 42, 14, 96, 94.1, 1.8, 38, null, null, null];
-const kpiTarget= [92.4, 42, 14, 96, 94.1, 1.8, 38, null, null, null];
+const kpiCur   = [null, 92.4, null, null, null, 1.8, null, null, null, null];
+const kpiTarget= [null, 92.4, null, null, null, 1.8, null, null, null, null];
 let kpiRefreshT = 0;
 function refreshKpiTargets(){
   kpiBase.forEach((base,i)=>{
@@ -1144,9 +1143,7 @@ function updateKpis(dt){
     if(kpiBase[i]===null) return;
     kpiCur[i] += (kpiTarget[i] - kpiCur[i]) * Math.min(1, dt*1.2);
     const v = kpiCur[i];
-    if(i===2) el.textContent = Math.round(v)+"ea";
-    else if(i===5) el.textContent = v.toFixed(1)+"s";
-    else if(i===6) el.textContent = "<"+Math.round(v)+"ms";
+    if(i===5) el.textContent = "<"+v.toFixed(1)+"s";
     else el.textContent = v.toFixed(1)+"%";
   });
 }

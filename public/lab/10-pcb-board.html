@@ -258,7 +258,7 @@ const DATA = {
     {ref:"Q1",t:"ERP"},{ref:"Q2",t:"MES"},{ref:"Q3",t:"IATF16949"},
   ],
   TP:[], // test points removed — career metrics live on the IC datasheets, not duplicated here
-  CONTACT:["64etuor@gmail.com","github.com/64etuor","010-0000-0000"],
+  CONTACT:[],
   ENG_NOTES:[ // 자원제약 → 최적해 · 크로스도메인 + 실행력 (silicon/DB-level reasoning)
     {ref:"N1",kind:"IC",label:"BITMASK",title:"Bitwise 다중선택 저장",
      pkg:"LOGIC · SQL",src:"SQL/Bitwise Operation.md",
@@ -529,21 +529,6 @@ function drawConnector(){
   const e=el("text",{x:88,y:316,fill:"#6fae97","font-size":9,"letter-spacing":1});
   e.textContent="J1 · EDGE";$("#labels").appendChild(e);
 
-  // contact silkscreen block
-  const cgrp=el("g");
-  const bx=150, by=320;
-  cgrp.appendChild(el("rect",{x:bx,y:by,width:250,height:16,fill:"none"}));
-  DATA.CONTACT.forEach((c,i)=>{
-    const t=el("text",{x:bx,y:by+i*0,fill:"#cfe6db"});
-  });
-  ["CONTACT · 연락처", ...DATA.CONTACT].forEach((line,i)=>{
-    const t=el("text",{x:130,y:730+i*16,fill:i===0?"#6fae97":"#cfe6db",
-      "font-size":i===0?9:10,"font-weight":i===0?700:400,"letter-spacing":i===0?2:.5});
-    t.textContent=line;$("#labels").appendChild(t);
-  });
-
-  // ---- QR / 2D code delight (links github) in silkscreen ----
-  drawQR(1320,720,"github.com/64etuor");
 }
 
 /* fake-but-real-looking QR */
@@ -567,10 +552,6 @@ function drawQR(x,y,label){
     if(rnd()>.5) g.appendChild(el("rect",{x:x+a*s,y:y+b*s,width:s,height:s,fill:"#04130f"}));
   }
   finder(0,0);
-  const lab=el("text",{x:x+N*s/2,y:y+N*s+22,fill:"#9fc3b3","font-size":8,"text-anchor":"middle"});
-  lab.textContent="⤷ github.com/64etuor";g.appendChild(lab);
-  g.style.cursor="pointer";
-  g.addEventListener("click",()=>window.open("https://github.com/64etuor","_blank"));
   $("#comps").appendChild(g);
 }
 

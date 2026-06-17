@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>박양하 · G-code / 3D 프린터 빌드</title>
+<title>박양하 · 적층제조 치공구 빌드</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
@@ -311,10 +311,10 @@ footnote,.foot{display:block;text-align:center;font-family:var(--mono);font-size
       <div class="chip hot"><span class="dot"></span>노즐 <b id="t-noz">215°C</b></div>
       <div class="chip bedc"><span class="dot"></span>베드 <b id="t-bed">60°C</b></div>
       <div class="chip">레이어 높이 <b>0.2mm</b></div>
-      <div class="chip">인필 <b>20%</b></div>
+      <div class="chip">인필 <b>35%</b></div>
       <div class="chip">속도 <b id="t-spd">60mm/s</b></div>
     </div>
-    <div class="statetag" id="statetag"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor"></span><span id="statetxt">PRINTING — PYH.gcode</span></div>
+    <div class="statetag" id="statetag"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor"></span><span id="statetxt">PRINTING — ELENTEC_jig.gcode</span></div>
   </header>
 
   <!-- ───────── stage: viewport + console ───────── -->
@@ -324,12 +324,12 @@ footnote,.foot{display:block;text-align:center;font-family:var(--mono);font-size
     <div class="panel">
       <div class="head">
         <div class="t"><span class="k"></span>FDM 빌드 챔버 · 적층 제조 시뮬레이션</div>
-        <div class="meta">part: <b style="color:var(--filament-2)">PYH_profile.stl</b> · 0.2mm · PLA+</div>
+        <div class="meta">part: <b style="color:var(--filament-2)">cartridge_press_insert_jig.stl</b> · 0.2mm · PETG-CF</div>
       </div>
       <div class="viewport">
         <canvas id="print"></canvas>
         <div class="vp-overlay">
-          <div class="vp-badge">슬라이싱: <b id="b-slices">…</b> 레이어 · 인필 20% · 리트랙션 ON</div>
+          <div class="vp-badge">슬라이싱: <b id="b-slices">…</b> 레이어 · 인필 35% · 리트랙션 ON</div>
           <div class="vp-layer">
             <div class="big"><span id="b-layer">0</span> / <span id="b-total">—</span></div>
             <div class="sub">LAYER · Z=<span id="b-z">0.00</span>mm</div>
@@ -369,7 +369,7 @@ footnote,.foot{display:block;text-align:center;font-family:var(--mono);font-size
     <div class="panel career">
       <div class="head">
         <div class="t"><span class="k"></span>적층된 경력 레이어 · CAREER BUILD</div>
-        <div class="meta">레이어가 굳을 때마다 경력이 형성됩니다</div>
+        <div class="meta">외주 제작 → 사내 적층 전환 → 현장 적용</div>
       </div>
       <div id="careerlist"></div>
     </div>
@@ -381,16 +381,16 @@ footnote,.foot{display:block;text-align:center;font-family:var(--mono);font-size
       </div>
       <div class="metric-list" id="metriclist"></div>
 
-      <!-- DELIGHT: defect → reprint -->
+      <!-- process note: local bead adjustment -->
       <div class="defect" id="defect">
         <div class="dh">
-          <span class="lbl"><span class="dot"></span><span id="def-lbl">DEFECT DETECTED · 레이어 적층 불량</span></span>
+          <span class="lbl"><span class="dot"></span><span id="def-lbl">PROCESS NOTE · 코너 비드 관찰</span></span>
           <span id="def-tag" style="color:var(--ink-3)">layer 042</span>
         </div>
         <div class="db">
           <div class="dcanvaswrap"><canvas id="defectcv"></canvas></div>
-          <div class="dtxt" id="def-txt"><b>품질 검출:</b> layer 042 적층 비드 불량 검출. 슬라이싱 파라미터 최적화 후 <b>재출력(re-print)</b> 시 불량 0%로 솔리드화.</div>
-          <button class="reprint" id="reprintbtn">▶ RE-PRINT LAYER 042 — 파라미터 최적화 적용</button>
+          <div class="dtxt" id="def-txt"><b>공정 메모:</b> layer 042 카트리지 누름면 코너에서 비드 끊김 경향 확인. 코너 감속과 외벽 순서를 조정해 재슬라이싱.</div>
+          <button class="reprint" id="reprintbtn">▶ APPLY PARAMETER NOTE — 코너 감속 / 외벽 우선</button>
         </div>
       </div>
     </div>
@@ -399,7 +399,7 @@ footnote,.foot{display:block;text-align:center;font-family:var(--mono);font-size
   <!-- ───────── skills = material spools ───────── -->
   <section class="skillstrip">
     <div class="head">
-      <div class="t"><span class="k"></span>재료 / 필라멘트 스풀 · MATERIAL LIBRARY</div>
+      <div class="t"><span class="k"></span>재료 / 공정 스풀 · MATERIAL LIBRARY</div>
       <div class="meta" id="mat-meta">로드된 스풀 0 / 0</div>
     </div>
     <div class="skillwrap" id="skillwrap"></div>
@@ -409,28 +409,28 @@ footnote,.foot{display:block;text-align:center;font-family:var(--mono);font-size
   <section class="complete" id="complete">
     <div class="cbar">
       <div class="cl">
-        <div class="stamp" id="stamp">✓ PRINT COMPLETE</div>
+        <div class="stamp" id="stamp">BUILD LOGGED</div>
         <div class="ci">
-          <b>박양하 — 빌드 완료</b>
-          <span>총 빌드: 4개 경력 레이어 · 27개 스풀 · 불량 0건</span>
+          <b>이랜텍 치공구 내재화 빌드</b>
+          <span>외주 제작 검토 → 사내 적층 전환 → 현장 적용 기준 정리</span>
         </div>
       </div>
       <div class="cc">
-        <button class="btn active" id="replaybtn" style="padding:8px 13px">⟲ REPRINT ALL</button>
+        <button class="btn active" id="replaybtn" style="padding:8px 13px">⟲ REPLAY BUILD</button>
       </div>
     </div>
   </section>
 
-  <div class="foot">G-code / 적층 제조 시안 · 노즐 모션은 G-code 스트림과 실시간 동기화됩니다 · keep-all · headless-ready</div>
+  <div class="foot">적층제조 치공구 시안 · 노즐 모션은 G-code 스트림과 동기화됩니다 · 외주 제작품을 사내 출력 기준으로 재설계</div>
 </div>
 
 <script>
 "use strict";
 /* ════════════════════════════════════════════════════════════════════
-   박양하 — G-code / 3D 프린터 빌드 포트폴리오
+   박양하 — 적층제조 치공구 빌드 포트폴리오
    2D Canvas additive-fab simulation. Nozzle motion is driven by the
    SAME generated G-code that streams into the console. As layers of the
-   "PYH" part complete, career sections solidify.
+   fixture part complete, career sections solidify.
    ════════════════════════════════════════════════════════════════════ */
 
 /* ───────────── REAL DATA ───────────── */
@@ -442,8 +442,8 @@ const CAREER = [
     body:"생산 데이터 DB·대시보드 구축, LOB 분석. 표준시간(ST) −50% 단축, 검사성적서 자동발행 시스템, MES 구축으로 사무공수 −451분/일 절감.",
     tags:[["MES구축",1],["ST −50%",1],["LOB분석",0],["자동발행",0],["BI",0]] },
   { org:"이랜텍 (ELENTEC)", role:"생산라인 PM / 파트장", date:"2022.11–2023.09", layerNo:"LAYER 023–044",
-    body:"DOE 기반 용착 공정 개선, 사이클타임 단축, 생산성 향상. 전용 Jig 개발로 공정 안정화 및 품질 확보.",
-    tags:[["DOE",1],["공정개선",1],["Jig개발",1]] },
+    body:"외주 제작하던 카트리지형 컷팅/누름 JIG와 Insert 자동화 JIG를 현장 조건에 맞게 재설계. 사내 적층제조로 시제품을 직접 출력하고, 조립·작업성 확인 후 라인 적용 기준을 정리.",
+    tags:[["외주→사내",1],["카트리지 JIG",1],["Insert 자동화",1],["적층제조",1],["현장적용",0]] },
   { org:"은성에스아이티", role:"생산관리과장 · 2차전지 배터리팩 총괄", date:"2020.08–2022.11", layerNo:"LAYER 001–022 · base",
     body:"단가 30%+ 재협상, 운영경비 85%+ 절감. 비전검사 도입으로 불량 0건 달성, IATF16949 품질시스템 운영. 2차전지 배터리팩 생산 총괄.",
     tags:[["단가 +30%",1],["운영경비 −85%",1],["비전검사",0],["불량 0건",1],["IATF16949",0]] },
@@ -451,48 +451,28 @@ const CAREER = [
 
 // QC = print-quality report (dimensional/surface readouts), not career KPIs.
 const METRICS = [
-  { label:"치수 정밀도 ±", val:"0.08mm", cls:"good", w:95 },
-  { label:"표면 거칠기 Ra", val:"6.4µm", cls:"good", w:70 },
-  { label:"레이어 접착", val:"강함", cls:"good", w:88 },
-  { label:"용착/이음 품질", val:"PASS", cls:"good", w:100 },
-  { label:"인필 밀도", val:"20%", cls:"up", w:55 },
-  { label:"치수 정확도", val:"99.4%", cls:"up", w:92 },
-  { label:"빌드 시간", val:"42분", cls:"good", w:60 },
-  { label:"출력 불량", val:"0건", cls:"zero", w:100 },
+  { label:"베드 기준면 평탄도", val:"0.08mm", cls:"good", w:92 },
+  { label:"카트리지 안착 유격", val:"0.15mm", cls:"good", w:78 },
+  { label:"인서트 포켓 반복성", val:"±0.10", cls:"good", w:86 },
+  { label:"외벽/홀 순서 검증", val:"OK", cls:"good", w:88 },
+  { label:"인필 밀도", val:"35%", cls:"up", w:62 },
+  { label:"체결 보스 보강", val:"4EA", cls:"up", w:74 },
+  { label:"시제품 빌드 시간", val:"42분", cls:"good", w:60 },
+  { label:"현장 피드백 반영", val:"2회", cls:"zero", w:66 },
 ];
 
 const SKILLS = [
   ["Python","#3ddc97"],["SQL","#3ddc97"],["FastAPI","#3ddc97"],["React","#2f81f7"],["TypeScript","#2f81f7"],
   ["Electron","#2f81f7"],["Rust","#ff7a18"],["MySQL/RDS","#ffb454"],["AWS","#ff9a3c"],["GCP","#2f81f7"],
   ["BI","#3ddc97"],["ML","#c9a3ff"],["RPA","#c9a3ff"],["CI/CD","#3ddc97"],
-  ["PFMEA","#ff7a18"],["CP/PFD","#ff7a18"],["SOP","#ff7a18"],["산업용접","#ff4d4d"],["LOB","#ffb454"],
+  ["PFMEA","#ff7a18"],["CP/PFD","#ff7a18"],["SOP","#ff7a18"],["적층제조","#ff7a18"],["LOB","#ffb454"],
   ["Jig개발","#ff7a18"],["기구설계","#ff7a18"],["비전검사","#2f81f7"],["로봇티칭","#c9a3ff"],["Draftsight","#9aa2b1"],
   ["ERP","#ffb454"],["MES","#ffb454"],["IATF16949","#3ddc97"],
 ];
 
-/* ═══════════════════ G-CODE GENERATION (the part = "PYH") ═══════════════════
-   We build toolpaths for three glyphs P Y H on a build plate, layer by layer.
-   Each layer = perimeter (outline) + infill. The console streams the literal
-   G1 commands; the nozzle in the viewport follows the EXACT same coordinates. */
-
-// Glyph definitions in a local 0..100 (x) by 0..140 (y) grid; list of stroke polylines.
-const GLYPHS = {
-  P: [
-    [[10,0],[10,140]],                                  // stem
-    [[10,140],[70,140],[88,120],[88,86],[70,66],[10,66]], // bowl
-  ],
-  Y: [
-    [[8,140],[50,78]],   // left diagonal
-    [[92,140],[50,78]],  // right diagonal
-    [[50,78],[50,0]],    // stem
-  ],
-  H: [
-    [[10,0],[10,140]],   // left
-    [[90,0],[90,140]],   // right
-    [[10,70],[90,70]],   // cross
-  ],
-};
-const GLYPH_ORDER = ["P","Y","H"];
+/* ═════════════════ G-CODE GENERATION (cartridge / insert JIG) ═════════════════
+   The toolpath builds a production fixture: base plate, cartridge cutting/press
+   channel, clamp rails, screw bosses, and insert automation pockets. */
 
 // Resample a polyline into many short segments (so extrusion looks continuous & speed is uniform)
 function resample(poly, step){
@@ -511,54 +491,88 @@ function resample(poly, step){
 const TOTAL_LAYERS = 88;
 const LAYER_H = 0.2;
 const PLATE = { w:220, d:220 };          // mm build plate
-// world placement of glyphs across plate
-const GLYPH_W = 100, GLYPH_H = 140, GAP = 22;
-const partW = GLYPH_W*3 + GAP*2;
-const baseX = (PLATE.w - partW)/2;
-const baseY = (PLATE.d - GLYPH_H)/2 + 6;
+const JIG = { x:28, y:48, w:164, h:124 };
 
-function glyphWorld(gi, gx, gy){
-  return [ baseX + gi*(GLYPH_W+GAP) + (gx/100)*GLYPH_W,
-           baseY + (gy/140)*GLYPH_H ];
+function jigWorld(x,y){
+  return [JIG.x + (x/164)*JIG.w, JIG.y + (y/124)*JIG.h];
 }
+function roundedRect(x,y,w,h,r,steps=5){
+  const pts=[];
+  const corners=[
+    [x+w-r,y+r,-Math.PI/2,0],
+    [x+w-r,y+h-r,0,Math.PI/2],
+    [x+r,y+h-r,Math.PI/2,Math.PI],
+    [x+r,y+r,Math.PI,Math.PI*1.5],
+  ];
+  pts.push([x+r,y]);
+  for(const [cx,cy,a0,a1] of corners){
+    for(let i=0;i<=steps;i++){
+      const a=a0+(a1-a0)*(i/steps);
+      pts.push([cx+Math.cos(a)*r, cy+Math.sin(a)*r]);
+    }
+  }
+  pts.push([x+r,y]);
+  return pts;
+}
+function circle(cx,cy,r,steps=28){
+  const pts=[];
+  for(let i=0;i<=steps;i++){
+    const a=(i/steps)*Math.PI*2;
+    pts.push([cx+Math.cos(a)*r, cy+Math.sin(a)*r]);
+  }
+  return pts;
+}
+
+const TOOLPATHS = [
+  { name:"base outer shell", start:0, pts:roundedRect(0,0,164,124,10), every:1 },
+  { name:"cartridge cutting nest", start:0, pts:roundedRect(18,34,82,42,5), every:1 },
+  { name:"press pad contact face", start:12, pts:roundedRect(36,48,48,18,3), every:1 },
+  { name:"upper clamp rail", start:18, pts:roundedRect(16,20,92,9,3), every:1 },
+  { name:"lower clamp rail", start:18, pts:roundedRect(16,82,92,9,3), every:1 },
+  { name:"insert automation pocket A", start:4, pts:circle(126,38,13), every:1 },
+  { name:"insert automation pocket B", start:4, pts:circle(126,84,13), every:1 },
+  { name:"shuttle guide slot", start:10, pts:roundedRect(113,55,40,14,4), every:1 },
+  { name:"screw boss NW", start:0, pts:circle(18,18,6,20), every:2 },
+  { name:"screw boss NE", start:0, pts:circle(146,18,6,20), every:2 },
+  { name:"screw boss SW", start:0, pts:circle(18,106,6,20), every:2 },
+  { name:"screw boss SE", start:0, pts:circle(146,106,6,20), every:2 },
+  { name:"datum rib left", start:28, pts:[[25,30],[25,95]], every:1 },
+  { name:"datum rib right", start:28, pts:[[102,30],[102,95]], every:1 },
+];
+
+const INFILL_LINES = [
+  [[10,14],[154,110]], [[10,30],[138,114]], [[10,46],[118,114]], [[10,62],[98,114]], [[10,78],[78,114]],
+  [[30,10],[154,86]], [[50,10],[154,70]], [[70,10],[154,54]], [[90,10],[154,38]], [[110,10],[154,22]],
+];
 
 // generate one layer's moves. layerIndex 0..TOTAL_LAYERS-1
 function buildLayer(li){
   const moves=[];
   let e = 0;                      // extruder accumulator for this layer's text
   const z = (li+1)*LAYER_H;
-  // Outline pass for all 3 glyphs
-  for(let gi=0; gi<3; gi++){
-    const g = GLYPHS[GLYPH_ORDER[gi]];
-    for(const stroke of g){
-      const pts = resample(stroke, 9);
-      // travel to start
-      const [sx,sy]=glyphWorld(gi,pts[0][0],pts[0][1]);
-      moves.push({type:"travel", x:sx, y:sy, z});
-      for(let i=1;i<pts.length;i++){
-        const [wx,wy]=glyphWorld(gi,pts[i][0],pts[i][1]);
-        const seg=Math.hypot(wx-(glyphWorld(gi,pts[i-1][0],pts[i-1][1])[0]),
-                             wy-(glyphWorld(gi,pts[i-1][0],pts[i-1][1])[1]));
-        e += seg*0.043;
-        moves.push({type:"extrude", x:wx, y:wy, z, e});
-      }
+  for(const path of TOOLPATHS){
+    if(li < path.start || li%path.every!==0) continue;
+    const pts = resample(path.pts, 6);
+    const [sx,sy]=jigWorld(pts[0][0],pts[0][1]);
+    moves.push({type:"travel", x:sx, y:sy, z, note:path.name});
+    for(let i=1;i<pts.length;i++){
+      const [px,py]=jigWorld(pts[i-1][0],pts[i-1][1]);
+      const [wx,wy]=jigWorld(pts[i][0],pts[i][1]);
+      const seg=Math.hypot(wx-px, wy-py);
+      e += seg*0.043;
+      moves.push({type:"extrude", x:wx, y:wy, z, e, feature:path.name});
     }
   }
-  // sparse infill every few layers (diagonal raster inside H crossbar region as a flourish)
-  if(li%3===0){
+  // sparse infill across the fixture base; alternates direction layer by layer.
+  if(li%3===0 && li<72){
     const dir = (li/3)%2===0;
-    for(let gi=0; gi<3; gi++){
-      // infill the lower solid region lightly
-      const n=4;
-      for(let r=0;r<n;r++){
-        const fy = 8 + r*(GLYPH_H-16)/(n-1);
-        const ax = dir? 14 : 86, bx = dir? 86 : 14;
-        const [p0x,p0y]=glyphWorld(gi,ax,fy);
-        const [p1x,p1y]=glyphWorld(gi,bx,fy);
-        moves.push({type:"travel", x:p0x, y:p0y, z});
-        e += Math.hypot(p1x-p0x,p1y-p0y)*0.02;
-        moves.push({type:"extrude", x:p1x, y:p1y, z, e, infill:true});
-      }
+    for(const line of INFILL_LINES){
+      const a=dir?line[0]:line[1], b=dir?line[1]:line[0];
+      const [p0x,p0y]=jigWorld(a[0],a[1]);
+      const [p1x,p1y]=jigWorld(b[0],b[1]);
+      moves.push({type:"travel", x:p0x, y:p0y, z, note:"35% infill"});
+      e += Math.hypot(p1x-p0x,p1y-p0y)*0.02;
+      moves.push({type:"extrude", x:p1x, y:p1y, z, e, infill:true, feature:"35% infill"});
     }
   }
   return { z, moves };
@@ -572,9 +586,9 @@ function fmt(n,d=1){ return n.toFixed(d); }
 function gcodeLine(move, layerStart){
   if(layerStart) return null;
   if(move.type==="travel"){
-    return {cmd:"G0", html:`<span class="cmd">G0</span> <span class="ax">X${fmt(move.x)} Y${fmt(move.y)}</span> <span class="cmt">; travel</span>`};
+    return {cmd:"G0", html:`<span class="cmd">G0</span> <span class="ax">X${fmt(move.x)} Y${fmt(move.y)}</span> <span class="cmt">; ${move.note||"travel"}</span>`};
   } else {
-    return {cmd:"G1", html:`<span class="g1">G1</span> <span class="ax">X${fmt(move.x)} Y${fmt(move.y)}</span> <span class="ext">E${fmt(move.e,3)}</span>${move.infill?` <span class="cmt">; infill</span>`:""}`};
+    return {cmd:"G1", html:`<span class="g1">G1</span> <span class="ax">X${fmt(move.x)} Y${fmt(move.y)}</span> <span class="ext">E${fmt(move.e,3)}</span>${move.feature?` <span class="cmt">; ${move.feature}</span>`:""}`};
   }
 }
 
@@ -855,7 +869,7 @@ function finish(){
   state.done=true; state.running=false;
   pushG(`<span class="mc">M104 S0</span> <span class="cmt">; 노즐 히터 OFF</span>`);
   pushG(`<span class="mc">M140 S0</span> <span class="cmt">; 베드 히터 OFF</span>`);
-  pushG(`<span class="mc">M84</span> <span class="cmt">; 스텝모터 정지 · PRINT COMPLETE</span>`);
+  pushG(`<span class="mc">M84</span> <span class="cmt">; 스텝모터 정지 · build logged</span>`);
   // ensure everything solid
   careerSolid=careerSolid.map((_,i)=>true);
   document.querySelectorAll(".layer-item").forEach(e=>e.classList.add("solid"));
@@ -863,13 +877,13 @@ function finish(){
   document.getElementById("complete").classList.add("done");
   const st=document.getElementById("statetag");
   st.classList.add("done");
-  document.getElementById("statetxt").textContent="PRINT COMPLETE — PYH.gcode";
-  document.getElementById("p-eta").textContent="빌드 완료 · 100%";
+  document.getElementById("statetxt").textContent="BUILD LOGGED — ELENTEC_jig.gcode";
+  document.getElementById("p-eta").textContent="빌드 기록 완료 · 100%";
 }
 
 /* header gcode emitted at start */
 function emitHeader(){
-  pushG(`<span class="cmt">; PYH_profile.gcode · sliced 0.2mm · PLA+</span>`);
+  pushG(`<span class="cmt">; ELENTEC_jig.gcode · cartridge_press_insert_jig · PETG-CF</span>`);
   pushG(`<span class="mc">M104 S215</span> <span class="cmt">; 노즐 가열 215°C</span>`);
   pushG(`<span class="mc">M140 S60</span> <span class="cmt">; 베드 가열 60°C</span>`);
   pushG(`<span class="cmd">G28</span> <span class="cmt">; home all axes</span>`);
@@ -911,6 +925,8 @@ function draw(){
     ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y1); ctx.stroke();
   }
 
+  drawFixtureAnnotations();
+
   // ── partial current segment (the bead being laid right now) ──
   if(state.prevPos && !state.done){
     const a=state.prevPos, n=state.nozzle;
@@ -930,6 +946,36 @@ function draw(){
 
   // HUD numeric updates
   updateHUD();
+}
+
+function drawFixtureAnnotations(){
+  const z=Math.max(2.2, state.layer*LAYER_H+1.6);
+  const labels=[
+    {p:[58,56], text:"카트리지 컷팅/누름 JIG", dx:-96, dy:-18},
+    {p:[126,38], text:"Insert 자동화 포켓", dx:18, dy:-24},
+    {p:[126,84], text:"Insert 자동화 포켓", dx:18, dy:12},
+    {p:[18,18], text:"체결 보스", dx:-44, dy:-18},
+    {p:[102,78], text:"기준 리브", dx:-18, dy:24},
+  ];
+  ctx.save();
+  ctx.font='10px "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace';
+  ctx.textBaseline="middle";
+  for(const l of labels){
+    const [wx,wy]=jigWorld(l.p[0],l.p[1]);
+    const [x,y]=project(wx,wy,z);
+    const tx=x+l.dx, ty=y+l.dy;
+    ctx.strokeStyle="rgba(154,162,177,.32)";
+    ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(tx,ty); ctx.stroke();
+    ctx.fillStyle="rgba(8,9,11,.72)";
+    const tw=ctx.measureText(l.text).width+12;
+    ctx.fillRect(tx-6,ty-9,tw,18);
+    ctx.strokeStyle="rgba(255,122,24,.22)";
+    ctx.strokeRect(tx-6,ty-9,tw,18);
+    ctx.fillStyle="rgba(238,241,245,.82)";
+    ctx.fillText(l.text,tx,ty);
+  }
+  ctx.restore();
 }
 
 function drawPlate(){
@@ -1049,8 +1095,8 @@ let tempTick=0;
 function drawTempGraph(){
   tempTick++;
   if(tempTick%2===0){
-    // small noise around current temp
-    const wob = state.temp>=T_TARGET ? (Math.sin(tempTick*0.3)*1.6 + (Math.random()-.5)*1.2) : 0;
+    // deterministic controller ripple around current temp
+    const wob = state.temp>=T_TARGET ? Math.sin(tempTick*0.3)*1.6 + Math.sin(tempTick*0.11)*0.6 : 0;
     tHist.push(state.temp+wob);
     if(tHist.length>60) tHist.shift();
   }
@@ -1077,7 +1123,7 @@ function drawTempGraph(){
   }
 }
 
-/* ═══════════════════════════ DEFECT canvas (delight) ═══════════════════════════ */
+/* ═══════════════════════════ PROCESS NOTE canvas ═══════════════════════════ */
 let defectAnim={t:0, fixing:false, fixed:false};
 function drawDefect(){
   const w=dcv.getBoundingClientRect().width, h=dcv.getBoundingClientRect().height;
@@ -1088,7 +1134,7 @@ function drawDefect(){
     for(let c=0;c<cols;c++){
       const x=(c+0.5)/cols*w, y=(r+0.5)/rows*h;
       let bad=false;
-      // pattern of weld defects (clustered)
+      // bead interruption pattern around a tight corner
       if(!defectAnim.fixed){
         bad = ((r===1&&c>4&&c<9) || (r===2&&c>5&&c<8) || (r===0&&c===12)) ;
         // flicker
@@ -1132,21 +1178,21 @@ function drawDefect(){
 function startReprint(){
   if(defectAnim.fixing||defectAnim.fixed) return;
   defectAnim.fixing=true; defectAnim.fixStart=defectAnim.t;
-  document.getElementById("def-lbl").textContent="RE-PRINTING · 파라미터 최적화…";
+  document.getElementById("def-lbl").textContent="PARAMETER NOTE · 재슬라이싱 반영 중";
   const btn=document.getElementById("reprintbtn");
-  btn.textContent="… 재출력 중 (sweep)";
+  btn.textContent="… 코너 감속 / 외벽 우선 반영 중";
 }
 function onDefectFixed(){
   const d=document.getElementById("defect");
   d.classList.add("fixed");
-  document.getElementById("def-lbl").textContent="RESOLVED · 적층 불량 0%";
-  document.getElementById("def-tag").textContent="layer 042 ✓";
-  document.getElementById("def-txt").innerHTML="<b>완료:</b> 슬라이싱 파라미터 재설정. 동일 레이어 재출력 결과 <b>불량 0%</b> — 솔리드 비드로 깨끗하게 적층됨.";
-  document.getElementById("reprintbtn").textContent="✓ RE-PRINT COMPLETE — 0% DEFECT";
+  document.getElementById("def-lbl").textContent="PARAMETER NOTE · 비드 흐름 안정";
+  document.getElementById("def-tag").textContent="layer 042";
+  document.getElementById("def-txt").innerHTML="<b>기록:</b> 코너 감속, 외벽 우선, 리트랙션 거리 조정. 카트리지 누름면 외곽 비드가 끊기지 않도록 출력 조건을 보정.";
+  document.getElementById("reprintbtn").textContent="PARAMETER NOTE APPLIED";
 }
 document.getElementById("reprintbtn").addEventListener("click", startReprint);
 
-/* auto re-print once when print itself completes (so headless shows the delight) */
+/* auto-apply once when build completes so the note has a settled state */
 let autoReprintTimer=null;
 function scheduleAutoReprint(){
   if(autoReprintTimer) return;
@@ -1183,12 +1229,12 @@ function reset(){
   document.querySelectorAll(".matspool").forEach(e=>e.classList.remove("solid"));
   document.getElementById("complete").classList.remove("done");
   document.getElementById("statetag").classList.remove("done");
-  document.getElementById("statetxt").textContent="PRINTING — PYH.gcode";
+  document.getElementById("statetxt").textContent="PRINTING — ELENTEC_jig.gcode";
   document.getElementById("defect").classList.remove("fixed");
-  document.getElementById("def-lbl").textContent="DEFECT DETECTED · 레이어 적층 불량";
+  document.getElementById("def-lbl").textContent="PROCESS NOTE · 코너 비드 관찰";
   document.getElementById("def-tag").textContent="layer 042";
-  document.getElementById("def-txt").innerHTML="<b>품질 검출:</b> layer 042 적층 비드 불량 검출. 슬라이싱 파라미터 최적화 후 <b>재출력(re-print)</b> 시 불량 0%로 솔리드화.";
-  document.getElementById("reprintbtn").textContent="▶ RE-PRINT LAYER 042 — 파라미터 최적화 적용";
+  document.getElementById("def-txt").innerHTML="<b>공정 메모:</b> layer 042 카트리지 누름면 코너에서 비드 끊김 경향 확인. 코너 감속과 외벽 순서를 조정해 재슬라이싱.";
+  document.getElementById("reprintbtn").textContent="▶ APPLY PARAMETER NOTE — 코너 감속 / 외벽 우선";
   document.getElementById("mat-meta").textContent=`로드된 스풀 0 / ${SKILLS.length}`;
   emitHeader();
 }
@@ -1196,7 +1242,7 @@ document.getElementById("replaybtn").addEventListener("click", reset);
 
 /* ═══════════════════════════ BOOT ═══════════════════════════ */
 async function boot(){
-  // await fonts so layout & glyphs are stable on first paint
+  // await fonts so layout is stable on first paint
   try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch(e){}
   resize(); setupCam(); tresize(); dresize();
   buildDOM();

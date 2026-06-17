@@ -95,8 +95,8 @@
   .logo{width:50px;height:50px;border-radius:11px;flex:0 0 auto;
     background:radial-gradient(circle at 35% 30%,#143b2c,#06120c);
     border:1px solid #2c5a48;display:grid;place-items:center;
-    box-shadow:0 0 18px rgba(57,255,138,.22),inset 0 0 12px rgba(0,0,0,.6)}
-  .logo svg{filter:drop-shadow(0 0 4px rgba(57,255,138,.8))}
+    box-shadow:0 0 12px rgba(57,255,138,.14),inset 0 0 12px rgba(0,0,0,.6)}
+  .logo svg{filter:drop-shadow(0 0 3px rgba(57,255,138,.45))}
   .brand h1{font-size:clamp(16px,1.6vw,21px);font-weight:800;letter-spacing:-.01em;line-height:1.12}
   .brand .role{font-size:11px;color:var(--muted);letter-spacing:.04em;margin-top:4px}
   .brand .role b{color:var(--green);font-weight:700}
@@ -104,7 +104,7 @@
   .pill{font-size:10px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;
     border:1px solid var(--line);border-radius:999px;padding:6px 11px;color:var(--muted);
     display:flex;align-items:center;gap:7px;background:#0e1216}
-  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px rgba(57,255,138,.55)}
   .dot.run{animation:blink 1.2s steps(2,end) infinite}
   @keyframes blink{50%{opacity:.22}}
   .pill .dot.warn{background:var(--amber);box-shadow:0 0 8px var(--amber)}
@@ -144,7 +144,7 @@
     background:linear-gradient(180deg,#0c2417,#08160e);border:1px solid #1c5a3c}
   .ledtot .nm{font-size:11.5px;font-weight:800;color:var(--ink)}
   .ledtot .base{font-family:"DM Mono",monospace;font-size:12px;color:var(--muted);text-align:right}
-  .ledtot .cut{font-family:"DM Mono",monospace;font-size:15px;font-weight:800;color:var(--green);text-align:right;text-shadow:0 0 10px rgba(57,255,138,.4)}
+  .ledtot .cut{font-family:"DM Mono",monospace;font-size:15px;font-weight:800;color:var(--green);text-align:right;text-shadow:0 0 6px rgba(57,255,138,.24)}
 
   /* interrogation panel */
   .interro{margin-top:9px;border:1px solid var(--line);border-radius:7px;background:#0b0f12;
@@ -186,7 +186,7 @@
   .wfstep.baseline .sv{color:var(--amber)}
   .wfstep.final{background:linear-gradient(180deg,#0c2417,#08160e);border-color:#1c5a3c}
   .wfstep.final .si{color:var(--green)}
-  .wfstep.final .sv{font-size:14px;font-weight:800;text-shadow:0 0 10px rgba(57,255,138,.4)}
+  .wfstep.final .sv{font-size:14px;font-weight:800;text-shadow:0 0 6px rgba(57,255,138,.24)}
 
   .illnote{font-size:9px;color:var(--muted);line-height:1.55;letter-spacing:.01em;
     background:#0e1216;border:1px solid var(--line);border-radius:5px;padding:8px 10px}
@@ -266,9 +266,9 @@
         </div>
         <div class="creed">
           <span class="q">"이 비용은 관행이 아니라, 꼭 필요해서 존재하는가?"</span><br>
-          운영경비(OPEX)를 결과가 아니라 <b>구조</b>로 본다 — 항목을 한 줄씩 원장에 펼치고, 각 줄을 심문한다.
+          운영경비(OPEX)를 결과가 아니라 <b>구조</b>로 본다 — 원가를 숫자로 세우기 위해 항목을 한 줄씩 원장에 펼치고, 각 줄을 심문한다.
           답이 "관행"이면 레버를 건다. 조달단가 재협상 · 라인 운영구조 재설계 · 비전검사 0불량 · 인원·공수·생산계획·재고 개선으로
-          기준 OPEX를 단계적으로 깎아 <b>−85%</b>까지 내렸다.
+          기준 OPEX를 단계적으로 깎아 <b>−85%</b>까지 내렸다. 1막은 손의 시대에서 정렬을 시작한 시기였다.
         </div>
       </section>
 
@@ -300,7 +300,7 @@
 
             <div class="interro" id="interro" aria-live="polite">
               <div class="qh">
-                <span class="qt">심문 패널 · INTERROGATION</span>
+                <span class="qt">원장 메모 · LEDGER NOTE</span>
                 <span class="qn" id="interroIdx">항목 01 / 06</span>
               </div>
               <div class="qq" id="interroQ"></div>
@@ -571,7 +571,7 @@
       var rect = el("rect",{x:x.toFixed(1),y:yTop.toFixed(1),width:bw.toFixed(1),height:h.toFixed(1),
         rx:2, fill:fill});
       if(s.kind==="baseline"){ rect.setAttribute("stroke","#5a4422"); rect.setAttribute("stroke-width","1"); }
-      else { rect.setAttribute("stroke","rgba(57,255,158,0.5)"); rect.setAttribute("stroke-width","1"); rect.setAttribute("filter","url(#wfGlow)"); }
+      else { rect.setAttribute("stroke","rgba(57,255,158,0.32)"); rect.setAttribute("stroke-width","1"); rect.setAttribute("filter","url(#wfGlow)"); }
       svg.appendChild(rect);
 
       // connector from previous bar top-of-drop
@@ -617,11 +617,11 @@
     // defs: gradient + glow (append last so they exist)
     var defs = el("defs",{});
     var grad = el("linearGradient",{id:"wfGrad",x1:"0",y1:"0",x2:"0",y2:"1"});
-    grad.appendChild(el("stop",{offset:"0","stop-color":"#39ff8a"}));
+    grad.appendChild(el("stop",{offset:"0","stop-color":"#2ee07b"}));
     grad.appendChild(el("stop",{offset:"1","stop-color":"#0c5a39"}));
     defs.appendChild(grad);
-    var filt = el("filter",{id:"wfGlow",x:"-30%",y:"-30%",width:"160%",height:"160%"});
-    var blur = el("feGaussianBlur",{stdDeviation:"2","in":"SourceGraphic",result:"b"});
+    var filt = el("filter",{id:"wfGlow",x:"-18%",y:"-18%",width:"136%",height:"136%"});
+    var blur = el("feGaussianBlur",{stdDeviation:"1.1","in":"SourceGraphic",result:"b"});
     var merge = el("feMerge",{});
     merge.appendChild(el("feMergeNode",{"in":"b"}));
     merge.appendChild(el("feMergeNode",{"in":"SourceGraphic"}));

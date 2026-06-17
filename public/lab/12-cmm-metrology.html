@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>박양하 · 솔라엣지 검사 데이터 파이프라인 — 장비 데이터 수집·정제·DB통합·Cpk 시각화</title>
+<title>박양하 · 솔라엣지 추적성 관리 + 검사 데이터 파이프라인 — S/N 인터락·DB통합·Cpk 시각화</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
 :root{
@@ -23,6 +23,7 @@
   --fail:#ff5d6c;       /* FAIL / NG / out-of-spec */
   --amber:#ffb84d;      /* 정제·cleansing */
   --datum:#6fb4ff;      /* 수집 / data flow */
+  --trace:#8fd6d0;      /* traceability app */
   --probe:#ffd34d;
   --c-mir:#c9a3ff;
   --c-sol:#6fb4ff;
@@ -100,6 +101,26 @@ canvas#stage{display:block;width:100%;height:100%}
 .datumtag{margin-top:13px;display:flex;gap:6px}
 .dchip{flex:1;text-align:center;font-family:var(--mono);font-size:10px;font-weight:700;color:var(--datum);
   border:1px solid var(--datum);border-radius:5px;padding:5px 0;background:rgba(111,180,255,.07);letter-spacing:.04em}
+
+/* left middle: traceability app */
+#traceapp{left:18px;top:336px;width:212px;border:1px solid var(--line);border-radius:12px;
+  background:var(--panel);backdrop-filter:blur(8px);overflow:hidden}
+.tr-top{padding:12px 15px 10px;border-bottom:1px solid var(--line)}
+.tr-kick{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--trace);text-transform:uppercase}
+.tr-title{margin-top:5px;font-size:13px;font-weight:800;letter-spacing:.01em;line-height:1.25}
+.tr-title b{color:var(--trace)}
+.tr-sub{margin-top:6px;font-family:var(--mono);font-size:8.5px;color:var(--ink-3);letter-spacing:.03em;line-height:1.45}
+.tr-body{padding:6px 0}
+.tr-row{display:grid;grid-template-columns:42px 1fr;gap:8px;padding:7px 15px;border-bottom:1px solid var(--line-soft);
+  opacity:.48;transition:opacity .45s ease,background .45s ease}
+.tr-row:last-child{border-bottom:0}
+.tr-row.on{opacity:1;background:rgba(143,214,208,.045)}
+.tr-code{font-family:var(--mono);font-size:8.5px;font-weight:800;letter-spacing:.08em;color:var(--trace)}
+.tr-copy{font-size:10.5px;color:var(--ink-2);line-height:1.38}
+.tr-copy b{color:var(--ink);font-weight:700}
+.tr-foot{padding:9px 15px 11px;border-top:1px solid var(--line);background:rgba(7,11,16,.48)}
+.tr-foot .tr-note{font-size:10.5px;color:var(--ink-2);line-height:1.45}
+.tr-foot .tr-note b{color:var(--trace)}
 
 /* left lower: skills / 도구 */
 #equip{left:18px;bottom:18px;width:212px;padding:13px 15px;border:1px solid var(--line);border-radius:12px;background:var(--panel);backdrop-filter:blur(8px)}
@@ -225,7 +246,7 @@ canvas#stage{display:block;width:100%;height:100%}
 #toast .tt b{color:var(--amber)}
 #toast.pass .tt b{color:var(--pass)}
 
-@media (max-width:1180px){#legend{display:none}}
+@media (max-width:1180px){#legend,#traceapp{display:none}}
 </style>
 </head>
 <body>
@@ -239,9 +260,9 @@ canvas#stage{display:block;width:100%;height:100%}
       <span class="en">PARK YANGHA</span>
     </div>
     <div class="sep"></div>
-    <span class="role">공정기술 엔지니어 · 솔라엣지테크놀로지스코리아 · Waterpouch 라인 검사 데이터</span>
+    <span class="role">공정기술 엔지니어 · 솔라엣지테크놀로지스코리아 · 추적성 관리 + Waterpouch 검사 데이터</span>
     <div class="machine">
-      <span><b>INSPECTION DATA PIPELINE</b> 장비 → ETL → DB → Cpk · Excel VBA / SQL / Power BI</span>
+      <span><b>TRACEABILITY + INSPECTION DATA</b> S/N scan → interlock → ETL → DB → Cpk · Power Platform / SQL / Power BI</span>
       <span class="sep" style="height:18px"></span>
       <span class="statled" id="statled"><span class="dot"></span><span id="statText">INGEST</span></span>
     </div>
@@ -255,26 +276,46 @@ canvas#stage{display:block;width:100%;height:100%}
     <div class="dro-meta">
       <span>원천 <b>전기검사 · 2D 광학측정</b></span>
       <span>수집 <b>OPC UA / 장비로그</b></span>
-      <span>MODE <b>ETL</b></span>
+      <span>추적성 <b>S/N INTERLOCK</b></span>
+      <span>MODE <b>TRACE+ETL</b></span>
       <span id="clock">T+00.0s</span>
     </div>
   </div>
 
   <!-- 파이프라인 범례 -->
   <div class="hud" id="legend">
-    <div class="lg-h">검사 데이터 파이프라인</div>
+    <div class="lg-h">추적성 + 검사 데이터</div>
     <div class="lg-row"><div class="lg-sym">🔌</div><div class="lg-tx"><b>원천 장비</b> OCV/IR 전기검사 · Waterpouch 2D 광학측정</div></div>
+    <div class="lg-row"><div class="lg-sym">S/N</div><div class="lg-tx"><b>추적성 앱</b> Power Platform · 카메라 스캔 · 공정 인터락</div></div>
     <div class="lg-row"><div class="lg-sym">🧪</div><div class="lg-tx"><b>수집·ETL</b> 장비로그 + OPC UA · BCR cleansing</div></div>
     <div class="lg-row"><div class="lg-sym">🗄️</div><div class="lg-tx"><b>DB 적재</b> 정규화 · S/N 단위 inspection_result</div></div>
     <div class="lg-row"><div class="lg-sym">📈</div><div class="lg-tx"><b>Cpk·시각화</b> 공정능력 산출 · Power BI(.pbix)</div></div>
     <div class="datumtag">
-      <div class="dchip">원천</div><div class="dchip">ETL</div><div class="dchip">DB</div><div class="dchip">BI</div>
+      <div class="dchip">원천</div><div class="dchip">TRACE</div><div class="dchip">ETL</div><div class="dchip">DB</div><div class="dchip">BI</div>
+    </div>
+  </div>
+
+  <!-- 추적성 관리 앱 패널 -->
+  <div class="hud" id="traceapp">
+    <div class="tr-top">
+      <div class="tr-kick">POWER PLATFORM · TRACEABILITY APP</div>
+      <div class="tr-title">카메라 <b>S/N 스캔</b>부터<br>공정 인터락까지</div>
+      <div class="tr-sub">검사 장비를 만든 것이 아니라, 현장 S/N 흐름을 검증·기록하는 앱과 데이터 축을 구축</div>
+    </div>
+    <div class="tr-body" id="traceBody">
+      <div class="tr-row"><div class="tr-code">SCAN</div><div class="tr-copy"><b>카메라 S/N 스캔</b><br>작업자 입력 오타 감소</div></div>
+      <div class="tr-row"><div class="tr-code">VALID</div><div class="tr-copy"><b>S/N 유효성 검증</b><br>형식·공정순서·중복 확인</div></div>
+      <div class="tr-row"><div class="tr-code">LOCK</div><div class="tr-copy"><b>인터락</b><br>잘못된 S/N이면 다음 공정 차단</div></div>
+      <div class="tr-row"><div class="tr-code">FIELD</div><div class="tr-copy"><b>계보 추적</b><br>필드 불량 시 리콜 범위 특정</div></div>
+    </div>
+    <div class="tr-foot">
+      <div class="tr-note"><b>역할:</b> Power Platform 기반 추적성 앱 직접 구축 · S/N 계보와 검사 DB를 공정 데이터로 연결</div>
     </div>
   </div>
 
   <!-- 도구 / 역량 -->
   <div class="hud" id="equip">
-    <div class="eq-h"><span>도구 · 역량</span><span id="eqCount">0/20</span></div>
+    <div class="eq-h"><span>도구 · 역량</span><span id="eqCount">0/24</span></div>
     <div class="chips" id="chips"></div>
   </div>
 
@@ -288,7 +329,7 @@ canvas#stage{display:block;width:100%;height:100%}
       <div class="rp-sub">
         <span>원천 <b>2D 광학측정 (GW)</b></span>
         <span>특성 <b>Distance/Angle</b></span>
-        <span>판정 <b>OK/NG</b></span>
+        <span>표시 <b>대표값 [확인필요]</b></span>
       </div>
     </div>
     <div class="rp-head">
@@ -313,6 +354,7 @@ canvas#stage{display:block;width:100%;height:100%}
         <div class="bq">"검사를 직접 한 게 아니라, <b>장비가 만든 검사 데이터</b>를 수집·정제·DB통합·Cpk로 시각화하는 파이프라인을 직접 구축."</div>
         <div class="bm">
           <span class="bchip"><b>장비로그·OPC UA</b> 수집</span>
+          <span class="bchip"><b>S/N</b> scan·interlock</span>
           <span class="bchip"><b>BCR</b> cleansing</span>
           <span class="bchip"><b>Cpk</b> 공정능력 시각화</span>
         </div>
@@ -349,29 +391,32 @@ canvas#stage{display:block;width:100%;height:100%}
 
 <!-- boot -->
 <div id="boot">
-  <div class="boot-mark">INSPECTION DATA PIPELINE · ETL → DB → Cpk</div>
-  <div class="boot-title">검사 데이터 파이프라인 초기화 — 장비 데이터 소스 연결</div>
+  <div class="boot-mark">TRACEABILITY + INSPECTION DATA · S/N → ETL → DB → Cpk</div>
+  <div class="boot-title">추적성 앱과 검사 데이터 파이프라인 초기화 — 현장 S/N·장비 데이터 연결</div>
   <div class="boot-bar"><div class="boot-fill" id="bootFill"></div></div>
 </div>
 
 <script>
 "use strict";
 /* ============================================================
-   검사 데이터 파이프라인 / 공정능력(Cpk) — Canvas 2D
+   추적성 관리 + 검사 데이터 파이프라인 / 공정능력(Cpk) — Canvas 2D
    박양하 portfolio. 솔라엣지테크놀로지스코리아 공정기술 엔지니어.
-   REAL WORK: 검사를 직접 수행하지 않음. 장비(OCV/IR 전기검사,
-   Waterpouch 라인 2D 광학측정)가 만든 검사 데이터를
-   수집(OPC UA·장비로그) → 정제(BCR 중복·불일치 cleansing) →
+   REAL WORK: 검사를 직접 수행하거나 측정 장비를 제작하지 않음.
+   Power Platform으로 S/N 스캔·유효성 검증·공정 인터락·계보 추적 앱을
+   직접 구축하고, 장비(OCV/IR 전기검사, Waterpouch 라인 2D 광학측정)가
+   만든 검사 데이터를 수집(OPC UA·장비로그) → 정제(BCR 중복·불일치 cleansing) →
    정규화 DB 적재(S/N 단위 inspection_result) →
    Cpk 산출 + Power BI(.pbix) 대시보드로 시각화하는 파이프라인을 직접 구축.
    참조: references/솔라엣지 Project / 2407_Waterpouch 데이터 시각화.
    값 출처: Vision_240911 / OA_Result / Duplicate_BCR / WP Database Architecture.
    ============================================================ */
 
-/* ---------- 파이프라인 4 스테이지 ---------- */
+/* ---------- 추적성 + 검사 데이터 파이프라인 스테이지 ---------- */
 const STAGES = [
   {key:"src",  title:"원천 장비",   icon:"🔌", sub:"OCV·IR 전기검사 / 2D 광학측정",
    tags:["OCV (개방전압)","IR (절연저항)","Distance1–4","Angle1–4"], col:"--c-elen"},
+  {key:"trace", title:"추적성 앱", icon:"S/N", sub:"Power Platform · 카메라 스캔 → 인터락",
+   tags:["Power Apps","S/N 유효성 검증","공정순서 인터락","리콜 범위 특정"], col:"--trace"},
   {key:"etl",  title:"수집 · ETL",  icon:"🧪", sub:"장비로그 + OPC UA → cleansing",
    tags:["OPC UA","장비 로그","BCR cleansing","Excel VBA / Python"], col:"--amber"},
   {key:"db",   title:"DB 적재",     icon:"🗄️", sub:"정규화 · S/N 단위 inspection_result",
@@ -395,7 +440,7 @@ const FEATURES = [
   {key:"ir", feat:"IR (절연저항)",  sub:"🔌 전기검사 장비", nom:1000, tol:0, meas:1159, unit:"MΩ", out:false, lower:true}
 ];
 
-const SKILLS = ["Excel VBA","Python","Pandas","SQL","PostgreSQL","Power BI","Power Query","DAX","OPC UA","ETL","데이터 정제","Cpk/Cp","공정능력","데이터 모델링","On-prem Gateway","Matplotlib","Apps Script","BCR/바코드","S/N 추적","대시보드"];
+const SKILLS = ["Power Platform","Power Apps","Power Automate","S/N 인터락","계보 추적","Excel VBA","Python","Pandas","SQL","PostgreSQL","Power BI","Power Query","DAX","OPC UA","ETL","데이터 정제","Cpk/Cp","공정능력","데이터 모델링","On-prem Gateway","Matplotlib","BCR/바코드","S/N 추적","대시보드"];
 
 /* ---------- 정제(cleansing) 6 단계 — BCR 중복·불일치 ----------
    값 근거: Duplicate_BCR_Table.csv / Updated_BCR_Mismatch_Table.csv
@@ -449,10 +494,12 @@ function layout(){
   const cx = areaX + areaW/2;
   const top = 150;
 
-  // ----- 4 horizontal pipeline nodes -----
-  const nW = Math.min((areaW-3*46)/4, 168);
+  // ----- horizontal pipeline nodes -----
+  const count = STAGES.length;
+  const fixedGap = W>1500 ? 34 : 24;
+  const nW = Math.min((areaW-(count-1)*fixedGap)/count, 156);
   const nH = 116;
-  const gap = (areaW - nW*4)/3;
+  const gap = count>1 ? (areaW - nW*count)/(count-1) : 0;
   const ny = top + 36;
   NODES = STAGES.map((s,i)=>({
     x: areaX + i*(nW+gap), y: ny, w:nW, h:nH, stage:s
@@ -473,11 +520,12 @@ let packets=[];   // {seg, t, col, bad}
 function spawnPacket(){
   if(!bootDone) return;
   if(NODES.length<2) return;
-  const bad = Math.random()<0.18;   // some packets are dirty (BCR dup/mismatch)
+  const bad = (packetSerial++ % 6)===2;   // deterministic dirty packets (BCR dup/mismatch)
   packets.push({seg:0, t:0, col: bad? cssVar("--fail"):cssVar("--datum"), bad, cleaned:false});
 }
+let packetSerial=0;
 function drawPipeline(){
-  if(NODES.length<4) return;
+  if(NODES.length<2) return;
   // connectors first (behind nodes)
   for(let i=0;i<NODES.length-1;i++){
     const a=NODES[i], b=NODES[i+1];
@@ -515,8 +563,8 @@ function drawPipeline(){
     ctx.font="700 9px "+cssVar("--mono"); ctx.fillStyle=cssVar("--ink-3");
     ctx.textAlign="left"; ctx.textBaseline="top";
     ctx.fillText("STAGE "+(i+1), n.x+13, n.y+13);
-    // icon
-    ctx.font="20px "+cssVar("--sans"); ctx.textAlign="right";
+    // icon / stage mark
+    ctx.font=(s.icon.length>2?"800 11px ":"20px ")+cssVar(s.icon.length>2?"--mono":"--sans"); ctx.textAlign="right";
     ctx.fillText(s.icon, n.x+n.w-12, n.y+10);
     // title
     ctx.font="800 14px "+cssVar("--sans"); ctx.fillStyle=cssVar("--ink");
@@ -534,7 +582,7 @@ function drawPipeline(){
     });
   });
 }
-const stageLit=[false,false,false,false];
+const stageLit=STAGES.map(()=>false);
 
 function roundRect(x,y,w,h,r){
   ctx.beginPath();
@@ -690,6 +738,7 @@ function buildXRows(){
   });
 }
 const crossoverEl=document.getElementById("crossover");
+const traceRows=Array.from(document.querySelectorAll("#traceBody .tr-row"));
 
 // chips
 const chipsEl=document.getElementById("chips");
@@ -761,10 +810,22 @@ function genTimeline(){
   });
 
   // light pipeline stages sequentially
-  const stageMsgs=["원천 장비 데이터 연결","수집·ETL · BCR cleansing","정규화 DB 적재","Cpk 산출 · BI 시각화"];
+  const stageMsgs=["원천 장비 데이터 연결","추적성 앱 · S/N 검증/인터락","수집·ETL · BCR cleansing","정규화 DB 적재","Cpk 산출 · BI 시각화"];
   STAGES.forEach((s,i)=>{
     timeline.push({t:t+i*620,fn:()=>{ stageLit[i]=true; statText.textContent=stageMsgs[i]; }});
   });
+
+  traceRows.forEach((r,i)=>{
+    timeline.push({t:t+650+i*260,fn:()=>{ r.classList.add("on"); }});
+  });
+
+  timeline.push({t:t+1040,fn:()=>{
+    showToast("<b>S/N 유효성 검증</b> — 형식·공정순서·중복 확인 후 다음 공정 진행 허용","pass");
+  }});
+
+  timeline.push({t:t+1480,fn:()=>{
+    showToast("⚠ <b>잘못된 S/N 인터락</b> — 다음 공정 진입 차단 · 계보 확인 대기","warn");
+  }});
 
   // ETL: a dirty packet → cleansing toast
   timeline.push({t:t+1200,fn:()=>{
@@ -839,12 +900,12 @@ function tick(ts,dt){
 
   // spawn pipeline packets at cadence after boot
   packetTimer-=dt;
-  if(packetTimer<=0){ spawnPacket(); packetTimer=14+Math.random()*16; }
+  if(packetTimer<=0){ spawnPacket(); packetTimer=22; }
   // advance packets through segments
   packets.forEach(p=>{
     p.t += 0.018*dt;
-    // mark cleaned once passing into DB segment (seg>=1)
-    if(p.bad && p.seg>=1) p.cleaned=true;
+    // dirty inspection data becomes clean after trace validation and ETL cleansing.
+    if(p.bad && p.seg>=2) p.cleaned=true;
     if(p.t>=1){ p.t=0; p.seg++; }
   });
   packets = packets.filter(p=>p.seg<NODES.length-1);
@@ -863,7 +924,7 @@ function tick(ts,dt){
   // cpk smooth
   cpkShown+=(cpkTarget-cpkShown)*(1-Math.pow(1-0.08,dt));
   if(bootDone && cpkTarget>0 && Math.abs(cpkTarget-cpkShown)<0.03){
-    cpkShown += (Math.random()-0.5)*0.004;
+    cpkShown += Math.sin(nowMs/900)*0.0018;
   }
   cpkValEl.textContent=cpkShown.toFixed(2);
   const numEl=cpkValEl.parentElement;
@@ -916,23 +977,24 @@ function updateBoot(){
 }
 
 /* ====================================================================
-   LIVE STREAMING — 검사 데이터 수집 이벤트 로그 (boot 종료 후 지속)
+   EVENT TRACE — 검사 데이터/추적성 처리 이벤트 (무작위 라이브 로그 아님)
    ==================================================================== */
 let liveLog=null;
 const LOG_MAX=5;
 const liveEvents=[
-  {sn:"ASE{n}",msg:"OCV/IR 전기검사 결과 수집 — OPC UA",kind:"pass"},
-  {sn:"ASE{n}",msg:"2D 광학측정 Distance/Angle 적재",kind:"pass"},
-  {sn:"ASE{n}",msg:"BCR 중복 감지 — dedup 적용",kind:"warn"},
-  {sn:"ASE{n}",msg:"BCR↔BCR6 불일치 — 매핑 보정",kind:"warn"},
-  {sn:"ASE{n}",msg:"inspection_result PASS 적재 (S/N)",kind:"pass"},
-  {sn:"ASE{n}",msg:"Distance4 USL 초과 — NG 기록",kind:"warn"},
-  {sn:"ASE{n}",msg:"Cpk 재계산 — process capability.pbix",kind:"pass"},
-  {sn:"ASE{n}",msg:"Power BI 공정능력 대시보드 갱신",kind:"pass"},
-  {sn:"ASE{n}",msg:"장비 로그 정규화 · 단위 통일",kind:"pass"},
-  {sn:"ASE{n}",msg:"REWORK 재투입 이력 통합",kind:"pass"},
+  {sn:"ASE01472",msg:"카메라 S/N 스캔 — Power Platform traceability app",kind:"pass"},
+  {sn:"ASE01472",msg:"S/N 유효성 검증 — 형식·공정순서 확인",kind:"pass"},
+  {sn:"ASE01473",msg:"잘못된 S/N 감지 — 다음 공정 인터락",kind:"warn"},
+  {sn:"ASE01472",msg:"OCV/IR 전기검사 결과 수집 — OPC UA",kind:"pass"},
+  {sn:"ASE01472",msg:"2D 광학측정 Distance/Angle 적재",kind:"pass"},
+  {sn:"ASE01472",msg:"BCR 중복 감지 — dedup 적용",kind:"warn"},
+  {sn:"ASE01472",msg:"BCR↔BCR6 불일치 — 매핑 보정",kind:"warn"},
+  {sn:"ASE01472",msg:"inspection_result PASS 적재 (S/N)",kind:"pass"},
+  {sn:"ASE01472",msg:"필드 불량 대응용 S/N 계보 조회 가능 상태",kind:"pass"},
+  {sn:"ASE01472",msg:"Cpk 재계산 — process capability.pbix",kind:"pass"},
+  {sn:"ASE01472",msg:"Power BI 공정능력 대시보드 갱신",kind:"pass"},
 ];
-let logQueue=[], logSnBase=1470, logTimer=null;
+let logQueue=[], logTimer=null, logCursor=0;
 
 function buildLiveLog(){
   const rpTop=document.querySelector(".rp-top");
@@ -940,23 +1002,22 @@ function buildLiveLog(){
   liveLog.style.cssText="padding:6px 16px 4px;border-bottom:1px solid var(--line-soft);min-height:0;overflow:hidden;";
   const hdr=document.createElement("div");
   hdr.style.cssText="font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px;";
-  hdr.textContent="LIVE INGEST LOG";
+  hdr.textContent="PIPELINE EVENT TRACE";
   liveLog.appendChild(hdr);
   rpTop.parentNode.insertBefore(liveLog,rpTop.nextSibling);
 }
 
 function pushLogEvent(){
   if(!liveLog) return;
-  const ev=liveEvents[Math.floor(Math.random()*liveEvents.length)];
-  const sn=ev.sn.replace("{n}",String(logSnBase+(Math.floor(Math.random()*60))).padStart(7,"0"));
-  const now=new Date();
-  const ts=[now.getHours(),now.getMinutes(),now.getSeconds()].map(v=>String(v).padStart(2,"0")).join(":");
+  const ev=liveEvents[logCursor % liveEvents.length];
+  const ts="T+"+String((logCursor+1)*4).padStart(2,"0")+"s";
+  logCursor++;
   const row=document.createElement("div");
   row.style.cssText="display:flex;gap:8px;align-items:baseline;font-family:var(--mono);font-size:9px;padding:2px 0;opacity:0;transition:opacity .35s ease;border-bottom:1px dashed var(--line-soft);";
   const colPass="var(--pass)", colWarn="var(--amber)";
   row.innerHTML=
     "<span style='color:var(--ink-3);flex:0 0 auto;'>"+ts+"</span>"+
-    "<span style='color:"+(ev.kind==="pass"?colPass:colWarn)+";flex:0 0 auto;font-weight:700;'>"+sn+"</span>"+
+    "<span style='color:"+(ev.kind==="pass"?colPass:colWarn)+";flex:0 0 auto;font-weight:700;'>"+ev.sn+"</span>"+
     "<span style='color:var(--ink-2);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'>"+ev.msg+"</span>";
   liveLog.appendChild(row);
   logQueue.push(row);
@@ -974,16 +1035,17 @@ function startLiveStream(){
   setTimeout(pushLogEvent,600);
   setTimeout(pushLogEvent,1300);
   function schedule(){
-    const delay=1800+Math.random()*1400;
+    const delay=2200;
     logTimer=setTimeout(()=>{ pushLogEvent(); schedule(); },delay);
   }
   schedule();
 }
 
 // 측정값 미세 변동 (OK인 수치 행만, 스펙 내 유지)
-let measJitterTimer=null;
+let measJitterTimer=null, measJitterStep=0;
 function startMeasJitter(){
   function jitter(){
+    measJitterStep++;
     FEATURES.forEach(f=>{
       if(f.out) return;
       if(f.unit==="MΩ") return; // 정수 표시 유지
@@ -992,10 +1054,10 @@ function startMeasJitter(){
       const el=r.querySelector(".meas");
       if(!el || el.textContent==="— —") return;
       const amp = f.unit==="°" ? 0.01 : (f.unit==="V"?0.005:0.04);
-      const v=f.meas+(Math.random()-0.5)*amp*2;
+      const v=f.meas+Math.sin((measJitterStep+f.key.charCodeAt(0))*0.9)*amp;
       el.textContent=fmtNum(v,f.unit);
     });
-    measJitterTimer=setTimeout(jitter,900+Math.random()*700);
+    measJitterTimer=setTimeout(jitter,1250);
   }
   setTimeout(jitter,1400);
 }

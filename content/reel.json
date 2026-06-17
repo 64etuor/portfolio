@@ -22,7 +22,7 @@
     { "id": "06", "slug": "digital-twin", "file": "06-digital-twin.html", "include": true, "durationMs": 6000, "anim": "3D 플랜트 오빗 + 컨베이어 WIP + 동기화 펄스" },
     { "id": "08", "slug": "living-spreadsheet", "file": "08-living-spreadsheet.html", "include": true, "durationMs": 5000, "anim": "재계산 스윕 + 피벗 차트(0.5-0.9s)" },
     { "id": "09", "slug": "oscilloscope", "file": "09-oscilloscope.html", "include": true, "durationMs": 5000, "anim": "파형 스윕(연속 루프)" },
-    { "id": "24", "slug": "delegation-cost", "file": "24-delegation-cost.html", "include": true, "durationMs": 5000, "anim": "비용 영수증 + 5기둥 슬라이더(정적+짧은 트랜지션)" },
+    { "id": "24", "slug": "delegation-cost", "file": "24-delegation-cost.html", "include": false, "durationMs": 5000, "anim": "철학 인서트로 흡수 — 릴 제외(갤러리에는 유지)" },
 
     { "id": "04", "slug": "ai-latent", "file": "04-ai-latent.html", "include": true, "durationMs": 5500, "anim": "잠재공간 드리프트 + 토큰 스트리밍(앰비언트 루프)" },
     { "id": "23", "slug": "agent-governance", "file": "23-agent-governance.html", "include": true, "durationMs": 7000, "anim": "Boule 파이프라인 + ticker 하트비트 + 이벤트 스트림(~5.6s 시퀀스)" },

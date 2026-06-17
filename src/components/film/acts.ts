@@ -41,6 +41,7 @@ export const ACTS: Act[] = [
       '02-assembly-line.html',
       '18-sonar-waterfall.html',
       '11-weld-thermal.html',
+      '09-oscilloscope.html',
       '16-robot-pendant.html',
       '15-scada-hmi.html',
       '07-gcode-printer.html',

@@ -3,29 +3,29 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>박양하 · PPI 스코프 — Work Radar 관제 콕핏</title>
+<title>박양하 · Work Radar 관제 콕핏</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap');
 
   :root{
-    --green:#2effa3;
-    --green-dim:#1a8c5e;
-    --green-deep:#0a3d28;
-    --amber:#ffb031;
-    --amber-dim:#a8701a;
-    --red:#ff4d4d;
-    --cyan:#3fe0ff;
-    --bg:#020705;
-    --panel:rgba(6,20,14,0.72);
-    --grid:rgba(46,255,163,0.12);
-    --line:rgba(46,255,163,0.28);
-    --txt:#9ff5cf;
-    --txt-dim:#4f9a7a;
+    --green:#76c69a;
+    --green-dim:#517e67;
+    --green-deep:#162f24;
+    --amber:#c79b54;
+    --amber-dim:#81673a;
+    --red:#d56a6a;
+    --cyan:#83b7c7;
+    --bg:#07100c;
+    --panel:rgba(9,23,17,0.82);
+    --grid:rgba(118,198,154,0.12);
+    --line:rgba(118,198,154,0.22);
+    --txt:#c0dccb;
+    --txt-dim:#6e8e7b;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{height:100%;}
   body{
-    background:var(--bg);
+    background:#07100c;
     color:var(--txt);
     font-family:'IBM Plex Mono','Share Tech Mono','IBM Plex Sans KR',monospace;
     word-break:keep-all;
@@ -34,12 +34,12 @@
   }
   body::before{
     content:"";position:fixed;inset:0;z-index:9000;pointer-events:none;
-    background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0px,rgba(0,0,0,0) 2px,rgba(0,0,0,0.18) 3px,rgba(0,0,0,0) 4px);
-    mix-blend-mode:multiply;opacity:.55;
+    background:linear-gradient(180deg,rgba(255,255,255,0.015),rgba(0,0,0,0));
+    opacity:.16;
   }
   body::after{
     content:"";position:fixed;inset:0;z-index:9001;pointer-events:none;
-    background:radial-gradient(ellipse at center,rgba(0,0,0,0) 55%,rgba(0,0,0,0.55) 100%);
+    background:linear-gradient(90deg,rgba(255,255,255,0.015),transparent 28%,transparent 72%,rgba(0,0,0,0.04));
   }
 
   .shell{
@@ -48,14 +48,14 @@
     grid-template-rows:48px 1fr 30px;
     height:100vh;width:100vw;
     gap:1px;
-    background:linear-gradient(180deg,#041109,#020705);
+    background:#07100c;
   }
 
   /* ---- top bar ---- */
   .topbar{
     grid-column:1/4;grid-row:1;
     display:flex;align-items:center;gap:0;
-    background:linear-gradient(180deg,#072215,#03130b);
+    background:#0b1912;
     border-bottom:1px solid var(--line);
     font-family:'Share Tech Mono',monospace;
     letter-spacing:.5px;
@@ -66,14 +66,14 @@
     white-space:nowrap;
   }
   .topbar .tag .k{font-size:9px;color:var(--txt-dim);letter-spacing:1.5px;}
-  .topbar .tag .v{font-size:15px;color:var(--green);text-shadow:0 0 8px rgba(46,255,163,.5);font-weight:600;}
-  .topbar .v.amb{color:var(--amber);text-shadow:0 0 8px rgba(255,176,49,.5);}
-  .topbar .v.cyn{color:var(--cyan);text-shadow:0 0 8px rgba(63,224,255,.5);font-size:12px;}
+  .topbar .tag .v{font-size:15px;color:var(--green);font-weight:600;}
+  .topbar .v.amb{color:var(--amber);}
+  .topbar .v.cyn{color:var(--cyan);font-size:12px;}
   .topbar .v.red{color:var(--red);}
   @keyframes phaseflash{0%{background:rgba(63,224,255,.28);}100%{background:transparent;}}
   .topbar .tag.flash{animation:phaseflash .6s ease;}
   .topbar .sys{margin-left:auto;display:flex;align-items:center;gap:14px;padding:0 18px;}
-  .topbar .sys .blink{width:9px;height:9px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 1.4s infinite;}
+  .topbar .sys .blink{width:8px;height:8px;border-radius:50%;background:var(--green);animation:pulse 2.4s infinite;}
   @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.25;}}
   .topbar .title{font-size:13px;color:var(--txt);letter-spacing:3px;}
   .topbar .title b{color:#dfffe9;}
@@ -88,13 +88,13 @@
     overflow:hidden;
     backdrop-filter:blur(1px);
   }
-  .ident{border:1px solid var(--line);padding:12px;margin-bottom:12px;position:relative;background:linear-gradient(160deg,rgba(46,255,163,.05),transparent);}
+  .ident{border:1px solid var(--line);padding:12px;margin-bottom:12px;position:relative;background:rgba(118,198,154,.03);}
   .ident .corner{position:absolute;width:8px;height:8px;border:1px solid var(--green);}
   .ident .corner.tl{top:-1px;left:-1px;border-right:none;border-bottom:none;}
   .ident .corner.tr{top:-1px;right:-1px;border-left:none;border-bottom:none;}
   .ident .corner.bl{bottom:-1px;left:-1px;border-right:none;border-top:none;}
   .ident .corner.br{bottom:-1px;right:-1px;border-left:none;border-top:none;}
-  .ident .name{font-family:'IBM Plex Sans KR',sans-serif;font-size:24px;font-weight:700;color:#eafff2;letter-spacing:1px;text-shadow:0 0 14px rgba(46,255,163,.35);}
+  .ident .name{font-family:'IBM Plex Sans KR',sans-serif;font-size:24px;font-weight:700;color:#e7f5ec;letter-spacing:1px;}
   .ident .en{font-size:10px;color:var(--txt-dim);letter-spacing:3px;margin-top:1px;}
   .ident .role{font-family:'IBM Plex Sans KR',sans-serif;font-size:11px;color:var(--amber);margin-top:8px;line-height:1.5;font-weight:500;}
 
@@ -112,9 +112,9 @@
   .hud-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:auto;}
   .hud-cell{border:1px solid var(--grid);padding:7px 8px;background:rgba(0,0,0,.25);}
   .hud-cell .k{font-size:8px;color:var(--txt-dim);letter-spacing:1.5px;}
-  .hud-cell .v{font-family:'Share Tech Mono';font-size:18px;color:var(--green);text-shadow:0 0 8px rgba(46,255,163,.4);line-height:1.1;}
+  .hud-cell .v{font-family:'Share Tech Mono';font-size:18px;color:var(--green);line-height:1.1;}
   .hud-cell .v small{font-size:10px;color:var(--txt-dim);}
-  .hud-cell.amb .v{color:var(--amber);text-shadow:0 0 8px rgba(255,176,49,.4);}
+  .hud-cell.amb .v{color:var(--amber);}
 
   /* ---- surface ladder (operating surfaces) ---- */
   .ladder{display:flex;flex-direction:column;gap:3px;margin-bottom:11px;}
@@ -122,14 +122,14 @@
   .lad .px{font-family:'Share Tech Mono';font-size:11px;color:var(--txt-dim);flex:0 0 22px;letter-spacing:.5px;}
   .lad .pl{font-family:'IBM Plex Sans KR',sans-serif;font-size:10px;color:var(--txt-dim);display:flex;flex-direction:column;line-height:1.25;}
   .lad .pl small{font-size:8px;color:var(--txt-dim);opacity:.7;font-family:'Share Tech Mono';letter-spacing:.3px;}
-  .lad.active{opacity:1;border-color:var(--cyan);background:rgba(63,224,255,.09);box-shadow:0 0 12px rgba(63,224,255,.12) inset;}
-  .lad.active .px{color:var(--cyan);text-shadow:0 0 8px rgba(63,224,255,.5);}
+  .lad.active{opacity:1;border-color:var(--cyan);background:rgba(131,183,199,.08);}
+  .lad.active .px{color:var(--cyan);}
   .lad.active .pl{color:#dfffe9;}
   .lad.reached{opacity:.78;}
   .lad.reached .px{color:var(--green);}
   .lad-rule{font-family:'Share Tech Mono';font-size:8px;letter-spacing:1.5px;color:var(--amber);text-align:center;margin-top:2px;opacity:.85;}
 
-  .creed{border-left:2px solid var(--green);padding:7px 9px;margin-bottom:12px;background:linear-gradient(90deg,rgba(46,255,163,.06),transparent);}
+  .creed{border-left:2px solid var(--green);padding:7px 9px;margin-bottom:12px;background:rgba(118,198,154,.04);}
   .creed-q{font-family:'IBM Plex Sans KR',sans-serif;font-size:11px;line-height:1.5;color:var(--txt);}
   .creed-q b{color:var(--green);font-weight:700;}
   .creed-r{font-family:'Share Tech Mono';font-size:8px;letter-spacing:.6px;color:var(--txt-dim);margin-top:5px;line-height:1.4;}
@@ -137,7 +137,7 @@
   /* ---- center scope ---- */
   .scope-wrap{
     grid-column:2;grid-row:2;position:relative;overflow:hidden;
-    background:radial-gradient(circle at center,#04150d 0%,#020a06 60%,#010402 100%);
+    background:#08120d;
     display:flex;align-items:center;justify-content:center;
   }
   #scope{display:block;cursor:crosshair;}
@@ -148,15 +148,15 @@
   .ov-corner.bl{bottom:12px;left:14px;}
   .ov-corner.br{bottom:12px;right:14px;text-align:right;}
   .ov-corner b{color:var(--green);}
-  .ping-btn{
+  .refresh-btn{
     position:absolute;bottom:16px;left:50%;transform:translateX(-50%);
     pointer-events:auto;cursor:pointer;
-    border:1px solid var(--cyan);background:rgba(63,224,255,.08);
+    border:1px solid var(--cyan);background:rgba(131,183,199,.08);
     color:var(--cyan);font-family:'Share Tech Mono';font-size:11px;letter-spacing:2px;
-    padding:7px 18px;transition:.15s;text-shadow:0 0 8px rgba(63,224,255,.5);
+    padding:7px 18px;transition:.15s;
   }
-  .ping-btn:hover{background:rgba(63,224,255,.2);box-shadow:0 0 16px rgba(63,224,255,.3);}
-  .ping-btn:active{transform:translateX(-50%) scale(.96);}
+  .refresh-btn:hover{background:rgba(131,183,199,.14);}
+  .refresh-btn:active{transform:translateX(-50%) scale(.98);}
 
   /* ---- right track table ---- */
   .right{
@@ -200,13 +200,13 @@
 
   .right .foot{border-top:1px solid var(--line);padding:9px 12px;font-size:9px;color:var(--txt-dim);letter-spacing:1px;line-height:1.7;}
   .right .foot a{color:var(--green);text-decoration:none;}
-  .right .foot a:hover{text-shadow:0 0 8px var(--green);}
+  .right .foot a:hover{color:#d5eadc;}
 
   /* ---- bottom status ---- */
   .statusbar{
     grid-column:1/4;grid-row:3;
     display:flex;align-items:center;gap:0;
-    background:linear-gradient(180deg,#03130b,#020705);
+    background:#0b1912;
     border-top:1px solid var(--line);
     font-family:'Share Tech Mono';font-size:10px;letter-spacing:1px;
     overflow:hidden;
@@ -221,15 +221,15 @@
   .detail{
     position:fixed;inset:0;z-index:9500;display:none;
     align-items:center;justify-content:center;
-    background:rgba(1,5,3,.78);backdrop-filter:blur(3px);
+    background:rgba(7,16,12,.82);backdrop-filter:blur(2px);
   }
   .detail.open{display:flex;animation:fade .25s;}
   @keyframes fade{from{opacity:0;}to{opacity:1;}}
   .detail-card{
     width:560px;max-width:92vw;max-height:86vh;overflow-y:auto;
-    background:linear-gradient(165deg,#06180f,#030c07);
+    background:#091711;
     border:1px solid var(--green);
-    box-shadow:0 0 40px rgba(46,255,163,.25),inset 0 0 60px rgba(46,255,163,.04);
+    box-shadow:0 18px 40px rgba(0,0,0,.28);
     position:relative;
     scrollbar-width:thin;scrollbar-color:var(--green-dim) transparent;
   }
@@ -238,9 +238,9 @@
   .dc-corner.tr{top:-2px;right:-2px;border-left:none;border-bottom:none;}
   .dc-corner.bl{bottom:-2px;left:-2px;border-right:none;border-top:none;}
   .dc-corner.br{bottom:-2px;right:-2px;border-left:none;border-top:none;}
-  .dc-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;background:linear-gradient(180deg,rgba(46,255,163,.07),transparent);}
+  .dc-head{padding:16px 20px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start;background:rgba(118,198,154,.04);}
   .dc-head .trkno{font-family:'Share Tech Mono';font-size:11px;color:var(--amber);letter-spacing:2px;}
-  .dc-head .dc-id{font-family:'IBM Plex Sans KR',sans-serif;font-size:21px;font-weight:700;color:#eafff2;margin-top:4px;letter-spacing:.5px;text-shadow:0 0 14px rgba(46,255,163,.3);}
+  .dc-head .dc-id{font-family:'IBM Plex Sans KR',sans-serif;font-size:21px;font-weight:700;color:#e7f5ec;margin-top:4px;letter-spacing:.5px;}
   .dc-head .dc-sub{font-size:10px;color:var(--txt-dim);margin-top:3px;letter-spacing:1px;}
   .dc-close{cursor:pointer;color:var(--txt-dim);border:1px solid var(--grid);width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:16px;transition:.15s;flex:0 0 28px;}
   .dc-close:hover{color:var(--red);border-color:var(--red);}
@@ -248,7 +248,7 @@
   .dc-solution .cell{padding:9px 12px;border-right:1px solid var(--grid);}
   .dc-solution .cell:last-child{border-right:none;}
   .dc-solution .k{font-size:8px;color:var(--txt-dim);letter-spacing:1.5px;}
-  .dc-solution .v{font-family:'Share Tech Mono';font-size:16px;color:var(--green);text-shadow:0 0 8px rgba(46,255,163,.4);margin-top:2px;}
+  .dc-solution .v{font-family:'Share Tech Mono';font-size:16px;color:var(--green);margin-top:2px;}
   .dc-body{padding:18px 20px;font-family:'IBM Plex Sans KR',sans-serif;}
   .dc-verdict{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-family:'Share Tech Mono';font-size:10px;letter-spacing:.5px;padding:8px 11px;margin-bottom:14px;border:1px solid var(--grid);background:rgba(0,0,0,.25);}
   .dc-verdict .vp{color:var(--cyan);border:1px solid var(--cyan);padding:1px 7px;}
@@ -275,14 +275,14 @@
 <div class="shell">
   <!-- TOP BAR -->
   <header class="topbar">
-    <div class="tag"><span class="k">MODE</span><span class="v">PPI / SCAN</span></div>
+    <div class="tag"><span class="k">MODE</span><span class="v">WORK RADAR</span></div>
     <div class="tag"><span class="k">SIGNALS</span><span class="v" id="hudRange">11 CH</span></div>
     <div class="tag"><span class="k">AUTONOMY</span><span class="v amb">BOUNDED</span></div>
     <div class="tag"><span class="k">GATE</span><span class="v">HUMAN</span></div>
-    <div class="tag"><span class="k">SWEEP</span><span class="v" id="hudBearing">000°</span></div>
+    <div class="tag"><span class="k">INTAKE</span><span class="v" id="hudBearing">000°</span></div>
     <div class="tag"><span class="k">CONTACTS</span><span class="v amb" id="hudContacts">0 / 20</span></div>
     <div class="tag" id="hudPhaseTag" title="Work Radar -- Boule Governance readiness gate"><span class="k">SURFACE</span><span class="v cyn" id="hudPhase">S0 · CAPTURE BOARD</span></div>
-    <div class="tag"><span class="k">LOCKED</span><span class="v" id="hudVerified">0 / 20</span></div>
+    <div class="tag"><span class="k">CONFIRMED</span><span class="v" id="hudVerified">0 / 20</span></div>
     <div class="sys">
       <span class="title"><b>박양하</b> · WORK RADAR COCKPIT</span>
       <span class="blink"></span>
@@ -321,13 +321,13 @@
       <div class="creed-r">BOULE GOVERNANCE · tick_enabled · max_steps · autonomy_level · 인간 승인 게이트</div>
     </div>
 
-    <div class="section-h">SENSOR STATUS</div>
+    <div class="section-h">SIGNAL STATUS</div>
     <div class="hud-grid">
-      <div class="hud-cell"><div class="k">DETECTED</div><div class="v"><span id="liveDet">0</span><small>/20</small></div></div>
+      <div class="hud-cell"><div class="k">VISIBLE</div><div class="v"><span id="liveDet">0</span><small>/20</small></div></div>
       <div class="hud-cell amb"><div class="k">PRIORITY</div><div class="v"><span id="livePri">0</span><small>SIG</small></div></div>
-      <div class="hud-cell"><div class="k">SWEEP RPM</div><div class="v">12<small>rpm</small></div></div>
-      <div class="hud-cell"><div class="k">PERSIST</div><div class="v">4.5<small>s</small></div></div>
-      <div class="hud-cell"><div class="k">LOCKED</div><div class="v" id="liveRes">0<small>sig</small></div></div>
+      <div class="hud-cell"><div class="k">REVIEW CADENCE</div><div class="v">12<small>m</small></div></div>
+      <div class="hud-cell"><div class="k">TRACE WINDOW</div><div class="v">4.5<small>s</small></div></div>
+      <div class="hud-cell"><div class="k">CONFIRMED</div><div class="v" id="liveRes">0<small>sig</small></div></div>
       <div class="hud-cell amb"><div class="k">GATE</div><div class="v">HUMAN</div></div>
     </div>
   </aside>
@@ -336,22 +336,22 @@
   <main class="scope-wrap" id="scopeWrap">
     <canvas id="scope"></canvas>
     <div class="scope-overlay">
-      <div class="ov-corner tl">SCOPE-01 <b>ACTIVE</b><br>Work Radar v0.1<br>local-first desktop</div>
+      <div class="ov-corner tl">VIEW-01 <b>ACTIVE</b><br>Work Radar v0.1<br>local-first desktop</div>
       <div class="ov-corner tr">SCAN <b>360°</b> CONTINUOUS<br>BOULE GATE <b>ON</b><br>Tauri 2 · Rust · SQLite</div>
-      <div class="ov-corner bl">CURSOR<br><span id="curBrg">BRG ---°</span><br><span id="curRng">RNG -- NM</span></div>
-      <div class="ov-corner br">SIG LOCK<br><b id="lockState">STANDBY</b><br><span id="lockId">--</span><br><span id="lockVerdict" style="color:var(--txt-dim)">STATUS --</span></div>
+      <div class="ov-corner bl">CURSOR<br><span id="curAngle">ANGLE ---°</span><br><span id="curFocus">FOCUS --%</span></div>
+      <div class="ov-corner br">SELECTION<br><b id="lockState">STANDBY</b><br><span id="lockId">--</span><br><span id="lockVerdict" style="color:var(--txt-dim)">STATUS --</span></div>
     </div>
-    <button class="ping-btn" id="pingBtn">▷ ACTIVE PING (SIGNAL SCAN)</button>
+    <button class="refresh-btn" id="refreshBtn">▷ REFRESH SIGNALS</button>
   </main>
 
   <!-- RIGHT TRACK TABLE -->
   <aside class="right">
     <div class="rh">
       <div class="t">SIGNAL TRACK TABLE</div>
-      <div class="s">들어오는 작업 신호 탐지 · 서피스 배정 · 락온</div>
+      <div class="s">들어오는 작업 신호 확인 · 서피스 배정 · 상태 고정</div>
     </div>
     <div class="track-head">
-      <span>TRK#</span><span>BRG</span><span>RNG</span><span>SURF</span><span>ID · STATUS</span>
+      <span>TRK#</span><span>ANGLE</span><span>FOCUS</span><span>SURF</span><span>ID · STATUS</span>
     </div>
     <div class="track-body" id="trackBody"></div>
     <div class="foot">
@@ -382,8 +382,8 @@
       <div class="dc-close" id="dcClose">x</div>
     </div>
     <div class="dc-solution">
-      <div class="cell"><div class="k">BEARING</div><div class="v" id="dcBrg">000°</div></div>
-      <div class="cell"><div class="k">RANGE</div><div class="v" id="dcRng">0 NM</div></div>
+      <div class="cell"><div class="k">ANGLE</div><div class="v" id="dcBrg">000°</div></div>
+      <div class="cell"><div class="k">FOCUS</div><div class="v" id="dcRng">0%</div></div>
       <div class="cell"><div class="k">CLASS</div><div class="v" id="dcClass">--</div></div>
       <div class="cell"><div class="k">CONF</div><div class="v" id="dcConf">99%</div></div>
     </div>
@@ -410,8 +410,8 @@
      tags:["Google Calendar","OAuth PKCE","Today Timeline"], priority:true, lock:true},
 
     {type:"signal", id:"GitHub PR", sub:"PR RADAR SIGNAL", brg:96, ring:0.46, conf:97,
-     desc:"PR Radar 서피스가 CI/Needs Review/Ready/Stale/Merged 버킷으로 자동 triage. 리뷰 요청·CI 실패 신호를 우선 탐지해 Work Radar 스코프에 락온.",
-     ach:[["BUCKET","CI · Needs Review · Ready · Stale · Merged"],["TRIAGE","자동 triage 파이프라인"],["LOCK","리뷰 요청 우선 락온"]],
+     desc:"PR Radar 서피스가 CI/Needs Review/Ready/Stale/Merged 버킷으로 자동 triage. 리뷰 요청·CI 실패 신호를 우선 확인해 Work Radar 뷰에 고정.",
+     ach:[["BUCKET","CI · Needs Review · Ready · Stale · Merged"],["TRIAGE","자동 triage 파이프라인"],["PIN","리뷰 요청 우선 고정"]],
      tags:["GitHub","PR Radar","CI","triage"]},
 
     {type:"signal", id:"Notion 백로그", sub:"BACKLOG SIGNAL", brg:168, ring:0.60, conf:96,
@@ -441,12 +441,12 @@
      tags:["Weekly Review","Life Wheel","처리량","루틴"]},
 
     {type:"surface", id:"PR Radar", sub:"CI/REVIEW/READY/STALE/MERGED", brg:200, ring:0.44, conf:97,
-     desc:"GitHub PR 전용 서피스. CI 상태 / Needs Review / Ready to Merge / Stale / Merged 5개 버킷으로 자동 triage. 스테일 PR 자동 알림과 리뷰어 ping 기능 내장.",
-     ach:[["BUCKET","5-bucket 자동 triage"],["STALE","스테일 PR 자동 알림"],["PING","리뷰어 Telegram/Slack ping"]],
+     desc:"GitHub PR 전용 서피스. CI 상태 / Needs Review / Ready to Merge / Stale / Merged 5개 버킷으로 자동 triage. 스테일 PR 자동 알림과 리뷰어 알림 기능 내장.",
+     ach:[["BUCKET","5-bucket 자동 triage"],["STALE","스테일 PR 자동 알림"],["ALERT","리뷰어 Telegram/Slack 알림"]],
      tags:["PR Radar","GitHub","CI","Stale","triage"], priority:true},
 
     {type:"surface", id:"Worktree Diff", sub:"LOCAL WORKTREE SURFACE", brg:330, ring:0.62, conf:96,
-     desc:"로컬 git worktree 상태를 스코프에 락온. 브랜치별 diff 요약과 uncommitted 변경사항을 Work Radar 신호로 변환. Codex CLI 에이전트 세션과 연동.",
+     desc:"로컬 git worktree 상태를 Work Radar 뷰에 고정. 브랜치별 diff 요약과 uncommitted 변경사항을 Work Radar 신호로 변환. Codex CLI 에이전트 세션과 연동.",
      ach:[["DIFF","worktree diff 요약"],["BRANCH","브랜치별 상태 비교"],["CODEX","Codex CLI 세션 연동"]],
      tags:["Worktree","Diff","git","Codex CLI"]},
 
@@ -467,7 +467,7 @@
      tags:["Jobs Agent","Codex CLI","Hermes ACP","Boule"]},
 
     {type:"agent", id:"cmux 세션", sub:"TERMINAL MUX AGENT", brg:62, ring:0.88, conf:92,
-     desc:"cmux 기반 터미널 세션 관리 에이전트. 복수 worktree 작업을 세션별로 격리하고 Work Radar 스코프에 상태 신호 전송. Worktree Diff 서피스와 실시간 연동.",
+     desc:"cmux 기반 터미널 세션 관리 에이전트. 복수 worktree 작업을 세션별로 격리하고 Work Radar 뷰에 상태 신호 전송. Worktree Diff 서피스와 실시간 연동.",
      ach:[["SESSION","세션별 worktree 격리"],["STATUS","Work Radar 상태 신호 전송"],["DIFF","Worktree Diff 실시간 연동"]],
      tags:["cmux","터미널","세션","Worktree"]},
 
@@ -494,7 +494,7 @@
 
     // ---- 스택/아키텍처 (signal) ----
     {type:"signal", id:"TanStack Query", sub:"DATA SYNC LAYER", brg:182, ring:0.90, conf:89,
-     desc:"React/TS 프론트엔드의 서버 상태 동기화 레이어. SQLite local-first 캐시와 연동해 오프라인 신호도 Work Radar 스코프에 유지. Zustand 전역 상태와 조합.",
+     desc:"React/TS 프론트엔드의 서버 상태 동기화 레이어. SQLite local-first 캐시와 연동해 오프라인 신호도 Work Radar 뷰에 유지. Zustand 전역 상태와 조합.",
      ach:[["SYNC","SQLite local-first 캐시 동기화"],["OFFLINE","오프라인 신호 유지"],["STATE","Zustand 전역 상태 조합"]],
      tags:["TanStack Query","React","Zustand","SQLite","local-first"]},
 
@@ -504,7 +504,7 @@
      tags:["Tauri 2","Rust","side-effect","boundary","Boule"]},
 
     {type:"signal", id:"SQLite local-first", sub:"DATA STORE", brg:252, ring:0.88, conf:94,
-     desc:"모든 Work Radar 데이터를 로컬 SQLite에 우선 저장. 클라우드 연동 장애 시에도 스코프 운영 유지. event-sourced work graph의 저장소이자 오프라인 캐시 소스.",
+     desc:"모든 Work Radar 데이터를 로컬 SQLite에 우선 저장. 클라우드 연동 장애 시에도 뷰 운영 유지. event-sourced work graph의 저장소이자 오프라인 캐시 소스.",
      ach:[["LOCAL","로컬 우선 저장"],["OFFLINE","클라우드 장애 내성"],["SOURCE","event-sourced graph 저장소"]],
      tags:["SQLite","local-first","offline","event-sourced"]},
 
@@ -526,7 +526,7 @@
   let selected = null;
   let hoverContact = null;
   let mouse = {x:-9999,y:-9999,in:false};
-  const pings = []; // sonar ripples
+  const refreshRings = [];
   let lockPhaseTime = 0; // dt-based lock box animation
 
   // ---- SURFACE PHASE (Work Radar operating surfaces) ----
@@ -536,14 +536,14 @@
   const PHASE_KO = ['Capture Board(Eisenhower matrix)','Today Timeline(drag 배치)','PR Radar(CI 버킷 triage)','Control Room(Boule Governance gate)'];
   let maxPhase = 0;
 
-  // each contact gets a glow value [0..1], detection flag, drift
+  // each contact gets an emphasis value [0..1], detection flag, drift
   CONTACTS.forEach((c,i)=>{
-    c._glow = 0;
+    c._emphasis = 0;
     c._detected = false;
     c._verified = false;
     c._phase = (typeof c.phase==='number') ? c.phase : PHASE_BY_TYPE[c.type];
     c._trk = i+1;
-    // bearing in radians, 0 deg = north(up)
+    // angle in radians, 0 deg = top, clockwise
     c._baseA = (c.brg-90) * Math.PI/180;
     c._a = c._baseA;
     c._baseRing = c.ring;
@@ -586,14 +586,14 @@
       if(pa<=norm){ crossed = ca>pa && ca<=norm; }
       else { crossed = ca>pa || ca<=norm; } // wrapped
       if(crossed){
-        c._glow = 1;
+        c._emphasis = 1;
         if(!c._detected){ c._detected=true; onAcquire(c); }
       }
     });
     prevSweep = sweepAngle;
   }
 
-  // ====== ACQUIRE -> table populate ======
+  // ====== CONFIRM -> table populate ======
   const trackBody = document.getElementById('trackBody');
   const acquiredOrder = [];
   function onAcquire(c){
@@ -601,7 +601,7 @@
     escalatePhase(c._phase);
     renderTrackRow(c);
     updateHUD();
-    setTicker('신호 탐지 -- TRK-'+String(c._trk).padStart(2,'0')+' · '+c.id+' · '+PHASE_LABEL[c._phase]+' · 락온 시작');
+    setTicker('신호 확인 -- TRK-'+String(c._trk).padStart(2,'0')+' · '+c.id+' · '+PHASE_LABEL[c._phase]+' · 상태 고정 준비');
     setTimeout(()=>verifyContact(c), 700 + Math.random()*900);
   }
 
@@ -623,7 +623,7 @@
     const row=[...document.querySelectorAll('.track-row')].find(r=>+r.dataset.idx===CONTACTS.indexOf(c));
     if(row){
       const chip=row.querySelector('.vchip');
-      if(chip){ chip.className='vchip verified'; chip.textContent='LOCKED'; }
+      if(chip){ chip.className='vchip verified'; chip.textContent='CONFIRMED'; }
     }
     if(selected===c) setLockVerdict(c);
     updateHUD();
@@ -633,14 +633,14 @@
     const row = document.createElement('div');
     row.className = 'track-row';
     row.dataset.idx = CONTACTS.indexOf(c);
-    const rng = (c.ring*40).toFixed(0);
+    const focus = Math.round((1 - c.ring) * 100);
     const chip = c._verified
-      ? '<span class="vchip verified">LOCKED</span>'
-      : '<span class="vchip pending">SCANNING</span>';
+      ? '<span class="vchip verified">CONFIRMED</span>'
+      : '<span class="vchip pending">REVIEWING</span>';
     row.innerHTML =
       '<span class="trk">'+String(c._trk).padStart(2,'0')+'</span>'+
       '<span>'+pad3(c.brg)+'deg</span>'+
-      '<span>'+rng+'N</span>'+
+      '<span>'+focus+'%</span>'+
       '<span class="typ '+c.type+'">S'+c._phase+'</span>'+
       '<span class="id" title="'+c.id+'">'+c.id+chip+'</span>';
     row.addEventListener('click',()=>selectContact(c));
@@ -683,11 +683,11 @@
     lockPhaseTime += dt;
     updateDetection();
 
-    // update drift + decay glows
+    // update drift + decay emphasis
     CONTACTS.forEach(c=>{
-      // eased afterglow decay: quadratic-out so it lingers bright then fades
-      if(c._glow > 0){
-        c._glow = Math.max(0, c._glow - dt/3.8);
+      // eased emphasis decay: it lingers briefly after each pass.
+      if(c._emphasis > 0){
+        c._emphasis = Math.max(0, c._emphasis - dt/3.8);
       }
       // sinusoidal micro-drift (always active once detected)
       if(c._detected){
@@ -704,16 +704,16 @@
 
     ctx.clearRect(0,0,W,H);
 
-    // background radial glow
+    // restrained background focus
     const bg = ctx.createRadialGradient(CX,CY,0,CX,CY,R*1.15);
-    bg.addColorStop(0,'rgba(20,70,45,0.35)');
-    bg.addColorStop(0.6,'rgba(8,40,26,0.18)');
+    bg.addColorStop(0,'rgba(20,70,45,0.14)');
+    bg.addColorStop(0.6,'rgba(8,40,26,0.08)');
     bg.addColorStop(1,'rgba(2,10,6,0)');
     ctx.fillStyle=bg;
     ctx.fillStyle=bg; ctx.beginPath(); ctx.arc(CX,CY,R*1.15,0,Math.PI*2); ctx.fill();
 
     drawGrid();
-    drawPings(dt);
+    drawRefreshRings(dt);
     drawSweep();
     drawContacts();
     drawCursor();
@@ -732,7 +732,7 @@
     ctx.lineWidth=1;
     ctx.beginPath();ctx.arc(CX,CY,R+6,0,Math.PI*2);ctx.stroke();
 
-    // range rings
+    // focus rings
     ctx.font="10px 'Share Tech Mono'";
     for(let i=1;i<=RINGS;i++){
       const rr = R*i/RINGS;
@@ -740,12 +740,12 @@
       ctx.setLineDash([2,4]);
       ctx.beginPath();ctx.arc(CX,CY,rr,0,Math.PI*2);ctx.stroke();
       ctx.setLineDash([]);
-      // range label
+      // focus label
       ctx.fillStyle='rgba(79,154,122,0.7)';
-      ctx.fillText((40*i/RINGS)+'NM', CX+4, CY-rr+12);
+      ctx.fillText((100 - (i*100/RINGS))+'%', CX+4, CY-rr+12);
     }
 
-    // bearing radial lines + ticks
+    // angle radial lines + ticks
     for(let deg=0;deg<360;deg+=5){
       const a = (deg-90)*Math.PI/180;
       const major = deg%30===0;
@@ -778,14 +778,14 @@
   function drawSweep(){
     ctx.save();
     ctx.translate(CX,CY);
-    // afterglow trail (gradient wedge behind the sweep line)
+    // restrained sweep trail
     const trailSpan = Math.PI*0.42;
     const steps = 28;
     for(let i=0;i<steps;i++){
       const t = i/steps;
       const a0 = sweepAngle - trailSpan*t;
       const a1 = sweepAngle - trailSpan*(t+1/steps);
-      const alpha = (1-t)*(1-t)*0.20;
+      const alpha = (1-t)*(1-t)*0.08;
       ctx.beginPath();
       ctx.moveTo(0,0);
       ctx.arc(0,0,R,a0,a1,true);
@@ -793,38 +793,33 @@
       ctx.fillStyle='rgba(46,255,163,'+alpha+')';
       ctx.fill();
     }
-    // leading sweep line (bright)
+    // leading sweep line
     const lx=Math.cos(sweepAngle)*R, ly=Math.sin(sweepAngle)*R;
     const g=ctx.createLinearGradient(0,0,lx,ly);
-    g.addColorStop(0,'rgba(180,255,220,0.95)');
-    g.addColorStop(0.5,'rgba(46,255,163,0.85)');
-    g.addColorStop(1,'rgba(46,255,163,0.25)');
+    g.addColorStop(0,'rgba(192,220,203,0.72)');
+    g.addColorStop(0.5,'rgba(118,198,154,0.55)');
+    g.addColorStop(1,'rgba(118,198,154,0.18)');
     ctx.strokeStyle=g;
-    ctx.lineWidth=2.4;
-    ctx.shadowColor='rgba(46,255,163,0.9)';
-    ctx.shadowBlur=14;
+    ctx.lineWidth=1.6;
     ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(lx,ly);ctx.stroke();
-    ctx.shadowBlur=0;
-    // bright leading edge dot at rim
-    ctx.fillStyle='rgba(220,255,235,0.9)';
+    // small leading edge dot at rim
+    ctx.fillStyle='rgba(192,220,203,0.7)';
     ctx.beginPath();ctx.arc(lx,ly,3,0,Math.PI*2);ctx.fill();
     ctx.restore();
   }
 
-  function drawPings(dt){
+  function drawRefreshRings(dt){
     ctx.save();
-    for(let i=pings.length-1;i>=0;i--){
-      const p=pings[i];
+    for(let i=refreshRings.length-1;i>=0;i--){
+      const p=refreshRings[i];
       p.r += R*1.1*dt; // expand
       p.life -= dt;
       const prog = p.r/R;
-      const alpha = Math.max(0, (1-prog))*0.6;
-      if(p.r>R || p.life<=0){pings.splice(i,1);continue;}
-      ctx.strokeStyle='rgba(63,224,255,'+alpha+')';
-      ctx.lineWidth=2;
-      ctx.shadowColor='rgba(63,224,255,0.6)';ctx.shadowBlur=10;
+      const alpha = Math.max(0, (1-prog))*0.22;
+      if(p.r>R || p.life<=0){refreshRings.splice(i,1);continue;}
+      ctx.strokeStyle='rgba(131,183,199,'+alpha+')';
+      ctx.lineWidth=1;
       ctx.beginPath();ctx.arc(CX,CY,p.r,0,Math.PI*2);ctx.stroke();
-      ctx.shadowBlur=0;
     }
     ctx.restore();
   }
@@ -839,7 +834,7 @@
       const y = CY+Math.sin(c._a)*rr;
       const isSel = selected===c;
       const isHover = hoverContact===c;
-      const glow = Math.max(c._glow, isSel?0.5:0, isHover?0.4:0);
+      const emphasis = Math.max(c._emphasis, isSel?0.5:0, isHover?0.4:0);
 
       let col;
       if(c.type==='signal'){col='46,255,163';}
@@ -847,16 +842,16 @@
       else if(c.type==='agent'){col='255,176,49';}
       else {col='255,255,255';} // gate
 
-      // phosphor blob halo — afterglow: fades to nothing between sweeps, re-lit on scan
-      const halo = ctx.createRadialGradient(x,y,0,x,y,8+glow*18);
-      halo.addColorStop(0,'rgba('+col+','+(glow*0.55)+')');
+      // subtle emphasis around recently surfaced contacts
+      const halo = ctx.createRadialGradient(x,y,0,x,y,6+emphasis*11);
+      halo.addColorStop(0,'rgba('+col+','+(emphasis*0.22)+')');
       halo.addColorStop(1,'rgba('+col+',0)');
       ctx.fillStyle=halo;
-      ctx.beginPath();ctx.arc(x,y,8+glow*18,0,Math.PI*2);ctx.fill();
+      ctx.beginPath();ctx.arc(x,y,6+emphasis*11,0,Math.PI*2);ctx.fill();
 
-      // classification symbol (intensity tracks afterglow glow → invisible at glow 0)
-      ctx.strokeStyle='rgba('+col+','+(glow*0.9)+')';
-      ctx.fillStyle='rgba('+col+','+(glow*0.85)+')';
+      // classification symbol (intensity tracks current emphasis)
+      ctx.strokeStyle='rgba('+col+','+(emphasis*0.9)+')';
+      ctx.fillStyle='rgba('+col+','+(emphasis*0.85)+')';
       ctx.lineWidth=1.6;
       const s = 5;
       if(c.type==='agent' || c.priority){
@@ -864,7 +859,7 @@
         ctx.beginPath();
         ctx.moveTo(x,y-s-1);ctx.lineTo(x+s+1,y);ctx.lineTo(x,y+s+1);ctx.lineTo(x-s-1,y);ctx.closePath();
         ctx.stroke();
-        ctx.fillStyle='rgba('+col+','+(glow*0.6)+')';ctx.fill();
+        ctx.fillStyle='rgba('+col+','+(emphasis*0.6)+')';ctx.fill();
       } else if(c.type==='gate'){
         // gate -> circle with check
         ctx.beginPath();ctx.arc(x,y,s+1,0,Math.PI*2);ctx.stroke();
@@ -876,11 +871,11 @@
       } else {
         // surface -> square (neutral)
         ctx.beginPath();ctx.rect(x-s,y-s,s*2,s*2);ctx.stroke();
-        ctx.fillStyle='rgba('+col+','+(glow*0.5)+')';ctx.fillRect(x-s,y-s,s*2,s*2);
+        ctx.fillStyle='rgba('+col+','+(emphasis*0.5)+')';ctx.fillRect(x-s,y-s,s*2,s*2);
       }
 
       // label
-      const labAlpha = glow*0.8;
+      const labAlpha = emphasis*0.8;
       ctx.font = (c.priority||c.type==='gate')? "600 11px 'IBM Plex Sans KR'" : "10px 'IBM Plex Sans KR'";
       ctx.fillStyle='rgba('+col+','+labAlpha+')';
       ctx.textAlign = x>CX? 'left':'right';
@@ -891,7 +886,7 @@
       ctx.fillStyle='rgba('+col+','+(labAlpha*0.8)+')';
       ctx.fillText('TRK'+String(c._trk).padStart(2,'0'), x+ox, y-8);
 
-      // ----- target lock box (selected) -----
+      // ----- selection box -----
       if(isSel){
         drawLockBox(x,y,c,col);
       }
@@ -903,9 +898,8 @@
   function drawLockBox(x,y,c,col){
     const bs = 22 + Math.sin(lockPhaseTime * 3.2)*2;
     ctx.save();
-    ctx.strokeStyle='rgba(255,176,49,0.95)';
-    ctx.lineWidth=1.8;
-    ctx.shadowColor='rgba(255,176,49,0.7)';ctx.shadowBlur=8;
+    ctx.strokeStyle='rgba(199,155,84,0.82)';
+    ctx.lineWidth=1.4;
     // bracket corners
     const cl=8;
     const corners=[[-1,-1],[1,-1],[1,1],[-1,1]];
@@ -917,9 +911,8 @@
       ctx.lineTo(x+sx*bs - sx*cl, y+sy*bs);
       ctx.stroke();
     });
-    ctx.shadowBlur=0;
-    // crosshair to center -> range/bearing solution line
-    ctx.strokeStyle='rgba(255,176,49,0.4)';
+    // selection guide to center
+    ctx.strokeStyle='rgba(199,155,84,0.28)';
     ctx.setLineDash([4,4]);
     ctx.beginPath();ctx.moveTo(CX,CY);ctx.lineTo(x,y);ctx.stroke();
     ctx.setLineDash([]);
@@ -927,7 +920,7 @@
     ctx.font="9px 'Share Tech Mono'";
     ctx.fillStyle='rgba(255,176,49,0.95)';
     ctx.textAlign='center';
-    ctx.fillText('LOCKED', x, y-bs-6);
+    ctx.fillText('SELECTED', x, y-bs-6);
     ctx.textAlign='start';
     ctx.restore();
   }
@@ -937,15 +930,15 @@
     const dx=mouse.x-CX, dy=mouse.y-CY;
     const dist=Math.hypot(dx,dy);
     if(dist>R){ // outside scope
-      document.getElementById('curBrg').textContent='BRG ---deg';
-      document.getElementById('curRng').textContent='RNG -- NM';
+      document.getElementById('curAngle').textContent='ANGLE ---deg';
+      document.getElementById('curFocus').textContent='FOCUS --%';
       return;
     }
     let a=Math.atan2(dy,dx);
     let brg=((a*180/Math.PI)+90+360)%360;
-    const rng=(dist/R*40);
-    document.getElementById('curBrg').textContent='BRG '+pad3(Math.round(brg))+'deg';
-    document.getElementById('curRng').textContent='RNG '+rng.toFixed(1)+' NM';
+    const focus=Math.max(0, Math.round((1 - dist/R) * 100));
+    document.getElementById('curAngle').textContent='ANGLE '+pad3(Math.round(brg))+'deg';
+    document.getElementById('curFocus').textContent='FOCUS '+focus+'%';
     ctx.save();
     ctx.strokeStyle='rgba(46,255,163,0.4)';
     ctx.lineWidth=1;ctx.setLineDash([3,3]);
@@ -1005,22 +998,21 @@
     const row=[...document.querySelectorAll('.track-row')].find(function(r){return +r.dataset.idx===CONTACTS.indexOf(c);});
     if(row)row.classList.add('sel');
     // lock readout
-    document.getElementById('lockState').textContent='LOCKED';
+    document.getElementById('lockState').textContent='SELECTED';
     document.getElementById('lockState').style.color='var(--amber)';
     document.getElementById('lockId').textContent='TRK-'+String(c._trk).padStart(2,'0');
     setLockVerdict(c);
-    // active ping at lock for flair
-    pings.push({r:6,life:1.2});
+    refreshRings.push({r:6,life:1.0});
     openDetail(c);
-    const vk = c._verified ? 'LOCKED · 신호 확인 완료' : 'SCANNING · 탐지 진행 중';
-    setTicker('신호 고정 -- TRK-'+String(c._trk).padStart(2,'0')+' · '+c.id+' · '+PHASE_LABEL[c._phase]+' · '+vk);
+    const vk = c._verified ? 'CONFIRMED · 신호 확인 완료' : 'REVIEWING · 확인 중';
+    setTicker('신호 선택 -- TRK-'+String(c._trk).padStart(2,'0')+' · '+c.id+' · '+PHASE_LABEL[c._phase]+' · '+vk);
   }
 
   function setLockVerdict(c){
     const el=document.getElementById('lockVerdict');
     if(!el) return;
-    if(c._verified){ el.textContent='STATUS LOCKED'; el.style.color='var(--green)'; }
-    else { el.textContent='STATUS SCANNING'; el.style.color='var(--amber)'; }
+    if(c._verified){ el.textContent='STATUS CONFIRMED'; el.style.color='var(--green)'; }
+    else { el.textContent='STATUS REVIEWING'; el.style.color='var(--amber)'; }
   }
 
   // ====== DETAIL MODAL ======
@@ -1030,12 +1022,12 @@
     document.getElementById('dcId').textContent=c.id;
     document.getElementById('dcSub').textContent=c.sub||'';
     document.getElementById('dcBrg').textContent=pad3(c.brg)+'deg';
-    document.getElementById('dcRng').textContent=(c.ring*40).toFixed(0)+' NM';
+    document.getElementById('dcRng').textContent=Math.round((1 - c.ring) * 100)+'%';
     document.getElementById('dcClass').textContent=c.gate?'GATE':typeKo(c.type);
     document.getElementById('dcConf').textContent=(c.conf||97)+'%';
     const vstate = c._verified
-      ? '<span class="vv verified">LOCKED</span>'
-      : '<span class="vv pending">SCANNING</span>';
+      ? '<span class="vv verified">CONFIRMED</span>'
+      : '<span class="vv pending">REVIEWING</span>';
     document.getElementById('dcVerdict').innerHTML =
       '<span class="vp">'+PHASE_LABEL[c._phase]+'</span>'+ vstate +
       '<span class="vnote">서피스: '+PHASE_KO[c._phase]+'</span>';
@@ -1074,19 +1066,19 @@
     });
   });
 
-  // ====== PING BUTTON ======
-  document.getElementById('pingBtn').addEventListener('click',function(){
-    pings.push({r:6,life:1.4});
-    escalatePhase(1); // 액티브 스캔 = Today Timeline 서피스 활성화
-    setTicker('ACTIVE PING (S1) -- Today Timeline 서피스 신호 재조사 · drag 배치 큐 갱신 중');
+  // ====== REFRESH BUTTON ======
+  document.getElementById('refreshBtn').addEventListener('click',function(){
+    refreshRings.push({r:6,life:1.1});
+    escalatePhase(1); // 신호 갱신 = Today Timeline 서피스 활성화
+    setTicker('SIGNAL REFRESH (S1) -- Today Timeline 서피스 신호 재확인 · drag 배치 큐 갱신 중');
   });
 
   // ====== LEGEND SYMBOLS (svg) ======
   function legendSym(el,type){
     var svg;
-    if(type==='signal') svg='<svg width="20" height="20"><circle cx="10" cy="10" r="3.5" fill="#2effa3"/><circle cx="10" cy="10" r="6.5" fill="none" stroke="#2effa3" stroke-width="1.4"/></svg>';
-    else if(type==='surface') svg='<svg width="20" height="20"><rect x="5" y="5" width="10" height="10" fill="none" stroke="#3fe0ff" stroke-width="1.4"/><rect x="7" y="7" width="6" height="6" fill="rgba(63,224,255,0.4)"/></svg>';
-    else if(type==='agent') svg='<svg width="20" height="20"><path d="M10 3 L17 10 L10 17 L3 10 Z" fill="rgba(255,176,49,0.4)" stroke="#ffb031" stroke-width="1.4"/></svg>';
+    if(type==='signal') svg='<svg width="20" height="20"><circle cx="10" cy="10" r="3.5" fill="#76c69a"/><circle cx="10" cy="10" r="6.5" fill="none" stroke="#76c69a" stroke-width="1.4"/></svg>';
+    else if(type==='surface') svg='<svg width="20" height="20"><rect x="5" y="5" width="10" height="10" fill="none" stroke="#83b7c7" stroke-width="1.4"/><rect x="7" y="7" width="6" height="6" fill="rgba(131,183,199,0.35)"/></svg>';
+    else if(type==='agent') svg='<svg width="20" height="20"><path d="M10 3 L17 10 L10 17 L3 10 Z" fill="rgba(199,155,84,0.32)" stroke="#c79b54" stroke-width="1.4"/></svg>';
     else svg='<svg width="20" height="20"><circle cx="10" cy="10" r="6" fill="none" stroke="#fff" stroke-width="1.4"/><path d="M6 10 L9 13 L14 6" fill="none" stroke="#fff" stroke-width="1.6"/></svg>';
     el.innerHTML=svg;
   }
@@ -1099,123 +1091,34 @@
   }
   setInterval(tick,1000);tick();
 
-  // ====== LIVE TABLE STREAMING ======
-  // BRG/RNG 미세 변동 + STATUS 롤링 + 가짜 새 신호 등장
-  const FAKE_SIGNALS = [
-    {id:'NOTION-WEBHOOK', sub:'API SIGNAL', type:'signal', brg:188, ring:0.92},
-    {id:'SLACK-EVENT', sub:'NOTIFICATION', type:'agent', brg:47, ring:0.94},
-    {id:'CRON-JOB-01', sub:'SCHEDULED TASK', type:'agent', brg:225, ring:0.88},
-    {id:'WEBHOOK-GH', sub:'GITHUB EVENT', type:'signal', brg:310, ring:0.96},
-    {id:'TAURI-IPC', sub:'SYSTEM EVENT', type:'signal', brg:72, ring:0.90},
-  ];
-  let fakeIdx = 0;
-  let fakeRows = []; // {el, brgBase, rngBase, brgDrift, rngDrift, driftT, status}
-
+  // ====== QUIET TABLE UPDATES ======
+  // Keep acquired rows current without spawning synthetic signals.
   function liveTableTick(){
-    const detected = CONTACTS.filter(c=>c._detected);
-    // 1) update existing rows: BRG/RNG 미세 변동, status chip
     const rows = document.querySelectorAll('.track-row');
     rows.forEach(function(row){
       const idx = +row.dataset.idx;
       if(isNaN(idx)) return;
       const c = CONTACTS[idx];
       if(!c || !c._detected) return;
-      // BRG: base +/- 1-2 deg drift
       if(!c._liveDriftT) c._liveDriftT = Math.random()*Math.PI*2;
-      c._liveDriftT += 0.035 + Math.random()*0.015;
-      const brgDrift = Math.sin(c._liveDriftT) * 1.8;
-      const rngDrift = Math.sin(c._liveDriftT * 0.7 + 0.5) * 0.4;
-      const liveBrg = ((c.brg + brgDrift + 360) % 360) | 0;
-      const liveRng = Math.max(0, (c.ring * 40) + rngDrift);
+      c._liveDriftT += 0.035;
+      const angleDrift = Math.sin(c._liveDriftT) * 1.2;
+      const focusDrift = Math.sin(c._liveDriftT * 0.7 + 0.5);
+      const liveAngle = ((c.brg + angleDrift + 360) % 360) | 0;
+      const liveFocus = Math.max(0, Math.min(100, Math.round((1 - c.ring) * 100 + focusDrift)));
       const cells = row.querySelectorAll('span');
-      // cells: trk, brg, rng, surf, id
-      if(cells[1]) cells[1].textContent = pad3(liveBrg) + 'deg';
-      if(cells[2]) cells[2].textContent = liveRng.toFixed(0) + 'N';
-      // status chip flicker on SCANNING contacts
-      if(!c._verified && cells[4]){
+      // cells: track, angle, focus, surface, id
+      if(cells[1]) cells[1].textContent = pad3(liveAngle) + 'deg';
+      if(cells[2]) cells[2].textContent = liveFocus + '%';
+      if(cells[4]){
         const chip = cells[4].querySelector('.vchip');
-        if(chip && chip.className.indexOf('pending') !== -1){
-          const labels = ['SCANNING', 'TRACKING', 'ACQUIRE'];
-          if(Math.random() < 0.08) chip.textContent = labels[(Math.random()*labels.length)|0];
-        }
+        if(chip && chip.className.indexOf('pending') !== -1) chip.textContent = 'REVIEWING';
+        if(chip && chip.className.indexOf('verified') !== -1) chip.textContent = 'CONFIRMED';
       }
     });
-
-    // 2) fake row drift (phantom signals)
-    fakeRows.forEach(function(fr){
-      fr.driftT += 0.04;
-      const bLive = ((fr.brgBase + Math.sin(fr.driftT)*2.1 + 360) % 360) | 0;
-      const rLive = Math.max(1, fr.rngBase + Math.sin(fr.driftT * 0.6)*0.6);
-      if(fr.el){
-        const cells = fr.el.querySelectorAll('span');
-        if(cells[1]) cells[1].textContent = pad3(bLive) + 'deg';
-        if(cells[2]) cells[2].textContent = rLive.toFixed(0) + 'N';
-        // status cycling
-        fr.statusT = (fr.statusT||0) + 1;
-        if(fr.statusT % 18 === 0){
-          const chip = fr.el.querySelector('.vchip');
-          if(chip){
-            const cycle = ['SCANNING','TRACKING','LOCKED'];
-            fr.statusIdx = ((fr.statusIdx||0) + 1) % cycle.length;
-            chip.textContent = cycle[fr.statusIdx];
-            chip.className = fr.statusIdx === 2 ? 'vchip verified' : 'vchip pending';
-          }
-        }
-      }
-    });
-
-    // 3) occasionally spawn a new fake phantom row (if < 3 fakes exist)
-    if(fakeRows.length < 3 && detected.length >= 4 && Math.random() < 0.18){
-      const sig = FAKE_SIGNALS[fakeIdx % FAKE_SIGNALS.length];
-      fakeIdx++;
-      const row = document.createElement('div');
-      row.className = 'track-row';
-      row.dataset.idx = 'fake';
-      const trkNo = 'F' + String(fakeIdx).padStart(2,'0');
-      const rngBase = (sig.ring * 40);
-      row.innerHTML =
-        '<span class="trk" style="color:var(--txt-dim)">' + trkNo + '</span>' +
-        '<span>' + pad3(sig.brg) + 'deg</span>' +
-        '<span>' + rngBase.toFixed(0) + 'N</span>' +
-        '<span class="typ ' + sig.type + '">EXT</span>' +
-        '<span class="id">' + sig.id + '<span class="vchip pending">SCANNING</span></span>';
-      trackBody.appendChild(row);
-      requestAnimationFrame(function(){ row.classList.add('in'); });
-      trackBody.scrollTop = trackBody.scrollHeight;
-      const fr = {el:row, brgBase:sig.brg, rngBase:rngBase, driftT:Math.random()*Math.PI*2, statusIdx:0, statusT:0};
-      fakeRows.push(fr);
-      // auto-remove after 18-28 seconds
-      const ttl = 18000 + Math.random()*10000;
-      setTimeout(function(){
-        row.style.transition = 'opacity 0.8s';
-        row.style.opacity = '0';
-        setTimeout(function(){
-          if(row.parentNode) row.parentNode.removeChild(row);
-          fakeRows = fakeRows.filter(function(f){ return f !== fr; });
-        }, 800);
-      }, ttl);
-    }
-  }
-
-  // Sensor status HUD 미세 변동
-  function hudNoiseTick(){
-    const detEl = document.getElementById('liveDet');
-    const priEl = document.getElementById('livePri');
-    // occasional +/- 1 flicker on detected count
-    const det = CONTACTS.filter(c=>c._detected).length;
-    if(det > 0 && detEl){
-      const noise = Math.random() < 0.15 ? (Math.random() < 0.5 ? 1 : -1) : 0;
-      detEl.textContent = Math.max(0, det + noise);
-    }
-    // priority count flicker
-    const pri = CONTACTS.filter(c=>c._detected && (c.priority||c.type==='gate')).length;
-    if(pri > 0 && priEl && Math.random() < 0.1){
-      priEl.textContent = Math.max(0, pri + (Math.random()<0.5?1:0));
-    }
   }
 
   setInterval(liveTableTick, 420);
-  setInterval(hudNoiseTick, 1100);
 
   // ====== BOOT -- rAF loop auto-starts, no scroll/click dependency ======
   var _booted = false;

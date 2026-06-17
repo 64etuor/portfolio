@@ -8,14 +8,14 @@
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
   :root{
-    --phos:#33ff66;
-    --phos-dim:#1f9e3f;
-    --phos-deep:#0a4d1c;
-    --amber:#ffb000;
-    --red:#ff4444;
-    --cyan:#33ffee;
-    --bg:#020503;
-    --bg2:#031006;
+    --phos:#d7d7d7;
+    --phos-dim:#8d8d8d;
+    --phos-deep:#3a3a3a;
+    --amber:#c8c8c8;
+    --red:#a8a8a8;
+    --cyan:#bcbcbc;
+    --bg:#050505;
+    --bg2:#101010;
     --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
   }
   @font-face{
@@ -59,32 +59,22 @@
     background:repeating-linear-gradient(0deg,
       rgba(0,0,0,0) 0px,
       rgba(0,0,0,0) 2px,
-      rgba(0,0,0,0.28) 3px,
-      rgba(0,0,0,0.28) 4px);
+      rgba(0,0,0,0.14) 3px,
+      rgba(0,0,0,0.14) 4px);
     mix-blend-mode:multiply;
-    animation:scan 8s linear infinite;
   }
   #crt::after{
-    /* vignette + flicker */
+    /* quiet vignette */
     content:"";position:absolute;inset:0;z-index:51;pointer-events:none;
-    background:radial-gradient(ellipse at 50% 50%, transparent 55%, rgba(0,0,0,.65) 100%);
-    animation:flicker 5s steps(60) infinite;
-  }
-  @keyframes scan{from{background-position:0 0}to{background-position:0 100px}}
-  @keyframes flicker{
-    0%,100%{opacity:.92}
-    7%{opacity:.86}
-    9%{opacity:.95}
-    11%{opacity:.82}
-    50%{opacity:.9}
-    53%{opacity:.96}
+    background:radial-gradient(ellipse at 50% 50%, transparent 58%, rgba(0,0,0,.72) 100%);
+    opacity:.86;
   }
 
   #screen{
     position:absolute;inset:0;
     padding:34px 48px 70px;
     overflow:hidden;
-    text-shadow:0 0 5px rgba(51,255,102,.55),0 0 14px rgba(51,255,102,.22);
+    text-shadow:0 0 3px rgba(255,255,255,.18);
     z-index:10;
   }
 
@@ -95,15 +85,15 @@
     border-bottom:1px solid var(--phos-deep);padding-bottom:10px;margin-bottom:14px;
   }
   .banner .vend{font-weight:700;letter-spacing:.5px;}
-  .banner .vend b{color:var(--amber);text-shadow:0 0 6px rgba(255,176,0,.6)}
+  .banner .vend b{color:var(--amber);text-shadow:none}
   .banner .meta{text-align:right;color:var(--phos-dim);font-size:12.5px;}
   .bootlog{flex:1;overflow:hidden;font-size:14px;}
   .bootlog .line{white-space:pre-wrap;}
-  .ok{color:var(--phos);} .ok b{color:#7dffa0}
+  .ok{color:var(--phos);} .ok b{color:var(--phos)}
   .dim{color:var(--phos-dim);}
-  .warn{color:var(--amber);text-shadow:0 0 6px rgba(255,176,0,.5)}
-  .err{color:var(--red);text-shadow:0 0 6px rgba(255,68,68,.5)}
-  .cy{color:var(--cyan);text-shadow:0 0 6px rgba(51,255,238,.5)}
+  .warn{color:var(--amber);text-shadow:none}
+  .err{color:var(--red);text-shadow:none}
+  .cy{color:var(--cyan);text-shadow:none}
   .tag-ok{color:#000;background:var(--phos);padding:0 5px;font-weight:700;border-radius:1px;}
   .tag-patch{color:#000;background:var(--amber);padding:0 5px;font-weight:700;border-radius:1px;}
   .tag-detect{color:#000;background:var(--cyan);padding:0 5px;font-weight:700;border-radius:1px;}
@@ -121,11 +111,11 @@
   @keyframes blink{50%{opacity:0}}
   .prog{flex:1;margin:0 24px;height:9px;border:1px solid var(--phos-deep);position:relative;}
   .prog > i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--phos);
-    box-shadow:0 0 8px var(--phos);transition:width .15s linear;display:block}
+    box-shadow:none;transition:width .15s linear;display:block}
 
   /* ASCII logo */
   #asciiLogo{color:var(--phos);font-size:11px;line-height:1.05;white-space:pre;
-    margin:2px 0 10px;text-shadow:0 0 8px rgba(51,255,102,.6);min-height:0}
+    margin:2px 0 10px;text-shadow:none;min-height:0}
 
   /* ===== POST-BOOT / OS layer ===== */
   #os{display:none;height:100%;flex-direction:column;}
@@ -134,31 +124,19 @@
 
   .osbar{
     display:flex;justify-content:space-between;align-items:center;
-    border:1px solid var(--phos-deep);background:rgba(10,77,28,.18);
+    border:1px solid var(--phos-deep);background:rgba(255,255,255,.035);
     padding:8px 14px;margin-bottom:14px;font-size:13px;
   }
   .osbar .who{font-weight:700;}
   .osbar .who b{color:var(--amber)}
   .osbar .clock{color:var(--phos-dim)}
 
-  .oswrap{flex:1;display:grid;grid-template-columns:248px 1fr;gap:18px;min-height:0;}
+  .oswrap{flex:1;display:grid;grid-template-columns:minmax(0,720px);align-content:start;min-height:0;}
 
-  .menu{border:1px solid var(--phos-deep);padding:12px 0;align-self:start;background:rgba(3,16,6,.6);}
-  .menu .mh{padding:0 14px 10px;color:var(--phos-dim);font-size:12px;border-bottom:1px solid var(--phos-deep);margin-bottom:8px;}
-  .menu .item{
-    padding:7px 14px;cursor:pointer;display:flex;justify-content:space-between;gap:8px;
-    border-left:3px solid transparent;transition:background .1s,border-color .1s;
-  }
-  .menu .item .k{color:var(--phos-dim);font-size:12px}
-  .menu .item:hover{background:rgba(51,255,102,.08)}
-  .menu .item.sel{background:rgba(51,255,102,.16);border-left-color:var(--amber);color:#bfffd0}
-  .menu .item.sel .k{color:var(--amber)}
-  .menu .navhint{padding:12px 14px 2px;color:var(--phos-dim);font-size:11px;border-top:1px solid var(--phos-deep);margin-top:8px}
-
-  .panel{border:1px solid var(--phos-deep);padding:22px 26px;overflow:auto;background:rgba(2,5,3,.5);min-height:0}
+  .panel{border:1px solid var(--phos-deep);padding:22px 26px;overflow:auto;background:rgba(255,255,255,.025);min-height:0}
   .panel::-webkit-scrollbar{width:10px}
   .panel::-webkit-scrollbar-thumb{background:var(--phos-deep)}
-  .panel h2{font-size:20px;color:var(--amber);text-shadow:0 0 8px rgba(255,176,0,.5);
+  .panel h2{font-size:20px;color:var(--amber);text-shadow:none;
     letter-spacing:1px;margin-bottom:4px;}
   .panel .sub{color:var(--phos-dim);font-size:12.5px;margin-bottom:18px;
     border-bottom:1px dashed var(--phos-deep);padding-bottom:12px}
@@ -170,9 +148,9 @@
   /* career entries */
   .job{border-left:2px solid var(--phos-deep);padding:0 0 20px 18px;margin-left:4px;position:relative}
   .job::before{content:"";position:absolute;left:-6px;top:5px;width:9px;height:9px;
-    background:var(--phos);box-shadow:0 0 8px var(--phos);transform:rotate(45deg)}
+    background:var(--phos);box-shadow:none;transform:rotate(45deg)}
   .job:last-child{padding-bottom:0}
-  .job .role{font-weight:700;font-size:15.5px;color:#bfffd0}
+  .job .role{font-weight:700;font-size:15.5px;color:var(--phos)}
   .job .role .co{color:var(--amber)}
   .job .when{color:var(--phos-dim);font-size:12px;margin:2px 0 9px}
   .job ul{list-style:none}
@@ -183,33 +161,32 @@
   /* skills grid */
   .skgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
   .sk{border:1px solid var(--phos-deep);padding:7px 11px;font-size:12.5px;display:flex;
-    justify-content:space-between;gap:8px;background:rgba(10,77,28,.12)}
+    justify-content:space-between;gap:8px;background:rgba(255,255,255,.025)}
   .sk .v{color:var(--cyan);font-size:11px}
   .skcat{margin:18px 0 8px;color:var(--amber);font-size:13px;font-weight:700;letter-spacing:.5px}
   .skcat:first-child{margin-top:0}
 
   /* metrics */
   .metgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
-  .met{border:1px solid var(--phos-deep);padding:14px 16px;background:rgba(10,77,28,.12);position:relative;overflow:hidden}
-  .met .num{font-size:28px;font-weight:700;color:var(--phos);text-shadow:0 0 10px rgba(51,255,102,.5);line-height:1}
-  .met .num.amber{color:var(--amber);text-shadow:0 0 10px rgba(255,176,0,.5)}
+  .met{border:1px solid var(--phos-deep);padding:14px 16px;background:rgba(255,255,255,.025);position:relative;overflow:hidden}
+  .met .num{font-size:28px;font-weight:700;color:var(--phos);text-shadow:none;line-height:1}
+  .met .num.amber{color:var(--amber);text-shadow:none}
   .met .lab{color:var(--phos-dim);font-size:12px;margin-top:7px}
   .met .reg{position:absolute;top:8px;right:10px;color:var(--phos-deep);font-size:10px;letter-spacing:1px}
 
   .kv{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;font-size:13.5px}
   .kv dt{color:var(--phos-dim)}
   .kv dd a{color:var(--cyan);text-decoration:none;border-bottom:1px dotted var(--cyan)}
-  .kv dd a:hover{color:#bfffe0}
+  .kv dd a:hover{color:var(--phos)}
 
   .cur{display:inline-block;width:9px;height:16px;background:var(--phos);
-    box-shadow:0 0 8px var(--phos);vertical-align:-3px;animation:blink 1.05s steps(2) infinite}
+    box-shadow:none;vertical-align:-3px;animation:blink 1.05s steps(2) infinite}
 
   .beep{position:fixed;right:18px;top:14px;z-index:60;width:9px;height:9px;border-radius:50%;
     background:var(--phos-deep);transition:.06s}
-  .beep.on{background:var(--amber);box-shadow:0 0 14px var(--amber)}
+  .beep.on{background:var(--amber);box-shadow:none}
 
   @media (max-width:980px){
-    .oswrap{grid-template-columns:1fr}
     #screen{padding:24px 22px 60px}
   }
 </style>
@@ -250,122 +227,18 @@
       </div>
 
       <div class="oswrap">
-        <nav class="menu" id="menu">
-          <div class="mh">▌ MAIN BOOT MENU</div>
-          <div class="item sel" data-v="profile"><span><span class="k">[1]</span> PROFILE.SYS</span><span class="k">▸</span></div>
-          <div class="item" data-v="career"><span><span class="k">[2]</span> CAREER.LOG</span><span class="k">▸</span></div>
-          <div class="item" data-v="skills"><span><span class="k">[3]</span> DEVICES.MAP</span><span class="k">▸</span></div>
-          <div class="item" data-v="metrics"><span><span class="k">[4]</span> SELFTEST.DAT</span><span class="k">▸</span></div>
-          <div class="item" data-v="contact"><span><span class="k">[5]</span> NETWORK.CFG</span><span class="k">▸</span></div>
-          <div class="navhint">↑ / ↓ &nbsp;이동<br>ENTER / CLICK &nbsp;선택<br>1–5 &nbsp;직접 점프</div>
-        </nav>
-
         <section class="panel" id="panel">
-          <!-- PROFILE -->
-          <div class="view on" id="v-profile">
-            <h2>PROFILE.SYS</h2>
-            <div class="sub kr">생산운영 PM · 공정기술 엔지니어 · 총괄본부장 — 현장 데이터를 시스템으로 부팅합니다</div>
-            <p class="kr" style="font-size:14.5px;line-height:1.85;margin-bottom:18px">
-              제조 현장의 <b style="color:var(--amber)">공정·품질·원가</b> 문제를 데이터와 자동화로 푸는 사람입니다.
-              2차전지 배터리팩 라인 총괄부터 DOE 기반 공정 최적화, MES·대시보드 구축,
-              그리고 현재는 FastAPI·AWS·AI MCP 서버 기반 AX 업무시스템까지 —
-              <b style="color:var(--amber)">현장에서 코드까지</b> 한 흐름으로 연결합니다.
-            </p>
-            <div class="metgrid">
-              <div class="met"><span class="reg">REG-MFG</span><div class="num amber">제조</div><div class="lab kr">공정·품질·원가 도메인</div></div>
-              <div class="met"><span class="reg">REG-DATA</span><div class="num">데이터</div><div class="lab kr">DB·대시보드·MES</div></div>
-              <div class="met"><span class="reg">REG-DEV</span><div class="num">개발</div><div class="lab kr">FastAPI·AWS·CI/CD</div></div>
-              <div class="met"><span class="reg">REG-AX</span><div class="num amber">AI</div><div class="lab kr">RPA·MCP 자동화 전환</div></div>
-            </div>
-            <p class="dim kr" style="margin-top:18px;font-size:12.5px">
-              ▸ 좌측 메뉴에서 CAREER.LOG / DEVICES.MAP / SELFTEST.DAT 를 선택해 시스템을 탐색하세요.<span class="cur"></span>
-            </p>
-          </div>
-
-          <!-- CAREER -->
-          <div class="view" id="v-career">
-            <h2>CAREER.LOG</h2>
-            <div class="sub kr">부팅 순서 = 최신순 / 각 모듈은 검증된 성과와 함께 마운트됨</div>
-
-            <div class="job">
-              <div class="role kr"><span class="co">미러리스</span> · 총괄본부장</div>
-              <div class="when">2025.08 – 현재 &nbsp;//&nbsp; module: ax-platform</div>
-              <ul class="kr">
-                <li>CRM·키오스크·앱 <b>제품 기획</b> 및 <b>FastAPI</b> 백엔드 설계</li>
-                <li><b>AWS/GCP</b> 인프라 · <b>CI/CD</b> 파이프라인 운영</li>
-                <li><b>RPA·AI MCP 서버</b> 기반 AX 업무시스템 구축</li>
-              </ul>
-            </div>
-            <div class="job">
-              <div class="role kr"><span class="co">솔라엣지</span> · 공정기술 엔지니어</div>
-              <div class="when">2023.09 – 2024.12 &nbsp;//&nbsp; module: process-data</div>
-              <ul class="kr">
-                <li>생산/불량/KPI 데이터 <b>DB·대시보드</b> 구축, LOB 분석</li>
-                <li>공정 ST <b>50% 절감</b>, 검사성적서 <b>자동발행</b></li>
-                <li><b>MES 구축</b> · 사무공수 <b>일 451분 절감</b></li>
-              </ul>
-            </div>
-            <div class="job">
-              <div class="role kr"><span class="co">이랜텍</span> · 생산라인 PM / 파트장</div>
-              <div class="when">2022.11 – 2023.09 &nbsp;//&nbsp; module: doe-optimize</div>
-              <ul class="kr">
-                <li><b>DOE</b>로 초음파 용착 불량률 <b>15% → 0%대</b></li>
-                <li>공정 C/T <b>최대 49% 단축</b> · 생산성(LOB) <b>+24%</b></li>
-                <li><b>Jig 개발</b> 및 라인 표준화</li>
-              </ul>
-            </div>
-            <div class="job">
-              <div class="role kr"><span class="co">은성에스아이티</span> · 생산관리 과장 / 2차전지 배터리팩 총괄</div>
-              <div class="when">2020.08 – 2022.11 &nbsp;//&nbsp; module: battery-pack</div>
-              <ul class="kr">
-                <li>원가분석 기반 단가 <b>30%+ 재협상</b></li>
-                <li>라인 운영경비 <b>85%+ 절감</b> · <b>비전검사</b> 도입</li>
-                <li>고객·필드 불량 <b>0건</b> · <b>ERP·IATF16949</b> 운영</li>
-              </ul>
-            </div>
-          </div>
-
-          <!-- SKILLS -->
-          <div class="view" id="v-skills">
-            <h2>DEVICES.MAP</h2>
-            <div class="sub kr">POST 단계에서 감지된 디바이스 = 보유 역량 / 모두 [ DETECTED ]</div>
-
-            <div class="skcat">▌ SOFTWARE &amp; DATA BUS</div>
-            <div class="skgrid" id="sk-sw"></div>
-            <div class="skcat">▌ ENGINEERING &amp; PROCESS BUS</div>
-            <div class="skgrid" id="sk-eng"></div>
-            <div class="skcat">▌ SYSTEM &amp; QUALITY BUS</div>
-            <div class="skgrid" id="sk-sys"></div>
-          </div>
-
-          <!-- METRICS -->
-          <div class="view" id="v-metrics">
-            <h2>SELFTEST.DAT</h2>
-            <div class="sub kr">시스템 자가진단 결과 = 서브시스템 부팅 점검 / 전 항목 PASS</div>
+          <div class="view on" id="v-boot-complete">
+            <h2>BOOT COMPLETE</h2>
+            <div class="sub kr">POST 결과만 보존한 저전력 대기 화면</div>
             <div class="metgrid">
               <div class="met"><span class="reg">0x01</span><div class="num">[OK]</div><div class="lab kr">MFG_LINE · 제조 공정</div></div>
               <div class="met"><span class="reg">0x02</span><div class="num">[OK]</div><div class="lab kr">DATA_BUS · DB·BI</div></div>
               <div class="met"><span class="reg">0x03</span><div class="num">[OK]</div><div class="lab kr">DEV_STACK · FastAPI·AWS</div></div>
-              <div class="met"><span class="reg">0x04</span><div class="num amber">[OK]</div><div class="lab kr">AX_AI · MCP 서버</div></div>
-              <div class="met"><span class="reg">0x05</span><div class="num">[OK]</div><div class="lab kr">QUALITY · IATF16949</div></div>
-              <div class="met"><span class="reg">0x06</span><div class="num">[OK]</div><div class="lab kr">DEFECT_GUARD · DOE·비전</div></div>
-              <div class="met"><span class="reg">0x07</span><div class="num">[OK]</div><div class="lab kr">MES_DATABASE · 추적성</div></div>
-              <div class="met"><span class="reg">0x08</span><div class="num amber">[OK]</div><div class="lab kr">CI/CD · 파이프라인</div></div>
+              <div class="met"><span class="reg">0x04</span><div class="num">[OK]</div><div class="lab kr">AX_AI · MCP 서버</div></div>
             </div>
-          </div>
-
-          <!-- CONTACT -->
-          <div class="view" id="v-contact">
-            <h2>NETWORK.CFG</h2>
-            <div class="sub kr">통신 인터페이스 / 교육 펌웨어 이력</div>
-            <div class="skcat" style="margin-top:24px">▌ BOOT ROM / 교육</div>
-            <dl class="kv kr">
-              <dt>대학</dt><dd>한국외국어대학교 이탈리아어 (중퇴)</dd>
-              <dt>해외</dt><dd>Kirana College · CTIC · 호주 4년 체류</dd>
-              <dt>어학</dt><dd>TOEIC 930</dd>
-            </dl>
-            <p class="dim" style="margin-top:24px;font-size:12.5px">
-              SYSTEM READY. 연결 대기 중<span class="cur"></span>
+            <p class="dim kr" style="margin-top:18px;font-size:12.5px">
+              SYSTEM READY. awaiting film shell overlay<span class="cur"></span>
             </p>
           </div>
         </section>
@@ -376,17 +249,6 @@
 </div>
 
 <script>
-/* ============ DATA ============ */
-const SKILLS = {
-  sw:[["Python","lang"],["SQL","data"],["FastAPI","api"],["React","ui"],["TypeScript","lang"],
-      ["Electron","app"],["Rust","lang"],["MySQL / RDS","db"],["AWS","cloud"],["GCP","cloud"],
-      ["BI","data"],["ML","ai"],["RPA","auto"],["CI/CD","ops"]],
-  eng:[["PFMEA / CP / PFD","qms"],["SOP","doc"],["산업용접·스팟","weld"],["레이저 용접","weld"],
-       ["초음파 용착","weld"],["LOB 분석","ie"],["Jig 개발","mech"],["기구설계","mech"],
-       ["비전검사","insp"],["로봇 티칭","robot"],["Draftsight","cad"]],
-  sys:[["ERP","sys"],["MES","sys"],["SQ / ISO","qms"],["IATF16949","qms"]]
-};
-
 /* POST checklist — repurposed BIOS language to his domains */
 const POST = [
   {t:'Initializing PYH-BIOS Power-On Self-Test ...', s:'dim'},
@@ -406,7 +268,7 @@ const POST = [
   {t:'Scanning DRAM device map ...... 29 devices detected', s:'cy', tag:'DET', tagtxt:'DETECTED'},
   {t:'Verifying boot signature ...... 박양하 / Park Yangha  OK', s:'ok'},
   {t:'', s:'dim'},
-  {t:'>> Handing control to PROFILE.SYS ...', s:'cy'},
+  {t:'>> POST complete. Holding quiet boot state ...', s:'cy'},
 ];
 
 const LOGO = [
@@ -490,7 +352,7 @@ function runBoot(){
       logEl.appendChild(ln);
       if(item.beep) beep();
       idx++;
-      timers.push(setTimeout(next, item.t===''?120 : 150 + Math.random()*120));
+      timers.push(setTimeout(next, item.t===''?120 : 190));
     };
     next();
   });
@@ -503,53 +365,17 @@ function finishBoot(){
   timers.forEach(clearTimeout);
   bootEl.style.display='none';
   osEl.classList.add('show');
-  buildSkills();
   startClock();
-  document.querySelectorAll('.menu .item')[0].focus?.();
 }
 
 /* skip */
 function skip(){ if(!booted) finishBoot(); }
 window.addEventListener('keydown', e=>{
   if(!booted){ skip(); return; }
-  handleOsKeys(e);
 });
 $('#screen').addEventListener('click', e=>{
   if(!booted && !e.target.closest('a')) skip();
 });
-
-/* ============ OS: SKILLS ============ */
-function buildSkills(){
-  const render=(arr,el)=>{
-    el.innerHTML=arr.map(([n,v])=>
-      `<div class="sk"><span class="kr">${n}</span><span class="v">${v}</span></div>`).join('');
-  };
-  render(SKILLS.sw, $('#sk-sw'));
-  render(SKILLS.eng, $('#sk-eng'));
-  render(SKILLS.sys, $('#sk-sys'));
-}
-
-/* ============ OS: MENU NAV ============ */
-const items=[...document.querySelectorAll('.menu .item')];
-const views={};
-items.forEach(it=>views[it.dataset.v]=document.getElementById('v-'+it.dataset.v));
-let curIdx=0;
-
-function select(i){
-  curIdx=(i+items.length)%items.length;
-  items.forEach((it,n)=>it.classList.toggle('sel', n===curIdx));
-  const v=items[curIdx].dataset.v;
-  Object.entries(views).forEach(([k,el])=>el.classList.toggle('on', k===v));
-  $('#panel').scrollTop=0;
-  beep();
-}
-items.forEach((it,n)=>it.addEventListener('click',()=>select(n)));
-
-function handleOsKeys(e){
-  if(e.key==='ArrowDown'){ e.preventDefault(); select(curIdx+1); }
-  else if(e.key==='ArrowUp'){ e.preventDefault(); select(curIdx-1); }
-  else if(/^[1-5]$/.test(e.key)){ select(parseInt(e.key,10)-1); }
-}
 
 /* ============ CLOCK ============ */
 function startClock(){

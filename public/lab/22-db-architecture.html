@@ -82,7 +82,7 @@
     border:1px solid var(--line);padding:6px 11px;border-radius:20px;
     display:flex;align-items:center;gap:7px;
   }
-  .dot{width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 8px var(--acc)}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--acc);box-shadow:0 0 5px #00e0a455}
   .dot.live{animation:pulse 1.8s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 
@@ -333,7 +333,7 @@
     background:#0d1520;
     font-family:'JetBrains Mono';font-size:10px;color:var(--dim);
   }
-  .cdc-log-head .dot{width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 6px var(--acc);flex-shrink:0}
+  .cdc-log-head .dot{width:6px;height:6px;border-radius:50%;background:var(--acc);box-shadow:0 0 4px #00e0a455;flex-shrink:0}
   .cdc-log-head b{color:var(--acc);margin-left:2px}
   .cdc-log-head .qps{margin-left:auto;color:var(--acc2)}
   .cdc-log-body{height:168px;overflow:hidden;padding:6px 0;position:relative}
@@ -418,10 +418,10 @@
           <div class="hint">drag <b>캔버스</b> 패닝 · scroll <b>줌</b> · click <b>테이블 -&gt; DDL</b></div>
           <div class="model-caption" id="modelCaption"></div>
           <div class="erd-stats">
-            <div class="erd-stat"><span class="lbl">rows</span><span class="val" id="erdRows">--</span></div>
-            <div class="erd-stat"><span class="lbl">qps</span><span class="val blue" id="erdQps">--</span></div>
-            <div class="erd-stat"><span class="lbl">active tx</span><span class="val gold" id="erdTx">--</span></div>
-            <div class="erd-stat"><span class="lbl">repl lag</span><span class="val" id="erdLag">--</span></div>
+            <div class="erd-stat"><span class="lbl">예시 rows</span><span class="val" id="erdRows">--</span></div>
+            <div class="erd-stat"><span class="lbl">예시 qps</span><span class="val blue" id="erdQps">--</span></div>
+            <div class="erd-stat"><span class="lbl">예시 active tx</span><span class="val gold" id="erdTx">--</span></div>
+            <div class="erd-stat"><span class="lbl">예시 repl lag</span><span class="val" id="erdLag">--</span></div>
           </div>
         </div>
 
@@ -447,7 +447,7 @@
         <div class="arch-head">
           <div>
             <h2>공정 데이터 <span class="em">수집 → 정규화 DB → Power BI</span> 파이프라인</h2>
-            <p>엑셀 파편화(생산일보·공수·불량 각개 관리) 안티패턴을 제거. <b style="color:var(--acc)">정규화 관계형 DB</b>(1NF/2NF/3NF)에 단일 입력하고, VBA 프로그램이 SharePoint 서버에 실시간 저장, Power BI가 팬아웃 — 공수·생산현황 투명 집계 확보.</p>
+            <p>엑셀 파편화(생산일보·공수·불량 각개 관리) 안티패턴을 제거. <b style="color:var(--acc)">PostgreSQL 정규화 DB</b>(1NF/2NF/3NF)에 단일 입력하고, 자체개발 MES가 OPC UA 설비 데이터와 계층형 S/N 바코드를 연결 — Power BI에서 공수·생산현황·불량 리스크 범위를 투명하게 집계.</p>
           </div>
           <div class="arch-ctrl">
             <button class="btn" id="archSpeed">speed: 1x</button>
@@ -465,8 +465,8 @@
             </div>
             <div class="card">
               <h6>정규화 설계 근거</h6>
-              <p>1NF/2NF/3NF 준수. PK/FK 명시, CountIfs 중복 차단, auto-increment PK로 무결성 확보.</p>
-              <span class="tag">1NF/2NF/3NF</span><span class="tag">PK/FK</span><span class="tag">중복차단</span>
+              <p>1NF/2NF/3NF 준수. PK/FK 명시, UNIQUE·partial index·CHECK 제약으로 중복과 상태 오류를 DB 레벨에서 차단.</p>
+              <span class="tag">1NF/2NF/3NF</span><span class="tag">PK/FK</span><span class="tag">PostgreSQL</span>
             </div>
             <div class="card">
               <h6>S/N 추적성</h6>
@@ -482,17 +482,17 @@
           <div class="cdc-log-wrap" id="cdcLogWrap">
             <div class="cdc-log-head">
               <span class="dot live"></span>
-              DB 변경 이벤트 스트림
-              <b id="cdcLogTag">VBA / SharePoint</b>
-              <span class="qps mono" id="cdcQps">-- evt/s</span>
+              예시 변경 이벤트
+              <b id="cdcLogTag">MES / PostgreSQL</b>
+              <span class="qps mono" id="cdcQps">예시 -- evt/s</span>
             </div>
             <div class="cdc-log-body" id="cdcLogBody"></div>
           </div>
 
           <div class="legend">
             <span><i style="background:var(--acc)"></i>DB 입력</span>
-            <span><i style="background:var(--acc2)"></i>VBA 처리</span>
-            <span><i style="background:var(--gold)"></i>SharePoint 저장</span>
+            <span><i style="background:var(--acc2)"></i>OPC UA 수집</span>
+            <span><i style="background:var(--gold)"></i>PostgreSQL 저장</span>
             <span><i style="background:var(--viol)"></i>Power BI 출력</span>
           </div>
         </div>
@@ -558,8 +558,8 @@
   <!-- ============ FOOTER ============ -->
   <footer>
     <div class="seg accent" id="footView">01 · ERD</div>
-    <div class="seg" id="footEngine">MS Access · SQL 정규화 설계</div>
-    <div class="seg" id="footTbl">tables: 11</div>
+    <div class="seg" id="footEngine">PostgreSQL · 정규화 MES 스키마</div>
+    <div class="seg" id="footTbl">tables: --</div>
     <div class="seg">박양하 · 공정기술 · DB 아키텍처</div>
     <div class="spacer" style="flex:1"></div>
   </footer>
@@ -572,10 +572,10 @@
 const MODELS = {
   solaredge: {
     label:"SolarEdge 공정 데이터 관리 MES",
-    desc:"MS Access · 19 엔티티 · 작업지시·생산실적·불량",
-    engine:"MS Access → SQL 정규화 설계",
-    enginePill:"MS Access / SQL engine",
-    caption:"엑셀 파편화 → **직접 설계**한 정규화 관계형 DB. 1NF/2NF/3NF 준수, PK/FK 명시, CountIfs 중복 차단, auto-increment PK — `prod_raw` · `att_raw` 실제 원본 데이터 기반.",
+    desc:"공정·BOM·S/N·자재·검사 정규화",
+    engine:"PostgreSQL · 정규화 MES 스키마",
+    enginePill:"PostgreSQL engine",
+    caption:"엑셀 파편화 → PostgreSQL 기반 **정규화 관계형 DB**. {tableCount}개 테이블로 작업지시·공정실적·BOM·S/N 계보·자재 lot·검사 이력을 분리하고, 1NF/2NF/3NF, PK/FK, partial index, `WITH RECURSIVE` 전개 쿼리까지 일관되게 설계.",
     tables:[
       { name:"customer", x:40, y:40, badge:"3 cols",
         cols:[
@@ -682,7 +682,7 @@ const MODELS = {
           ["com","-- 공정별 생산실적 (prod_raw 원본 — 정규화 후 팩트 테이블)"],
           ["com","-- 공정: Cell검사 / Module적층 / Module조립 / ELT / 포장 등"],
           ["sql","CREATE TABLE production_result ("],
-          ["sql","  id          BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  id          BIGSERIAL PRIMARY KEY,"],
           ["sql","  wo_no       TEXT NOT NULL REFERENCES work_order(wo_no),"],
           ["sql","  prod_date   DATE NOT NULL,"],
           ["sql","  shift       TEXT NOT NULL CHECK (shift IN ('주간','야간')),"],
@@ -694,7 +694,7 @@ const MODELS = {
           ["sql",");"],
           ["com","-- 일자별 W/O별 집계 인덱스"],
           ["sql","CREATE INDEX idx_pr_date_wo ON production_result(prod_date, wo_no);"],
-          ["com","-- auto-increment PK: CountIfs 중복 차단 대체"],
+          ["com","-- BIGSERIAL PK: UNIQUE 제약 중복 차단 대체"],
         ]},
       { name:"attendance_raw", x:300, y:310, badge:"8 cols",
         cols:[
@@ -711,7 +711,7 @@ const MODELS = {
           ["com","-- 일별 인원·공수 원장 (att_raw 정규화 — 3NF)"],
           ["com","-- 직접직/연장/휴게/계획정지/자재관리 분 단위 기록"],
           ["sql","CREATE TABLE attendance_raw ("],
-          ["sql","  id               BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  id               BIGSERIAL PRIMARY KEY,"],
           ["sql","  rec_date         DATE NOT NULL,"],
           ["sql","  line             TEXT NOT NULL,  -- 'MD','SYS'"],
           ["sql","  direct_cnt       INT  NOT NULL,  -- 직접직 인원수"],
@@ -738,7 +738,7 @@ const MODELS = {
           ["com","-- 불량 이력 (공정별 불량 S/N 및 유형 기록)"],
           ["com","-- S/N 기반 추적성: 필드 원자재 불량 리스크 범위 측정 가능"],
           ["sql","CREATE TABLE defect_history ("],
-          ["sql","  id          BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  id          BIGSERIAL PRIMARY KEY,"],
           ["sql","  wo_no       TEXT    NOT NULL REFERENCES work_order(wo_no),"],
           ["sql","  defect_date DATE    NOT NULL,"],
           ["sql","  process     TEXT    NOT NULL,"],
@@ -782,7 +782,7 @@ const MODELS = {
           ["com","-- 검사 실적 (공정별 검사 결과 — Cell검사 / ELT 등)"],
           ["com","-- SN 기반 상위 공정 경로 검증: 미등록 제품 투입 차단"],
           ["sql","CREATE TABLE inspection_result ("],
-          ["sql","  id              BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  id              BIGSERIAL PRIMARY KEY,"],
           ["sql","  wo_no           TEXT NOT NULL REFERENCES work_order(wo_no),"],
           ["sql","  sn              TEXT NOT NULL,  -- 부품/제품 시리얼 번호"],
           ["sql","  process         TEXT NOT NULL,  -- 'OCV/IR','ELT','포장'..."],
@@ -803,9 +803,9 @@ const MODELS = {
         ],
         ddl:[
           ["com","-- BOM 헤더 (EBOM / MBOM 분리 관리)"],
-          ["com","-- EBOM: Engineering BOM, MBOM: Manufacturing BOM (VBA 변환 엔진 출력)"],
+          ["com","-- EBOM: Engineering BOM, MBOM: Manufacturing BOM (PostgreSQL 변환 함수 출력)"],
           ["sql","CREATE TABLE bom_header ("],
-          ["sql","  bom_id      BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  bom_id      BIGSERIAL PRIMARY KEY,"],
           ["sql","  product_key TEXT NOT NULL REFERENCES product_master(product_key),"],
           ["sql","  bom_type    TEXT NOT NULL CHECK (bom_type IN ('EBOM','MBOM')),"],
           ["sql","  version     INT  NOT NULL DEFAULT 1,"],
@@ -826,10 +826,10 @@ const MODELS = {
         ],
         ddl:[
           ["com","-- BOM 라인 (자기참조 계층 — 다단계 BOM 전개)"],
-          ["com","-- VBA 전개 알고리즘: levels(n) = levels(n-1) * qty_per"],
+          ["com","-- PostgreSQL 재귀 CTE 전개 알고리즘: levels(n) = levels(n-1) * qty_per"],
           ["com","-- make_buy: E=Engineering, EP=Purchased, SC=Sub-Contract"],
           ["sql","CREATE TABLE bom_line ("],
-          ["sql","  id             BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  id             BIGSERIAL PRIMARY KEY,"],
           ["sql","  bom_id         BIGINT  NOT NULL REFERENCES bom_header(bom_id),"],
           ["sql","  parent_id      BIGINT  REFERENCES bom_line(id),  -- NULL = 최상위"],
           ["sql","  component_no   TEXT    NOT NULL,"],
@@ -843,6 +843,346 @@ const MODELS = {
           ["com","-- 루트 부품 partial index"],
           ["sql","CREATE INDEX idx_bl_root ON bom_line(bom_id) WHERE parent_id IS NULL;"],
         ]},
+      { name:"process_master", x:820, y:560, badge:"5 cols",
+        cols:[
+          {n:"process_code",t:"TEXT",pk:1,nn:1},
+          {n:"process_name",t:"TEXT",nn:1},
+          {n:"line",t:"TEXT",nn:1},
+          {n:"seq_group",t:"INT",nn:1},
+          {n:"qc_required",t:"BOOLEAN",nn:1},
+        ],
+        ddl:[
+          ["com","-- 공정 마스터: 공정명을 팩트 테이블에서 분리해 명칭 드리프트 차단"],
+          ["sql","CREATE TABLE process_master ("],
+          ["sql","  process_code TEXT PRIMARY KEY,  -- 'CELL_OCV','MOD_STACK','ELT','PACK'"],
+          ["sql","  process_name TEXT    NOT NULL,"],
+          ["sql","  line         TEXT    NOT NULL CHECK (line IN ('MD','SYS')),"],
+          ["sql","  seq_group    INT     NOT NULL CHECK (seq_group > 0),"],
+          ["sql","  qc_required  BOOLEAN NOT NULL DEFAULT FALSE"],
+          ["sql",");"],
+          ["sql","CREATE UNIQUE INDEX idx_process_line_name ON process_master(line, process_name);"],
+        ]},
+      { name:"routing_step", x:1080, y:560, badge:"7 cols",
+        cols:[
+          {n:"routing_id",t:"BIGINT",pk:1,nn:1},
+          {n:"product_key",t:"TEXT",fk:"product_master",nn:1},
+          {n:"process_code",t:"TEXT",fk:"process_master",nn:1},
+          {n:"step_no",t:"INT",nn:1},
+          {n:"std_cycle_sec",t:"INT",nn:1},
+          {n:"std_mh",t:"NUMERIC",nn:1},
+          {n:"active",t:"BOOLEAN",nn:1},
+        ],
+        ddl:[
+          ["com","-- 제품별 표준 라우팅. 작업지시는 이 라우팅으로 공정 순서를 검증"],
+          ["sql","CREATE TABLE routing_step ("],
+          ["sql","  routing_id    BIGSERIAL PRIMARY KEY,"],
+          ["sql","  product_key   TEXT NOT NULL REFERENCES product_master(product_key),"],
+          ["sql","  process_code  TEXT NOT NULL REFERENCES process_master(process_code),"],
+          ["sql","  step_no       INT  NOT NULL CHECK (step_no > 0),"],
+          ["sql","  std_cycle_sec INT  NOT NULL CHECK (std_cycle_sec > 0),"],
+          ["sql","  std_mh        NUMERIC(10,2) NOT NULL CHECK (std_mh >= 0),"],
+          ["sql","  active        BOOLEAN NOT NULL DEFAULT TRUE"],
+          ["sql",");"],
+          ["sql","CREATE UNIQUE INDEX idx_routing_product_step ON routing_step(product_key, step_no) WHERE active;"],
+        ]},
+      { name:"operation_station", x:1340, y:560, badge:"6 cols",
+        cols:[
+          {n:"station_id",t:"TEXT",pk:1,nn:1},
+          {n:"process_code",t:"TEXT",fk:"process_master",nn:1},
+          {n:"station_name",t:"TEXT",nn:1},
+          {n:"line",t:"TEXT",nn:1},
+          {n:"capacity_per_shift",t:"INT",nn:1},
+          {n:"active",t:"BOOLEAN",nn:1},
+        ],
+        ddl:[
+          ["com","-- 작업장/스테이션 마스터: 설비와 실적의 공정 귀속 기준"],
+          ["sql","CREATE TABLE operation_station ("],
+          ["sql","  station_id         TEXT PRIMARY KEY,  -- 'MD-ELT-01'"],
+          ["sql","  process_code       TEXT NOT NULL REFERENCES process_master(process_code),"],
+          ["sql","  station_name       TEXT NOT NULL,"],
+          ["sql","  line               TEXT NOT NULL CHECK (line IN ('MD','SYS')),"],
+          ["sql","  capacity_per_shift INT  NOT NULL CHECK (capacity_per_shift > 0),"],
+          ["sql","  active             BOOLEAN NOT NULL DEFAULT TRUE"],
+          ["sql",");"],
+          ["sql","CREATE INDEX idx_station_process ON operation_station(process_code) WHERE active;"],
+        ]},
+      { name:"equipment", x:1340, y:800, badge:"7 cols",
+        cols:[
+          {n:"equipment_id",t:"TEXT",pk:1,nn:1},
+          {n:"station_id",t:"TEXT",fk:"operation_station",nn:1},
+          {n:"equipment_name",t:"TEXT",nn:1},
+          {n:"opcua_node",t:"TEXT"},
+          {n:"plc_tag",t:"TEXT"},
+          {n:"status",t:"TEXT",nn:1},
+          {n:"installed_at",t:"DATE"},
+        ],
+        ddl:[
+          ["com","-- 자체개발 MES 연동 설비. OPC UA node/tag로 공정 데이터를 수집"],
+          ["sql","CREATE TABLE equipment ("],
+          ["sql","  equipment_id   TEXT PRIMARY KEY,"],
+          ["sql","  station_id     TEXT NOT NULL REFERENCES operation_station(station_id),"],
+          ["sql","  equipment_name TEXT NOT NULL,"],
+          ["sql","  opcua_node     TEXT,  -- ns=2;s=MD.ELT01.Voltage"],
+          ["sql","  plc_tag        TEXT,"],
+          ["sql","  status         TEXT NOT NULL DEFAULT 'RUN' CHECK (status IN ('RUN','DOWN','PM','IDLE')),"],
+          ["sql","  installed_at   DATE"],
+          ["sql",");"],
+          ["sql","CREATE INDEX idx_equipment_station ON equipment(station_id, status);"],
+        ]},
+      { name:"operator", x:1080, y:800, badge:"6 cols",
+        cols:[
+          {n:"operator_id",t:"TEXT",pk:1,nn:1},
+          {n:"operator_name",t:"TEXT",nn:1},
+          {n:"team",t:"TEXT",nn:1},
+          {n:"line",t:"TEXT",nn:1},
+          {n:"role",t:"TEXT",nn:1},
+          {n:"active",t:"BOOLEAN",nn:1},
+        ],
+        ddl:[
+          ["com","-- 작업자 마스터: 실적·검사·재작업 기록의 책임 주체"],
+          ["sql","CREATE TABLE operator ("],
+          ["sql","  operator_id   TEXT PRIMARY KEY,"],
+          ["sql","  operator_name TEXT NOT NULL,"],
+          ["sql","  team          TEXT NOT NULL,"],
+          ["sql","  line          TEXT NOT NULL CHECK (line IN ('MD','SYS','QA','MATERIAL')),"],
+          ["sql","  role          TEXT NOT NULL CHECK (role IN ('PROD','QA','MATERIAL','ENGINEER')),"],
+          ["sql","  active        BOOLEAN NOT NULL DEFAULT TRUE"],
+          ["sql",");"],
+        ]},
+      { name:"supplier", x:40, y:820, badge:"5 cols",
+        cols:[
+          {n:"supplier_id",t:"TEXT",pk:1,nn:1},
+          {n:"supplier_name",t:"TEXT",nn:1},
+          {n:"country",t:"TEXT"},
+          {n:"quality_grade",t:"TEXT",nn:1},
+          {n:"active",t:"BOOLEAN",nn:1},
+        ],
+        ddl:[
+          ["com","-- 공급사 마스터: 자재 lot 추적과 불량 리스크 역추적의 기준"],
+          ["sql","CREATE TABLE supplier ("],
+          ["sql","  supplier_id   TEXT PRIMARY KEY,"],
+          ["sql","  supplier_name TEXT NOT NULL,"],
+          ["sql","  country       TEXT,"],
+          ["sql","  quality_grade TEXT NOT NULL DEFAULT 'B' CHECK (quality_grade IN ('A','B','C','HOLD')),"],
+          ["sql","  active        BOOLEAN NOT NULL DEFAULT TRUE"],
+          ["sql",");"],
+        ]},
+      { name:"material_master", x:300, y:820, badge:"7 cols",
+        cols:[
+          {n:"material_no",t:"TEXT",pk:1,nn:1},
+          {n:"material_name",t:"TEXT",nn:1},
+          {n:"material_type",t:"TEXT",nn:1},
+          {n:"unit",t:"TEXT",nn:1},
+          {n:"safety_stock",t:"NUMERIC",nn:1},
+          {n:"lot_control",t:"BOOLEAN",nn:1},
+          {n:"supplier_id",t:"TEXT",fk:"supplier"},
+        ],
+        ddl:[
+          ["com","-- 자재 마스터: BOM component_no와 구매/재고 속성을 분리"],
+          ["sql","CREATE TABLE material_master ("],
+          ["sql","  material_no   TEXT PRIMARY KEY,"],
+          ["sql","  material_name TEXT NOT NULL,"],
+          ["sql","  material_type TEXT NOT NULL CHECK (material_type IN ('CELL','BUSBAR','FRAME','PACKAGING','ETC')),"],
+          ["sql","  unit          TEXT NOT NULL DEFAULT 'EA',"],
+          ["sql","  safety_stock  NUMERIC(12,3) NOT NULL DEFAULT 0 CHECK (safety_stock >= 0),"],
+          ["sql","  lot_control   BOOLEAN NOT NULL DEFAULT TRUE,"],
+          ["sql","  supplier_id   TEXT REFERENCES supplier(supplier_id)"],
+          ["sql",");"],
+          ["sql","CREATE INDEX idx_material_supplier ON material_master(supplier_id);"],
+        ]},
+      { name:"inventory_lot", x:560, y:820, badge:"8 cols",
+        cols:[
+          {n:"lot_no",t:"TEXT",pk:1,nn:1},
+          {n:"material_no",t:"TEXT",fk:"material_master",nn:1},
+          {n:"supplier_id",t:"TEXT",fk:"supplier",nn:1},
+          {n:"received_at",t:"DATE",nn:1},
+          {n:"qty_received",t:"NUMERIC",nn:1},
+          {n:"qty_available",t:"NUMERIC",nn:1},
+          {n:"qc_status",t:"TEXT",nn:1},
+          {n:"expire_at",t:"DATE"},
+        ],
+        ddl:[
+          ["com","-- 입고 lot 원장: 자재 불량 발생 시 사용 W/O와 S/N 범위를 역추적"],
+          ["sql","CREATE TABLE inventory_lot ("],
+          ["sql","  lot_no        TEXT PRIMARY KEY,"],
+          ["sql","  material_no   TEXT NOT NULL REFERENCES material_master(material_no),"],
+          ["sql","  supplier_id   TEXT NOT NULL REFERENCES supplier(supplier_id),"],
+          ["sql","  received_at   DATE NOT NULL,"],
+          ["sql","  qty_received  NUMERIC(12,3) NOT NULL CHECK (qty_received >= 0),"],
+          ["sql","  qty_available NUMERIC(12,3) NOT NULL CHECK (qty_available >= 0),"],
+          ["sql","  qc_status     TEXT NOT NULL DEFAULT 'WAIT' CHECK (qc_status IN ('WAIT','PASS','FAIL','HOLD')),"],
+          ["sql","  expire_at     DATE"],
+          ["sql",");"],
+          ["sql","CREATE INDEX idx_lot_material_qc ON inventory_lot(material_no, qc_status);"],
+        ]},
+      { name:"material_issue", x:820, y:820, badge:"8 cols",
+        cols:[
+          {n:"issue_id",t:"BIGINT",pk:1,nn:1},
+          {n:"wo_no",t:"TEXT",fk:"work_order",nn:1},
+          {n:"lot_no",t:"TEXT",fk:"inventory_lot",nn:1},
+          {n:"material_no",t:"TEXT",fk:"material_master",nn:1},
+          {n:"issued_qty",t:"NUMERIC",nn:1},
+          {n:"issued_at",t:"TIMESTAMPTZ",nn:1},
+          {n:"operator_id",t:"TEXT",fk:"operator",nn:1},
+          {n:"issue_reason",t:"TEXT",nn:1},
+        ],
+        ddl:[
+          ["com","-- W/O별 자재 투입. S/N genealogy와 lot 리스크 범위 계산의 연결 테이블"],
+          ["sql","CREATE TABLE material_issue ("],
+          ["sql","  issue_id     BIGSERIAL PRIMARY KEY,"],
+          ["sql","  wo_no        TEXT NOT NULL REFERENCES work_order(wo_no),"],
+          ["sql","  lot_no       TEXT NOT NULL REFERENCES inventory_lot(lot_no),"],
+          ["sql","  material_no  TEXT NOT NULL REFERENCES material_master(material_no),"],
+          ["sql","  issued_qty   NUMERIC(12,3) NOT NULL CHECK (issued_qty > 0),"],
+          ["sql","  issued_at    TIMESTAMPTZ NOT NULL DEFAULT now(),"],
+          ["sql","  operator_id  TEXT NOT NULL REFERENCES operator(operator_id),"],
+          ["sql","  issue_reason TEXT NOT NULL DEFAULT 'PRODUCTION'"],
+          ["sql",");"],
+          ["sql","CREATE INDEX idx_issue_wo_lot ON material_issue(wo_no, lot_no);"],
+        ]},
+      { name:"serial_unit", x:40, y:1080, badge:"8 cols",
+        cols:[
+          {n:"sn",t:"TEXT",pk:1,nn:1},
+          {n:"wo_no",t:"TEXT",fk:"work_order",nn:1},
+          {n:"product_key",t:"TEXT",fk:"product_master",nn:1},
+          {n:"serial_level",t:"TEXT",nn:1},
+          {n:"current_process",t:"TEXT",fk:"process_master"},
+          {n:"current_status",t:"TEXT",nn:1},
+          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
+          {n:"closed_at",t:"TIMESTAMPTZ"},
+        ],
+        ddl:[
+          ["com","-- 계층형 S/N 바코드 원장: Cell → Module → Rack/Pack 추적"],
+          ["sql","CREATE TABLE serial_unit ("],
+          ["sql","  sn              TEXT PRIMARY KEY,"],
+          ["sql","  wo_no           TEXT NOT NULL REFERENCES work_order(wo_no),"],
+          ["sql","  product_key     TEXT NOT NULL REFERENCES product_master(product_key),"],
+          ["sql","  serial_level    TEXT NOT NULL CHECK (serial_level IN ('CELL','MODULE','RACK','PACK')),"],
+          ["sql","  current_process TEXT REFERENCES process_master(process_code),"],
+          ["sql","  current_status  TEXT NOT NULL DEFAULT 'CREATED' CHECK (current_status IN ('CREATED','WIP','PASS','FAIL','SCRAP','SHIPPED')),"],
+          ["sql","  created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),"],
+          ["sql","  closed_at       TIMESTAMPTZ"],
+          ["sql",");"],
+          ["sql","CREATE INDEX idx_serial_wo_status ON serial_unit(wo_no, current_status);"],
+        ]},
+      { name:"serial_genealogy", x:300, y:1080, badge:"6 cols",
+        cols:[
+          {n:"parent_sn",t:"TEXT",pk:1,fk:"serial_unit",nn:1},
+          {n:"child_sn",t:"TEXT",pk:1,fk:"serial_unit",nn:1},
+          {n:"issue_id",t:"BIGINT",fk:"material_issue"},
+          {n:"assembled_at",t:"TIMESTAMPTZ",nn:1},
+          {n:"operator_id",t:"TEXT",fk:"operator",nn:1},
+          {n:"station_id",t:"TEXT",fk:"operation_station",nn:1},
+        ],
+        ddl:[
+          ["com","-- S/N 계보: 완제품에서 하위 모듈·자재 lot까지 내려가는 추적 경로"],
+          ["sql","CREATE TABLE serial_genealogy ("],
+          ["sql","  parent_sn    TEXT NOT NULL REFERENCES serial_unit(sn),"],
+          ["sql","  child_sn     TEXT NOT NULL REFERENCES serial_unit(sn),"],
+          ["sql","  issue_id     BIGINT REFERENCES material_issue(issue_id),"],
+          ["sql","  assembled_at TIMESTAMPTZ NOT NULL DEFAULT now(),"],
+          ["sql","  operator_id  TEXT NOT NULL REFERENCES operator(operator_id),"],
+          ["sql","  station_id   TEXT NOT NULL REFERENCES operation_station(station_id),"],
+          ["sql","  PRIMARY KEY (parent_sn, child_sn),"],
+          ["sql","  CHECK (parent_sn <> child_sn)"],
+          ["sql",");"],
+          ["sql","CREATE INDEX idx_genealogy_child ON serial_genealogy(child_sn);"],
+        ]},
+      { name:"quality_measurement", x:560, y:1080, badge:"9 cols",
+        cols:[
+          {n:"measurement_id",t:"BIGINT",pk:1,nn:1},
+          {n:"inspection_id",t:"BIGINT",fk:"inspection_result",nn:1},
+          {n:"sn",t:"TEXT",fk:"serial_unit",nn:1},
+          {n:"metric_code",t:"TEXT",nn:1},
+          {n:"metric_value",t:"NUMERIC",nn:1},
+          {n:"lsl",t:"NUMERIC"},
+          {n:"usl",t:"NUMERIC"},
+          {n:"unit",t:"TEXT",nn:1},
+          {n:"judgement",t:"TEXT",nn:1},
+        ],
+        ddl:[
+          ["com","-- 검사 측정값: OCV/IR/ELT 등 수치 데이터를 result 헤더에서 분리"],
+          ["sql","CREATE TABLE quality_measurement ("],
+          ["sql","  measurement_id BIGSERIAL PRIMARY KEY,"],
+          ["sql","  inspection_id  BIGINT NOT NULL REFERENCES inspection_result(id),"],
+          ["sql","  sn             TEXT NOT NULL REFERENCES serial_unit(sn),"],
+          ["sql","  metric_code    TEXT NOT NULL,  -- 'OCV','IR','VOLTAGE','TEMP'"],
+          ["sql","  metric_value   NUMERIC(14,5) NOT NULL,"],
+          ["sql","  lsl            NUMERIC(14,5),"],
+          ["sql","  usl            NUMERIC(14,5),"],
+          ["sql","  unit           TEXT NOT NULL,"],
+          ["sql","  judgement      TEXT NOT NULL CHECK (judgement IN ('PASS','FAIL','WARN'))"],
+          ["sql",");"],
+          ["sql","CREATE INDEX idx_qm_sn_metric ON quality_measurement(sn, metric_code);"],
+        ]},
+      { name:"rework_action", x:820, y:1080, badge:"8 cols",
+        cols:[
+          {n:"rework_id",t:"BIGINT",pk:1,nn:1},
+          {n:"defect_id",t:"BIGINT",fk:"defect_history",nn:1},
+          {n:"sn",t:"TEXT",fk:"serial_unit",nn:1},
+          {n:"action_code",t:"TEXT",nn:1},
+          {n:"action_desc",t:"TEXT",nn:1},
+          {n:"operator_id",t:"TEXT",fk:"operator",nn:1},
+          {n:"completed_at",t:"TIMESTAMPTZ"},
+          {n:"result",t:"TEXT",nn:1},
+        ],
+        ddl:[
+          ["com","-- 재작업 조치 이력: 불량 발생-조치-재검사 사이클을 별도 엔티티로 관리"],
+          ["sql","CREATE TABLE rework_action ("],
+          ["sql","  rework_id    BIGSERIAL PRIMARY KEY,"],
+          ["sql","  defect_id    BIGINT NOT NULL REFERENCES defect_history(id),"],
+          ["sql","  sn           TEXT NOT NULL REFERENCES serial_unit(sn),"],
+          ["sql","  action_code  TEXT NOT NULL,"],
+          ["sql","  action_desc  TEXT NOT NULL,"],
+          ["sql","  operator_id  TEXT NOT NULL REFERENCES operator(operator_id),"],
+          ["sql","  completed_at TIMESTAMPTZ,"],
+          ["sql","  result       TEXT NOT NULL DEFAULT 'OPEN' CHECK (result IN ('OPEN','PASS','FAIL','SCRAP'))"],
+          ["sql",");"],
+          ["sql","CREATE INDEX idx_rework_defect_open ON rework_action(defect_id) WHERE result = 'OPEN';"],
+        ]},
+      { name:"shipment", x:1080, y:1080, badge:"7 cols",
+        cols:[
+          {n:"shipment_id",t:"BIGINT",pk:1,nn:1},
+          {n:"po_no",t:"TEXT",fk:"purchase_order",nn:1},
+          {n:"customer_key",t:"TEXT",fk:"customer",nn:1},
+          {n:"ship_date",t:"DATE",nn:1},
+          {n:"ship_status",t:"TEXT",nn:1},
+          {n:"destination",t:"TEXT"},
+          {n:"created_at",t:"TIMESTAMPTZ",nn:1},
+        ],
+        ddl:[
+          ["com","-- 출하 헤더: 고객/P.O. 단위 출하 상태 관리"],
+          ["sql","CREATE TABLE shipment ("],
+          ["sql","  shipment_id  BIGSERIAL PRIMARY KEY,"],
+          ["sql","  po_no        TEXT NOT NULL REFERENCES purchase_order(po_no),"],
+          ["sql","  customer_key TEXT NOT NULL REFERENCES customer(customer_key),"],
+          ["sql","  ship_date    DATE NOT NULL,"],
+          ["sql","  ship_status  TEXT NOT NULL DEFAULT 'READY' CHECK (ship_status IN ('READY','SHIPPED','CANCELLED')),"],
+          ["sql","  destination  TEXT,"],
+          ["sql","  created_at   TIMESTAMPTZ NOT NULL DEFAULT now()"],
+          ["sql",");"],
+          ["sql","CREATE INDEX idx_shipment_po_status ON shipment(po_no, ship_status);"],
+        ]},
+      { name:"shipment_serial", x:1340, y:1080, badge:"5 cols",
+        cols:[
+          {n:"shipment_id",t:"BIGINT",pk:1,fk:"shipment",nn:1},
+          {n:"sn",t:"TEXT",pk:1,fk:"serial_unit",nn:1},
+          {n:"packed_at",t:"TIMESTAMPTZ",nn:1},
+          {n:"pack_operator_id",t:"TEXT",fk:"operator",nn:1},
+          {n:"container_no",t:"TEXT"},
+        ],
+        ddl:[
+          ["com","-- 출하 S/N 라인: 출고 후 필드 클레임에서 제조/자재 이력까지 역추적"],
+          ["sql","CREATE TABLE shipment_serial ("],
+          ["sql","  shipment_id      BIGINT NOT NULL REFERENCES shipment(shipment_id),"],
+          ["sql","  sn               TEXT NOT NULL REFERENCES serial_unit(sn),"],
+          ["sql","  packed_at        TIMESTAMPTZ NOT NULL DEFAULT now(),"],
+          ["sql","  pack_operator_id TEXT NOT NULL REFERENCES operator(operator_id),"],
+          ["sql","  container_no     TEXT,"],
+          ["sql","  PRIMARY KEY (shipment_id, sn)"],
+          ["sql",");"],
+          ["sql","CREATE UNIQUE INDEX idx_shipment_serial_sn ON shipment_serial(sn);"],
+        ]},
     ],
     rels:[
       ["purchase_order","customer_key","customer","customer_key","N:1"],
@@ -855,16 +1195,46 @@ const MODELS = {
       ["inspection_result","wo_no","work_order","wo_no","N:1"],
       ["bom_header","product_key","product_master","product_key","N:1"],
       ["bom_line","bom_id","bom_header","bom_id","N:1"],
+      ["bom_line","parent_id","bom_line","id","N:1"],
+      ["routing_step","product_key","product_master","product_key","N:1"],
+      ["routing_step","process_code","process_master","process_code","N:1"],
+      ["operation_station","process_code","process_master","process_code","N:1"],
+      ["equipment","station_id","operation_station","station_id","N:1"],
+      ["material_master","supplier_id","supplier","supplier_id","N:1"],
+      ["inventory_lot","material_no","material_master","material_no","N:1"],
+      ["inventory_lot","supplier_id","supplier","supplier_id","N:1"],
+      ["material_issue","wo_no","work_order","wo_no","N:1"],
+      ["material_issue","lot_no","inventory_lot","lot_no","N:1"],
+      ["material_issue","material_no","material_master","material_no","N:1"],
+      ["material_issue","operator_id","operator","operator_id","N:1"],
+      ["serial_unit","wo_no","work_order","wo_no","N:1"],
+      ["serial_unit","product_key","product_master","product_key","N:1"],
+      ["serial_unit","current_process","process_master","process_code","N:1"],
+      ["serial_genealogy","parent_sn","serial_unit","sn","N:1"],
+      ["serial_genealogy","child_sn","serial_unit","sn","N:1"],
+      ["serial_genealogy","issue_id","material_issue","issue_id","N:1"],
+      ["serial_genealogy","operator_id","operator","operator_id","N:1"],
+      ["serial_genealogy","station_id","operation_station","station_id","N:1"],
+      ["quality_measurement","inspection_id","inspection_result","id","N:1"],
+      ["quality_measurement","sn","serial_unit","sn","N:1"],
+      ["rework_action","defect_id","defect_history","id","N:1"],
+      ["rework_action","sn","serial_unit","sn","N:1"],
+      ["rework_action","operator_id","operator","operator_id","N:1"],
+      ["shipment","po_no","purchase_order","po_no","N:1"],
+      ["shipment","customer_key","customer","customer_key","N:1"],
+      ["shipment_serial","shipment_id","shipment","shipment_id","N:1"],
+      ["shipment_serial","sn","serial_unit","sn","N:1"],
+      ["shipment_serial","pack_operator_id","operator","operator_id","N:1"],
     ],
     defaultTable:"work_order",
   },
 
   ebom: {
     label:"EBOM→MBOM 변환 엔진 스키마",
-    desc:"VBA 알고리즘 · BOM 다단계 전개 · Make/Buy 분류",
-    engine:"MS Access · BOM 정규화 설계",
-    enginePill:"BOM 변환 엔진",
-    caption:"VBA로 구현한 EBOM→MBOM 변환 엔진. **다단계 BOM 전개** 알고리즘 `levels(n) = levels(n-1) × qty`, Make/Buy 분류(E / EP / SC). CountIfs 중복 차단 · auto-increment PK로 무결성 확보.",
+    desc:"PostgreSQL CTE · BOM 다단계 전개 · Make/Buy 분류",
+    engine:"PostgreSQL · BOM 정규화 스키마",
+    enginePill:"PostgreSQL engine",
+    caption:"PostgreSQL `WITH RECURSIVE`로 구현한 EBOM→MBOM 변환 모델. {tableCount}개 테이블로 제품·BOM 헤더·계층 라인·부품 마스터·변환 이력을 분리하고, 다단계 BOM 전개 `levels(n) = levels(n-1) × qty`, Make/Buy 분류(E / EP / SC), UNIQUE·partial index로 무결성 확보.",
     tables:[
       { name:"product_master", x:400, y:40, badge:"6 cols",
         cols:[
@@ -897,7 +1267,7 @@ const MODELS = {
         ddl:[
           ["com","-- BOM 헤더 (EBOM/MBOM 분리 버전 관리)"],
           ["sql","CREATE TABLE bom_header ("],
-          ["sql","  bom_id      BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  bom_id      BIGSERIAL PRIMARY KEY,"],
           ["sql","  product_key TEXT NOT NULL REFERENCES product_master(product_key),"],
           ["sql","  bom_type    TEXT NOT NULL CHECK (bom_type IN ('EBOM','MBOM')),"],
           ["sql","  version     INT  NOT NULL DEFAULT 1,"],
@@ -919,7 +1289,7 @@ const MODELS = {
           ["com","-- 전개 공식: expanded_qty(n) = expanded_qty(n-1) × qty_per"],
           ["com","-- make_buy: E=Engineering(설계), EP=Purchased(구매), SC=Sub-Contract"],
           ["sql","CREATE TABLE bom_line ("],
-          ["sql","  id             BIGINT  PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  id             BIGSERIAL PRIMARY KEY,"],
           ["sql","  bom_id         BIGINT  NOT NULL REFERENCES bom_header(bom_id),"],
           ["sql","  parent_id      BIGINT  REFERENCES bom_line(id),"],
           ["sql","  component_no   TEXT    NOT NULL,"],
@@ -971,17 +1341,17 @@ const MODELS = {
           {n:"note",t:"TEXT"},
         ],
         ddl:[
-          ["com","-- EBOM→MBOM 변환 이력 로그 (VBA 변환 엔진 실행 기록)"],
+          ["com","-- EBOM→MBOM 변환 이력 로그 (PostgreSQL 변환 함수 실행 기록)"],
           ["sql","CREATE TABLE bom_conversion_log ("],
-          ["sql","  id           BIGINT PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  id           BIGSERIAL PRIMARY KEY,"],
           ["sql","  src_bom_id   BIGINT NOT NULL REFERENCES bom_header(bom_id),  -- EBOM"],
           ["sql","  dst_bom_id   BIGINT NOT NULL REFERENCES bom_header(bom_id),  -- MBOM"],
           ["sql","  converted_at DATE   NOT NULL DEFAULT CURRENT_DATE,"],
           ["sql","  converted_by TEXT   NOT NULL,  -- 실행자"],
           ["sql","  note         TEXT"],
           ["sql",");"],
-          ["com","-- 변환 알고리즘: expanded_qty = levels(n-1) * qty_per (VBA)"],
-          ["com","-- 중복 방지: CountIfs(dst_bom_id, src_bom_id) > 0 → 차단"],
+          ["com","-- 변환 알고리즘: expanded_qty = levels(n-1) * qty_per"],
+          ["com","-- 중복 방지: UNIQUE(src_bom_id, dst_bom_id, component_no)로 차단"],
         ]},
       { name:"bom_duplicate_check", x:760, y:100, badge:"4 cols",
         cols:[
@@ -991,10 +1361,10 @@ const MODELS = {
           {n:"duplicate_flag",t:"BOOLEAN",nn:1},
         ],
         ddl:[
-          ["com","-- 중복 부품 검증 테이블 (CountIfs 로직의 DB 구현)"],
-          ["com","-- VBA: If CountIfs(range, component_no) > 1 → duplicate_flag = TRUE"],
+          ["com","-- 중복 부품 검증 테이블 (UNIQUE 제약 위반 후보를 검토 큐로 적재)"],
+          ["com","-- PostgreSQL: GROUP BY component_no HAVING COUNT(*) > 1"],
           ["sql","CREATE TABLE bom_duplicate_check ("],
-          ["sql","  id             BIGINT  PRIMARY KEY AUTOINCREMENT,"],
+          ["sql","  id             BIGSERIAL PRIMARY KEY,"],
           ["sql","  bom_id         BIGINT  NOT NULL REFERENCES bom_header(bom_id),"],
           ["sql","  component_no   TEXT    NOT NULL,"],
           ["sql","  duplicate_flag BOOLEAN NOT NULL DEFAULT FALSE"],
@@ -1038,7 +1408,7 @@ document.querySelectorAll('.tab').forEach(t=>{
 /* ============================================================
    SQL SYNTAX HIGHLIGHTER (lightweight)
    ============================================================ */
-const KEYWORDS = /\b(CREATE|TABLE|PRIMARY|KEY|FOREIGN|REFERENCES|NOT|NULL|DEFAULT|CHECK|IN|UNIQUE|INDEX|ON|CASCADE|DELETE|AUTOINCREMENT|WITH|RECURSIVE|SELECT|FROM|WHERE|UNION|ALL|JOIN|AS|AND|OR|IS|USING|BETWEEN|GIN|LIKE|SET|BEGIN|END|RETURN|CALL|SIGNAL|SQLSTATE|PARTITION|BY|RANGE|VALUES|FOR|STORED|EXTENSION|IF|EXISTS|GENERATED|ALWAYS|ALTER|ADD|COLUMN)\b/g;
+const KEYWORDS = /\b(CREATE|TABLE|PRIMARY|KEY|FOREIGN|REFERENCES|NOT|NULL|DEFAULT|CHECK|IN|UNIQUE|INDEX|ON|CASCADE|DELETE|WITH|RECURSIVE|SELECT|FROM|WHERE|UNION|ALL|JOIN|AS|AND|OR|IS|USING|BETWEEN|GIN|LIKE|SET|BEGIN|END|RETURN|CALL|SIGNAL|SQLSTATE|PARTITION|BY|RANGE|VALUES|FOR|STORED|EXTENSION|IF|EXISTS|GENERATED|ALWAYS|ALTER|ADD|COLUMN)\b/g;
 const TYPES = /\b(TEXT|INTEGER|INT|BIGINT|BIGSERIAL|SERIAL|SMALLINT|REAL|JSON|JSONB|UUID|CITEXT|NUMERIC|VARCHAR|CHAR|TIMESTAMPTZ|TSVECTOR|BOOLEAN|BOOLEAN)\b/g;
 function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function hi(line){
@@ -1076,13 +1446,17 @@ const erdCanvas=document.getElementById('erdCanvas');
 const canvasWrap=document.getElementById('canvasWrap');
 const tableEls={};
 
+function modelDesc(m){
+  return m.tables.length+' tables · '+m.desc;
+}
+
 function buildModelSwitch(){
   const ms=document.getElementById('modelSwitch');
   ms.innerHTML='';
   Object.entries(MODELS).forEach(([k,m])=>{
     const b=document.createElement('button');
     b.className='ms-btn'+(k===curModel?' active':'');
-    b.innerHTML='<div class="t">'+m.label+'</div><div class="d">'+m.desc+'</div>';
+    b.innerHTML='<div class="t">'+m.label+'</div><div class="d">'+modelDesc(m)+'</div>';
     b.onclick=()=>{curModel=k;loadModel();};
     ms.appendChild(b);
   });
@@ -1115,14 +1489,17 @@ function loadModel(){
       const nn=c.nn?'<span class="nn">NN</span>':'';
       return '<div class="'+cls+'">'+key+'<span class="cn">'+c.n+'</span>'+nn+'<span class="ct">'+c.t+'</span></div>';
     }).join('');
-    el.innerHTML='<div class="tbl-h"><span class="tk"></span><span class="nm">'+t.name+'</span><span class="badge">'+t.badge+'</span></div>'+cols;
+    el.innerHTML='<div class="tbl-h"><span class="tk"></span><span class="nm">'+t.name+'</span><span class="badge">'+t.cols.length+' cols</span></div>'+cols;
     el.onclick=(e)=>{e.stopPropagation();pauseAndResumeErdAuto();selectTable(t.name,false);};
     tableLayer.appendChild(el);
     tableEls[t.name]=el;
   });
   const cap=document.getElementById('modelCaption');
   if(m.caption){
-    cap.innerHTML=m.caption.replace(/`([^`]+)`/g,'<code>$1</code>');
+    cap.innerHTML=m.caption
+      .replace('{tableCount}',m.tables.length)
+      .replace(/`([^`]+)`/g,'<code>$1</code>')
+      .replace(/\*\*([^*]+)\*\*/g,'<b>$1</b>');
     cap.classList.add('show');
   } else {
     cap.classList.remove('show');cap.innerHTML='';
@@ -1333,24 +1710,23 @@ function pauseAndResumeErdAuto(){
 let erdAutoResumeTimer=null;
 
 /* ============================================================
-   CDC FAKE LOG STREAMING
+   SAMPLE CHANGE EVENT STREAM
    ============================================================ */
 const CDC_EVENTS_SOLAREDGE=[
   ['ins','work_order','INSERT work_order wo_no=<val>23P30027KMDA1</val> status=<val>OPEN</val> plan_qty=280'],
+  ['ins','serial_unit','INSERT serial_unit sn=<val>KMD-MOD-0042</val> serial_level=MODULE current_status=<val>WIP</val>'],
+  ['ins','material_issue','INSERT material_issue wo_no=23P30027KMDA1 lot_no=<val>CELL-L230911</val> issued_qty=46'],
+  ['ins','serial_genealogy','INSERT serial_genealogy parent_sn=<val>KMD-MOD-0042</val> child_sn=KMD-CELL-0042-01'],
   ['ins','production_result','INSERT production_result wo_no=23P30027KMDA1 process=<val>Cell검사</val> prod_qty=615 input_mh=590'],
   ['upd','work_order','UPDATE work_order SET cum_prod_qty=cum_prod_qty+615 WHERE wo_no=23P30027KMDA1'],
-  ['ins','production_result','INSERT production_result process=<val>Module적층</val> prod_qty=15 input_mh=1430'],
-  ['ins','attendance_raw','INSERT attendance_raw rec_date=<val>2023-11-20</val> line=MD direct_cnt=32 break_min=580'],
+  ['ins','equipment','INSERT equipment equipment_id=<val>MD-ELT-01</val> station_id=MD-ELT status=RUN opcua_node=<val>ns=2;s=MD.ELT01</val>'],
   ['ins','inspection_result','INSERT inspection_result sn=<val>KMD-0042</val> process=OCV/IR result=<val>PASS</val>'],
-  ['upd','work_order','UPDATE work_order SET status=<val>IN_PROGRESS</val> WHERE wo_no=23P30027KMDA1'],
+  ['ins','quality_measurement','INSERT quality_measurement sn=<val>KMD-MOD-0042</val> metric_code=IR metric_value=0.0034 judgement=<val>PASS</val>'],
   ['ins','defect_history','INSERT defect_history defect_code=<val>DC01</val> sn=KMD-0071 rework_flag=false'],
-  ['ins','production_result','INSERT production_result process=<val>Module조립</val> prod_qty=15 input_mh=950'],
-  ['upd','work_order','UPDATE work_order SET cum_prod_qty=cum_prod_qty+15 WHERE wo_no=23P30027KMDA1'],
-  ['ins','inspection_result','INSERT inspection_result process=<val>ELT</val> sn=KMD-0042 result=<val>PASS</val>'],
+  ['ins','rework_action','INSERT rework_action defect_id=1042 sn=<val>KMD-0071</val> result=OPEN'],
+  ['upd','inventory_lot','UPDATE inventory_lot SET qty_available=qty_available-46 WHERE lot_no=<val>CELL-L230911</val>'],
   ['upd','work_order','UPDATE work_order SET status=<val>COMPLETED</val> WHERE wo_no=23P30073KMDL2'],
-  ['ins','production_result','INSERT production_result process=<val>포장</val> prod_qty=4 lost_mh=320 lost_desc=<val>자재대기</val>'],
-  ['ins','defect_history','INSERT defect_history defect_code=<val>DA01</val> defect_qty=1 rework_flag=true'],
-  ['upd','attendance_raw','UPDATE attendance_raw SET material_min=900 WHERE rec_date=2023-11-20'],
+  ['ins','shipment_serial','INSERT shipment_serial shipment_id=501 sn=<val>KMD-MOD-0042</val> container_no=SE-2023-11-A'],
 ];
 const CDC_EVENTS_EBOM=[
   ['ins','bom_header','INSERT bom_header product_key=<val>MM001</val> bom_type=<val>EBOM</val> version=1'],
@@ -1359,14 +1735,14 @@ const CDC_EVENTS_EBOM=[
   ['ins','bom_line','INSERT bom_line parent_id=1 component_no=<val>TRAY-ASSY-001</val> qty_per=46 make_buy=<val>EP</val>'],
   ['ins','bom_duplicate_check','INSERT bom_duplicate_check component_no=CELL-CRP-001 duplicate_flag=<val>FALSE</val>'],
   ['ins','bom_header','INSERT bom_header product_key=MM001 bom_type=<val>MBOM</val> version=1'],
-  ['ins','bom_conversion_log','INSERT bom_conversion_log src_bom_id=1 dst_bom_id=2 converted_by=<val>박양하</val>'],
+  ['ins','bom_conversion_log','INSERT bom_conversion_log src_bom_id=1 dst_bom_id=2 converted_by=<val>mes_job</val>'],
   ['upd','bom_line','UPDATE bom_line SET qty_per=<val>46</val> expanded_qty=46 depth=1 WHERE id=2'],
   ['ins','bom_line','INSERT bom_line parent_id=2 component_no=<val>BUSBAR-001</val> qty_per=2 make_buy=<val>EP</val>'],
-  ['cdc','VBA','VBA: levels(2) = levels(1) × qty_per = 46 × 2 = 92 (expanded)'],
+  ['cdc','PostgreSQL','WITH RECURSIVE: levels(2) = levels(1) × qty_per = 46 × 2 = 92'],
   ['upd','bom_header','UPDATE bom_header SET version=<val>2</val> bom_type=MBOM WHERE product_key=MM001'],
   ['ins','bom_duplicate_check','INSERT bom_duplicate_check component_no=BUSBAR-001 duplicate_flag=<val>FALSE</val>'],
-  ['cdc','VBA','CountIfs 중복 차단: component_no=BUSBAR-001 count=1 → OK'],
-  ['ins','bom_conversion_log','INSERT bom_conversion_log src_bom_id=3 dst_bom_id=4 converted_by=박양하'],
+  ['cdc','PostgreSQL','UNIQUE 검증: component_no=BUSBAR-001 count=1 → OK'],
+  ['ins','bom_conversion_log','INSERT bom_conversion_log src_bom_id=3 dst_bom_id=4 converted_by=mes_job'],
   ['upd','product_master','UPDATE product_master SET version=<val>2</val> WHERE product_key=MM001 -- 음성 Cell'],
 ];
 
@@ -1401,8 +1777,10 @@ function appendCdcLine(type,tbl,msg){
   line.className='cdc-line';
   const tagCls=cdcTagClass(type);
   const tagLbl=cdcTagLabel(type);
+  const modelTableNames=Object.values(MODELS).flatMap(m=>m.tables.map(t=>t.name));
+  const tableRe=new RegExp('\\b('+modelTableNames.join('|')+')\\b','g');
   const msgHtml=msg.replace(/<val>(.*?)<\/val>/g,'<span class="val">$1</span>')
-                    .replace(/\b(work_order|production_result|attendance_raw|defect_history|defect_code|inspection_result|purchase_order|customer|product_master|bom_header|bom_line|component_master|bom_conversion_log|bom_duplicate_check)\b/g,'<span class="tbl">$1</span>');
+                    .replace(tableRe,'<span class="tbl">$1</span>');
   line.innerHTML='<span class="cdc-ts">'+ts+'</span><span class="cdc-tag '+tagCls+'">'+tagLbl+'</span><span class="cdc-msg">'+msgHtml+'</span>';
   body.appendChild(line);
   // 최대 CDC_MAX_LINES 유지, 오래된 줄 페이드 후 제거
@@ -1437,7 +1815,7 @@ function startCdcLog(){
     const now=Date.now();
     if(now-cdcQpsLastCheck>=1000){
       const qpsEl=document.getElementById('cdcQps');
-      if(qpsEl) qpsEl.textContent=cdcQpsSampleCount+' evt/s';
+      if(qpsEl) qpsEl.textContent='예시 '+cdcQpsSampleCount+' evt/s';
       cdcQpsSampleCount=0;cdcQpsLastCheck=now;
     }
   }, 480+Math.floor(Math.random()*120));
@@ -1457,10 +1835,10 @@ let flowLayoutDone=false;
 let flowPrevTs=0;
 
 const FLOW_NODES=[
-  {id:'app',cls:'src',x:.07,y:.42,t:'VBA 입력 프로그램',s:'생산실적·불량·공수 입력',ic:'&#9881;'},
+  {id:'app',cls:'src',x:.07,y:.42,t:'MES 입력 화면',s:'생산실적·불량·공수 입력',ic:'&#9881;'},
   {id:'biz',cls:'src',x:.07,y:.14,t:'원천 DB 테이블',s:'work_order, production_result ...',ic:'&#9636;',pill:'정규화 저장'},
-  {id:'outbox',cls:'outbox',x:.28,y:.42,t:'SharePoint 서버',s:'실시간 동기화 저장',ic:'&#10548;',pill:'실시간'},
-  {id:'cdc',cls:'cdc',x:.49,y:.42,t:'Power Query',s:'바이너리 연동 / 변환',ic:'&#10236;',pill:'ETL'},
+  {id:'outbox',cls:'outbox',x:.28,y:.42,t:'PostgreSQL',s:'트랜잭션·제약·S/N 계보 저장',ic:'&#10548;',pill:'ACID'},
+  {id:'cdc',cls:'cdc',x:.49,y:.42,t:'OPC UA / ETL',s:'설비 태그 수집·정규화 변환',ic:'&#10236;',pill:'ETL'},
   {id:'kafka',cls:'kafka',x:.67,y:.42,t:'Power BI 데이터셋',s:'집계·KPI 모델',ic:'&#8803;',pill:'SSOT'},
   {id:'redis',cls:'proj',x:.88,y:.12,t:'생산현황 뷰',s:'W/O별 실적 대시보드',ic:'&#9670;'},
   {id:'es',cls:'proj',x:.88,y:.42,t:'불량현황 뷰',s:'공정별 불량·S/N 추적',ic:'&#9670;'},

@@ -69,7 +69,7 @@ canvas{display:block;outline:none}
   color:var(--signal);border:1px solid rgba(70,230,176,.3);border-radius:5px;padding:3px 8px;
   display:inline-flex;align-items:center;gap:6px;
 }
-.tw .dot{width:6px;height:6px;border-radius:50%;background:var(--signal);box-shadow:0 0 8px var(--signal);animation:pulse 1.6s infinite}
+.tw .dot{width:6px;height:6px;border-radius:50%;background:var(--signal);box-shadow:0 0 4px rgba(70,230,176,.65);animation:pulse 1.8s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
 .top-right{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-2)}
 .top-right .clock{font-family:var(--mono);color:var(--ink);font-size:11.5px}
@@ -113,7 +113,7 @@ canvas{display:block;outline:none}
 .slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;border-radius:4px;
   background:var(--line);outline:none;cursor:pointer}
 .slider::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
-  background:var(--c-dev);box-shadow:0 0 8px rgba(111,180,255,.6);cursor:pointer}
+  background:var(--c-dev);box-shadow:0 0 4px rgba(111,180,255,.45);cursor:pointer}
 .slider::-moz-range-thumb{width:15px;height:15px;border:0;border-radius:50%;background:var(--c-dev);cursor:pointer}
 .btn{
   width:100%;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.18em;
@@ -158,7 +158,14 @@ canvas{display:block;outline:none}
 .fusion-layer.mfg{border-color:rgba(255,122,138,.35);background:rgba(255,122,138,.05)}
 .fusion-layer.dev{border-color:rgba(111,180,255,.35);background:rgba(111,180,255,.05)}
 .fusion-layer.ai{border-color:rgba(201,163,255,.35);background:rgba(201,163,255,.05)}
-.fl-icon{font-size:15px;flex:0 0 auto}
+.fl-icon{
+  width:28px;height:18px;border-radius:5px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:8px;font-weight:800;letter-spacing:.08em;
+  border:1px solid currentColor;background:rgba(255,255,255,.025)
+}
+.fl-icon.mfg{color:var(--c-mfg)}
+.fl-icon.dev{color:var(--c-dev)}
+.fl-icon.ai{color:var(--c-ai)}
 .fl-info{flex:1;min-width:0}
 .fl-label{font-size:11px;font-weight:700}
 .fl-label.mfg{color:var(--c-mfg)}
@@ -233,23 +240,23 @@ canvas{display:block;outline:none}
   <div class="ctl-body">
     <!-- 3-layer legend -->
     <div>
-      <div style="font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;margin-bottom:8px">Domain Layers — 사일로 시 오류(🔴), 연결 시 정합(🟢)</div>
+      <div style="font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;margin-bottom:8px">Domain Layers — 사일로 시 오류[ERR], 연결 시 정합[OK]</div>
       <div class="layer-row">
-        <div class="layer-dot" style="background:var(--c-mfg);box-shadow:0 0 7px var(--c-mfg)"></div>
+        <div class="layer-dot" style="background:var(--c-mfg);box-shadow:0 0 4px rgba(255,122,138,.55)"></div>
         <div>
           <div class="layer-label" style="color:var(--c-mfg)">제조 현장</div>
           <div class="layer-sub">은성·이랜텍·솔라엣지 — 설비·공정·OEE·물류</div>
         </div>
       </div>
       <div class="layer-row">
-        <div class="layer-dot" style="background:var(--c-dev);box-shadow:0 0 7px var(--c-dev)"></div>
+        <div class="layer-dot" style="background:var(--c-dev);box-shadow:0 0 4px rgba(111,180,255,.55)"></div>
         <div>
           <div class="layer-label" style="color:var(--c-dev)">데이터 / 개발</div>
           <div class="layer-sub">MES·파이프라인·SSOT — 현장을 코드로 구조화</div>
         </div>
       </div>
       <div class="layer-row">
-        <div class="layer-dot" style="background:var(--c-ai);box-shadow:0 0 7px var(--c-ai)"></div>
+        <div class="layer-dot" style="background:var(--c-ai);box-shadow:0 0 4px rgba(201,163,255,.55)"></div>
         <div>
           <div class="layer-label" style="color:var(--c-ai)">AI 도메인</div>
           <div class="layer-sub">예측·이상탐지·에이전트 — 모델로 도메인을 연결</div>
@@ -275,7 +282,7 @@ canvas{display:block;outline:none}
 <!-- hint -->
 <div class="hud" id="hint">
   <div><b>드래그</b> 궤도 회전 · <b>휠</b> 줌</div>
-  <div><b>머신 클릭</b> 포커스 + 상세</div>
+  <div><b>노드 클릭</b> 포커스 + 상세</div>
 </div>
 
 <!-- cross-domain sync panel (right) -->
@@ -288,7 +295,7 @@ canvas{display:block;outline:none}
     <!-- 3-layer fusion diagram -->
     <div class="fusion">
       <div class="fusion-layer mfg">
-        <div class="fl-icon">🏭</div>
+        <div class="fl-icon mfg">MFG</div>
         <div class="fl-info">
           <div class="fl-label mfg">제조 현장</div>
           <div class="fl-sub">사일로 시: 공정 문제가 데이터에 미반영 · 누락</div>
@@ -296,7 +303,7 @@ canvas{display:block;outline:none}
         <div class="fl-val mfg" id="flMfg">연결</div>
       </div>
       <div class="fusion-layer dev">
-        <div class="fl-icon">💻</div>
+        <div class="fl-icon dev">DEV</div>
         <div class="fl-info">
           <div class="fl-label dev">데이터 / 개발</div>
           <div class="fl-sub">사일로 시: 현장 맥락 없는 지표 — 판단 오류</div>
@@ -304,7 +311,7 @@ canvas{display:block;outline:none}
         <div class="fl-val dev" id="flDev">LIVE</div>
       </div>
       <div class="fusion-layer ai">
-        <div class="fl-icon">🤖</div>
+        <div class="fl-icon ai">AI</div>
         <div class="fl-info">
           <div class="fl-label ai">AI 도메인</div>
           <div class="fl-sub">사일로 시: 도메인 없는 모델 — 오탐·오분류</div>
@@ -330,7 +337,7 @@ canvas{display:block;outline:none}
       <span class="val" id="xdState">SYNCED</span>
     </div>
     <div class="xd-port">
-      <b>근거:</b> 시대는 변한다, 사람도 변해야 한다.<br>제조 현장(은성·이랜텍·솔라엣지) → 데이터/SW → AI —<br><span class="ph">도메인을 코드와 모델로 잇는 사람</span>이 조직의 트윈이 된다.
+      <b>LOG:</b> 시대는 변한다, 사람도 변해야 한다.<br>제조 현장(은성·이랜텍·솔라엣지) → 데이터/SW → AI —<br><span class="ph">도메인을 코드와 모델로 잇는 사람</span>이 조직의 트윈이 된다.
     </div>
   </div>
 </div>
@@ -551,29 +558,28 @@ const STATION_POS = [
 ];
 
 const machineGroups = [];
-const andonLamps = [];
+const statusNodes = [];
 const pulsers = [];
-const robotArms = [];
-const stackFans = [];
+const graphAnimators = [];
 
-/* ───────────────────── 3-layer domain glow rings (ground) ───────────────────── */
-// Each station gets a colored ground ring to visualize domain layer
+/* ───────────────────── 3-layer domain rings (ground) ───────────────────── */
+// Each station gets a muted ground ring to visualize the domain layer.
 const layerRingColors = [0xff7a8a, 0x6fb4ff, 0xc9a3ff, 0x46e6b0];
 const layerRings = [];
 STATION_POS.forEach((pos, i)=>{
   const ringGeo = new THREE.RingGeometry(4.2, 4.8, 64);
   const ringMat = new THREE.MeshBasicMaterial({
-    color: layerRingColors[i], transparent: true, opacity: 0.12, side: THREE.DoubleSide
+    color: layerRingColors[i], transparent: true, opacity: 0.07, side: THREE.DoubleSide
   });
   const ring = new THREE.Mesh(ringGeo, ringMat);
   ring.rotation.x = -Math.PI/2;
   ring.position.set(pos.x, 0.04, pos.z);
   scene.add(ring);
-  layerRings.push({mesh:ring, mat:ringMat, base:0.12});
+  layerRings.push({mesh:ring, mat:ringMat, base:0.07});
 });
 
 /* ───────────────────── inter-domain data flow lines ───────────────────── */
-// Animated particles flow along lines between stations = data sync visualization
+// Small, quiet particles flow along links between domain nodes.
 const flowLines = [];
 const pairs = [[0,1],[1,2],[2,3],[0,3],[1,3]]; // domain connections
 pairs.forEach(([a,b])=>{
@@ -585,17 +591,16 @@ pairs.forEach(([a,b])=>{
   }
   const geo = new THREE.BufferGeometry().setFromPoints(pts);
   const mat = new THREE.LineBasicMaterial({
-    color: layerRingColors[a], transparent: true, opacity: 0.18
+    color: layerRingColors[a], transparent: true, opacity: 0.12
   });
   const line = new THREE.Line(geo, mat);
   scene.add(line);
 
-  // flow particle
-  const pGeo = new THREE.SphereGeometry(0.12, 8, 8);
-  const pMat = new THREE.MeshBasicMaterial({color: layerRingColors[a], transparent:true, opacity:0.9});
+  const pGeo = new THREE.SphereGeometry(0.07, 8, 8);
+  const pMat = new THREE.MeshBasicMaterial({color: layerRingColors[a], transparent:true, opacity:0.45});
   const particle = new THREE.Mesh(pGeo, pMat);
   scene.add(particle);
-  flowLines.push({pa, pb, particle, t: a*0.2, speed: 0.18+Math.random()*0.08, mat});
+  flowLines.push({pa, pb, particle, t: a*0.2, speed: 0.08+Math.random()*0.04, mat});
 });
 
 /* ───────────────────── sync ripple ───────────────────── */
@@ -608,7 +613,7 @@ ripple.position.y = 0.06;
 scene.add(ripple);
 let rippleT = -1;
 
-/* ───────────────────── AI pulse rings (3 expanding rings at AI cell) ───────────────────── */
+/* ───────────────────── AI context rings (muted expansion at AI cell) ───────────────────── */
 const aiRings = [];
 for(let r=0;r<3;r++){
   const rGeo = new THREE.RingGeometry(0.3, 0.5, 48);
@@ -631,107 +636,101 @@ STATIONS.forEach((st, i)=>{
   const pad = box(7.2, 0.5, 6.4, 0x0f1622, {metal:0.1, rough:0.85});
   pad.position.y = 0.25;
   g.add(pad);
-  const padTrim = box(7.4, 0.12, 6.6, st.color, {emissive:st.color, emi:0.5, metal:0.3, cast:false});
+  const padTrim = box(7.4, 0.08, 6.6, st.color, {emissive:st.color, emi:0.16, metal:0.25, cast:false});
   padTrim.position.y = 0.06;
   g.add(padTrim);
 
-  // main machine body
-  const body = box(4.2, 3.2, 3.4, 0x2b3242, {metal:0.55, rough:0.45});
+  // main domain node body
+  const body = box(4.2, 2.8, 3.4, 0x242b3a, {metal:0.45, rough:0.55});
   body.position.y = 0.5 + 1.6;
   g.add(body);
-  const stripe = box(4.3, 0.5, 3.5, st.color, {emissive:st.color, emi:0.7, metal:0.2, cast:false});
+  const stripe = box(4.3, 0.28, 3.5, st.color, {emissive:st.color, emi:0.18, metal:0.15, cast:false});
   stripe.position.y = 0.5 + 2.7;
   g.add(stripe);
   const ctlbox = box(1.1, 1.3, 0.25, 0x10151f, {metal:0.4, rough:0.5});
   ctlbox.position.set(0, 1.7, 1.75);
-  const screen = box(0.85, 0.85, 0.04, st.color, {emissive:st.color, emi:0.9, cast:false});
+  const screen = box(0.85, 0.85, 0.04, st.color, {emissive:st.color, emi:0.22, cast:false});
   screen.position.set(0,1.85,1.88);
   pulsers.push(screen);
   g.add(ctlbox, screen);
 
-  // andon stack light
-  const pole = cyl(0.07,0.07,2.0,8,0x222836,{metal:0.6});
-  pole.position.set(-1.7, 0.5+1.0+2.0, -1.4);
-  g.add(pole);
-  const lampColors=[0x2a3344,0x2a3344,0x2a3344];
-  const lampY=[0.5+2.0,0.5+2.55,0.5+3.1];
+  // compact status nodes, replacing factory-style stack lights
   for(let l=0;l<3;l++){
-    const lm = new THREE.MeshStandardMaterial({color:lampColors[l],emissive:0x000000,emissiveIntensity:0,roughness:0.4});
-    const lamp = new THREE.Mesh(new THREE.CylinderGeometry(0.18,0.18,0.42,12), lm);
-    lamp.position.set(-1.7, lampY[l]+0.6, -1.4);
-    lamp.castShadow=true;
-    g.add(lamp);
+    const nodeMat = new THREE.MeshStandardMaterial({color:l===i%3?st.color:0x2a3344,emissive:l===i%3?st.color:0x000000,emissiveIntensity:l===i%3?0.18:0,roughness:0.5});
+    const node = new THREE.Mesh(new THREE.SphereGeometry(0.14,12,12), nodeMat);
+    node.position.set(-1.35+l*0.34, 3.42, -1.35);
+    node.castShadow=true;
+    g.add(node);
+    statusNodes.push({mesh:node, mat:nodeMat, color:st.color, active:l===i%3});
   }
-  const andonMat = new THREE.MeshStandardMaterial({color:st.color, emissive:st.color, emissiveIntensity:1.2, roughness:0.3});
-  const andon = new THREE.Mesh(new THREE.SphereGeometry(0.26,16,16), andonMat);
-  andon.position.set(-1.7, lampY[2]+0.6+0.45, -1.4);
-  g.add(andon);
-  andonLamps.push({mesh:andon, mat:andonMat, color:st.color});
 
   // KIND-specific geometry
   if(st.kind==="machine"){
-    // exhaust stacks + vision camera (MFG)
-    for(let s=0;s<2;s++){
-      const stack = cyl(0.28,0.34,2.4,12,0x39414f,{metal:0.6});
-      stack.position.set(1.0+s*0.9, 0.5+3.2+1.2, -1.0);
-      g.add(stack);
-      const cap = cyl(0.36,0.3,0.3,12,st.color,{emissive:st.color,emi:0.5});
-      cap.position.set(1.0+s*0.9, 0.5+3.2+2.4, -1.0);
+    // field-signal probes
+    for(let s=0;s<3;s++){
+      const probe = cyl(0.08,0.1,1.4,10,0x39414f,{metal:0.45});
+      probe.position.set(0.75+s*0.55, 3.15, -1.0);
+      g.add(probe);
+      const cap = new THREE.Mesh(new THREE.IcosahedronGeometry(0.18,0),
+        new THREE.MeshStandardMaterial({color:st.color,emissive:st.color,emissiveIntensity:0.14,roughness:0.45}));
+      cap.position.set(0.75+s*0.55, 3.9, -1.0);
       g.add(cap);
     }
-    const cam = box(0.5,0.5,0.7,0x14181f,{metal:0.5});
+    const cam = box(0.5,0.5,0.7,0x14181f,{metal:0.35});
     cam.position.set(1.4,1.9,1.4);
-    const lens = cyl(0.18,0.18,0.2,16,st.color,{emissive:st.color,emi:0.8});
+    const lens = cyl(0.18,0.18,0.2,16,st.color,{emissive:st.color,emi:0.18});
     lens.rotation.x=Math.PI/2; lens.position.set(1.4,1.9,1.85);
     g.add(cam,lens);
   } else if(st.kind==="data"){
-    // server racks (DEV/DATA)
+    // schema panels (DEV/DATA)
     for(let r=0;r<3;r++){
-      const rack = box(0.9,2.6,1.4,0x161d2a,{metal:0.4,rough:0.5});
-      rack.position.set(-1.4+r*1.1, 0.5+1.3, 0.7);
-      g.add(rack);
+      const panel = box(0.9,2.1,0.18,0x161d2a,{metal:0.25,rough:0.6});
+      panel.position.set(-1.4+r*1.1, 0.5+1.25, 1.15);
+      g.add(panel);
       for(let u=0;u<5;u++){
-        const led = box(0.7,0.07,0.04, u%2? st.color:0x46e6b0,{emissive:u%2?st.color:0x46e6b0,emi:0.9,cast:false});
-        led.position.set(-1.4+r*1.1, 0.6+0.4+u*0.42, 1.42);
+        const led = box(0.55,0.045,0.04, u%2? st.color:0x46e6b0,{emissive:u%2?st.color:0x46e6b0,emi:0.18,cast:false});
+        led.position.set(-1.4+r*1.1, 0.8+u*0.34, 1.28);
         pulsers.push(led);
         g.add(led);
       }
     }
     // floating dashboard
-    const dash = box(2.4,1.5,0.08, 0x0c1320,{emissive:st.color,emi:0.18,metal:0.2});
+    const dash = box(2.4,1.5,0.08, 0x0c1320,{emissive:st.color,emi:0.08,metal:0.15});
     dash.position.set(0,0.5+4.4,0); dash.rotation.x=-0.12;
     g.add(dash);
-    stackFans.push({mesh:dash, axis:"none", baseY:0.5+4.4});
+    graphAnimators.push({mesh:dash, axis:"none", baseY:0.5+4.4});
   } else if(st.kind==="ax"){
-    // robot arm (AI cell)
-    const armBase = cyl(0.55,0.7,0.6,16,0x2a3140,{metal:0.6});
-    armBase.position.set(-1.2,0.5+0.3,1.0);
-    g.add(armBase);
-    const pivot = new THREE.Group(); pivot.position.set(-1.2,0.5+0.6,1.0); g.add(pivot);
-    const upper = box(0.3,1.8,0.3,st.color,{emissive:st.color,emi:0.3,metal:0.4});
-    upper.position.y=0.9; pivot.add(upper);
-    const elbow = new THREE.Group(); elbow.position.y=1.8; pivot.add(elbow);
-    const fore = box(0.24,1.4,0.24,0x39414f,{metal:0.5});
-    fore.position.y=0.7; elbow.add(fore);
-    const grip = box(0.4,0.2,0.4,st.color,{emissive:st.color,emi:0.6});
-    grip.position.y=1.45; elbow.add(grip);
-    robotArms.push({pivot, elbow, kind:"ax", idx:i});
+    // inference graph nodes
+    const graph = new THREE.Group(); graph.position.set(-0.9,1.35,1.0); g.add(graph);
+    const graphPts = [new THREE.Vector3(0,0,0),new THREE.Vector3(.8,.7,.2),new THREE.Vector3(1.2,-.1,-.35),new THREE.Vector3(.25,1.25,-.45)];
+    graphPts.forEach((p,idx)=>{
+      const node = new THREE.Mesh(new THREE.IcosahedronGeometry(idx===0?0.28:0.18,0),
+        new THREE.MeshStandardMaterial({color:idx===0?st.color:0x39414f,emissive:idx===0?st.color:0x000000,emissiveIntensity:0.16,roughness:0.4}));
+      node.position.copy(p);
+      graph.add(node);
+      if(idx>0){
+        const geo = new THREE.BufferGeometry().setFromPoints([graphPts[0], p]);
+        const ln = new THREE.Line(geo, new THREE.LineBasicMaterial({color:st.color,transparent:true,opacity:.18}));
+        graph.add(ln);
+      }
+    });
+    graphAnimators.push({mesh:graph, axis:"float", baseY:1.35});
     // orbiting AI nodes
     const ring = new THREE.Group(); ring.position.set(0,0.5+4.3,0); g.add(ring);
     const nodeLabels = ["MES","RPA","AI","API","BI","ML"];
     for(let n=0;n<6;n++){
       const a=n/6*Math.PI*2;
       const node = new THREE.Mesh(new THREE.IcosahedronGeometry(0.26,0),
-        new THREE.MeshStandardMaterial({color:st.color,emissive:st.color,emissiveIntensity:0.6,roughness:0.3}));
+        new THREE.MeshStandardMaterial({color:st.color,emissive:st.color,emissiveIntensity:0.16,roughness:0.35}));
       node.position.set(Math.cos(a)*1.6,0,Math.sin(a)*1.6);
       ring.add(node);
     }
-    stackFans.push({mesh:ring, axis:"y", speed:0.4});
+    graphAnimators.push({mesh:ring, axis:"y", speed:0.22});
   } else if(st.kind==="hub"){
     // fusion hub: central core + 3-domain rings
     const core = new THREE.Mesh(
       new THREE.OctahedronGeometry(1.2, 0),
-      new THREE.MeshStandardMaterial({color:st.color, emissive:st.color, emissiveIntensity:0.5, roughness:0.3, metalness:0.4})
+      new THREE.MeshStandardMaterial({color:st.color, emissive:st.color, emissiveIntensity:0.16, roughness:0.35, metalness:0.35})
     );
     core.position.y = 0.5+3.0;
     g.add(core);
@@ -741,18 +740,18 @@ STATIONS.forEach((st, i)=>{
     for(let r=0;r<3;r++){
       const rMesh = new THREE.Mesh(
         new THREE.TorusGeometry(1.6+r*0.5, 0.05, 8, 48),
-        new THREE.MeshStandardMaterial({color:ringColors[r], emissive:ringColors[r], emissiveIntensity:0.6, roughness:0.3})
+        new THREE.MeshStandardMaterial({color:ringColors[r], emissive:ringColors[r], emissiveIntensity:0.16, roughness:0.35})
       );
       rMesh.position.y = 0.5+3.0;
       rMesh.rotation.x = (r/3)*Math.PI;
       rMesh.rotation.z = (r/3)*Math.PI*0.5;
       g.add(rMesh);
-      stackFans.push({mesh:rMesh, axis:"hub", idx:r, speed: 0.3+r*0.15});
+      graphAnimators.push({mesh:rMesh, axis:"hub", idx:r, speed: 0.18+r*0.08});
     }
   }
 
   // floor plate
-  const plate = box(1.6,0.05,0.9, 0x0a0e15,{emissive:st.color,emi:0.15,cast:false});
+  const plate = box(1.6,0.05,0.9, 0x0a0e15,{emissive:st.color,emi:0.06,cast:false});
   plate.position.set(0,0.07,2.8);
   g.add(plate);
 
@@ -768,7 +767,7 @@ STATIONS.forEach((st, i)=>{
     box-shadow:0 12px 30px rgba(0,0,0,.5);font-family:var(--sans);user-select:none;cursor:pointer;`;
   hud.innerHTML = `
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
-      <span style="width:7px;height:7px;border-radius:50%;background:${hex};box-shadow:0 0 8px ${hex}"></span>
+      <span style="width:7px;height:7px;border-radius:50%;background:${hex};box-shadow:0 0 4px ${hex}99"></span>
       <span style="font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:#5d6a82">${st.station}</span>
       <span style="font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:${hex};border:1px solid ${hex}33;border-radius:3px;padding:1px 5px">${layerTag}</span>
     </div>
@@ -790,46 +789,25 @@ STATIONS.forEach((st, i)=>{
   machineGroups.push(g);
 });
 
-/* ───────────────────── conveyors (domain data flow paths) ───────────────────── */
+/* ───────────────────── domain link path ───────────────────── */
 const pathPts = [];
 STATION_POS.forEach(p=>pathPts.push(new THREE.Vector3(p.x, 0.55, p.z)));
 pathPts.push(STATION_POS[0].clone().setY(0.55));
 const curve = new THREE.CatmullRomCurve3(pathPts, true, "catmullrom", 0.4);
 
-const convCount = 220;
-const convPts = curve.getSpacedPoints(convCount);
-const convGroup = new THREE.Group();
-const convMat = new THREE.MeshStandardMaterial({color:0x161d2b, roughness:0.7, metalness:0.3});
-const segGeo = new THREE.BoxGeometry(1.1, 0.18, 1.0);
-const segInst = new THREE.InstancedMesh(segGeo, convMat, convCount);
-segInst.castShadow=true; segInst.receiveShadow=true;
-const _m=new THREE.Matrix4(), _q=new THREE.Quaternion(), _s=new THREE.Vector3(1,1,1);
-for(let i=0;i<convCount;i++){
-  const p = convPts[i];
-  const p2 = convPts[(i+1)%convCount];
-  const dir = new THREE.Vector3().subVectors(p2,p).normalize();
-  _q.setFromUnitVectors(new THREE.Vector3(0,0,1), dir);
-  _m.compose(p, _q, _s);
-  segInst.setMatrixAt(i,_m);
-}
-segInst.instanceMatrix.needsUpdate=true;
-convGroup.add(segInst);
-for(let i=0;i<convCount;i+=10){
-  const p=convPts[i];
-  const leg=cyl(0.08,0.1,0.55,6,0x222a38,{metal:0.5});
-  leg.position.set(p.x,0.27,p.z);
-  convGroup.add(leg);
-}
-scene.add(convGroup);
+const linkMat = new THREE.MeshStandardMaterial({color:0x172235, roughness:0.82, metalness:0.12});
+const linkMesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 180, 0.08, 8, true), linkMat);
+linkMesh.castShadow=false; linkMesh.receiveShadow=true;
+scene.add(linkMesh);
 
-/* ───────────────────── WIP tokens (cross-domain data parcels) ───────────────────── */
-const WIP_N = 16;
+/* ───────────────────── cross-domain signal nodes ───────────────────── */
+const WIP_N = 10;
 const wipColors = [0xff7a8a,0x6fb4ff,0xc9a3ff,0x46e6b0,0xffb454];
 const wips = [];
-const wipGeo = new THREE.BoxGeometry(0.6,0.55,0.6);
+const wipGeo = new THREE.SphereGeometry(0.18, 12, 12);
 for(let i=0;i<WIP_N;i++){
   const c = wipColors[i%wipColors.length];
-  const mat = new THREE.MeshStandardMaterial({color:c, emissive:c, emissiveIntensity:0.28, roughness:0.5, metalness:0.2});
+  const mat = new THREE.MeshStandardMaterial({color:c, emissive:c, emissiveIntensity:0.08, roughness:0.5, metalness:0.15});
   const m = new THREE.Mesh(wipGeo, mat);
   m.castShadow=true;
   const t = i/WIP_N;
@@ -981,7 +959,7 @@ function openDetail(st){
   document.getElementById("dtPeriod").textContent = st.period;
   const statusEl = document.getElementById("dtStatus");
   statusEl.querySelector(".lamp").style.background = lineOn?"#46e6b0":"#ffb454";
-  statusEl.querySelector(".lamp").style.boxShadow = lineOn?"0 0 8px #46e6b0":"0 0 8px #ffb454";
+  statusEl.querySelector(".lamp").style.boxShadow = lineOn?"0 0 4px rgba(70,230,176,.55)":"0 0 4px rgba(255,180,84,.55)";
   statusEl.querySelector(".txt").textContent = lineOn?"RUNNING":"IDLE";
   statusEl.style.color = lineOn?"#46e6b0":"#ffb454";
   const mw = document.getElementById("dtMetrics"); mw.innerHTML="";
@@ -1014,7 +992,7 @@ function triggerCrossDomainPulse(stationIdx){
   xdStateEl.classList.add("pend");
   xdStateEl.classList.remove("ai");
   // pulse flow lines
-  flowLines.forEach(fl=>{ fl.mat.opacity = 0.6; });
+  flowLines.forEach(fl=>{ fl.mat.opacity = 0.28; });
   // animate layer values
   const labels = ["MES","RPA","AI","API","BI","ML"];
   const flAiEl = document.getElementById("flAi");
@@ -1032,7 +1010,7 @@ function reconcileXD(){
   xdStateEl.classList.remove("pend");
   xdStateEl.classList.add("ai");
   // fade flow lines back
-  flowLines.forEach(fl=>{ fl.mat.opacity = 0.18; });
+  flowLines.forEach(fl=>{ fl.mat.opacity = 0.12; });
   const flAiEl = document.getElementById("flAi");
   if(flAiEl) flAiEl.textContent = "ON";
 }
@@ -1057,14 +1035,14 @@ const STREAM_MSGS = [
 ];
 function renderStreamMsg(tmpl){
   return tmpl
-    .replace(/{takt}/g, ()=>(40+Math.round(Math.random()*5)))
-    .replace(/{lb}/g,   ()=>(94+Math.round(Math.random()*4)))
-    .replace(/{wip}/g,  ()=>(12+Math.round(Math.random()*5)))
-    .replace(/{acc}/g,  ()=>(93+Math.random()*2).toFixed(1))
-    .replace(/{lag}/g,  ()=>(32+Math.round(Math.random()*12)))
-    .replace(/{oee}/g,  ()=>(91+Math.random()*2).toFixed(1))
-    .replace(/{api}/g,  ()=>(18+Math.round(Math.random()*14)))
-    .replace(/{ver}/g,  ()=>"2."+(Math.round(Math.random()*9)));
+    .replace(/{takt}/g, ()=>"42")
+    .replace(/{lb}/g,   ()=>"96")
+    .replace(/{wip}/g,  ()=>"14")
+    .replace(/{acc}/g,  ()=>"94.2")
+    .replace(/{lag}/g,  ()=>"38")
+    .replace(/{oee}/g,  ()=>"92.4")
+    .replace(/{api}/g,  ()=>"24")
+    .replace(/{ver}/g,  ()=>"2.4");
 }
 const streamWrap = document.getElementById("streamRows");
 const MAX_STREAM_ROWS = 4;
@@ -1174,57 +1152,52 @@ function animate(){
   const time = clock.elapsedTime;
   const eff = lineOn ? speed : 0;
 
-  // WIP tokens travel
+  // cross-domain signal nodes travel
   wips.forEach((w,i)=>{
     w.t = (w.t + dt*0.044*eff) % 1;
     const p = curve.getPointAt(w.t);
-    w.mesh.position.set(p.x, p.y+0.4, p.z);
-    w.mesh.rotation.y += dt*1.5*eff;
-    w.mesh.position.y += Math.sin(time*3+i)*0.022;
+    w.mesh.position.set(p.x, p.y+0.25, p.z);
+    w.mesh.rotation.y += dt*0.8*eff;
+    w.mesh.position.y += Math.sin(time*2+i)*0.014;
   });
 
-  // pulser emissive shimmer
+  // muted emissive shimmer
   pulsers.forEach((m,i)=>{
-    const base = 0.5;
-    m.material.emissiveIntensity = base + (lineOn? (0.42*Math.abs(Math.sin(time*3*speed + i*0.6))) : 0);
+    const base = 0.14;
+    m.material.emissiveIntensity = base + (lineOn? (0.12*Math.abs(Math.sin(time*2.2*speed + i*0.6))) : 0);
   });
 
-  // andon lamps: domain color breathing
-  andonLamps.forEach((a,i)=>{
+  // compact status nodes: domain color breathing
+  statusNodes.forEach((a,i)=>{
     if(lineOn){
-      a.mat.color.setHex(a.color); a.mat.emissive.setHex(a.color);
-      a.mat.emissiveIntensity = 0.9 + 0.5*Math.abs(Math.sin(time*2 + i));
+      a.mat.color.setHex(a.active?a.color:0x2a3344); a.mat.emissive.setHex(a.active?a.color:0x000000);
+      a.mat.emissiveIntensity = a.active ? 0.16 + 0.08*Math.abs(Math.sin(time*1.5 + i)) : 0;
     } else {
       const blink = Math.sin(time*5)>0;
       a.mat.color.setHex(0xffb454); a.mat.emissive.setHex(0xffb454);
-      a.mat.emissiveIntensity = blink?1.4:0.15;
+      a.mat.emissiveIntensity = blink?0.28:0.04;
     }
   });
 
-  // robot arms
-  robotArms.forEach((r,i)=>{
-    const s = lineOn?1:0.05;
-    r.pivot.rotation.z = Math.sin(time*1.2*speed + i)*0.25*s;
-    r.elbow.rotation.z = Math.sin(time*1.8*speed + i + 1)*0.4*s;
-    r.pivot.rotation.y = Math.sin(time*0.5*speed + i)*0.5*s;
-  });
-
-  // stack fans / rings
-  stackFans.forEach((f,i)=>{
-    if(f.axis==="y") f.mesh.rotation.y += dt*(f.speed||0.5)*(0.3+eff);
+  // graph panels / rings
+  graphAnimators.forEach((f,i)=>{
+    if(f.axis==="y") f.mesh.rotation.y += dt*(f.speed||0.2)*(0.25+eff);
     else if(f.axis==="hub"){
       f.mesh.rotation.x += dt*f.speed*(lineOn?1:0.1);
       f.mesh.rotation.z += dt*f.speed*0.7*(lineOn?1:0.1);
+    } else if(f.axis==="float"){
+      f.mesh.position.y = (f.baseY||1.35) + Math.sin(time*1.1+i)*0.04;
+      f.mesh.rotation.y = Math.sin(time*0.35)*0.12;
     } else {
       // float dashboard bob
-      f.mesh.position.y = (f.baseY||5.0) + Math.sin(time*1.5+i)*0.12;
-      f.mesh.rotation.y = Math.sin(time*0.4)*0.15;
+      f.mesh.position.y = (f.baseY||5.0) + Math.sin(time*1.2+i)*0.06;
+      f.mesh.rotation.y = Math.sin(time*0.35)*0.1;
     }
   });
 
   // domain layer rings pulse
   layerRings.forEach((lr,i)=>{
-    const pulse = lr.base + 0.08*Math.abs(Math.sin(time*1.2 + i*1.1));
+    const pulse = lr.base + 0.025*Math.abs(Math.sin(time*1.0 + i*1.1));
     lr.mat.opacity = lineOn ? pulse : lr.base*0.4;
   });
 
@@ -1234,14 +1207,14 @@ function animate(){
     if(ar.phase>=1) ar.phase -= 1;
     const t = ar.phase;
     ar.mesh.scale.setScalar(1 + t*6);
-    ar.mat.opacity = (1-t)*0.35*(lineOn?1:0.2);
+    ar.mat.opacity = (1-t)*0.12*(lineOn?1:0.2);
   });
 
   // inter-domain flow particles (one-way, no ping-pong snap)
   flowLines.forEach((fl,i)=>{
     fl.t = (fl.t + dt*fl.speed) % 1;
     fl.particle.position.lerpVectors(fl.pa, fl.pb, fl.t);
-    fl.particle.scale.setScalar(lineOn?1:0.2);
+    fl.particle.scale.setScalar(lineOn?1:0.35);
   });
 
   // throughput readouts
@@ -1255,7 +1228,7 @@ function animate(){
 
   // machine scale breathing
   machineGroups.forEach((g,i)=>{
-    const pulse = lineOn ? (1 + 0.012*Math.sin(time*3*speed + i)) : 1;
+    const pulse = lineOn ? (1 + 0.004*Math.sin(time*2*speed + i)) : 1;
     g.scale.setScalar(pulse);
     const isHover = (i===hovered) && i!==activeIdx;
     g.position.y = STATION_POS[i].y + (isHover ? 0.15 : 0);
@@ -1266,7 +1239,7 @@ function animate(){
     rippleT += dt*0.65;
     const rr = rippleT*60;
     ripple.scale.setScalar(rr/0.6);
-    ripple.material.opacity = Math.max(0, 0.55*(1-rippleT));
+    ripple.material.opacity = Math.max(0, 0.18*(1-rippleT));
     if(rippleT>=1){ rippleT=-1; ripple.material.opacity=0; }
   }
 

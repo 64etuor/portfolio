@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>박양하 · 품질 검사 콘솔 / 파형 이상 감지</title>
+<title>박양하 · 공정 품질검사 콘솔 / CTQ 루틴</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
@@ -19,10 +19,10 @@
     --ink:#dfe7e2;
     --muted:#7d8a85;
     --amber:#ffb300;
-    --ch1:#3df5c4; /* 원칙 - teal phosphor */
-    --ch2:#ffd23f; /* 기준선 - amber */
-    --ch3:#5cc8ff; /* 검사 신호 - cyan-blue */
-    --ch4:#ff6bd6; /* 이상 감지 - magenta */
+    --ch1:#3df5c4; /* 순회검사 - teal phosphor */
+    --ch2:#ffd23f; /* CTQ limit - amber */
+    --ch3:#5cc8ff; /* 초중종물 - cyan-blue */
+    --ch4:#ff6bd6; /* 보류/격리 - magenta */
     --grid:#0e3a2c;
     --gridminor:#0a241c;
     --phos:#39ff8a;
@@ -114,8 +114,8 @@
     border-radius:8px;}
   .glassglare{position:absolute;inset:0;pointer-events:none;
     background:linear-gradient(125deg,rgba(255,255,255,.06) 0%,transparent 22%,transparent 80%,rgba(255,255,255,.03) 100%);}
-  .screenlabel{position:absolute;top:9px;left:12px;font-size:10px;letter-spacing:.2em;color:#2f7a5e;
-    text-transform:uppercase;pointer-events:none;text-shadow:0 0 6px rgba(57,255,138,.4)}
+  .screenlabel{position:absolute;top:9px;left:12px;right:12px;font-size:10px;letter-spacing:.2em;color:#2f7a5e;
+    line-height:1.35;text-transform:uppercase;pointer-events:none;text-shadow:0 0 6px rgba(57,255,138,.4)}
   /* ===== sub panels under screen ===== */
   .subgrid{display:grid;grid-template-columns:1.25fr 1fr;gap:14px}
   @media(max-width:760px){.subgrid{grid-template-columns:1fr}}
@@ -203,6 +203,8 @@
   .meas .swatch{width:9px;height:9px;border-radius:2px;display:inline-block;margin-right:7px;vertical-align:middle;box-shadow:0 0 6px currentColor}
   .meas .num{text-align:right;font-weight:800;color:var(--phos);font-variant-numeric:tabular-nums}
   .meas .delta{color:var(--amber)}
+  .routine-note{margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.06);font-size:10px;line-height:1.55;color:var(--muted)}
+  .routine-note b{color:var(--phos);font-weight:800}
   /* bottom strip */
   .bottom{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:14px}
   @media(max-width:880px){.bottom{grid-template-columns:1fr}}
@@ -238,8 +240,8 @@
           </svg>
         </div>
         <div>
-          <h1>박양하 — 품질과 타협하지 않는다</h1>
-          <div class="model">PARK YANGHA · MODEL <b>QA-INSP</b> · QUALITY ANOMALY DETECTOR</div>
+          <h1>박양하 — 공정 품질검사 루틴</h1>
+          <div class="model">PARK YANGHA · MODEL <b>QA-INSP</b> · PATROL / CTQ / 初中終物</div>
         </div>
       </div>
       <div class="topmeta">
@@ -254,7 +256,7 @@
       <!-- LEFT: screen + sub panels -->
       <div class="leftcol">
         <div class="crtwrap">
-          <span class="screenlabel">CH1·CH2·CH3·CH4 — QUALITY LIMIT / ANOMALY DETECT — 4ch / phosphor</span>
+          <span class="screenlabel">CH1 순회검사 · CH2 CTQ LIMIT · CH3 初/中/終物 · CH4 보류 판정 — 4ch / phosphor</span>
           <canvas id="scope" width="1100" height="560"></canvas>
           <div class="scanlines"></div>
           <div class="glassglare"></div>
@@ -264,23 +266,26 @@
         <div class="subgrid">
           <!-- control loop block diagram -->
           <div class="panel">
-            <div class="hd"><span>지도카 루프 · 이상 감지 응답</span><span class="k" id="loopStat">SETTLING…</span></div>
+            <div class="hd"><span>순회검사 루프 · CTQ 판정 흐름</span><span class="k" id="loopStat">ROUTINE…</span></div>
             <div class="bd" style="padding:8px">
               <canvas id="loop" class="ctrlcanvas" width="640" height="300"></canvas>
             </div>
           </div>
           <!-- measurements -->
           <div class="panel">
-            <div class="hd"><span>MEASURE · 기준 준수 진단</span><span class="k">auto</span></div>
+            <div class="hd"><span>MEASURE · 검사 루틴 현황</span><span class="k">lot-09</span></div>
             <div class="bd" style="padding:8px 11px">
               <table class="meas">
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>이상 신호 잔류</td><td class="num delta"><span id="mDefect">100.0</span>%</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>임계선 (limit)</td><td class="num">±규격</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>트리거 감도</td><td class="num">MAX</td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>검출 오차 err</td><td class="num"><span id="mErrVal">0.000</span></td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>정지 응답시간</td><td class="num delta"><span id="mStopResp">즉시</span></td></tr>
-                <tr><td class="lbl"><span class="swatch" style="color:var(--ch1)"></span>공정 상태</td><td class="num">IN-CTRL</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch1)"></span>순회검사 주기 / 표본</td><td class="num">2h · n=5</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch2)"></span>CTQ 적합률</td><td class="num delta"><span id="mDefect">99.2</span>%</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch2)"></span>CTQ 관리항목</td><td class="num">용접높이 · 저항 · 간극</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>初物 검사</td><td class="num">OK · start-up</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>中物 검사</td><td class="num">OK · mid-lot</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch3)"></span>終物 검사</td><td class="num">대기 · lot close</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch4)"></span>최대 편차</td><td class="num"><span id="mErrVal">0.028</span>mm</td></tr>
+                <tr><td class="lbl"><span class="swatch" style="color:var(--ch4)"></span>보류 응답</td><td class="num delta"><span id="mStopResp">즉시</span></td></tr>
               </table>
+              <div class="routine-note"><b>판정 기준</b> CTQ 한계 이탈 시 해당 표본 격리, 직전 합격품까지 역추적, 검사기준서·관리계획서 개정 이력 확인.</div>
             </div>
           </div>
         </div>
@@ -288,11 +293,11 @@
         <!-- bottom: FFT + Lissajous -->
         <div class="bottom">
           <div class="panel">
-            <div class="hd"><span>FFT · 이상 주파수 스펙트럼</span><span class="k">dBm</span></div>
+            <div class="hd"><span>FFT · CTQ 관리항목 분포</span><span class="k">index</span></div>
             <div class="bd" style="padding:8px"><canvas id="fft" class="fftcanvas" width="640" height="220"></canvas></div>
           </div>
           <div class="panel">
-            <div class="hd"><span>X-Y · 리사주 (품질 안정도)</span><span class="k" id="xyStat">IN-CTRL</span></div>
+            <div class="hd"><span>X-Y · 공정 안정도</span><span class="k" id="xyStat">IN-CTRL</span></div>
             <div class="bd" style="padding:8px"><canvas id="xy" class="xycanvas" width="300" height="220"></canvas></div>
           </div>
         </div>
@@ -302,22 +307,22 @@
       <div class="rack">
         <!-- vertical: channels -->
         <div class="group">
-          <h3>VERTICAL · 채널 (품질 원칙)</h3>
+          <h3>VERTICAL · 검사 채널</h3>
           <div class="chrow">
             <button class="chbtn" data-ch="0" data-on="1" style="color:var(--ch1)">1</button>
-            <div class="chmeta"><div class="co" style="color:var(--ch1)">불타협 기준선</div><div class="yr">규격 이탈 = 즉시 정지 · <b>지도카</b></div></div>
+            <div class="chmeta"><div class="co" style="color:var(--ch1)">순회검사 주기</div><div class="yr">2시간 간격 · 표본 5ea · <b>작업조건 확인</b></div></div>
           </div>
           <div class="chrow">
             <button class="chbtn" data-ch="1" data-on="1" style="color:var(--ch2)">2</button>
-            <div class="chmeta"><div class="co" style="color:var(--ch2)">이상 신호 (noise)</div><div class="yr">근거 없는 "괜찮겠지" 거부 · <b>회의주의</b></div></div>
+            <div class="chmeta"><div class="co" style="color:var(--ch2)">CTQ 관리한계</div><div class="yr">용접높이·저항·간극 · <b>spec window</b></div></div>
           </div>
           <div class="chrow">
             <button class="chbtn" data-ch="2" data-on="1" style="color:var(--ch3)">3</button>
-            <div class="chmeta"><div class="co" style="color:var(--ch3)">검사 신호 (현지현물)</div><div class="yr">현장 직접 확인 · <b>MES·BI 데이터</b></div></div>
+            <div class="chmeta"><div class="co" style="color:var(--ch3)">初·中·終物 검사</div><div class="yr">초기·중간·종료품 판정 · <b>lot gate</b></div></div>
           </div>
           <div class="chrow">
             <button class="chbtn" data-ch="3" data-on="1" style="color:var(--ch4)">4</button>
-            <div class="chmeta"><div class="co" style="color:var(--ch4)">일탈 정상화 경계</div><div class="yr">한 번의 타협이 기준을 흐림 · <b>원칙</b></div></div>
+            <div class="chmeta"><div class="co" style="color:var(--ch4)">일탈 보류 판정</div><div class="yr">부적합 표본 격리 · <b>역추적</b></div></div>
           </div>
         </div>
 
@@ -332,7 +337,7 @@
 
         <!-- trigger -->
         <div class="group">
-          <h3>TRIGGER · 이상 감지 트리거</h3>
+          <h3>TRIGGER · CTQ 한계 트리거</h3>
           <div class="trig">
             <div class="seg" id="edgeSeg">
               <button data-edge="rise" aria-pressed="true">▲ RISE</button>
@@ -350,21 +355,21 @@
           <h3>ACQUIRE · 검사 제어</h3>
           <div class="btns">
             <button class="ab run" id="runBtn" data-state="run">RUN / STOP<small id="runSub">검사 중</small></button>
-            <button class="ab hot" id="doeBtn" data-on="0">지도카 발동<small>이상 감지 → 즉시 정지</small></button>
+            <button class="ab hot" id="doeBtn" data-on="0">CTQ 보류<small>한계 이탈 → 표본 격리</small></button>
           </div>
         </div>
       </div>
     </div>
 
     <div class="hint">
-      <b>지도카 발동</b> = 이상 신호가 임계선을 넘는 순간, 라인이 스스로 멈춘다. 노이즈가 사라지고 파형이 규격 안에 안착하며, 리사주가 완벽한 원으로 잠긴다 · 규격 벗어난 결과를 한 번 허용하면 그게 정상으로 보이기 시작한다 ·
+      <b>검사 루틴</b> = 순회검사로 주기·표본을 고정하고, CTQ 한계 이탈 시 표본을 보류한다. 初/中/終物 게이트는 lot 시작·중간·종료 시점의 품질 상태를 남기는 기준점이다 ·
       노브 위/아래 드래그로 TIME/VOLTS·DIV 변경 · 채널 1-4 토글
     </div>
 
     <!-- FOOTER -->
     <div class="footstrip">
       <div class="skills">
-        <span class="chip hi">품질 불타협</span><span class="chip hi">지도카</span><span class="chip hi">현지현물</span><span class="chip">PFMEA/CP/PFD</span><span class="chip">IATF16949</span><span class="chip">스팟용접 검사</span><span class="chip hi">이상 즉시 정지</span><span class="chip">일탈 정상화 경계</span><span class="chip">합리적 회의주의</span><span class="chip hi">MES·BI</span><span class="chip">비전검사</span><span class="chip">DOE</span><span class="chip hi">Python</span><span class="chip hi">SQL</span><span class="chip">FastAPI</span><span class="chip">React</span><span class="chip hi">RPA</span><span class="chip">AWS</span><span class="chip hi">LOB</span><span class="chip">ERP</span><span class="chip">MES</span><span class="chip">Jig개발</span><span class="chip">로봇티칭</span>
+        <span class="chip hi">순회검사</span><span class="chip hi">CTQ 관리</span><span class="chip hi">初·中·終物 검사</span><span class="chip">검사기준서</span><span class="chip">관리계획서</span><span class="chip">PFMEA/CP/PFD</span><span class="chip">IATF16949</span><span class="chip">스팟용접 검사</span><span class="chip">치수 측정</span><span class="chip">저항 측정</span><span class="chip">간극 관리</span><span class="chip hi">표본 격리</span><span class="chip">역추적</span><span class="chip">SPC</span><span class="chip">공정능력</span><span class="chip">MES 이력</span><span class="chip">비전검사</span><span class="chip">Jig 점검</span>
       </div>
       <div class="contact">
         <span class="who">박양하 · Park Yangha</span>
@@ -378,7 +383,7 @@
 "use strict";
 (function(){
   // ---------- channel definitions ----------
-  // each channel = a career as a waveform: distinct shape, color, offset, amplitude(=impact), freq
+  // Each channel maps one inspection routine to a waveform: patrol, CTQ limit, lot gates, containment.
   const CSS = getComputedStyle(document.documentElement);
   const COL = {
     ch1: CSS.getPropertyValue('--ch1').trim() || '#3df5c4',
@@ -389,20 +394,16 @@
   };
 
   const channels = [
-    // CH1 불타협 기준선 — clean sine, the unwavering quality limit
-    {name:'CH1 불타협 기준선', color:COL.ch1, on:true, off:1.6, amp:1.0, freq:1.0, type:'sine', noise:0.0},
-    // CH2 이상 신호 — square wave, noisy anomaly signal that jidoka collapses
-    {name:'CH2 이상 신호', color:COL.ch2, on:true, off:0.45, amp:0.85, freq:1.6, type:'square', noise:0.42},
-    // CH3 검사 신호 (현지현물) — composite, on-site data verification
-    {name:'CH3 검사 신호', color:COL.ch3, on:true, off:-0.55, amp:0.9, freq:2.2, type:'composite', noise:0.05},
-    // CH4 일탈 정상화 경계 — high-freq rich signal, vigilance against normalization of deviation
-    {name:'CH4 일탈 경계', color:COL.ch4, on:true, off:-1.65, amp:0.75, freq:3.1, type:'rich', noise:0.04},
+    {name:'CH1 순회검사 주기', color:COL.ch1, on:true, off:1.6, amp:1.0, freq:1.0, type:'sine', noise:0.0},
+    {name:'CH2 CTQ 관리한계', color:COL.ch2, on:true, off:0.45, amp:0.85, freq:1.6, type:'square', noise:0.18},
+    {name:'CH3 初中終物 검사', color:COL.ch3, on:true, off:-0.55, amp:0.9, freq:2.2, type:'composite', noise:0.03},
+    {name:'CH4 보류/격리 판정', color:COL.ch4, on:true, off:-1.65, amp:0.75, freq:3.1, type:'rich', noise:0.03},
   ];
 
   // ---------- global control state ----------
   const state = {
     running:true,
-    doe:0,            // 0..1 eased; 1 = DOE fully applied (defect collapses)
+    doe:0,            // 0..1 eased; 1 = CTQ hold/containment applied
     doeTarget:0,
     timePerDiv:2,     // ms, index-driven
     voltPerDiv:1.0,
@@ -436,9 +437,9 @@
     return v * ch.amp;
   }
 
-  // noise that DOE collapses (only on ch with noise, mostly CH2 defect signal)
+  // Small trace disturbance that containment reduces after a CTQ hold.
   function noiseVal(ch, x){
-    const n = ch.noise * (1 - state.doe);   // DOE kills noise
+    const n = ch.noise * (1 - state.doe);
     if(n<=0.0001) return 0;
     // pseudo-random but deterministic-ish jitter
     const r = Math.sin(x*127.1 + state.t*53.7)*43758.5453;
@@ -585,12 +586,12 @@
     sx.fillStyle=state.running?COL.phos:COL.red;
     sx.fillText(state.running?'● RUN':'■ STOP', 430, SH-7);
     sx.fillStyle = state.doe>0.5?COL.phos:'#5a6a64';
-    sx.fillText(`JIDOKA ${(state.doe*100|0)}%`, 520, SH-7);
-    // top-right anomaly residual readout — 이상 신호 잔류율
+    sx.fillText(`HOLD ${(state.doe*100|0)}%`, 520, SH-7);
+    // top-right CTQ conformance readout
     sx.textAlign='right';
     sx.fillStyle=COL.ch3;
-    const stNow = 100 - state.doe*100;
-    sx.fillText(`ANOM ${stNow.toFixed(1)}%`, SW-10, 18);
+    const stNow = 99.2 + state.doe*0.6;
+    sx.fillText(`CTQ OK ${stNow.toFixed(1)}%`, SW-10, 18);
     sx.textAlign='left';
     sx.restore();
   }
@@ -652,10 +653,9 @@
     lx.restore();
   }
 
-  // 2nd-order step response. DOE tightens it: overshoot↓, settle fast.
+  // 2nd-order step response. Containment tightens the inspection loop: overshoot down, settle fast.
   function stepResp(t){
-    // poorly tuned (no DOE): high overshoot, slow settle, ringing
-    // well tuned (DOE=1): critically damped, quick settle
+    // Before hold: higher overshoot and slower settle. After hold: damped, quick settle.
     const zeta = 0.18 + state.doe*0.72;     // damping 0.18 -> 0.90
     const wn   = 7 + state.doe*5;           // nat freq increases
     if(t<=0) return 0;
@@ -673,14 +673,14 @@
     lx.fillStyle='#06100b'; lx.fillRect(0,0,LW,LH);
 
     // --- block diagram (top) ---
-    // 4단계 순환: 2.4s 주기, 각 단계 0.6s 활성
+    // 4-step inspection routine: fixed patrol cycle and lot gates.
     const by=18, bh=42;
     const loopPhase = (loopT / 2.4) % 1.0;  // 0..1 per cycle
-    const activeStep = Math.floor(loopPhase * 4); // 0=Standard,1=Inspect,2=Detect,3=Jidoka
-    box(14,  by, 86, bh, 'Standard', '품질 기준', activeStep===0);
-    box(132, by, 96, bh, 'Inspect',  '현지현물',  activeStep===1);
-    box(262, by, 96, bh, 'Detect',   '이상 감지', activeStep===2);
-    box(392, by, 96, bh, 'Jidoka',   '즉시 정지', activeStep===3);
+    const activeStep = Math.floor(loopPhase * 4); // 0=Patrol,1=CTQ,2=Lot gate,3=Hold
+    box(14,  by, 86, bh, 'Patrol', '2h / n=5', activeStep===0);
+    box(132, by, 96, bh, 'CTQ',  '한계 확인',  activeStep===1);
+    box(262, by, 96, bh, '初中終物',   'lot gate', activeStep===2);
+    box(392, by, 96, bh, 'Hold',   '보류/격리', activeStep===3);
     arrow(100, by+bh/2, 132, by+bh/2, 0.0);
     arrow(228, by+bh/2, 262, by+bh/2, 0.33);
     arrow(358, by+bh/2, 392, by+bh/2, 0.66);
@@ -697,7 +697,7 @@
     lx.beginPath(); lx.arc(fx, by+bh+22, 2.2,0,Math.PI*2); lx.fill();
     lx.restore();
     lx.fillStyle='#6f857c'; lx.font='9px ui-monospace,monospace'; lx.textAlign='center';
-    lx.fillText('feedback: 원인 추적 (−)', 248, by+bh+34);
+    lx.fillText('feedback: 직전 합격품까지 추적 (−)', 248, by+bh+34);
 
     // --- step response plot (bottom) ---
     const px0=20, py0=LH-18, pw=LW-40, ph=LH-110;
@@ -713,9 +713,9 @@
     lx.beginPath(); lx.moveTo(px0,ysp); lx.lineTo(px0+pw,ysp); lx.stroke();
     lx.setLineDash([]); lx.globalAlpha=1;
     lx.fillStyle=COL.amber; lx.font='9px ui-monospace,monospace'; lx.textAlign='left';
-    lx.fillText('Limit (임계선: 품질 기준)', px0+4, ysp-4);
+    lx.fillText('CTQ limit (관리한계)', px0+4, ysp-4);
 
-    // response curve — error = (1-resp) maps to defect height
+    // response curve: inspection loop settles after containment.
     const win=2.6; // seconds shown
     lx.beginPath();
     lx.strokeStyle=COL.phos; lx.lineWidth=2; lx.shadowColor=COL.phos; lx.shadowBlur=8;
@@ -736,8 +736,8 @@
     lx.fillStyle='#eafff6'; lx.shadowColor=COL.phos; lx.shadowBlur=12;
     lx.beginPath(); lx.arc(cxp,cyp,3,0,Math.PI*2); lx.fill(); lx.shadowBlur=0;
 
-    // settle status text — 4단계 순환 표시
-    const stepLabels = ['Standard · 기준 확인','Inspect · 현지현물','Detect · 이상 감지','Jidoka · 즉시 정지'];
+    // settle status text: 4-step routine display
+    const stepLabels = ['Patrol · 2h/n=5','CTQ · 한계 확인','初中終物 · lot gate','Hold · 표본 격리'];
     const stepColors = [COL.phos, COL.ch3, COL.amber, COL.ch4];
     loopStat.textContent = stepLabels[activeStep];
     loopStat.style.color = stepColors[activeStep];
@@ -749,19 +749,19 @@
   const fft = document.getElementById('fft');
   const fx = fft.getContext('2d');
   const FW=fft.width, FH=fft.height;
-  const skillBins = [
-    {l:'기준', h:.95},{l:'임계선',h:.90},{l:'지도카',h:.92},{l:'현물',h:.88},{l:'감지',h:.85},
-    {l:'정지',h:.91},{l:'원인',h:.80},{l:'회의',h:.78},{l:'PFMEA',h:.82},{l:'IATF',h:.76},
-    {l:'MES',h:.84},{l:'BI',h:.79},{l:'DOE',h:.87},{l:'용접',h:.72},{l:'비전',h:.68}
+  const ctqBins = [
+    {l:'WELD-H', h:.95},{l:'RES',h:.88},{l:'GAP',h:.82},{l:'BURR',h:.76},{l:'PITCH',h:.84},
+    {l:'TORQ',h:.79},{l:'HEIGHT',h:.91},{l:'POL',h:.74},{l:'BAR',h:.86},{l:'VISION',h:.81},
+    {l:'FOD',h:.69},{l:'LABEL',h:.73},{l:'JIG',h:.78},{l:'CPK',h:.89},{l:'TRACE',h:.85}
   ];
   function renderFFT(){
     fx.clearRect(0,0,FW,FH); fx.fillStyle='#06100b'; fx.fillRect(0,0,FW,FH);
     // grid
     fx.strokeStyle='#0c2a20'; fx.lineWidth=1;
     fx.beginPath(); for(let i=0;i<=4;i++){const y=FH*i/4;fx.moveTo(0,y);fx.lineTo(FW,y);} fx.stroke();
-    const n=skillBins.length, bw=FW/n;
+    const n=ctqBins.length, bw=FW/n;
     for(let i=0;i<n;i++){
-      const b=skillBins[i];
+      const b=ctqBins[i];
       const wob=Math.sin(state.t*2 + i)*0.03;
       const h=(b.h+wob)*(FH-34);
       const x=i*bw+5, w=bw-10, y=FH-22-h;
@@ -773,9 +773,8 @@
       fx.fillStyle='#6f857c'; fx.font='8px ui-monospace,monospace'; fx.textAlign='center';
       fx.fillText(b.l, x+w/2, FH-8);
     }
-    // peak marker on DOE bin (index 8)
     fx.fillStyle=COL.amber; fx.font='9px ui-monospace,monospace'; fx.textAlign='left';
-    fx.fillText('▲ peak: 품질 기준 불타협', 8, 13);
+    fx.fillText('▲ CTQ focus: 용접높이 / 저항 / 간극', 8, 13);
   }
 
   // ====================================================================
@@ -794,7 +793,7 @@
     for(let j=1;j<4;j++){const y=XH*j/4;yx.moveTo(0,y);yx.lineTo(XW,y);}
     yx.stroke();
     const cx=XW/2, cy=XH/2, R=Math.min(XW,XH)*0.36;
-    // in-control (DOE) => clean circle/ellipse(1:1); out => messy noisy figure
+    // In-control state forms a clean circle/ellipse; hold state reduces phase distortion.
     const mess=(1-state.doe);
     yx.save(); yx.lineJoin='round';
     for(let pass=0;pass<2;pass++){
@@ -806,7 +805,7 @@
       const a=1, b=1; // 1:1 ratio -> circle when in control
       for(let i=0;i<=240;i++){
         const th=i/240*Math.PI*2;
-        const jitter=mess*( Math.sin(th*7+state.t*9)*0.5 + (Math.random()-0.5)*0.4 );
+        const jitter=mess*( Math.sin(th*7+state.t*9)*0.5 + Math.sin(th*13+state.t*3)*0.16 );
         const ph=mess*Math.PI*0.9; // phase distortion when uncontrolled
         const X=cx+Math.sin(a*th + state.t*0.3 + ph + jitter)*R;
         const Y=cy+Math.sin(b*th + jitter)*R;
@@ -824,75 +823,40 @@
   // ====================================================================
   const mState = {
     defect:     { cur:99.2, tgt:99.2 },
-    errVal:     { cur:0.28, tgt:0.28 },
-    stopResp:   { cur:14.0, tgt:14.0 },
+    errVal:     { cur:0.028, tgt:0.028 },
+    stopResp:   { cur:2.4, tgt:2.4 },
   };
-  // reseed targets every ~1.4 s
+  // Update displayed measurements with small deterministic drift.
   let mSeedTimer=0;
   function reseedMeasure(){
-    const doe = state.doe;
-    // 이상 신호 잔류: DOE 없으면 97-100%, 발동이면 0-3%
-    const baseDefect = doe>0.5 ? doe*100*0.03 : 97+Math.random()*3;
-    mState.defect.tgt = baseDefect + (Math.random()-0.5)*0.8;
-    // 검출 오차: DOE없으면 ±0.2-0.6, 발동이면 ≈0
-    mState.errVal.tgt  = doe>0.5 ? Math.random()*0.02 : 0.12+Math.random()*0.44;
-    // 정지 응답시간: DOE없으면 8-40ms, 발동이면 0-2ms
-    mState.stopResp.tgt = doe>0.5 ? Math.random()*2 : 8+Math.random()*32;
+    const hold = state.doe;
+    const drift = Math.sin(state.t*0.9) * 0.08;
+    mState.defect.tgt = 99.2 + hold*0.6 + drift;
+    mState.errVal.tgt  = 0.028 - hold*0.011 + Math.abs(Math.sin(state.t*0.7))*0.004;
+    mState.stopResp.tgt = 2.4 - hold*1.1 + Math.abs(Math.sin(state.t*0.5))*0.3;
   }
   reseedMeasure();
 
   // ====================================================================
-  // ANOMALY EVENT LOG (fake streaming)
+  // INSPECTION ROUTINE LOG (static, quiet)
   // ====================================================================
-  // injected into loop panel below step response
   const LOG_MSGS = [
-    () => `[${ts()}] CH2 SPEC-OUT: ${(3.2+Math.random()*1.8).toFixed(2)}σ 규격 이탈 감지`,
-    () => `[${ts()}] TRIG RISE: 임계선 +${(1.1+Math.random()*0.9).toFixed(2)}V 초과 — LEVEL ${(72+Math.random()*20|0)}%`,
-    () => `[${ts()}] JIDOKA ARMED: 이상 신호 잔류 ${(95+Math.random()*5).toFixed(1)}%`,
-    () => `[${ts()}] LINE HALT: 즉시 정지 응답 ${(0.8+Math.random()*1.4).toFixed(1)}ms`,
-    () => `[${ts()}] CAUSE TRACE: CH3 현지현물 편차 원인 역추적 중`,
-    () => `[${ts()}] ROOT FOUND: 공급 변동 ±${(0.3+Math.random()*0.5).toFixed(2)}mm → 재발 방지 CP 갱신`,
-    () => `[${ts()}] JIDOKA DONE: err=${(Math.random()*0.02).toFixed(3)} — CONTAINED`,
-    () => `[${ts()}] CH4 일탈 경계 복원: LIMIT 내 안착 확인`,
-    () => `[${ts()}] ANOMALY RESIDUAL: ${(Math.random()*1.2).toFixed(1)}% — 재발 감시 ON`,
-    () => `[${ts()}] MONITOR: CH1 기준선 ±0.00σ — IN-CTRL`,
-    () => `[${ts()}] PFMEA UPDATE: RPN ${(32+Math.random()*20|0)} → 재평가 예약`,
-    () => `[${ts()}] DETECT: 비전 검사 F-${(100+Math.random()*99|0)} 불량 마크`,
-    () => `[${ts()}] SPEC-IN: 규격 복귀 확인 — RUN 재개 승인`,
-    () => `[${ts()}] THRESHOLD: 임계선 recalibrated — ${(1.92+Math.random()*0.16).toFixed(2)}V`,
-    () => `[${ts()}] CH2 SETTLE: 이상 신호 ${(0.1+Math.random()*0.3).toFixed(2)}% 잔류 — ACCEPT`,
+    '08:10  初物: start-up 5ea 검사, 용접높이/저항/간극 전 항목 OK',
+    '10:00  순회검사: 2h 주기, n=5 표본 채취, 작업조건 변경 없음',
+    '12:00  中物: mid-lot 5ea CTQ 재확인, 관리한계 내 유지',
+    '14:00  순회검사: JIG 위치 핀 마모 확인, 이상 없음',
+    '16:00  終物: lot close 판정 대기, MES 이력과 검사성적서 대조',
+    '보류 규칙: CTQ 이탈 표본은 격리 후 직전 합격품까지 역추적'
   ];
-  function ts(){
-    const d=new Date();
-    return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+':'+String(d.getSeconds()).padStart(2,'0')+'.'+String(d.getMilliseconds()).padStart(3,'0');
-  }
-  // DOM log container — built once, appended under loop panel
   const logWrap = document.createElement('div');
-  logWrap.style.cssText='overflow:hidden;max-height:88px;padding:6px 10px 4px;border-top:1px solid rgba(255,255,255,.06);font-size:9.5px;font-family:ui-monospace,"SF Mono",monospace;color:#4d7a63;line-height:1.55;display:flex;flex-direction:column-reverse;gap:0';
+  logWrap.style.cssText='overflow:hidden;max-height:96px;padding:7px 10px 5px;border-top:1px solid rgba(255,255,255,.06);font-size:9.5px;font-family:ui-monospace,"SF Mono",monospace;color:#6f857c;line-height:1.55;display:flex;flex-direction:column;gap:0';
   document.querySelector('#loop').closest('.panel').appendChild(logWrap);
-
-  const LOG_MAX=6;
-  let logEntries=[];   // {el, age}
-  let logNextIdx=Math.floor(Math.random()*LOG_MSGS.length);
-  let logTimer=0;
-  const LOG_INTERVAL_MIN=1.1, LOG_INTERVAL_MAX=2.8;
-  let logNextIn=LOG_INTERVAL_MIN+Math.random()*(LOG_INTERVAL_MAX-LOG_INTERVAL_MIN);
-
-  function pushLog(){
-    const msg=LOG_MSGS[logNextIdx%LOG_MSGS.length]();
-    logNextIdx++;
+  LOG_MSGS.forEach((msg, idx)=>{
     const el=document.createElement('div');
-    el.style.cssText='opacity:1;transition:opacity 1.8s linear;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:#5cc8ff';
+    el.style.cssText='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:'+(idx<3 ? '#5cc8ff' : '#6f857c');
     el.textContent=msg;
-    logWrap.insertBefore(el, logWrap.firstChild);
-    logEntries.unshift({el, age:0});
-    if(logEntries.length>LOG_MAX){
-      const old=logEntries.pop();
-      old.el.style.opacity='0';
-      setTimeout(()=>{ try{logWrap.removeChild(old.el);}catch(e){} }, 1900);
-    }
-    logNextIn=LOG_INTERVAL_MIN+Math.random()*(LOG_INTERVAL_MAX-LOG_INTERVAL_MIN);
-  }
+    logWrap.appendChild(el);
+  });
 
   // ====================================================================
   // ANIMATION LOOP
@@ -911,15 +875,11 @@
       sweepX += dt * (SW / sweepPeriod);
       if(sweepX>SW) sweepX=0;
 
-      // log streaming
-      logTimer+=dt;
-      if(logTimer>=logNextIn){ logTimer=0; pushLog(); }
-
       // measure reseed
       mSeedTimer+=dt;
       if(mSeedTimer>1.4){ mSeedTimer=0; reseedMeasure(); }
     }
-    // ease DOE
+    // ease CTQ hold state
     state.doe += (state.doeTarget - state.doe) * Math.min(dt*3.2,1);
 
     // MEASURE lerp — smooth micro-variation
@@ -931,9 +891,7 @@
     // update DOM measure values
     document.getElementById('mDefect').textContent    = mState.defect.cur.toFixed(1);
     document.getElementById('mErrVal').textContent    = mState.errVal.cur.toFixed(3);
-    document.getElementById('mStopResp').textContent  = mState.stopResp.cur < 1
-      ? (mState.stopResp.cur*1000).toFixed(0)+'µs'
-      : mState.stopResp.cur.toFixed(1)+'ms';
+    document.getElementById('mStopResp').textContent  = mState.stopResp.cur.toFixed(1)+'ms';
 
     renderScope();
     renderLoop();
@@ -1011,13 +969,13 @@
     acqState.textContent=state.running?'RUN · INSPECT':'STOP · HOLD';
   });
 
-  // DOE delight button
+  // CTQ hold button
   const doeBtn=document.getElementById('doeBtn');
   doeBtn.addEventListener('click',()=>{
     const on=doeBtn.dataset.on==='1';
     doeBtn.dataset.on=on?'0':'1';
     state.doeTarget=on?0:1;
-    doeBtn.querySelector('small').textContent= on?'이상 감지 → 즉시 정지':'이상 격리 완료 · err=0';
+    doeBtn.querySelector('small').textContent= on?'한계 이탈 → 표본 격리':'보류 완료 · 추적 대기';
     if(!on) loopT=0;  // restart step response to show the improved settle
   });
 

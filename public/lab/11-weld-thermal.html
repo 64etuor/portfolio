@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>박양하 · THERMAL-CAM / 접합 공정 기술 — 스팟·레이저·초음파</title>
+<title>박양하 · THERMAL-CAM / 접합 공정 기술 — 저항 스폿·Nd:YAG 레이저</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -100,11 +100,11 @@
   #identity{ position:absolute; z-index:8; left:36px; top:50%; transform:translateY(-50%);
              max-width:560px; pointer-events:none; }
   #identity .ey{ font-family:var(--mono); font-size:12px; letter-spacing:.42em; color:var(--amber);
-                 text-transform:uppercase; margin-bottom:14px; text-shadow:0 0 10px rgba(255,140,40,.5),0 0 3px #000;}
+                 text-transform:uppercase; margin-bottom:14px; text-shadow:0 1px 3px rgba(0,0,0,.85);}
   #identity h1{ font-size:clamp(40px,5.4vw,82px); font-weight:800; line-height:.96; letter-spacing:-.02em;
-                color:#fff; text-shadow:0 0 40px rgba(255,110,30,.55), 0 0 14px rgba(0,0,0,.9);}
+                color:#fff; text-shadow:0 2px 18px rgba(0,0,0,.88), 0 0 10px rgba(255,125,50,.16);}
   #identity h1 .sub{ display:block; font-size:.34em; font-weight:600; letter-spacing:.02em; margin-top:18px;
-                     color:var(--hud); text-shadow:0 0 12px rgba(0,0,0,1);}
+                     color:var(--hud); text-shadow:0 1px 8px rgba(0,0,0,.9);}
   #identity .tags{ margin-top:22px; display:flex; flex-wrap:wrap; gap:8px; font-family:var(--mono); }
   #identity .tags span{ font-size:11.5px; letter-spacing:.06em; color:var(--hud); border:1px solid var(--line);
                         padding:5px 10px; border-radius:3px; background:rgba(8,16,15,.4); backdrop-filter:blur(2px);
@@ -144,7 +144,7 @@
   #doestate{ margin-top:8px; font-size:11.5px; color:var(--amber); letter-spacing:.08em; height:14px;
              text-shadow:0 0 8px #000; }
 
-  /* ============ Event log (live stream) ============ */
+  /* ============ Process notes ============ */
   #eventlog{
     position:absolute; z-index:8; left:36px; bottom:210px;
     font-family:var(--mono); font-size:11px; line-height:1.7;
@@ -153,10 +153,10 @@
   }
   #eventlog .elog-row{
     display:flex; gap:7px; align-items:baseline;
-    transition:opacity .6s;
   }
-  #eventlog .elog-row.fade{ opacity:.28; }
-  #eventlog .ets{ color:var(--hud-dim); min-width:68px; }
+  #eventlog .elog-row + .elog-row{ margin-top:2px; }
+  #eventlog .elog-row.fade{ opacity:.42; }
+  #eventlog .ets{ color:var(--hud-dim); min-width:76px; }
   #eventlog .emsg{ color:var(--hud); }
   #eventlog .emsg .ehot{ color:var(--hot); }
   #eventlog .emsg .eamb{ color:var(--amber); }
@@ -226,7 +226,7 @@
   <!-- bottom-right -->
   <div class="hud" id="br">
     <div id="clock"><b>--:--:--.--</b></div>
-    <div><span class="lbl">SITE</span> <b>이랜텍 WELD-LINE / RSW · LW · USW</b></div>
+    <div><span class="lbl">SITE</span> <b>이랜텍 WELD-LINE / RSW · Nd:YAG LW</b></div>
     <div><span class="lbl">OP</span> <b>PARK Y.</b> &nbsp; <span class="lbl">CAM</span> <b>IR-07</b></div>
   </div>
 
@@ -243,17 +243,17 @@
 
   <!-- process condition control -->
   <div id="doe">
-    <div id="doebtn">&#9654; <span class="blink">SIM</span> 공법 전환 시뮬레이션 &nbsp;초음파 -&gt; 레이저</div>
+    <div id="doebtn">&#9654; <span class="blink">NOTE</span> 저항 발열 ↔ Nd:YAG 용입 모드 비교</div>
     <div id="doestate"></div>
   </div>
 
   <!-- identity -->
   <div id="identity">
-    <div class="ey">INFRARED THERMOGRAPHY . 접합 공정 기술 — 이랜텍</div>
-    <h1>박양하<span class="sub">저항 스팟 · Nd:YAG 레이저 · 초음파 융착 — 세 가지 접합 원리를 모두 직접 조건 설정</span></h1>
+    <div class="ey">INFRARED THERMOGRAPHY . 저항/레이저 접합 공정 — 이랜텍</div>
+    <h1>박양하<span class="sub">저항 스폿과 Nd:YAG 레이저 용접 조건을 열화상으로 비교·정리</span></h1>
     <div class="tags">
-      <span>저항(스팟) 용접 · 너겟 형성</span><span>Nd:YAG 레이저 · 키홀/전도</span><span>초음파 융착 · 수지 접합</span>
-      <span>공정 DOE · CP 기준서</span><span>HAZ 제어 · 기공 관리</span><span>초음파→레이저 공법 전환</span>
+      <span>저항(스팟) 용접 · 너겟 형성</span><span>Nd:YAG 레이저 · 키홀/전도</span><span>초음파 용착 · 수지 접합</span>
+      <span>전류·가압력·통전시간</span><span>HAZ 제어 · 기공/스패터 관리</span><span>초음파 용착은 18번 시안 연계</span>
     </div>
   </div>
 
@@ -377,16 +377,16 @@ function layoutScale(){
 const PASSES = [
   { yr:'RESISTANCE SPOT', co:'저항(스팟) 용접', ro:'전류·가압력·통전시간 3대 인자',
     x:0.20, y:0.40, peak:980,
-    desc:'<b>저항 스팟 용접 원리</b>: 전극으로 모재를 <b>가압</b>한 뒤 대전류를 흘려 접촉 저항 발열로 <b>너겟(nugget)</b>을 형성하는 방식. 3대 제어 인자는 <b>용접 전류 · 가압력 · 통전 시간</b>. 너겟 직경은 인장·박리(peel) 시험과 외관 검사로 확인. 메탈 케이스 및 시트 접합에 적용. 전극 마모에 따른 접촉 면적 변화가 너겟 품질에 직결되므로 전극 드레싱 주기를 관리 항목에 등록.' },
+    desc:'<b>저항 스폿 용접 원리</b>: 두 전극으로 모재를 <b>가압</b>한 상태에서 대전류를 짧게 흘려 접촉부의 <b>저항 발열</b>로 용융부를 만든다. 핵심 품질은 <b>너겟(nugget) 직경·편심·박리 강도</b>이며, 조건 창은 <b>전류 · 가압력 · 통전 시간</b>의 균형으로 잡는다. 전극 마모가 접촉 면적과 발열 밀도를 바꾸므로 드레싱 주기와 전극 팁 상태를 관리 항목에 포함.' },
   { yr:'Nd:YAG LASER', co:'레이저 용접', ro:'키홀/전도 모드 · 기공 관리',
     x:0.40, y:0.56, peak:1480, signature:true,
-    desc:'<b>Nd:YAG 레이저 용접 원리</b>: 고에너지 밀도 빔을 조사해 모재를 용융·접합. 저출력에서는 <b>전도(conduction) 모드</b>(넓고 얕은 용융지), 고출력·고속에서는 <b>키홀(keyhole) 모드</b>(깊고 좁은 용입)로 전환. 기공(porosity)과 스패터는 초점 위치·보호가스 유량으로 제어. <span class="hot">초음파 용착 공정을 레이저로 전환</span>하는 신공법 라인 구성(부착기 2 × 레이저 3 = 1라인)에 직접 참여, 조건 설계 및 검증 수행.' },
-  { yr:'ULTRASONIC', co:'초음파 융착', ro:'혼·앤빌 · 수지 마찰열 융착',
+    desc:'<b>Nd:YAG 레이저 용접 원리</b>: 집속된 빔 에너지로 모재 표면을 용융한다. 낮은 에너지 밀도에서는 <b>전도(conduction) 모드</b>로 넓고 얕은 용융지가 생기고, 출력·초점·속도 조합이 올라가면 증기압이 용탕을 밀어 <b>키홀(keyhole) 모드</b>의 깊은 용입을 만든다. 주요 리스크는 <b>기공(porosity) · 스패터 · 언더필</b>이며 초점 위치, 보호가스, 용접 속도, 비드 형상으로 관리.' },
+  { yr:'ULTRASONIC REF', co:'초음파 용착', ro:'수지 접합 비교 기준',
     x:0.60, y:0.40, peak:1120,
-    desc:'<b>초음파 융착 원리</b>: 초음파 진동(혼/앤빌)과 가압으로 <b>수지(플라스틱) 분자 간 마찰열</b>을 발생시켜 접합면을 용융·융착. 금속 용접과 달리 별도 열원 없이 진동 에너지만으로 접합. 3대 제어 인자는 <b>진폭 · 가압력 · 용착 시간</b>. 사출 케이스 접합에 적용. DOE로 조건 범위를 설정하고 불량율을 <span class="hot">15% → 0%대</span>로 감소시킨 뒤 CP 기준서에 관리 항목 등록.' },
-  { yr:'DOE · CP · PFMEA', co:'공정 조건 설계 &amp; 검증', ro:'세 공법 통합 관리',
+    desc:'<b>초음파 용착</b>은 금속 용접과 다른 비교 기준으로만 둔다. 혼/앤빌 가압과 진동 에너지로 수지 접합면의 마찰열을 만들며, 주요 인자는 <b>진폭 · 가압력 · 용착 시간</b>. 이 시안에서는 저항 스폿과 Nd:YAG 레이저의 열원 차이를 중심으로 보고, 초음파 DOE와 불량률 개선 서사는 18번 시안에서 상세히 다룬다.' },
+  { yr:'DOE · CP · PFMEA', co:'조건 창 정리', ro:'공정 문서화 · 검증',
     x:0.80, y:0.56, peak:1320,
-    desc:'<b>공정 기술 역량 요약</b>: 저항 스팟 · Nd:YAG 레이저 · 초음파 융착 — <b>세 가지 접합 원리를 모두 이해하고 현장 조건을 직접 설정</b>. PFMEA로 위험 인자 식별, 관리계획서(CP)에 측정 항목·관리 한계 등록, PFD 기반 공정 흐름 문서화. 초음파→레이저 <span class="hot">공법 전환</span> 시 신규 라인 조건 설계·검증까지 수행한 현장 공정기술 경험.' }
+    desc:'<b>조건 창 정리</b>: 저항 스폿은 전류·가압력·통전시간이 너겟 품질을 결정하고, Nd:YAG 레이저는 출력·초점·속도·보호가스가 전도/키홀 모드와 결함 양상을 가른다. PFMEA로 위험 인자를 정리하고 CP에 측정 항목과 관리 한계를 등록하는 방식으로 현장 조건을 문서화했다. 개인 서사는 최소화하고, 이 화면은 두 금속 접합 방식의 열원과 결함 관리 차이에 집중한다.' }
 ];
 let activePass = 1;
 
@@ -395,7 +395,7 @@ const arc = {
   px:0, py:0,
   gx:0, gy:0,
   t:0,
-  power:1, sparks:[]
+  power:1
 };
 
 function gp(p){ return { x:p.x*GW, y:p.y*GH }; }
@@ -468,95 +468,28 @@ function updateParams(dt){
 }
 
 /* ============================================================
-   LIVE EVENT LOG streaming
+   PROCESS NOTES -- fixed, quiet annotations
    ============================================================ */
 const elLog = document.getElementById('eventlog');
-const MAX_LOG_ROWS = 6;
-
-// Template event pool -- realistic weld process events
-const EVENT_POOL = [
-  // 저항 스팟 용접
-  { msg:'<span class="ehot">통전 개시</span> -- 접촉저항 발열 / 전류 {I}kA', cat:'arc' },
-  { msg:'너겟 형성 개시 -- 직경 추정 {d}mm', cat:'nugget' },
-  { msg:'HAZ 온도 {T}C -- 목표 범위 내', cat:'haz' },
-  { msg:'전극 가압 확인 -- {F}kN 안정', cat:'force' },
-  { msg:'<span class="eamb">통전 {c}cycle</span> 완료 -- 냉각 개시', cat:'cycle' },
-  { msg:'너겟 직경 {d}mm -- <span class="eok">박리 시험 기준 충족</span>', cat:'nugget' },
-  { msg:'HAZ 경계 추적 -- {r}mm 반경', cat:'haz' },
-  { msg:'전극 마모 체크 -- 드레싱 주기 확인', cat:'electrode' },
-  { msg:'너겟 편심율 {e}% -- <span class="eok">합격</span>', cat:'nugget' },
-  { msg:'통전 경로 저항 {R}uOhm -- 접촉 상태 정상', cat:'arc' },
-  // Nd:YAG 레이저 용접
-  { msg:'<span class="ehot">키홀 모드</span> 전환 감지 -- 출력 {P}W', cat:'keyhole' },
-  { msg:'레이저 출력 <span class="ehot">{P}W</span> 안정화', cat:'laser' },
-  { msg:'용접 속도 <span class="eok">{v}mm/s</span> 유지', cat:'speed' },
-  { msg:'비드 균일도 체크 -- 표준편차 {s}C', cat:'bead' },
-  { msg:'보호가스(Ar) 유량 <span class="eok">{g}L/min</span> 정상', cat:'gas' },
-  { msg:'초점 위치 -0.5mm -- 키홀/전도 경계 확인', cat:'focus' },
-  { msg:'기공(porosity) 감지 {n}건 -- 임계값 미만', cat:'spatter' },
-  { msg:'열화상 최고 온도 <span class="ehot">{T}C</span>', cat:'temp' },
-  // 초음파 융착
-  { msg:'<span class="eamb">초음파 진동 개시</span> -- 혼/앤빌 가압 / 진폭 설정값', cat:'usw' },
-  { msg:'수지 마찰열 발생 -- 융착면 온도 상승 감지', cat:'usw' },
-  // 공통
-  { msg:'<span class="eamb">공정 조건 고정</span> -- CP 기준서 관리 항목 등록', cat:'cp' },
-  { msg:'HAZ 면적 <span class="eok">{a}mm2</span> -- 목표 이하', cat:'haz' },
+const PROCESS_NOTES = [
+  ['RSW-01', '<span class="ehot">접촉저항 발열</span>은 전류가 아니라 전극 압흔·표면 상태와 함께 봐야 한다.'],
+  ['RSW-02', '너겟 직경, 편심, 박리 강도는 전류·가압력·통전시간 조건 창의 결과값이다.'],
+  ['RSW-03', '전극 드레싱 주기는 접촉 면적 변화와 HAZ 확대를 동시에 막는 관리 항목이다.'],
+  ['LW-01', '<span class="eamb">전도 모드</span>는 넓고 얕은 용융지, <span class="ehot">키홀 모드</span>는 깊고 좁은 용입으로 구분한다.'],
+  ['LW-02', '기공·스패터는 출력만의 문제가 아니라 초점 위치, 보호가스, 속도 조합으로 관리한다.'],
+  ['REF', '초음파 용착의 DOE/불량률 서사는 18번 시안에서 상세히 분리한다.']
 ];
 
-function fillTemplate(msg){
-  return msg
-    .replace('{I}',  (8.3+Math.random()*0.4).toFixed(1))
-    .replace('{d}',  (5.2+Math.random()*0.8).toFixed(1))
-    .replace('{T}',  (1360+Math.random()*120).toFixed(0))
-    .replace('{F}',  (3.1+Math.random()*0.2).toFixed(1))
-    .replace('{c}',  (13+Math.round(Math.random()*2)))
-    .replace('{r}',  (3.8+Math.random()*0.6).toFixed(1))
-    .replace('{P}',  (2380+Math.random()*40).toFixed(0))
-    .replace('{v}',  (44+Math.random()*2).toFixed(1))
-    .replace('{s}',  (12+Math.random()*8).toFixed(1))
-    .replace('{Te}', (280+Math.random()*40).toFixed(0))
-    .replace('{g}',  (14.8+Math.random()*0.4).toFixed(1))
-    .replace('{a}',  (18+Math.random()*4).toFixed(1))
-    .replace('{n}',  Math.round(Math.random()*3))
-    .replace('{e}',  (1.2+Math.random()*1.8).toFixed(1))
-    .replace('{R}',  (42+Math.random()*8).toFixed(1));
-}
-
-function pushLog(){
-  const d = new Date();
-  const ts = pad(d.getHours(),2)+':'+pad(d.getMinutes(),2)+':'+pad(d.getSeconds(),2);
-  const evt = EVENT_POOL[Math.floor(Math.random()*EVENT_POOL.length)];
-  const msg = fillTemplate(evt.msg);
-
+function appendProcessNote(code, msg, fade){
   const row = document.createElement('div');
-  row.className = 'elog-row';
-  row.innerHTML = '<span class="ets">' + ts + '</span><span class="emsg">' + msg + '</span>';
+  row.className = 'elog-row' + (fade ? ' fade' : '');
+  row.innerHTML = '<span class="ets">' + code + '</span><span class="emsg">' + msg + '</span>';
   elLog.appendChild(row);
-
-  // fade older rows
-  const rows = elLog.querySelectorAll('.elog-row');
-  rows.forEach((r, i)=>{
-    const age = rows.length - 1 - i;
-    if(age >= MAX_LOG_ROWS - 1){ r.classList.add('fade'); }
-    else { r.classList.remove('fade'); }
-  });
-
-  // remove very old rows (keep DOM small)
-  if(rows.length > MAX_LOG_ROWS + 2){
-    elLog.removeChild(rows[0]);
-  }
 }
 
-// Log interval: staggered, vary between 1.8-3.4s
-let logTimer = 0;
-let logNextInterval = 110; // frames
-function updateLog(){
-  logTimer++;
-  if(logTimer >= logNextInterval){
-    logTimer = 0;
-    logNextInterval = 108 + Math.round(Math.random()*60); // ~1.8-3s at 60fps
-    pushLog();
-  }
+function initProcessNotes(){
+  elLog.innerHTML = '';
+  PROCESS_NOTES.forEach((item, i)=>appendProcessNote(item[0], item[1], i > 4));
 }
 
 /* ============================================================
@@ -635,7 +568,7 @@ function renderField(){
   ctx.drawImage(off,0,0,GW,GH,0,0,SW,SH);
 }
 
-/* ---------- arc + sparks rendered on top (screen space) ---------- */
+/* ---------- heat source rendered on top (screen space) ---------- */
 function renderArc(now){
   const sx=arc.gx/GW*SW, sy=arc.gy/GH*SH;
   const grd=ctx.createRadialGradient(sx,sy,0, sx,sy, 70*arc.power);
@@ -651,24 +584,7 @@ function renderArc(now){
   ctx.fillStyle='rgba(255,255,255,'+(0.9*arc.power*flick)+')';
   ctx.beginPath(); ctx.arc(sx,sy,(6+Math.random()*4)*arc.power,0,7); ctx.fill();
 
-  for(let i=arc.sparks.length-1;i>=0;i--){
-    const s=arc.sparks[i];
-    // dt-based spark physics
-    s.life-=1; s.x+=s.vx; s.y+=s.vy; s.vy+=0.12; s.vx*=0.99;
-    if(s.life<=0){ arc.sparks.splice(i,1); continue; }
-    const a=s.life/s.max;
-    ctx.fillStyle='rgba(255,'+(190+60*a|0)+','+(80*a|0)+','+a+')';
-    ctx.fillRect(s.x, s.y, 2, 2);
-  }
   ctx.globalCompositeOperation='source-over';
-}
-
-function emitSparks(sx,sy,n,pow){
-  for(let i=0;i<n;i++){
-    const ang=Math.random()*Math.PI*2, sp=1+Math.random()*4*pow;
-    arc.sparks.push({ x:sx,y:sy, vx:Math.cos(ang)*sp, vy:Math.sin(ang)*sp-1.2,
-                      life:20+Math.random()*30|0, max:50 });
-  }
 }
 
 /* ============================================================
@@ -702,14 +618,12 @@ function arcUpdate(now, dt){
   if(mouseInside){
     const mgx=mouseX/SW*GW, mgy=mouseY/SH*GH;
     inject(mgx, mgy, 9, 70);
-    if(Math.random()<0.6) emitSparks(mouseX,mouseY,2,0.8);
     document.getElementById('modetxt').textContent='SPOT . MANUAL';
   } else {
     document.getElementById('modetxt').textContent='SPOT . AUTO';
   }
 
   inject(arc.gx, arc.gy, 7, 95*arc.power);
-  if(Math.random()<0.8) emitSparks(arc.gx/GW*SW, arc.gy/GH*SH, 3, arc.power);
 
   for(let i=0;i<seam.length;i++){
     const d=Math.hypot(arc.gx-seam[i].x, arc.gy-seam[i].y);
@@ -718,19 +632,19 @@ function arcUpdate(now, dt){
 }
 
 /* ============================================================
-   DOE SIGNATURE: 용착불량 15% -> 0%
+   PROCESS COMPARISON: resistance spot -> Nd:YAG laser
    ============================================================ */
 const doeState=document.getElementById('doestate');
 function startDOE(){
   if(doe.active) return;
   doe.active=true; doe.phase='defect'; doe.t=0; doe.defects=[];
-  setActive(1);
-  document.getElementById('modetxt').textContent='SIM . SWITCHING';
+  setActive(0);
+  document.getElementById('modetxt').textContent='NOTE . COMPARE';
   document.getElementById('doebtn').style.borderColor='var(--amber)';
 }
 function doeStep(now,dt){
   doe.t += dt/60; // dt-based time accumulation (seconds)
-  const sp=seam[1], spN=seam[2];
+  const sp=seam[0], spN=seam[1];
   const ax=sp.x, ay=sp.y, bx=spN.x, by=spN.y;
 
   if(doe.phase==='defect'){
@@ -738,20 +652,19 @@ function doeStep(now,dt){
     const gx=ax+(bx-ax)*f, gy=ay+(by-ay)*f;
     arc.gx=gx; arc.gy=gy; arc.power=0.5+Math.random()*0.5;
     if(Math.random()<0.35){
-      // cold lap -- do nothing (cold gap)
+      // quiet dwell -- contact pressure held, no particle emission
     } else if(Math.random()<0.4){
       const sx=gx+(Math.random()-0.5)*22, sy=gy+(Math.random()-0.5)*18;
       inject(sx,sy, 4+Math.random()*4, 1200+Math.random()*300);
       doe.defects.push({x:sx,y:sy});
-      emitSparks(sx/GW*SW, sy/GH*SH, 8, 1.3);
     } else {
       inject(gx,gy, 6, 700);
     }
-    doeState.textContent='USW MODE . 초음파 용착 조건 -- 불량율 15% 발생 / 조건 이탈 감지';
+    doeState.textContent='RSW NOTE . 접촉저항 발열 -- 전류·가압력·통전시간 조건 창 확인';
     if(f>=1){ doe.phase='scan'; doe.t=0; }
   }
   else if(doe.phase==='scan'){
-    doeState.textContent='THERMAL SCAN . 열화상 분석 -- 융착 이상 ' + doe.defects.length + '개소 검출 / 공법 전환 검토';
+    doeState.textContent='THERMAL NOTE . 너겟 주변 HAZ와 국부 과열 지점 ' + doe.defects.length + '개소 표시';
     arc.power=0;
     if(doe.t>1.8){ doe.phase='reweld'; doe.t=0; }
   }
@@ -760,15 +673,14 @@ function doeStep(now,dt){
     const gx=ax+(bx-ax)*f, gy=ay+(by-ay)*f;
     arc.gx=gx; arc.gy=gy; arc.power=1.0;
     inject(gx,gy, 7, 130);
-    emitSparks(gx/GW*SW, gy/GH*SH, 2, 0.6);
     for(const dfc of doe.defects){
       coolSpot(dfc.x, dfc.y, 8, 0.16);
     }
-    doeState.textContent='LASER MODE . Nd:YAG 레이저 전환 -- 키홀 모드 / 기공 억제 조건 설계 / 라인 구성 부착기2×레이저3';
+    doeState.textContent='LW NOTE . Nd:YAG 레이저 -- 전도/키홀 모드, 기공·스패터 관리 조건 비교';
     if(f>=1){ doe.phase='done'; doe.t=0; }
   }
   else if(doe.phase==='done'){
-    doeState.textContent='VERIFIED . 레이저 균일 비드 검증 완료 -- 초음파→레이저 공법 전환 완료 / CP 기준서 등록';
+    doeState.textContent='VERIFIED . 두 열원 차이 정리 -- RSW는 너겟, 레이저는 용입 모드와 비드 결함 중심';
     if(doe.t>2.2){
       doe.active=false; doe.phase='idle'; doe.defects=[];
       doeState.textContent='';
@@ -796,7 +708,7 @@ function renderDOE(){
       ctx.strokeRect(sx-s,sy-s,s*2,s*2);
       ctx.fillStyle='rgba(255,90,90,0.95)';
       ctx.font='10px ui-monospace,monospace';
-      ctx.fillText('ANOMALY', sx-s, sy-s-4);
+      ctx.fillText('HOT SPOT', sx-s, sy-s-4);
     }
     ctx.restore();
   }
@@ -884,10 +796,7 @@ for(const bl of blooms){ inject(bl.g.x,bl.g.y, 14, bl.p.peak*0.5); }
 inject(seam[activePass].x, seam[activePass].y, 9, 1400);
 for(let i=0;i<8;i++) simulate(1);
 
-// seed initial log entries so it's not empty at start
-for(let i=0;i<3;i++){
-  setTimeout(()=>pushLog(), i*420);
-}
+initProcessNotes();
 
 function loop(now){
   const rawDt = now - lastT; lastT = now;
@@ -903,7 +812,6 @@ function loop(now){
   renderDOE();
   updateHUD(now, dt);
   updateParams(dt);
-  updateLog();
 
   fpsCount++;
   if(now-lastFps>500){ elFps.textContent=Math.round(fpsCount*1000/(now-lastFps)); fpsCount=0; lastFps=now; }

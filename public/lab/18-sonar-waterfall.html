@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>박양하 · 용착/용접 DOE — 스팟·레이저·초음파 3공정 스펙트로그램</title>
+<title>박양하 · 초음파 용착 DOE — 조건 최적화 반응면</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap');
 
@@ -151,6 +151,15 @@
   .ro .n.amb{color:var(--amber);text-shadow:0 0 8px rgba(255,194,74,.4);}
   .ro .n.hot{color:var(--hot);text-shadow:0 0 8px rgba(255,90,60,.4);}
   .ro .n.teal{color:var(--teal);text-shadow:0 0 8px rgba(26,214,180,.4);}
+  .evidence{
+    display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;margin:-5px 0 11px;
+    font-family:'Share Tech Mono';font-size:8px;color:var(--txt-dim);
+  }
+  .evidence span{
+    border:1px solid rgba(72,230,255,.13);padding:4px 5px;background:rgba(2,8,16,.42);
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .evidence b{color:var(--ink);font-weight:500;margin-left:3px;}
 
   .feed{flex:1;overflow:hidden;border:1px solid var(--grid);background:rgba(2,8,16,.6);padding:8px;font-family:'Share Tech Mono';font-size:9.5px;line-height:1.65;position:relative;}
   .feed .ln{color:var(--txt-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -210,15 +219,15 @@
 
   <!-- TOP BAR -->
   <div class="topbar">
-    <div class="tag"><span class="k">SYSTEM</span><span class="v">WELD DOE · 3공정</span></div>
-    <div class="tag"><span class="k">공정</span><span class="v amb">스팟 · 레이저 · 초음파</span></div>
+    <div class="tag"><span class="k">SYSTEM</span><span class="v">ULTRASONIC WELD DOE</span></div>
+    <div class="tag"><span class="k">공정</span><span class="v amb">초음파 용착 조건 최적화</span></div>
     <div class="tag"><span class="k">METHOD</span><span class="v">실험계획법 DOE</span></div>
     <div class="tag"><span class="k">초음파 AMP</span><span class="v" id="gainv">— μm</span></div>
-    <div class="tag"><span class="k">레이저 불량↓</span><span class="v">0.5 %</span></div>
+    <div class="tag"><span class="k">RESPONSE</span><span class="v">불량율 반응면</span></div>
     <div class="sys">
       <span class="title">박양하 <b>SIGNAL PORTFOLIO</b></span>
       <span class="blink"></span>
-      <span style="font-size:9px;color:var(--teal)">REC</span>
+      <span style="font-size:9px;color:var(--teal)">DOE RUN</span>
     </div>
   </div>
 
@@ -227,8 +236,8 @@
     <div class="ident">
       <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
       <div class="name">박양하</div>
-      <div class="role">이랜텍 생산라인 PM<br>스팟·레이저·초음파 3공정 DOE · 불량 0%대 달성</div>
-      <div class="sub">RESISTANCE · LASER · ULTRASONIC · DOE</div>
+      <div class="role">이랜텍 생산라인 PM<br>초음파 용착 DOE · 조건 최적화와 표준화</div>
+      <div class="sub">AMPLITUDE · FORCE · TIME · DEFECT RESPONSE</div>
     </div>
 
     <div class="sectlabel">DOE 공정 채널 · 인자 배열</div>
@@ -245,8 +254,8 @@
   <div class="center">
     <canvas id="waterfall"></canvas>
     <canvas id="overlay"></canvas>
-    <div class="ovlabel">DOE RESPONSE SURFACE · <b>스팟·레이저·초음파</b> · 인자 × 반응면 · t↓</div>
-    <div class="nowline"><span>◀ NOW</span></div>
+    <div class="ovlabel">DOE RESPONSE SURFACE · <b>초음파 용착</b> · 진폭 × 가압력 × 용착시간 · t↓</div>
+    <div class="nowline"><span>◀ CURRENT ROW</span></div>
     <div class="axis-time">◀ DOE RUN 이력 ▶</div>
   </div>
 
@@ -255,13 +264,16 @@
     <div class="sectlabel">PROCESS READOUTS</div>
     <div class="readouts">
       <div class="ro"><div class="l">초음파 AMP</div><div class="n" id="ampro">— μm</div></div>
-      <div class="ro"><div class="l">레이저 불량↓</div><div class="n teal">0.5 %</div></div>
-      <div class="ro"><div class="l">DOE 공정 수</div><div class="n">3 공정</div></div>
+      <div class="ro"><div class="l">가압력 FORCE</div><div class="n teal" id="forcero">— N</div></div>
+      <div class="ro"><div class="l">용착시간 WELD</div><div class="n" id="timero">— s</div></div>
       <div class="ro"><div class="l">불량율 DEFECT</div><div class="n hot" id="weldro">HOT</div></div>
-      <div class="ro"><div class="l">초음파 불량↓</div><div class="n teal">15%→0%대</div></div>
-      <div class="ro"><div class="l">DOE 방법</div><div class="n teal">인자·수준</div></div>
-      <div class="ro"><div class="l">재작업 절감</div><div class="n amb">3,200만</div></div>
-      <div class="ro"><div class="l">폐기 절감</div><div class="n teal">3,600만</div></div>
+      <div class="ro"><div class="l">반응면 FIT</div><div class="n teal">RSM</div></div>
+      <div class="ro"><div class="l">표준화 STATUS</div><div class="n teal">LOCK</div></div>
+    </div>
+    <div class="evidence" aria-label="작은 증거 눈금">
+      <span title="초음파 용착 DOE 전후 불량율 반응. 헤드라인이 아닌 검증 눈금으로만 표시">불량율 <b>15 → 0%대</b></span>
+      <span title="재작업 공수 연 환산 근거. 상세 산식은 기술자료 근거 항목">재작업 <b>3,200만</b></span>
+      <span title="폐기 비용 연 환산 근거. 단위 비용 기준의 보조 evidence">폐기 <b>3,600만</b></span>
     </div>
 
     <div class="sectlabel">DOE EVENT LOG</div>
@@ -271,11 +283,11 @@
 
   <!-- STATUS -->
   <div class="statusbar">
-    <div class="seg">DOE 인자<b>전류·출력·진폭 외</b></div>
-    <div class="seg">기저 불량율<b>15 %</b></div>
-    <div class="seg">초음파 AMP<b class="amb" id="snr">— μm</b></div>
+    <div class="seg">DOE 인자<b>진폭·가압력·용착시간</b></div>
+    <div class="seg">반응<b>불량율·붕괴량</b></div>
+    <div class="seg">초음파 AMP<b class="amb" id="ampstat">— μm</b></div>
     <div class="seg">DOE 런 경과<b id="sweep">0.0 s</b></div>
-    <div class="seg right">이랜텍 · 스팟·레이저·초음파 3공정 DOE · 불량 0%대 달성 · 채널 클릭 시 상세 ▸</div>
+    <div class="seg right">이랜텍 · 초음파 용착 DOE · 조건 최적화와 표준화 · 채널 클릭 시 상세 ▸</div>
   </div>
 </div>
 
@@ -299,54 +311,54 @@
   "use strict";
 
   /* ============ CHANNEL MODEL ============ */
-  // 이랜텍 3공정 용착/용접 DOE — 박양하 기술자료 작성·교육·검증 담당
-  // CH1: 저항(스팟) 용접 인자  CH2: 레이저(Nd:YAG) 용접 인자
-  // CH3: 초음파 융착 인자       CH4: 불량율 반응(Response)
-  // DOE 구조: 인자 수준 설정 → 실험 매트릭스 → 반응 측정 → 최적 조건 도출·표준화
+  // 이랜텍 초음파 용착 DOE — 조건 인자, 교호작용, 반응면, 표준화 근거 중심
+  // CH1: 진폭(Amplitude)  CH2: 가압력(Force)
+  // CH3: 용착/유지시간    CH4: 불량율 반응(Response)
+  // DOE 구조: 인자 수준 설정 -> 실험 매트릭스 -> 반응 측정 -> 최적 조건 도출·표준화
   const CH = [
     {
-      id:"CH1", color:"#48e6ff", key:"video",
-      name:"저항(스팟) 용접", short:"전류 · 가압력 · 통전시간",
-      freq:"SPOT", hz:"kA",
-      band:"저항(스팟) 용접 DOE · FACTOR: 전류 · 가압력 · 통전시간",
-      desc:"<em>저항(스팟) 용접</em> DOE. 주요 인자 3종: <em>전류(kA)</em> · <em>가압력(kN)</em> · <em>통전시간(cy)</em>. 전극 간 접촉 저항으로 발열·접합하며, 전류가 낮으면 미용착, 높으면 스패터(Spatter) 발생. 가압력과 통전시간의 교호작용이 너깃(Nugget) 직경과 인장 강도를 결정. 각 인자 수준을 실험계획법으로 조합하여 불량 발생 인자를 식별하고 최적 조건을 표준화. 수준 값(A, kN, cy)은 제품·설비 기준에 따라 설정하며 본 화면은 인자 구조를 표현. <em>광대역 연속 신호</em>로 가시화.",
-      stack:["전류(kA) — 주인자","가압력(kN) — 주인자","통전시간(cy) — 주인자","너깃(Nugget) 직경 반응","스패터 발생 경계 관리"],
-      out:[["공정","저항(스팟) 용접"],["주인자","전류·가압력·통전시간"],["반응","너깃 직경 / 인장강도"],["특성","브로드밴드 연속"]],
+      id:"CH1", color:"#48e6ff", key:"amp",
+      name:"진폭 AMPLITUDE", short:"혼 진폭 · 에너지 투입",
+      freq:"AMP", hz:"μm",
+      band:"ULTRASONIC WELD DOE · FACTOR A: 혼 진폭(Amplitude)",
+      desc:"<em>진폭(Amplitude)</em>은 초음파 혼이 계면에 전달하는 기계적 에너지의 1차 인자다. 낮은 수준에서는 미용착(cold weld)과 박리 위험이 커지고, 높은 수준에서는 플래시(flash)·케이스 눌림·계면 손상이 증가한다. DOE에서는 진폭을 단독 조건으로 보지 않고 <em>가압력×용착시간</em>과 함께 반응면을 만든 뒤, 불량율과 붕괴량(collapse depth)이 동시에 안정되는 창을 찾는다.",
+      stack:["Factor A: 진폭(μm) 수준화","혼 마모·팁 접촉 상태 확인","미용착 하한 / 플래시 상한 경계","가압력·시간과 교호작용 검토","조건표 반영 전 확인 런"],
+      out:[["주인자","진폭(Amplitude)"],["반응","불량율 / 붕괴량"],["경계","미용착·플래시"],["역할","에너지 투입량 제어"]],
       base:0.46, var:0.30, speed:1.7
     },
     {
-      id:"CH2", color:"#1ad6b4", key:"mes",
-      name:"레이저(Nd:YAG) 용접", short:"출력 · 용접속도 · 초점위치",
-      freq:"LASR", hz:"W",
-      band:"레이저(Nd:YAG) 용접 DOE · FACTOR: 출력 · 용접속도 · 초점위치",
-      desc:"<em>레이저(Nd:YAG) 용접</em> DOE. 주요 인자 3종: <em>출력(W)</em> · <em>용접속도(mm/s)</em> · <em>초점위치(mm)</em>. 출력×속도의 선에너지(J/mm)가 용입 깊이를 결정하며, 초점 편차는 비드 폭과 기공 발생에 영향. DOE 검증으로 레이저 용접 불량률 <em>0.5 %p 절감</em> 달성(실측). 각 인자 수준은 실험 매트릭스로 설계하여 최적 조건 도출·표준화. <em>단계별 펄스 + 토날라인</em>으로 가시화 — 출력 수준 전환 시 에너지 밀도 계단형 변화.",
-      stack:["출력(W) — 주인자","용접속도(mm/s) — 주인자","초점위치(mm) — 주인자","선에너지(J/mm) 교호작용","불량률 0.5 %p 절감 (실측)"],
-      out:[["공정","레이저(Nd:YAG) 용접"],["주인자","출력·속도·초점위치"],["실측 성과","불량률 0.5 %p↓"],["특성","펄스+토날라인"]],
+      id:"CH2", color:"#1ad6b4", key:"force",
+      name:"가압력 FORCE", short:"접촉압 · 에너지 전달",
+      freq:"FRCE", hz:"N",
+      band:"ULTRASONIC WELD DOE · FACTOR B: 가압력(Force)",
+      desc:"<em>가압력</em>은 혼 진동이 수지 계면으로 전달되는 접촉 조건을 정한다. 부족하면 계면 미끄럼과 에너지 손실이 커지고, 과하면 수지가 흐르기 전에 진동이 감쇠해 외관 눌림이나 용착 부족이 남는다. DOE에서는 진폭과 가압력의 교호작용을 우선 확인하고, 붕괴량 편차와 외관 변형이 동시에 낮아지는 압력 창을 표준 조건으로 고정한다.",
+      stack:["Factor B: 가압력(N) 수준화","지그 클램핑 반복성 확인","계면 미끄럼 / 과압 변형 경계","진폭×가압력 교호작용","압력 창 표준화"],
+      out:[["주인자","가압력(Force)"],["반응","붕괴량 편차"],["경계","미끄럼·과압"],["역할","접촉압 안정화"]],
       base:0.34, var:0.10, speed:0.32, tick:true
     },
     {
-      id:"CH3", color:"#ffc24a", key:"radar",
-      name:"초음파 융착", short:"진폭 · 가압력 · 융착시간",
-      freq:"ULTK", hz:"μm",
-      band:"초음파 융착 DOE · FACTOR: 진폭(Amplitude) · 가압력 · 융착시간",
-      desc:"<em>초음파 융착</em> DOE. 주요 인자 3종: <em>진폭(μm)</em> · <em>가압력(N)</em> · <em>융착시간(s)</em>. 20 kHz 혼(Horn) 진동으로 수지 계면을 마찰 발열·접합. 진폭이 낮으면 미용착(cold weld), 높으면 플래시(flash) 과잉 발생. 진폭×가압력 교호작용이 붕괴량(collapse depth)을 결정하며, 융착 후 유지시간(Hold) 동안 가압 유지하여 수지를 고화. 조건 최적화로 <em>불량율 15 % → 0 %대</em> 달성. <em>간헐적 스파이크 트랜지언트</em>로 가시화.",
-      stack:["진폭(μm) — 주인자","가압력(N) — 주인자","융착시간(s) — 주인자","유지시간(Hold) 고화 조건","불량율 15 % → 0 %대 달성"],
-      out:[["공정","초음파 융착"],["주인자","진폭·가압력·융착시간"],["반응","불량율 / 붕괴량"],["임계","케이스 변형 한계"]],
+      id:"CH3", color:"#ffc24a", key:"time",
+      name:"용착·유지시간", short:"Weld time · Hold time",
+      freq:"TIME", hz:"s",
+      band:"ULTRASONIC WELD DOE · FACTOR C: 용착시간 + HOLD 조건",
+      desc:"<em>용착시간</em>은 에너지 투입 누적량을, <em>유지시간(Hold)</em>은 수지 계면이 압력 아래에서 고화되는 시간을 결정한다. 시간이 짧으면 계면 결합이 닫히지 않고, 길면 열 이력 과다로 케이스 변형과 플래시가 커진다. 조건 최적화는 진폭·가압력 수준과 함께 시간 축을 조절해 불량율 반응면의 고온 로브를 낮추는 방식으로 진행된다.",
+      stack:["Factor C: 용착시간(s) 수준화","Hold time 고화 조건","과소 시간 미용착 경계","과다 시간 외관 변형 경계","검증 런 후 작업표준 반영"],
+      out:[["주인자","용착시간"],["보조조건","Hold time"],["반응","외관·강도·불량율"],["역할","에너지 누적량 제어"]],
       base:0.30, var:0.42, speed:2.4, spiky:true
     },
     {
       id:"CH4", color:"#ff7a5c", key:"weld",
-      name:"불량율 DEFECT RATE", short:"RESPONSE · 15 % → 0 %대",
-      freq:"DFCT", hz:"live",
-      band:"RESPONSE · 불량율(Defect Rate) · 3공정 DOE 통합 반응면",
-      desc:"DOE 반응(Response): <em>불량율</em>. 저항·레이저·초음파 3공정 DOE 진행 전 초음파 융착 불량율 <em>15 %</em>가 핫 로브로 기록. 각 공정 인자 최적 조합 확정 마커 이후 불량율이 <em>0 %대 베이스라인</em>으로 냉각. 레이저 용접 불량률 <em>0.5 %p 절감</em> 별도 실측. 재작업 공수 연 환산 <em>3,200만 원 절감</em>(임율 6.3원/초 기준) · 폐기 비용 연 환산 <em>3,600만 원 절감</em>(단위 7,688원 기준). 기술자료 작성·교육·DOE 검증 전 과정 담당.",
-      stack:["초음파 불량율 15 % → 0 %대","레이저 불량률 0.5 %p↓ (실측)","재작업 절감 연 3,200만 원 (임율 6.3원/초)","폐기 절감 연 3,600만 원 (단위 7,688원)","3공정 기술자료 작성·교육·검증 담당"],
-      out:[["초음파 불량율","15 % → 0 %대","hot"],["레이저 불량률","0.5 %p↓"],["재작업 절감","연 3,200만 원"],["폐기 절감","연 3,600만 원"]],
+      name:"불량율 반응", short:"RESPONSE · evidence tick",
+      freq:"DFCT", hz:"rate",
+      band:"RESPONSE SURFACE · 불량율(Defect Rate) · 초음파 용착 DOE",
+      desc:"DOE 반응(Response)은 <em>불량율</em>과 붕괴량 안정성을 함께 본다. 초기 조건에서는 불량율 고점이 반응면의 핫 로브로 나타났고, 진폭·가압력·용착시간의 조합을 조정하면서 결함 로브가 냉각되는지 확인했다. 정량 성과는 헤드라인으로 쓰지 않고 오른쪽의 작은 evidence rail에만 남겼다. 기술자료 작성·교육·검증 런과 표준화까지 담당했다.",
+      stack:["Response: 불량율 + 붕괴량 안정성","핫 로브 원인: 조건 창 이탈","최적점: 진폭×가압력×시간 교차점","작업 근거: 작은 evidence rail로 분리","보조 근거: 재작업·폐기 비용 rail에 격리"],
+      out:[["반응","불량율","hot"],["표시 방식","소눈금"],["근거 위치","evidence rail"],["표준화","조건표 반영"]],
       base:0.30, var:0.16, speed:1.1, weld:true
     }
   ];
 
-  /* ============ IRON / SONAR LUT ============ */
+  /* ============ THERMAL RESPONSE LUT ============ */
   // value 0..1 -> [r,g,b]. Cold deep-blue noise floor -> teal -> cyan -> amber -> hot white.
   const LUT = (function(){
     const stops = [
@@ -497,6 +509,10 @@
       0.15*Math.sin(t*0.0061*speed+seed*2.3+2.1)
     );
   }
+  function grain(seed,t){
+    const v=Math.sin(seed*12.9898+t*0.0017)*43758.5453;
+    return v-Math.floor(v);
+  }
 
   // compute intensity for channel c at vertical bin position p (0=center freq .. spread)
   function channelRow(c,t,binN){
@@ -504,13 +520,13 @@
     const out=new Float32Array(binN);
     const floor=0.05;
     if(ch.key==="weld"){
-      // anomaly story drives a hot lobe that cools after DOE
+      // defect response lobe cools after the DOE lock point
       let hot;
       if(weldPhase<DOE_AT){
-        hot=0.55+0.45*(weldPhase/DOE_AT);            // ramp to ~1.0 (15% defect = hot)
+        hot=0.55+0.45*(weldPhase/DOE_AT);            // ramp to high-defect condition
       }else{
         const k=(weldPhase-DOE_AT)/(1-DOE_AT);
-        hot=Math.max(0,(1-k))*0.9;                   // cool toward baseline (0%)
+        hot=Math.max(0,(1-k))*0.9;                   // cool toward the verified baseline
       }
       const baseline=ch.base+ch.var*noise(c*3.1,t,ch.speed);
       for(let i=0;i<binN;i++){
@@ -520,7 +536,7 @@
         const harm=0.4*Math.exp(-Math.pow((fr-0.78)/0.07,2))*hot;
         let v=baseline*(0.5+0.5*Math.sin(fr*9+t*0.004))*0.6;
         v+=hot*lobe*0.95 + harm;
-        v+=floor+0.04*Math.random();
+        v+=floor+0.04*grain(c*1000+i,t);
         out[i]=v;
       }
       return out;
@@ -535,17 +551,17 @@
         const fr=i/(binN-1);
         let v=base*(0.45+0.55*((Math.sin(fr*22+t*0.02)+1)/2));
         if(fire){
-          v+=ch.var*Math.exp(-Math.pow((fr-cx)/0.06,2))*(0.7+0.4*Math.random());
+          v+=ch.var*Math.exp(-Math.pow((fr-cx)/0.06,2))*(0.7+0.4*grain(c*2000+i,t));
         }
-        // scattered vertical sparkle
-        if(Math.random()>0.985) v+=0.5*Math.random();
-        v+=floor+0.04*Math.random();
+        // deterministic vertical grain: process texture, not a sensor feed claim
+        if(grain(c*3000+i,t)>0.985) v+=0.5*grain(c*4000+i,t);
+        v+=floor+0.04*grain(c*5000+i,t);
         out[i]=v;
       }
       return out;
     }
     if(ch.tick){
-      // periodic horizontal pulse (5-min cadence) over stable tonal lines on a calm floor
+      // periodic pressure-set pulse over stable tonal lines on a calm floor
       let ph=(t*0.0009*ch.speed)%1; if(ph<0) ph+=1;     // keep phase positive
       const pulse=ph<0.05?(1-ph/0.05)*0.42:0;
       const amb=0.12+0.05*noise(c*2.7,t,ch.speed);
@@ -553,15 +569,15 @@
         const fr=i/(binN-1);
         let v=amb*(0.5+0.5*Math.sin(fr*5+t*0.002));
         v+=pulse;
-        // stable tonal lines (narrow) — the recurring 5-min inspection bins
+        // stable tonal lines (narrow) -- repeated pressure-level bins
         v+=0.30*Math.exp(-Math.pow((fr-0.33)/0.02,2));
         v+=0.26*Math.exp(-Math.pow((fr-0.66)/0.02,2));
-        v+=floor+0.02*Math.random();
+        v+=floor+0.02*grain(c*6000+i,t);
         out[i]=v;
       }
       return out;
     }
-    // default: busy continuous broadband (video)
+    // default: continuous amplitude band
     const amb=ch.base+ch.var*noise(c*1.9,t,ch.speed);
     for(let i=0;i<binN;i++){
       const fr=i/(binN-1);
@@ -569,7 +585,7 @@
       v+=0.25*Math.sin(fr*40+t*0.01)*amb;
       v+=0.30*Math.exp(-Math.pow((fr-0.5)/0.30,2))*amb;
       v=Math.abs(v)*0.9;
-      v+=floor+0.05*Math.random();
+      v+=floor+0.05*grain(c*7000+i,t);
       out[i]=v;
     }
     return out;
@@ -648,7 +664,7 @@
 
   /* ============ LERP STATE ============ */
   // smooth readout values
-  let ampSmooth=42, trigSmooth=300;
+  let ampSmooth=42, forceSmooth=310, timeSmooth=0.34;
   const LERP_SPEED=0.06; // fraction per frame at 60fps
 
   /* ============ MAIN LOOP ============ */
@@ -691,20 +707,26 @@
     }
 
     // smooth lerp readouts toward target values
-    const ampTarget=25+30*noise(3,t,0.18);      // 25–55 μm float (초음파 진폭)
-    const ampTarget2=28+24*noise(9.1,t,0.25);   // 28–52 μm float (status bar mirror)
+    const ampTarget=25+30*noise(3,t,0.18);       // 25-55 μm float (초음파 진폭)
+    const forceTarget=240+120*noise(7.4,t,0.20); // 240-360 N pressure window
+    const timeTarget=0.22+0.26*noise(9.1,t,0.25);
     const lf=1-Math.pow(1-LERP_SPEED, dt/16.67); // dt-scaled lerp factor
     ampSmooth+=(ampTarget-ampSmooth)*lf;
-    trigSmooth+=(ampTarget2-trigSmooth)*lf;
+    forceSmooth+=(forceTarget-forceSmooth)*lf;
+    timeSmooth+=(timeTarget-timeSmooth)*lf;
 
     const ampVal=Math.round(ampSmooth);
     document.getElementById("gainv").textContent=ampVal+" μm";
     const ampRoEl=document.getElementById("ampro");
     if(ampRoEl) ampRoEl.textContent=ampVal+" μm";
-    document.getElementById("snr").textContent=Math.round(trigSmooth)+" μm";
+    const forceRoEl=document.getElementById("forcero");
+    if(forceRoEl) forceRoEl.textContent=Math.round(forceSmooth)+" N";
+    const timeRoEl=document.getElementById("timero");
+    if(timeRoEl) timeRoEl.textContent=timeSmooth.toFixed(2)+" s";
+    document.getElementById("ampstat").textContent=ampVal+" μm";
     document.getElementById("sweep").textContent=((t/1000)%600).toFixed(1)+" s";
 
-    // auto-stream DOE event log entries
+    // cycle DOE run-book entries
     if(t-lastEvtMs>EVT_INTERVAL){
       lastEvtMs=t;
       logEvent("evt");
@@ -719,7 +741,7 @@
     // scroll history down by 1px via back-buffer (no self-overlap, lossless)
     bctx.drawImage(wf,0,0);                               // snapshot current frame
     wctx.drawImage(buf, 0, topDev, dW, dH-topDev-1, 0, topDev+1, dW, dH-topDev-1);
-    // place fresh row at the "now" line
+    // place fresh row at the current-row line
     const row=buildRow(t);
     wctx.putImageData(row,0,topDev);
 
@@ -731,7 +753,7 @@
     drawDynamicOverlay();
   }
 
-  /* dynamic overlay redraw (DOE marker + now badge over static frame) */
+  /* dynamic overlay redraw (DOE marker + current-row badge over static frame) */
   let staticCached=null;
   function drawDynamicOverlay(){
     // redraw static frame then dynamic items
@@ -752,7 +774,7 @@
       octx.fillStyle="#ffe27a";
       octx.font="9px 'Share Tech Mono', monospace";
       octx.textBaseline="top";
-      octx.fillText("◆ 최적 확정: 스팟·레이저·초음파 3공정 DOE → 불량 0%대",x+6,y+4);
+      octx.fillText("◆ DOE LOCK: 진폭×가압력×용착시간 최적점 · 불량율 로브 냉각",x+6,y+4);
       octx.restore();
     }
   }
@@ -760,36 +782,21 @@
   /* ============ EVENT LOG FEED ============ */
   const feed=document.getElementById("feed");
   const evPool=[
-    // 저항(스팟) 용접 DOE 이벤트
-    ['cy','CH1','스팟 용접 DOE 개시 · 전류·가압력·통전시간 인자 수준 설정'],
-    ['ok','CH1','전류 수준 L1 → 너깃 직경 측정 · 용입 정상'],
-    ['wn','CH1','전류 상한 수준 · 스패터(Spatter) 발생 감지 · 조건 재검토'],
-    ['er','CH1','전류×가압력 교호작용 이상 · 너깃 불균일 · 분석 개시'],
-    ['ok','CH1','가압력 최적 수준 확정 · 너깃 직경 안정 · 조건 유효'],
-    ['ok','CH1','통전시간 최적화 · 접합 강도 목표 충족 · 표준화 대기'],
-    // 레이저(Nd:YAG) 용접 DOE 이벤트
-    ['cy','CH2','레이저(Nd:YAG) DOE 개시 · 출력·속도·초점위치 수준 설정'],
-    ['ok','CH2','출력 L1 수준 · 선에너지(J/mm) 저 · 용입 부족 경계'],
-    ['wn','CH2','초점 편차 감지 · 비드 폭 불균일 · 초점위치 재조정'],
-    ['er','CH2','출력×속도 교호작용 이상 · 기공(Porosity) 발생 · 조건 재설계'],
-    ['ok','CH2','최적 출력·속도·초점위치 확정 · 비드 안정 · 불량률↓'],
-    ['cy','CH2','레이저 용접 불량률 0.5 %p 절감 달성 · 조건 표준화'],
-    // 초음파 융착 DOE 이벤트
-    ['cy','CH3','초음파 융착 DOE 개시 · 진폭·가압력·융착시간 수준 설정'],
-    ['ok','CH3','진폭 중간 수준 · 혼 진동 안정 · 미용착 경계 이탈'],
-    ['wn','CH3','진폭 상한 수준 · 플래시(Flash) 과잉 발생 · 감시'],
-    ['er','CH3','융착시간 과잉 · 사출 케이스 변형 · 폐기 위험'],
-    ['ok','CH3','유지시간(Hold) 최적화 · 수지 고화 완료 · 조건 유효'],
-    ['ok','CH3','진폭×가압력 최적 조합 · 붕괴량 안정 · 조건 채택'],
-    // 불량율 반응 이벤트
-    ['er','CH4','초음파 융착 불량율 15 % 피크 · 전 채널 경보 · DOE 분석 개시'],
-    ['wn','CH4','DOE 런 진행 중 · 반응면 피팅 · 최적점 수렴 대기'],
-    ['ok','CH4','재작업 공수 절감 집계 중 · 임율 6.3원/초 기준'],
-    ['cy','CH4','3공정 최적 조건 후보 확정 · 검증 런 실시'],
-    ['ok','CH4','초음파 불량율 0 %대 달성 · 최적 조건 검증 완료'],
-    ['ok','CH4','레이저 불량률 0.5 %p↓ 확인 · 조건 표준화 완료'],
-    ['cy','ALL','3공정 DOE 완료 · 폐기 절감 연 3,600만 원 · 재작업 절감 연 3,200만 원'],
-    ['ok','ALL','기술자료 작성·교육·DOE 검증 완료 · 공정 표준화 적용'],
+    // 초음파 용착 DOE 이벤트: 정적 런 북 형태의 순차 로그
+    ['cy','A','진폭 수준표 설정 · 혼 팁 접촉면과 제품 지그 상태 확인'],
+    ['ok','A','중간 진폭 런 · 미용착 경계 이탈 · 플래시 없음'],
+    ['wn','A','상한 진폭 런 · 외관 눌림과 플래시 경계 접근'],
+    ['cy','B','가압력 수준표 설정 · 클램핑 반복성 확인'],
+    ['ok','B','중간 가압력 런 · 붕괴량 편차 안정'],
+    ['wn','B','과압 조건 · 진동 감쇠와 케이스 변형 경계 확인'],
+    ['cy','C','용착시간·Hold time 수준표 설정'],
+    ['er','C','과소 시간 런 · 계면 결합 미완료 · 불량 로브 기록'],
+    ['wn','C','과다 시간 런 · 열 이력 증가 · 외관 리스크 표시'],
+    ['cy','R','반응면 피팅 · 진폭×가압력×시간 교호작용 검토'],
+    ['ok','R','최적 후보 조건 검증 런 · 붕괴량과 외관 동시 확인'],
+    ['ok','R','불량율 정량 근거 · 작은 evidence rail에만 표시'],
+    ['ok','R','재작업·폐기 비용 근거 · 로그 헤드라인 제외'],
+    ['ok','STD','조건표·기술자료·교육안 반영 · 표준화 완료'],
   ];
   let evi=0;
 
@@ -798,13 +805,13 @@
   function logEvent(kind){
     let cls,tag,msg;
     if(kind==="doe"){
-      cls="er";tag="CH4";msg="◆ 최적 확정 스팟·레이저·초음파 3공정 DOE → 불량율 0%대 달성 · 표준화 완료";
+      cls="ok";tag="R";msg="◆ DOE LOCK · 진폭×가압력×용착시간 최적점 확정 · 표준화 완료";
     }else{
       const e=evPool[evi%evPool.length];evi++;
       cls=e[0];tag=e[1];msg=e[2];
     }
-    // rolling timestamp: current time minus random jitter so log looks live
-    const tstr=new Date().toLocaleTimeString('en-GB');
+    const runIdx=String((evi*3)%96).padStart(2,"0");
+    const tstr=kind==="doe"?"DOE LOCK":"RUN+"+runIdx+"m";
     const ln=document.createElement("div");
     ln.className="ln";
     ln.style.transition="opacity 1.2s";

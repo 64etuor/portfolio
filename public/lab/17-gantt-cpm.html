@@ -168,7 +168,10 @@ body{
 .dframe .tag{font-family:var(--mono);font-size:8.5px;color:var(--warn);letter-spacing:.08em;margin-left:6px}
 
 /* skills cloud */
-.skills{padding:4px 15px 16px;display:flex;flex-wrap:wrap;gap:5px}
+.skills{padding:4px 15px 16px;display:flex;flex-direction:column;gap:10px}
+.skgroup{display:flex;flex-direction:column;gap:5px}
+.skgroup-h{font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.skgroup-list{display:flex;flex-wrap:wrap;gap:5px}
 .sk{font-family:var(--mono);font-size:10px;color:var(--ink-2);border:1px solid var(--line);border-radius:5px;padding:2px 7px;background:var(--paper-2)}
 .sk.core{border-color:var(--ink-2);color:var(--ink);font-weight:700}
 
@@ -790,11 +793,15 @@ const DERIVED = [
 ];
 
 const SKILLS = [
-  ['생산·공정관리',1],['LOB·C/T 분석',1],['DOE',1],['PFMEA/CP/SOP',1],['Jig·기구설계',0],
-  ['비전검사',0],['IATF16949',0],['ERP·MES',1],
-  ['Python',1],['SQL',1],['FastAPI',1],['Django',0],['React·TypeScript',1],['Rust·Tauri',0],
-  ['Power BI·Apps',1],['DB 설계',1],['AWS·GCP·CI/CD',0],
-  ['RPA',0],['AI MCP·Agent',1],['데이터 무결성',0],['프로젝트 매니지먼트',1]
+  ['현장·공정', [
+    ['생산·공정관리',1],['LOB·C/T 분석',1],['DOE·PFMEA',1],['Jig·비전검사',1],['IATF16949·ERP/MES',1]
+  ]],
+  ['데이터·SW', [
+    ['Python·SQL',1],['데이터 무결성·DB 설계',1],['Power BI·Apps',1],['React·TS·FastAPI',1]
+  ]],
+  ['클라우드·AI', [
+    ['AWS·Terraform',1],['관측성·CI/CD',1],['AI MCP·Agent',1]
+  ]]
 ];
 
 /* ============================================================
@@ -1314,8 +1321,15 @@ function renderDerived(){
 }
 function renderSkills(){
   const wrap=document.getElementById('skills');wrap.innerHTML='';
-  SKILLS.forEach(([s,core])=>{
-    const e=document.createElement('span');e.className='sk'+(core?' core':'');e.textContent=s;wrap.appendChild(e);
+  SKILLS.forEach(([group,items])=>{
+    const section=document.createElement('div');section.className='skgroup';
+    const h=document.createElement('div');h.className='skgroup-h';h.textContent=group;section.appendChild(h);
+    const list=document.createElement('div');list.className='skgroup-list';
+    items.forEach(([s,core])=>{
+      const e=document.createElement('span');e.className='sk'+(core?' core':'');e.textContent=s;list.appendChild(e);
+    });
+    section.appendChild(list);
+    wrap.appendChild(section);
   });
 }
 

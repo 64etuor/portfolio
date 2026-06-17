@@ -219,22 +219,21 @@ body{
 .vp-stack .s{font-family:var(--mono);font-size:9px;color:var(--ink-2);border:1px solid var(--line);
   border-radius:4px;padding:1px 5px;background:var(--paper-2)}
 .vp-metrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.vp-rewind{display:inline-flex;align-items:center;gap:7px;
+.vp-section{position:relative;border-radius:9px;transition:background .28s ease,box-shadow .28s ease}
+.vp-section.replay-active{
+  background:rgba(74,128,240,.08);
+  box-shadow:0 0 0 1px rgba(74,128,240,.34),0 0 18px rgba(74,128,240,.10);
+}
+.vp-section.replay-active .vp-label{color:#9fc0ff}
+.vp-section.replay-active .vp-num{background:var(--today);color:#fff}
+.vp-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.vp-rewind,.vp-replay{display:inline-flex;align-items:center;gap:7px;
   font-family:var(--mono);font-size:10.5px;font-weight:700;
   color:var(--ink-2);border:1px solid var(--line-2);border-radius:7px;
   padding:6px 12px;background:var(--paper-2);cursor:pointer;
   transition:border-color .15s,color .15s,background .15s;user-select:none}
-.vp-rewind:hover{border-color:var(--today);color:#9fc0ff;background:#111927}
+.vp-rewind:hover,.vp-replay:hover{border-color:var(--today);color:#9fc0ff;background:#111927}
 .vp-divider{height:1px;background:var(--line);margin:12px 0}
-
-/* finale hint */
-#finaleHint{
-  display:none;margin:10px 0 0;
-  font-family:var(--mono);font-size:10.5px;color:var(--ink-2);
-  letter-spacing:.02em;border:1px solid var(--line-2);border-radius:7px;
-  padding:6px 12px;background:var(--paper-2);
-}
-#finaleHint.visible{display:inline-block}
 
 /* tooltip */
 .tip{position:fixed;pointer-events:none;z-index:70;background:#1e2530;color:var(--ink);
@@ -303,7 +302,7 @@ footer .r a:hover{color:var(--crit)}
         <span class="lg"><span class="sw" style="background:var(--c-sol)"></span>솔라엣지</span>
         <span class="lg"><span class="sw" style="background:var(--c-mir)"></span>스타트업</span>
         <span class="lg"><span class="sw" style="background:#46c79a"></span>개인 PJ·교육</span>
-        <span class="lg"><span class="swl"></span>크리티컬 패스(회사)</span>
+        <span class="lg"><span class="swl"></span>크리티컬 패스(회사 · 제조 기준선→데이터 무결성→시스템 운영→AI 거버넌스)</span>
         <span class="lg"><span class="swl t"></span>Today</span>
         <span class="lg"><span class="swd"></span>마일스톤</span>
       </div>
@@ -320,9 +319,8 @@ footer .r a:hover{color:var(--crit)}
         <span class="dot"></span>프로젝트 디밍
       </div>
       <span class="hint">회사·프로젝트 막대를 클릭하면 역할 상세 + 비즈니스 임팩트가 열립니다.</span>
-      <span id="finaleHint">이제 직접 확인하세요 — 막대를 눌러 실제 업무를 검증</span>
     </div>
-    <div class="cp-note mono">회사 = <b>크리티컬 패스</b> · 그 아래 프로젝트 = 병렬(Float) · 6년 5社 16 프로젝트</div>
+    <div class="cp-note mono">CP = <b>제조 기준선 → 데이터 무결성 → 시스템 운영 → AI 거버넌스</b> · 프로젝트 = 병렬(Float)</div>
   </div>
 
   <!-- main layout -->
@@ -421,7 +419,10 @@ footer .r a:hover{color:var(--crit)}
     <!-- ⑤ 관련 장면 되감기 -->
     <div class="vp-section" id="dSecRewind">
       <div class="vp-label"><span class="vp-num">⑤</span>관련 장면 되감기</div>
-      <button class="vp-rewind" id="dRewind" data-rewind="">↩ 관련 장면으로</button>
+      <div class="vp-actions">
+        <button class="vp-rewind" id="dRewind" data-rewind="">↩ 관련 장면으로</button>
+        <button class="vp-replay" id="dReplay" type="button">검증 리플레이</button>
+      </div>
     </div>
   </div>
 </div>
@@ -1123,6 +1124,56 @@ document.head.appendChild(styleDim);
    Detail panel — 5-section verification panel
 ============================================================ */
 const detail=document.getElementById('detail');
+const REWIND_ROUTES={
+  eunseong:'/s/instrument-rack',
+  elentec:'/s/assembly-line',
+  solaredge:'/s/mes-console',
+  bridge:'/s/digital-twin',
+  startup:'/s/pid-scheme',
+  epilogue:'/s/radar-sonar'
+};
+const REPLAY_STEPS=[
+  {id:'dSecProblem', ms:2000},
+  {id:'dSecBuilt', ms:3000},
+  {id:'dSecMetrics', ms:2000}
+];
+let replayTimers=[];
+function clearVerificationReplay(){
+  replayTimers.forEach(clearTimeout);
+  replayTimers=[];
+  REPLAY_STEPS.forEach(step=>{
+    const section=document.getElementById(step.id);
+    if(section) section.classList.remove('replay-active');
+  });
+}
+function startVerificationReplay(){
+  clearVerificationReplay();
+  let elapsed=0;
+  REPLAY_STEPS.forEach((step,idx)=>{
+    replayTimers.push(setTimeout(()=>{
+      REPLAY_STEPS.forEach(s=>{
+        const section=document.getElementById(s.id);
+        if(section) section.classList.toggle('replay-active', s.id===step.id);
+      });
+      const active=document.getElementById(step.id);
+      if(active) active.scrollIntoView({block:'nearest',behavior:'smooth'});
+    },elapsed));
+    elapsed+=step.ms;
+    if(idx===REPLAY_STEPS.length-1){
+      replayTimers.push(setTimeout(clearVerificationReplay,elapsed));
+    }
+  });
+}
+function rewindToScene(key){
+  const path=REWIND_ROUTES[key];
+  if(!path) return;
+  try{
+    const targetWindow=(window.top && window.top!==window) ? window.top : window;
+    targetWindow.location.href=path;
+  }catch(_err){
+    window.location.href=path;
+  }
+}
 function openDetail(t){
   // header
   document.getElementById('dBar').style.background=(t.kind==='study')?COLORS.self:t.color;
@@ -1161,23 +1212,23 @@ function openDetail(t){
   rw.dataset.rewind=t.rewind||'';
 
   detail.classList.add('show');
+  startVerificationReplay();
 }
-document.getElementById('dX').addEventListener('click',()=>detail.classList.remove('show'));
-document.addEventListener('keydown',e=>{if(e.key==='Escape')detail.classList.remove('show');});
+document.getElementById('dX').addEventListener('click',()=>{
+  clearVerificationReplay();
+  detail.classList.remove('show');
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    clearVerificationReplay();
+    detail.classList.remove('show');
+  }
+});
 document.getElementById('dRewind').addEventListener('click',function(){
   const act=this.dataset.rewind;
-  if(act) console.log('[rewind] act='+act);
+  rewindToScene(act);
 });
-
-/* ============================================================
-   Finale hint — show when URL contains ?finale
-============================================================ */
-(function(){
-  if(location.search.includes('finale')){
-    const el=document.getElementById('finaleHint');
-    if(el) el.classList.add('visible');
-  }
-})();
+document.getElementById('dReplay').addEventListener('click',startVerificationReplay);
 
 /* ============================================================
    Tooltip (hover business impact)

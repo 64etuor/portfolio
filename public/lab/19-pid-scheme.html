@@ -100,24 +100,25 @@
   .sig-flow{fill:none;stroke:var(--accent2);stroke-width:1.4;stroke-dasharray:6 4;animation:flow 1.8s linear infinite;}
   @keyframes flow{to{stroke-dashoffset:-40;}}
 
-  /* live log stream */
-  #liveLog{
+  /* missing-tool fill sequence */
+  #toolSequence{
     background:var(--panel);border:1.5px solid var(--line);
-    font-size:10.5px;line-height:1.55;padding:7px 10px;
-    height:120px;overflow:hidden;position:relative;margin:6px 0 0 0;
+    font-size:10.5px;line-height:1.55;padding:10px 12px;
+    min-height:118px;position:relative;margin:6px 0 0 0;
+    display:grid;grid-template-columns:1fr 1fr;gap:10px;
   }
-  #liveLog::before{content:"LIVE EVENT STREAM";position:absolute;top:4px;right:8px;
+  #toolSequence::before{content:"MISSING TOOL SHADOW \2192 FILLED OPERATING SURFACE";position:absolute;top:4px;right:8px;
     font-size:9px;letter-spacing:1px;color:var(--txt-faint);font-weight:700;}
-  .log-line{display:flex;gap:8px;opacity:0;transition:opacity .35s ease;margin-bottom:1px;}
-  .log-line.visible{opacity:1;}
-  .log-line.fading{opacity:0;transition:opacity .6s ease;}
-  .log-ts{color:var(--txt-faint);flex:0 0 68px;font-size:9.5px;}
-  .log-lvl{flex:0 0 38px;font-weight:800;font-size:9.5px;}
-  .log-lvl.info{color:var(--accent2);}
-  .log-lvl.warn{color:var(--amber);}
-  .log-lvl.err{color:var(--trip);}
-  .log-lvl.ok{color:var(--accent3);}
-  .log-msg{color:var(--txt-dim);flex:1;}
+  .tool-col{padding-top:16px;}
+  .tool-head{font-size:9.5px;color:var(--txt-dim);letter-spacing:1px;font-weight:800;text-transform:uppercase;margin-bottom:6px;}
+  .tool-row{display:grid;grid-template-columns:130px 18px 1fr;align-items:center;gap:8px;margin:4px 0;}
+  .tool-ghost{border:1.5px dashed var(--txt-faint);color:var(--txt-dim);padding:5px 7px;background:rgba(48,61,80,.08);}
+  .tool-arrow{color:var(--accent2);text-align:center;font-weight:800;}
+  .tool-fill{border:1px solid rgba(55,232,138,.45);color:var(--txt);padding:5px 7px;background:rgba(55,232,138,.055);position:relative;overflow:hidden;}
+  .tool-fill::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(55,232,138,.14),transparent);transform:translateX(-100%);animation:fillSweep 7.2s cubic-bezier(.16,1,.3,1) infinite;}
+  .tool-row:nth-child(3) .tool-fill::before{animation-delay:1.1s;}
+  .tool-row:nth-child(4) .tool-fill::before{animation-delay:2.2s;}
+  @keyframes fillSweep{0%,20%{transform:translateX(-100%);}45%,100%{transform:translateX(100%);}}
 
   .sym{stroke:var(--line);stroke-width:2.2;fill:var(--panel);}
   .sym-fill{fill:var(--panel2);stroke:var(--line);stroke-width:2.2;}
@@ -175,6 +176,9 @@
   .footer-contact b{color:var(--txt);}
 
   .ctrl-loop-box{fill:rgba(240,180,41,.04);stroke:var(--amber);stroke-width:1;stroke-dasharray:5 3;}
+  .ghost-box{fill:rgba(48,61,80,.06);stroke:var(--txt-faint);stroke-width:1.7;stroke-dasharray:7 5;}
+  .ghost-text{font-size:10px;fill:var(--txt-dim);text-anchor:middle;}
+  .filled-box{fill:rgba(55,232,138,.05);stroke:var(--accent3);stroke-width:1.6;}
 </style>
 </head>
 <body>
@@ -199,13 +203,13 @@
     </header>
 
     <div class="readouts" id="readouts">
-      <div class="ro"><div class="lab">TRAINS</div><div class="val">3 계열</div></div>
-      <div class="ro"><div class="lab">서비스 노드</div><div class="val">8 SVC</div></div>
-      <div class="ro"><div class="lab">제어루프</div><div class="val">2 LOOP</div></div>
-      <div class="ro"><div class="lab">회로차단기</div><div class="val good" id="cbRO">CLOSED</div></div>
-      <div class="ro"><div class="lab">계측기(관찰성)</div><div class="val good">14 INSTR</div></div>
-      <div class="ro"><div class="lab">heartbeat</div><div class="val">1.0 Hz</div></div>
-      <div class="ro"><div class="lab">멱등성 게이트</div><div class="val good">idempotent</div></div>
+      <div class="ro"><div class="lab">START STATE</div><div class="val">단일 EC2</div></div>
+      <div class="ro"><div class="lab">RUNTIME</div><div class="val good">ECS SVC</div></div>
+      <div class="ro"><div class="lab">TRAFFIC GATE</div><div class="val good">ALB TG</div></div>
+      <div class="ro"><div class="lab">INFRA AS CODE</div><div class="val good">Terraform</div></div>
+      <div class="ro"><div class="lab">OBSERVABILITY</div><div class="val good">CW + Sentry</div></div>
+      <div class="ro"><div class="lab">RECOVERY</div><div class="val">Alarm→Runbook</div></div>
+      <div class="ro"><div class="lab">DEPLOY GATE</div><div class="val" id="deployRO">BLOCKED</div></div>
     </div>
 
     <!-- ===================== MAIN SCHEME SVG ===================== -->
@@ -223,57 +227,57 @@
       <rect class="train-band" x="14" y="30" width="1512" height="270"/>
       <rect class="train-band" x="14" y="320" width="1512" height="270"/>
       <rect class="train-band" x="14" y="610" width="1512" height="300"/>
-      <text class="train-label" x="26" y="52">TRAIN A · REQUEST INGRESS — API GATEWAY 계열</text>
-      <text class="train-sub" x="26" y="66">Client → API Gateway → Auth → Rate Limiter → Service Mesh · SOLID 단일책임 / 클린 아키텍처</text>
-      <text class="train-label" x="26" y="342">TRAIN B · PROCESSING LOOP — 멱등성 큐 제어 계열</text>
-      <text class="train-sub" x="26" y="356">Worker → Queue → Idempotency Key → DB Commit · 회로차단기 / 지수 백오프 재시도</text>
-      <text class="train-label" x="26" y="632">TRAIN C · OBSERVABILITY &amp; GOVERNANCE 계열</text>
-      <text class="train-sub" x="26" y="646">Metric · Trace · Log 삼각 계측 · DeadLock 감시 · Human Gate (fail-closed)</text>
+      <text class="train-label" x="26" y="52">TRAIN A · RUNTIME CUTOVER — 단일 EC2 → ECS Service + ALB Target Group 이중화</text>
+      <text class="train-sub" x="26" y="66">수동 복구가 필요했던 단일 EC2 운영면을 ALB health check · ECS desired count · rolling deploy 흐름으로 전환</text>
+      <text class="train-label" x="26" y="342">TRAIN B · TERRAFORM IAC MODULE — 인프라 코드화 / 배포 표준화</text>
+      <text class="train-sub" x="26" y="356">Terraform plan → state lock → apply → AWS resource convergence · ALB/ECS/CloudWatch 모듈 기준선</text>
+      <text class="train-label" x="26" y="632">TRAIN C · OBSERVABILITY FILL-IN — CloudWatch · Sentry 관측 표면</text>
+      <text class="train-sub" x="26" y="646">비어 있던 관제 자리(에러 추적 없음 · 비용 가시성 없음 · 수동 복구)를 메트릭 · 로그 · 트레이스 · 알람으로 채움</text>
 
       <!-- ============================================================ -->
-      <!-- TRAIN A : Client -> Gateway -> Auth -> RateLimit -> Service -> DB -->
+      <!-- TRAIN A : Single EC2 -> ALB Listener -> Target Group -> ECS Service -> Store -->
       <!-- ============================================================ -->
 
-      <!-- Client source vessel -->
+      <!-- Single EC2 source vessel -->
       <g class="clickable" data-id="client">
         <rect class="hit" x="40" y="120" width="120" height="150" fill="transparent"/>
         <rect class="sym-fill" x="55" y="135" width="90" height="120" rx="4"/>
         <path d="M55,160 a45,12 0 0 0 90,0" fill="none" class="sym"/>
         <line x1="55" y1="160" x2="55" y2="135" class="sym"/><line x1="145" y1="160" x2="145" y2="135" class="sym"/>
         <path d="M55,135 a45,12 0 0 1 90,0" fill="none" class="sym"/>
-        <text class="tag" x="100" y="200">CLIENT</text>
-        <text class="tagnum" x="100" y="215">SRV-A01</text>
-        <text class="lbl-sm" x="100" y="240" text-anchor="middle">외부 요청 소스</text>
+        <text class="tag" x="100" y="200">단일 EC2</text>
+        <text class="tagnum" x="100" y="215">START-A01</text>
+        <text class="lbl-sm" x="100" y="240" text-anchor="middle">수동 복구 운영면</text>
       </g>
 
-      <!-- API Gateway -->
+      <!-- ALB Listener -->
       <g class="clickable" data-id="gateway">
         <rect class="hit" x="235" y="120" width="130" height="150" fill="transparent"/>
         <rect class="sym-fill" x="250" y="150" width="100" height="80" rx="3"/>
         <line x1="250" y1="172" x2="350" y2="172" class="sym"/>
         <path d="M260,210 q15,-26 30,0 q15,26 30,0 q15,-26 30,0" fill="none" stroke="var(--accent2)" stroke-width="2"/>
-        <text class="tag" x="300" y="167">API GATEWAY</text>
-        <text class="tagnum" x="300" y="248">라우팅 / 집계 GW-A02</text>
+        <text class="tag" x="300" y="167">ALB LISTENER</text>
+        <text class="tagnum" x="300" y="248">HTTPS 443 · LSN-A02</text>
       </g>
 
-      <!-- Auth service (buffer/exchanger style) -->
-      <g class="clickable" data-id="auth">
+      <!-- ALB target group (buffer/exchanger style) -->
+      <g class="clickable" data-id="targetgroup">
         <rect class="hit" x="430" y="120" width="120" height="150" fill="transparent"/>
         <rect class="sym-fill" x="445" y="150" width="90" height="80" rx="3"/>
         <line x1="445" y1="150" x2="535" y2="230" class="sym" stroke-width="1.2"/>
         <line x1="445" y1="230" x2="535" y2="150" class="sym" stroke-width="1.2"/>
-        <text class="tag" x="490" y="145">AUTH</text>
-        <text class="tagnum" x="490" y="248">인증/인가 SVC-A03</text>
+        <text class="tag" x="490" y="145">TARGET GROUP</text>
+        <text class="tagnum" x="490" y="248">health check · TG-A03</text>
       </g>
 
-      <!-- Service processor (pump) -->
+      <!-- ECS service processor (pump) -->
       <g class="clickable" data-id="service">
         <rect class="hit" x="615" y="120" width="130" height="150" fill="transparent"/>
         <circle class="sym" cx="680" cy="190" r="42"/>
         <path d="M680,190 L712,172 L712,208 Z" fill="var(--accent2)" stroke="none"/>
         <circle cx="680" cy="190" r="6" fill="var(--txt)"/>
-        <text class="tag" x="680" y="252">SERVICE P-A04</text>
-        <text class="lbl-sm" x="680" y="146" text-anchor="middle">비즈니스 로직 핵심</text>
+        <text class="tag" x="680" y="252">ECS SERVICE</text>
+        <text class="lbl-sm" x="680" y="146" text-anchor="middle">desired count 2</text>
       </g>
 
       <!-- PostgreSQL / DB vessel -->
@@ -283,7 +287,7 @@
         <path d="M835,150 a55,16 0 0 0 110,0" class="sym" fill="none"/>
         <path d="M835,185 a55,16 0 0 0 110,0" class="pipe-soft" />
         <path d="M835,218 a55,16 0 0 0 110,0" class="pipe-soft" />
-        <text class="tag" x="890" y="145">DB / Store</text>
+        <text class="tag" x="890" y="145">RDS / Store</text>
         <text class="tagnum" x="890" y="270">VESSEL TK-A05</text>
       </g>
 
@@ -295,8 +299,8 @@
         <line x1="1070" y1="180" x2="1150" y2="180" class="sym" stroke-width="1.2"/>
         <line x1="1070" y1="198" x2="1150" y2="198" class="sym" stroke-width="1.2"/>
         <line x1="1070" y1="216" x2="1130" y2="216" class="sym" stroke-width="1.2"/>
-        <text class="tag" x="1115" y="252">RESPONSE</text>
-        <text class="tagnum" x="1115" y="138" text-anchor="middle">RPT-A06 · 직렬화/전송</text>
+        <text class="tag" x="1115" y="252">ROLLING DEPLOY</text>
+        <text class="tagnum" x="1115" y="138" text-anchor="middle">ECS scheduler · DEP-A06</text>
       </g>
 
       <!-- Train A piping -->
@@ -311,35 +315,35 @@
       <path class="pipe" d="M945,200 H1053" marker-end="url(#arrow)"/>
       <path class="pipe-flow" d="M945,200 H1051"/>
 
-      <!-- Rate Limiter valve on Gateway->Auth line -->
+      <!-- Target health valve on ALB->Target Group line -->
       <g class="clickable" data-id="ratelimit">
         <rect class="hit" x="760" y="160" width="40" height="60" fill="transparent"/>
         <path d="M770,178 L790,202 L770,202 L790,178 Z" class="sym" fill="var(--panel)"/>
         <line x1="780" y1="190" x2="780" y2="172" class="sym" stroke-width="1.6"/>
         <rect x="772" y="166" width="16" height="6" class="sym-fill"/>
-        <text class="tagnum" x="780" y="226">RL-A1</text>
+        <text class="tagnum" x="780" y="226">HC-A1</text>
       </g>
 
       <!-- Train A instruments -->
-      <!-- FT: throughput on client->gateway -->
+      <!-- FT: ALB request metric on EC2->ALB -->
       <g class="clickable instr" data-id="ft-a101">
         <line x1="197" y1="195" x2="197" y2="120" class="sig-flow"/>
         <circle class="bubble" cx="197" cy="105" r="20"/>
         <text class="tag" x="197" y="101">FT</text><text class="tagnum" x="197" y="114">A101</text>
       </g>
-      <!-- AV: auth validation -->
+      <!-- AV: target health validation -->
       <g class="clickable instr" data-id="ai-a102">
         <line x1="490" y1="150" x2="490" y2="95" class="pipe-soft"/>
         <circle class="bubble" cx="490" cy="80" r="20"/>
         <line x1="470" y1="80" x2="510" y2="80" class="sym" stroke-width="1.4"/>
-        <text class="tag" x="490" y="76">AV</text><text class="tagnum" x="490" y="92">A102</text>
+        <text class="tag" x="490" y="76">HC</text><text class="tagnum" x="490" y="92">A102</text>
       </g>
-      <!-- QIC: idempotency key check on service -->
+      <!-- SIC: ECS service desired/running count -->
       <g class="clickable instr" data-id="qic-a103">
         <line x1="680" y1="148" x2="680" y2="92" class="pipe-soft"/>
         <circle class="bubble" cx="680" cy="78" r="20"/>
         <line x1="660" y1="78" x2="700" y2="78" class="sym" stroke-width="1.4"/>
-        <text class="tag" x="680" y="74">QIC</text><text class="tagnum" x="680" y="90">A103</text>
+        <text class="tag" x="680" y="74">SIC</text><text class="tagnum" x="680" y="90">A103</text>
       </g>
       <!-- LIC: DB connection pool level -->
       <g class="clickable instr" data-id="lic-a104">
@@ -347,71 +351,71 @@
         <circle class="bubble" cx="890" cy="78" r="20"/>
         <text class="tag" x="890" y="74">LIC</text><text class="tagnum" x="890" y="90">A104</text>
       </g>
-      <!-- QV: schema contract validation -->
+      <!-- DG: deployment gate -->
       <g class="clickable instr" data-id="qv-a105">
         <line x1="1115" y1="145" x2="1115" y2="110" class="pipe-soft"/>
         <circle class="bubble" cx="1115" cy="95" r="20"/>
         <line x1="1095" y1="95" x2="1135" y2="95" class="sym" stroke-width="1.4"/>
-        <text class="tag" x="1115" y="91">QV</text><text class="tagnum" x="1115" y="104">A105</text>
+        <text class="tag" x="1115" y="91">DG</text><text class="tagnum" x="1115" y="104">A105</text>
       </g>
 
       <!-- ============================================================ -->
-      <!-- TRAIN B : Producer -> Queue (control loop) -> Worker -> DB Commit -->
+      <!-- TRAIN B : Terraform module inputs -> Plan -> State Lock -> Apply -> AWS state -->
       <!-- ============================================================ -->
 
-      <!-- Producer -->
+      <!-- Terraform module inputs -->
       <g class="clickable" data-id="producer">
         <rect class="hit" x="40" y="400" width="120" height="170" fill="transparent"/>
         <rect class="sym-fill" x="55" y="415" width="70" height="34" rx="2"/>
         <rect class="sym-fill" x="55" y="455" width="70" height="34" rx="2"/>
         <rect class="sym-fill" x="55" y="495" width="70" height="34" rx="2"/>
-        <text class="tagnum" x="90" y="437" text-anchor="middle">Event A</text>
-        <text class="tagnum" x="90" y="477" text-anchor="middle">Event B</text>
-        <text class="tagnum" x="90" y="517" text-anchor="middle">Event C</text>
-        <text class="tag" x="90" y="552">PRODUCER</text>
+        <text class="tagnum" x="90" y="437" text-anchor="middle">alb.tf</text>
+        <text class="tagnum" x="90" y="477" text-anchor="middle">ecs.tf</text>
+        <text class="tagnum" x="90" y="517" text-anchor="middle">observability.tf</text>
+        <text class="tag" x="90" y="552">TF MODULES</text>
       </g>
 
-      <!-- Circuit Breaker reactor -->
-      <g class="clickable" data-id="circuitbreaker">
+      <!-- Terraform plan reactor -->
+      <g class="clickable" data-id="tfplan">
         <rect class="hit" x="225" y="400" width="150" height="170" fill="transparent"/>
         <rect class="sym-fill" x="245" y="430" width="110" height="100" rx="6"/>
         <circle cx="300" cy="480" r="30" fill="none" class="sym" stroke-dasharray="4 3"/>
-        <path d="M285,480 q15,-22 30,0 q-15,22 -30,0Z" fill="var(--accent)" stroke="none" opacity=".8"/>
-        <text class="tag" x="300" y="552">CIRCUIT BREAKER</text>
-        <text class="tagnum" x="300" y="424" text-anchor="middle">CLOSED / OPEN / HALF-OPEN</text>
+        <path d="M282,466 H318 M282,480 H318 M282,494 H308" fill="none" stroke="var(--amber)" stroke-width="2.4"/>
+        <text class="tag" x="300" y="552">TERRAFORM PLAN</text>
+        <text class="tagnum" x="300" y="424" text-anchor="middle">diff 검토 / blast radius</text>
       </g>
 
-      <!-- Idempotency key processor (pump) -->
+      <!-- Remote state lock processor (pump) -->
       <g class="clickable" data-id="idempkey">
         <rect class="hit" x="430" y="400" width="120" height="170" fill="transparent"/>
         <circle class="sym" cx="490" cy="480" r="40"/>
         <path d="M490,480 L520,464 L520,496 Z" fill="var(--accent3)" stroke="none"/>
         <circle cx="490" cy="480" r="5" fill="var(--txt)"/>
-        <text class="tag" x="490" y="552">IDEMP KEY P-B14</text>
-        <text class="tagnum" x="490" y="424" text-anchor="middle">중복 요청 차단 / 멱등</text>
+        <text class="tag" x="490" y="552">STATE LOCK P-B14</text>
+        <text class="tagnum" x="490" y="424" text-anchor="middle">remote state · lock</text>
       </g>
 
-      <!-- ===== Queue rendered as CONTROL LOOP w/ setpoint ===== -->
-      <g id="queueLoop">
+      <!-- ===== Terraform apply rendered as CONTROL LOOP w/ setpoint ===== -->
+      <g id="applyLoop">
         <rect class="ctrl-loop-box" x="615" y="395" width="330" height="185" rx="6"/>
-        <text class="train-sub" x="625" y="412" fill="var(--amber)" style="font-weight:800">RETRY QUEUE 제어루프 · SP=COMMITTED</text>
+        <text class="train-sub" x="625" y="412" fill="var(--amber)" style="font-weight:800">TERRAFORM APPLY 제어루프 · SP=SERVICE STABLE</text>
 
-        <!-- queue vessel -->
-        <g class="clickable" data-id="retryqueue">
+        <!-- apply vessel -->
+        <g class="clickable" data-id="tfapply">
           <rect class="hit" x="630" y="430" width="120" height="120" fill="transparent"/>
           <rect class="sym-fill" x="645" y="450" width="90" height="86" rx="3"/>
-          <rect id="queueFill" x="647" y="498" width="86" height="36" fill="rgba(54,217,217,.18)"/>
-          <line id="queueSP" x1="645" y1="470" x2="735" y2="470" stroke="var(--amber)" stroke-width="1.6" stroke-dasharray="4 3"/>
-          <text class="tag" x="690" y="446">QUEUE TK-B15</text>
-          <text class="tagnum" x="690" y="552">exp backoff · DLQ</text>
+          <rect id="applyFill" x="647" y="498" width="86" height="36" fill="rgba(54,217,217,.18)"/>
+          <line id="applySP" x1="645" y1="470" x2="735" y2="470" stroke="var(--amber)" stroke-width="1.6" stroke-dasharray="4 3"/>
+          <text class="tag" x="690" y="446">APPLY TK-B15</text>
+          <text class="tagnum" x="690" y="552">plan/apply output</text>
         </g>
 
-        <!-- state machine readout -->
+        <!-- apply state readout -->
         <g>
           <rect class="sym-fill" x="775" y="445" width="155" height="100" rx="3"/>
-          <text class="tagnum" x="852" y="438" text-anchor="middle">RETRY STATE LIC-B16</text>
-          <text id="smState" x="852" y="478" text-anchor="middle" style="font-size:14px;font-weight:800;fill:var(--amber)">PENDING</text>
-          <text id="smBackoff" x="852" y="500" text-anchor="middle" class="tagnum">backoff: 0ms</text>
+          <text class="tagnum" x="852" y="438" text-anchor="middle">APPLY STATE SIC-B16</text>
+          <text id="smState" x="852" y="478" text-anchor="middle" style="font-size:14px;font-weight:800;fill:var(--amber)">PLAN</text>
+          <text id="smBackoff" x="852" y="500" text-anchor="middle" class="tagnum">stage: validate</text>
           <text id="smBar" x="852" y="525" text-anchor="middle" class="tagnum" style="letter-spacing:2px">○○○○</text>
         </g>
         <g class="clickable instr" data-id="lic-b16">
@@ -419,33 +423,33 @@
         </g>
       </g>
 
-      <!-- DB commit vessel -->
+      <!-- AWS state vessel -->
       <g class="clickable" data-id="dbcommit">
         <rect class="hit" x="1015" y="395" width="150" height="180" fill="transparent"/>
         <path d="M1035,440 a52,15 0 0 1 104,0 L1139,535 a52,15 0 0 1 -104,0 Z" class="sym-fill"/>
         <path d="M1035,440 a52,15 0 0 0 104,0" class="sym" fill="none"/>
         <path d="M1035,472 a52,15 0 0 0 104,0" class="pipe-soft"/>
         <path d="M1035,503 a52,15 0 0 0 104,0" class="pipe-soft"/>
-        <text class="tag" x="1087" y="435">DB COMMIT</text>
-        <text class="tagnum" x="1087" y="560">VESSEL TK-B17</text>
+        <text class="tag" x="1087" y="435">AWS STATE</text>
+        <text class="tagnum" x="1087" y="560">ALB/ECS/CW · TK-B17</text>
       </g>
 
-      <!-- Trace instrument on DB commit -->
+      <!-- CloudWatch instrument on AWS state -->
       <g class="clickable instr" data-id="cw-b18">
         <line x1="1087" y1="395" x2="1087" y2="360" class="pipe-elec"/>
         <circle class="bubble" cx="1087" cy="345" r="20"/>
-        <text class="tag" x="1087" y="341">TI</text><text class="tagnum" x="1087" y="354">B18</text>
+        <text class="tag" x="1087" y="341">CW</text><text class="tagnum" x="1087" y="354">B18</text>
       </g>
 
-      <!-- DLQ / Dead Letter Queue -->
+      <!-- Drift review lane -->
       <g class="clickable" data-id="dlq">
         <rect class="hit" x="1230" y="420" width="130" height="120" fill="transparent"/>
         <rect class="sym-fill" x="1245" y="440" width="100" height="80" rx="3" stroke-dasharray="5 3"/>
-        <text class="tagnum" x="1295" y="462" text-anchor="middle">Dead Letter</text>
-        <text class="tagnum" x="1295" y="478" text-anchor="middle">Queue</text>
-        <text class="tagnum" x="1295" y="493" text-anchor="middle">재처리 대기</text>
-        <text class="tagnum" x="1295" y="508" text-anchor="middle">알람 발송</text>
-        <text class="tag" x="1295" y="538">DLQ-B19</text>
+        <text class="tagnum" x="1295" y="462" text-anchor="middle">Drift</text>
+        <text class="tagnum" x="1295" y="478" text-anchor="middle">Review</text>
+        <text class="tagnum" x="1295" y="493" text-anchor="middle">수동 변경 격리</text>
+        <text class="tagnum" x="1295" y="508" text-anchor="middle">plan 재검토</text>
+        <text class="tag" x="1295" y="538">DRIFT-B19</text>
       </g>
 
       <!-- Train B piping -->
@@ -464,60 +468,58 @@
       <g class="clickable instr" data-id="ti-b11">
         <line x1="90" y1="415" x2="90" y2="378" class="sig-flow"/>
         <circle class="bubble" cx="90" cy="363" r="20"/>
-        <text class="tag" x="90" y="359">FT</text><text class="tagnum" x="90" y="372">B11</text>
+        <text class="tag" x="90" y="359">VC</text><text class="tagnum" x="90" y="372">B11</text>
       </g>
       <g class="clickable instr" data-id="pi-b12">
         <line x1="300" y1="430" x2="300" y2="378" class="pipe-elec"/>
         <circle class="bubble" cx="300" cy="363" r="20"/>
-        <text class="tag" x="300" y="359">PIT</text><text class="tagnum" x="300" y="372">B12</text>
+        <text class="tag" x="300" y="359">PD</text><text class="tagnum" x="300" y="372">B12</text>
       </g>
       <g class="clickable instr" data-id="qt-b13">
         <line x1="490" y1="440" x2="490" y2="378" class="pipe-soft"/>
         <circle class="bubble" cx="490" cy="363" r="20"/>
         <line x1="470" y1="363" x2="510" y2="363" class="sym" stroke-width="1.4"/>
-        <text class="tag" x="490" y="359">QT</text><text class="tagnum" x="490" y="372">B13</text>
+        <text class="tag" x="490" y="359">SL</text><text class="tagnum" x="490" y="372">B13</text>
       </g>
 
       <!-- ============================================================ -->
-      <!-- TRAIN C : Metric/Trace/Log -> Aggregator -> Deadlock Watcher -> Human Gate -->
+      <!-- TRAIN C : Missing tool shadows -> CloudWatch/Sentry -> Alarm/Runbook -->
       <!-- ============================================================ -->
 
-      <!-- Observability sources (manifold) -->
+      <!-- Missing observability seats (ghost motif) -->
       <g class="clickable" data-id="obsources">
         <rect class="hit" x="40" y="700" width="140" height="170" fill="transparent"/>
-        <rect class="sym-fill" x="55" y="715" width="115" height="26" rx="2"/>
-        <rect class="sym-fill" x="55" y="747" width="115" height="26" rx="2"/>
-        <rect class="sym-fill" x="55" y="779" width="115" height="26" rx="2"/>
-        <rect class="sym-fill" x="55" y="811" width="115" height="26" rx="2"/>
-        <text class="tagnum" x="112" y="733" text-anchor="middle">Metric</text>
-        <text class="tagnum" x="112" y="765" text-anchor="middle">Trace</text>
-        <text class="tagnum" x="112" y="797" text-anchor="middle">Log</text>
-        <text class="tagnum" x="112" y="829" text-anchor="middle">Event</text>
-        <text class="tag" x="112" y="858">OBS MANIFOLD</text>
+        <rect class="ghost-box" x="55" y="715" width="115" height="30" rx="2"/>
+        <rect class="ghost-box" x="55" y="755" width="115" height="30" rx="2"/>
+        <rect class="ghost-box" x="55" y="795" width="115" height="30" rx="2"/>
+        <text class="ghost-text" x="112" y="734">에러 추적 없음</text>
+        <text class="ghost-text" x="112" y="774">비용 가시성 없음</text>
+        <text class="ghost-text" x="112" y="814">수동 복구</text>
+        <text class="tag" x="112" y="858">EMPTY TOOL SEATS</text>
       </g>
 
-      <!-- Aggregator reactor (owns all collection) -->
+      <!-- CloudWatch reactor (owns metrics/logs/alarms) -->
       <g class="clickable" data-id="aggregator">
         <rect class="hit" x="270" y="700" width="170" height="170" fill="transparent"/>
         <rect class="sym-fill" x="290" y="730" width="130" height="110" rx="8"/>
         <path d="M310,785 l20,-28 l20,28 l20,-28 l20,28" fill="none" stroke="var(--accent3)" stroke-width="2.4"/>
         <circle cx="355" cy="810" r="6" fill="var(--txt)"/>
-        <text class="tag" x="355" y="862">AGGREGATOR R-C21</text>
-        <text class="tagnum" x="355" y="724" text-anchor="middle">수집 파이프라인 중앙화</text>
+        <text class="tag" x="355" y="862">CLOUDWATCH R-C21</text>
+        <text class="tagnum" x="355" y="724" text-anchor="middle">metrics · logs · alarms</text>
       </g>
 
-      <!-- Time-series store vessel -->
+      <!-- CloudWatch metrics/log store vessel -->
       <g class="clickable" data-id="tsdb">
         <rect class="hit" x="510" y="700" width="150" height="180" fill="transparent"/>
         <path d="M530,745 a52,15 0 0 1 104,0 L634,840 a52,15 0 0 1 -104,0 Z" class="sym-fill"/>
         <path d="M530,745 a52,15 0 0 0 104,0" class="sym" fill="none"/>
         <path d="M530,777 a52,15 0 0 0 104,0" class="pipe-soft"/>
         <path d="M530,808 a52,15 0 0 0 104,0" class="pipe-soft"/>
-        <text class="tag" x="582" y="740">TIME-SERIES DB</text>
-        <text class="tagnum" x="582" y="865">TK-C22 · retention policy</text>
+        <text class="tag" x="582" y="740">CW LOG GROUP</text>
+        <text class="tagnum" x="582" y="865">TK-C22 · retention/cost</text>
       </g>
 
-      <!-- Dashboard presentation -->
+      <!-- Sentry presentation -->
       <g class="clickable" data-id="dashboard">
         <rect class="hit" x="720" y="700" width="150" height="170" fill="transparent"/>
         <rect class="sym-fill" x="740" y="740" width="110" height="90" rx="3"/>
@@ -525,21 +527,21 @@
         <ellipse cx="795" cy="785" rx="48" ry="18" fill="none" class="sym" stroke-width="1.6" transform="rotate(60 795 785)"/>
         <ellipse cx="795" cy="785" rx="48" ry="18" fill="none" class="sym" stroke-width="1.6" transform="rotate(120 795 785)"/>
         <circle cx="795" cy="785" r="6" fill="var(--accent2)"/>
-        <text class="tag" x="795" y="852">DASHBOARD</text>
+        <text class="tag" x="795" y="852">SENTRY</text>
       </g>
 
-      <!-- Human Gate / Governance loop block -->
+      <!-- Alarm / runbook loop block -->
       <g class="clickable" data-id="humangate">
         <rect class="hit" x="940" y="690" width="430" height="190" fill="transparent"/>
         <rect class="ctrl-loop-box" x="950" y="700" width="410" height="170" rx="6" stroke="var(--accent3)"/>
-        <text class="train-sub" x="962" y="718" fill="var(--accent3)" style="font-weight:800">HUMAN GATE · fail-closed autonomy 격리</text>
+        <text class="train-sub" x="962" y="718" fill="var(--accent3)" style="font-weight:800">ALARM + RUNBOOK · 수동 복구를 절차화</text>
         <!-- pipeline nodes -->
         <g id="gateNodes">
-          <rect class="sym-fill" x="962" y="735" width="64" height="36" rx="2"/><text class="tagnum" x="994" y="757" text-anchor="middle">alert</text>
-          <rect class="sym-fill" x="1040" y="735" width="64" height="36" rx="2"/><text class="tagnum" x="1072" y="757" text-anchor="middle">triage</text>
-          <rect class="sym-fill" x="1118" y="735" width="64" height="36" rx="2"/><text class="tagnum" x="1150" y="757" text-anchor="middle">approve</text>
-          <rect class="sym-fill" x="1196" y="735" width="74" height="36" rx="2"/><text class="tagnum" x="1233" y="757" text-anchor="middle">rollback</text>
-          <rect class="sym-fill" x="1284" y="735" width="68" height="36" rx="2"/><text class="tagnum" x="1318" y="757" text-anchor="middle">close</text>
+          <rect class="filled-box" x="962" y="735" width="64" height="36" rx="2"/><text class="tagnum" x="994" y="757" text-anchor="middle">alarm</text>
+          <rect class="filled-box" x="1040" y="735" width="64" height="36" rx="2"/><text class="tagnum" x="1072" y="757" text-anchor="middle">triage</text>
+          <rect class="filled-box" x="1118" y="735" width="64" height="36" rx="2"/><text class="tagnum" x="1150" y="757" text-anchor="middle">runbook</text>
+          <rect class="filled-box" x="1196" y="735" width="74" height="36" rx="2"/><text class="tagnum" x="1233" y="757" text-anchor="middle">rollback</text>
+          <rect class="filled-box" x="1284" y="735" width="68" height="36" rx="2"/><text class="tagnum" x="1318" y="757" text-anchor="middle">verify</text>
           <line x1="1026" y1="753" x2="1040" y2="753" class="pipe-soft"/>
           <line x1="1104" y1="753" x2="1118" y2="753" class="pipe-soft"/>
           <line x1="1182" y1="753" x2="1196" y2="753" class="pipe-soft"/>
@@ -547,8 +549,8 @@
         </g>
         <!-- ticker heartbeat -->
         <circle id="tickerDot" cx="975" cy="825" r="7" fill="var(--accent3)"/>
-        <text class="tagnum" x="1000" y="830" text-anchor="start">deadlock watchdog</text>
-        <text id="tickerHz" class="tagnum" x="1180" y="830" text-anchor="start" fill="var(--accent3)">1.0 Hz · alive</text>
+        <text class="tagnum" x="1000" y="830" text-anchor="start">CloudWatch alarm heartbeat</text>
+        <text id="tickerHz" class="tagnum" x="1206" y="830" text-anchor="start" fill="var(--accent3)">configured</text>
       </g>
 
       <!-- Train C piping -->
@@ -574,27 +576,40 @@
       </g>
 
       <!-- ============================================================ -->
-      <!-- CROSS-TRAIN INTERLOCK: Circuit Breaker OPEN -> fallback -> RESET -->
+      <!-- CROSS-TRAIN INTERLOCK: ECS deployment blocked until ALB health checks pass -->
       <!-- ============================================================ -->
       <g id="interlockBadge">
         <rect id="ilBox" class="sym-fill" x="1230" y="120" width="270" height="150" rx="4" stroke="var(--trip)" stroke-width="2.4"/>
-        <text class="tag" x="1365" y="146" style="font-size:12px;fill:var(--trip)">&#9888; CB INTERLOCK</text>
-        <text class="tagnum" x="1365" y="162">ISL-901 · 차단기 트립 루프</text>
+        <text class="tag" x="1365" y="146" style="font-size:12px;fill:var(--trip)">DEPLOY HEALTH INTERLOCK</text>
+        <text class="tagnum" x="1365" y="162">ISL-901 · ALB target health gate</text>
         <!-- gauge -->
         <circle id="ilGaugeBg" cx="1300" cy="210" r="40" fill="none" stroke="var(--grid)" stroke-width="8"/>
         <circle id="ilGauge" cx="1300" cy="210" r="40" fill="none" stroke="var(--trip)" stroke-width="8"
                 stroke-dasharray="251" stroke-dashoffset="213" transform="rotate(-90 1300 210)" stroke-linecap="round"/>
-        <text id="ilPct" x="1300" y="207" text-anchor="middle" style="font-size:20px;font-weight:800;fill:var(--trip)">OPEN</text>
-        <text class="tagnum" x="1300" y="223" text-anchor="middle">오류율 지표</text>
-        <text id="ilStatus" x="1430" y="205" text-anchor="middle" style="font-size:13px;font-weight:800;fill:var(--trip)">TRIPPED</text>
-        <text class="tagnum" x="1430" y="225" text-anchor="middle">클릭=리셋</text>
-        <text class="lbl-sm" x="1365" y="258" text-anchor="middle">HALF-OPEN 검증 후 자동 CLOSE (정상 수렴)</text>
+        <text id="ilPct" x="1300" y="207" text-anchor="middle" style="font-size:18px;font-weight:800;fill:var(--trip)">BLOCK</text>
+        <text class="tagnum" x="1300" y="223" text-anchor="middle">healthy target 비율</text>
+        <text id="ilStatus" x="1430" y="205" text-anchor="middle" style="font-size:13px;font-weight:800;fill:var(--trip)">WAITING</text>
+        <text class="tagnum" x="1430" y="225" text-anchor="middle">클릭=검증</text>
+        <text class="lbl-sm" x="1365" y="258" text-anchor="middle">ALB health check 통과 후 ECS rolling deploy 허용</text>
       </g>
 
     </svg>
     <!-- ===================== /SCHEME ===================== -->
 
-    <div id="liveLog"></div>
+    <div id="toolSequence" aria-label="비어 있던 관제 도구가 CloudWatch와 Sentry로 채워지는 순서">
+      <div class="tool-col">
+        <div class="tool-head">Before · 없는 도구의 음영</div>
+        <div class="tool-row"><div class="tool-ghost">에러 추적 없음</div><div class="tool-arrow">→</div><div class="tool-fill">Sentry issue + trace</div></div>
+        <div class="tool-row"><div class="tool-ghost">비용 가시성 없음</div><div class="tool-arrow">→</div><div class="tool-fill">CloudWatch metrics/log retention</div></div>
+        <div class="tool-row"><div class="tool-ghost">수동 복구</div><div class="tool-arrow">→</div><div class="tool-fill">Alarm + runbook + rollback check</div></div>
+      </div>
+      <div class="tool-col">
+        <div class="tool-head">Built · 인프라·관제</div>
+        <div class="tool-row"><div class="tool-ghost">단일 EC2</div><div class="tool-arrow">→</div><div class="tool-fill">ECS Service + ALB Target Group</div></div>
+        <div class="tool-row"><div class="tool-ghost">콘솔 수동 변경</div><div class="tool-arrow">→</div><div class="tool-fill">Terraform IaC module</div></div>
+        <div class="tool-row"><div class="tool-ghost">배포 중 다운타임</div><div class="tool-arrow">→</div><div class="tool-fill">ECS rolling deploy health gate</div></div>
+      </div>
+    </div>
 
     <div class="footgrid">
       <div class="legend">
@@ -605,15 +620,16 @@
           <div class="legitem"><svg viewBox="0 0 38 14"><line x1="0" y1="7" x2="38" y2="7" stroke="var(--accent3)" stroke-width="1.6" stroke-dasharray="2 4"/></svg> 소프트웨어 링크</div>
           <div class="legitem"><svg viewBox="0 0 38 14"><circle cx="19" cy="7" r="6" fill="none" stroke="var(--line)" stroke-width="2"/></svg> 현장 계측기(field)</div>
           <div class="legitem"><svg viewBox="0 0 38 14"><circle cx="19" cy="7" r="6" fill="none" stroke="var(--line)" stroke-width="2"/><line x1="13" y1="7" x2="25" y2="7" stroke="var(--line)"/></svg> 패널/SW 계측기</div>
-          <div class="legitem"><svg viewBox="0 0 38 14"><circle cx="19" cy="7" r="6" fill="none" stroke="var(--line)" stroke-width="2"/><path d="M22,4 L26,7 L22,10Z" fill="var(--line)"/></svg> 서비스/프로세서</div>
-          <div class="legitem"><svg viewBox="0 0 38 14"><path d="M11,3 L25,11 L11,11 L25,3 Z" fill="none" stroke="var(--line)" stroke-width="1.6"/></svg> 밸브(gate/limiter)</div>
+          <div class="legitem"><svg viewBox="0 0 38 14"><circle cx="19" cy="7" r="6" fill="none" stroke="var(--line)" stroke-width="2"/><path d="M22,4 L26,7 L22,10Z" fill="var(--line)"/></svg> ECS 서비스/프로세서</div>
+          <div class="legitem"><svg viewBox="0 0 38 14"><path d="M11,3 L25,11 L11,11 L25,3 Z" fill="none" stroke="var(--line)" stroke-width="1.6"/></svg> 헬스체크/배포 게이트</div>
           <div class="legitem"><svg viewBox="0 0 38 14"><rect x="11" y="2" width="16" height="10" rx="2" fill="none" stroke="var(--line)" stroke-width="1.6"/></svg> 데이터스토어/베셀</div>
+          <div class="legitem"><svg viewBox="0 0 38 14"><rect x="8" y="2" width="22" height="10" rx="2" fill="none" stroke="var(--txt-faint)" stroke-width="1.6" stroke-dasharray="4 3"/></svg> 없는 도구의 음영</div>
         </div>
       </div>
       <div class="titleblock">
         <h3>TITLE BLOCK</h3>
         <div class="tb-grid">
-          <div class="tb-cell"><div class="k">도면명 / TITLE</div><div class="v">소프트웨어 시스템 토폴로지</div></div>
+          <div class="tb-cell"><div class="k">도면명 / TITLE</div><div class="v">ECS/Terraform 관제 토폴로지</div></div>
           <div class="tb-cell"><div class="k">DWG NO.</div><div class="v">PYH-SYS-001</div></div>
           <div class="tb-cell"><div class="k">REV.</div><div class="v">D</div></div>
           <div class="tb-cell"><div class="k">날짜 / DATE</div><div class="v">2026-06-15</div></div>
@@ -622,7 +638,7 @@
         </div>
       </div>
     </div>
-    <p class="hint">&#9655; 계측기(bubble) · 서비스 · 베셀을 클릭하면 아키텍처 상세가 열립니다. · &#9888; CB INTERLOCK을 클릭하면 회로차단기 트립 → HALF-OPEN → CLOSE 수렴 시퀀스가 작동합니다.</p>
+    <p class="hint">&#9655; 계측기(bubble) · 서비스 · 베셀을 클릭하면 인프라 상세가 열립니다. · DEPLOY HEALTH INTERLOCK을 클릭하면 ALB 헬스체크 → ECS rolling deploy 허용 시퀀스가 작동합니다.</p>
     <p class="footer-contact">박양하</p>
   </div>
 </div>
@@ -643,70 +659,70 @@
 /* ===================== DETAIL DATA ===================== */
 const DATA = {
   // TRAIN A
-  client:{tag:"SRV-A01 · 소스 베셀",title:"Client (외부 요청 소스)",type:"Train A · 요청 진입점",
-    body:'<div class="sec"><h4>역할</h4><p>브라우저 · 모바일 앱 · 서드파티 서비스 등 모든 외부 클라이언트가 API Gateway로 요청을 보내는 1차 소스 베셀.</p></div><div class="sec"><h4>흐름</h4><p>Client → TLS → API Gateway → Auth → Service</p></div><div class="sec"><h4>설계 원칙</h4><span class="chip">신뢰 경계 최소화</span><span class="chip">TLS 종단</span></div>'},
-  gateway:{tag:"GW-A02 · 게이트웨이",title:"API Gateway",type:"Train A · 라우팅 / 집계",
-    body:'<div class="sec"><h4>역할</h4><p>단일 진입점으로 라우팅 · 로드밸런싱 · 요청 집계를 담당. 내부 서비스 토폴로지를 외부에 노출하지 않는 클린 레이어 경계.</p></div><div class="sec"><h4>기능</h4><ul><li>경로 기반 라우팅</li><li>요청 집계 (BFF 패턴)</li><li>SSL 종료</li><li>Rate Limit 위임</li></ul></div><div class="sec"><h4>설계 원칙</h4><span class="chip">클린 아키텍처</span><span class="chip">단일 진입점</span><span class="chip">SOLID</span></div>'},
-  auth:{tag:"SVC-A03 · 인증",title:"Auth Service (인증 / 인가)",type:"Train A · 보안 레이어",
-    body:'<div class="sec"><h4>역할</h4><p>JWT / OAuth2 토큰 검증 및 권한 인가. 단일 책임 원칙(SRP)으로 인증 로직을 비즈니스 로직과 완전 분리.</p></div><div class="sec"><h4>설계</h4><ul><li>토큰 검증 · 클레임 파싱</li><li>권한 범위(scope) 검사</li><li>세션 블랙리스트 조회</li></ul></div><div class="sec"><h4>설계 원칙</h4><span class="chip">SRP</span><span class="chip">JWT</span><span class="chip">OAuth2</span></div>'},
-  service:{tag:"P-A04 · 서비스",title:"Core Service (비즈니스 로직)",type:"Train A · 핵심 프로세서",
-    body:'<div class="sec"><h4>역할</h4><p>유즈케이스 단위로 비즈니스 로직을 실행하는 핵심 펌프. 의존성 역전(DIP)으로 외부 인프라에 의존하지 않는 순수 도메인 레이어.</p></div><div class="sec"><h4>설계</h4><ul><li>유즈케이스 단위 캡슐화</li><li>인터페이스 추상화</li><li>도메인 이벤트 발행</li></ul></div><div class="sec"><h4>설계 원칙</h4><span class="chip">클린 아키텍처</span><span class="chip">DIP</span><span class="chip">도메인 이벤트</span></div>'},
-  db:{tag:"TK-A05 · 베셀",title:"DB / Data Store",type:"Train A · 데이터스토어",
-    body:'<div class="sec"><h4>역할</h4><p>비즈니스 상태의 단일 진실원천(SSOT). 트랜잭션 · 인덱싱 · 스키마 마이그레이션을 담당.</p></div><div class="sec"><h4>특징</h4><ul><li>트랜잭션 격리 수준 설계</li><li>커넥션 풀 레벨 관리</li><li>마이그레이션 버전 관리</li></ul></div><div class="sec"><h4>설계 원칙</h4><span class="chip">SSOT</span><span class="chip">트랜잭션</span><span class="chip">마이그레이션</span></div>'},
-  response:{tag:"RPT-A06 · 출력",title:"Response Emitter",type:"Train A · 출력 직렬화",
-    body:'<div class="sec"><h4>역할</h4><p>서비스 결과를 클라이언트 계약 스키마로 직렬화하여 반환. 스키마 계약(QV) 검증을 통과한 응답만 방출.</p></div><div class="sec"><h4>설계 원칙</h4><span class="chip">스키마 계약</span><span class="chip">직렬화</span></div>'},
-  ratelimit:{tag:"RL-A1 · Rate Limiter",title:"Rate Limiter (요청 속도 제한 밸브)",type:"Train A · 보호 밸브",
-    body:'<div class="sec"><h4>역할</h4><p>과부하 요청을 토큰 버킷 / 슬라이딩 윈도우 알고리즘으로 차단. 서비스 보호와 공정 자원 분배를 동시에 달성.</p></div><div class="sec"><h4>설계 원칙</h4><span class="chip">Token Bucket</span><span class="chip">Sliding Window</span><span class="chip">429 Too Many Requests</span></div>'},
-  "ft-a101":{tag:"FT-A101 · 처리량",title:"요청 처리량 계측",type:"계측기 · 관찰성(Metric)",
-    body:'<div class="sec"><h4>측정</h4><p>Client → Gateway 구간 초당 요청 수(RPS) 측정. SLO 기준 대비 실시간 비교.</p></div>'},
-  "ai-a102":{tag:"AV-A102 · 인증 검증",title:"Auth 토큰 유효성 검증",type:"계측기 · 소프트웨어 분석",
-    body:'<div class="sec"><h4>검증</h4><p>JWT 서명 · 만료 · 클레임 유효성을 실시간 검증. 이상 토큰 트랩 후 로그 기록.</p></div><div class="sec"><h4>설계 원칙</h4><span class="chip">JWT 검증</span><span class="chip">이상 감지</span></div>'},
-  "qic-a103":{tag:"QIC-A103 · 멱등성",title:"Idempotency Key 검증 제어",type:"계측기 · 품질 인디케이팅 컨트롤",
-    body:'<div class="sec"><h4>검증</h4><p>요청 헤더의 Idempotency-Key를 캐시와 대조해 중복 요청을 차단. 동일 키 재요청 시 캐시된 응답 반환으로 멱등성 보장.</p></div><div class="sec"><h4>설계 원칙</h4><span class="chip">멱등성(idempotency)</span><span class="chip">Redis 캐시 대조</span></div>'},
-  "lic-a104":{tag:"LIC-A104 · 커넥션풀",title:"DB 커넥션 풀 레벨 제어",type:"계측기 · 레벨 제어",
-    body:'<div class="sec"><h4>측정</h4><p>DB 커넥션 풀 사용률을 레벨 계측기로 표시. 임계치 초과 시 Rate Limit 강화 신호 발송.</p></div>'},
-  "qv-a105":{tag:"QV-A105 · 스키마 계약",title:"Response 스키마 계약 검증",type:"계측기 · 품질 검증",
-    body:'<div class="sec"><h4>검증</h4><p>응답 직렬화 직전 스키마 계약(OpenAPI / JSON Schema) 위반 여부를 검증. 계약 위반 응답은 방출 차단.</p></div>'},
+  client:{tag:"START-A01 · 단일 EC2",title:"단일 EC2 운영 상태",type:"Train A · 시작 상태",
+    body:'<div class="sec"><h4>문제</h4><p>백엔드가 단일 EC2에서 운영되어 장애 시 수동 SSH 복구가 필요했고, 배포 중 다운타임과 관측 공백이 동시에 발생했다.</p></div><div class="sec"><h4>전환 방향</h4><p>ALB Target Group 뒤에 ECS Service를 두고 desired count와 health check로 인스턴스 단일 장애점을 제거한다.</p></div><div class="sec"><h4>키워드</h4><span class="chip">single EC2</span><span class="chip">manual recovery</span><span class="chip">downtime</span></div>'},
+  gateway:{tag:"LSN-A02 · ALB Listener",title:"ALB Listener",type:"Train A · 트래픽 진입",
+    body:'<div class="sec"><h4>역할</h4><p>HTTPS 443 진입점을 ALB Listener로 고정하고, 대상 그룹 상태에 따라 정상 ECS task로만 트래픽을 전달한다.</p></div><div class="sec"><h4>운영 포인트</h4><ul><li>SSL/TLS 종료 지점 명확화</li><li>Target Group health check 연동</li><li>배포 중 healthy target 유지</li></ul></div><div class="sec"><h4>AWS 리소스</h4><span class="chip">ALB</span><span class="chip">Listener</span><span class="chip">Target Group</span></div>'},
+  targetgroup:{tag:"TG-A03 · ALB Target Group",title:"ALB Target Group",type:"Train A · 헬스체크 매니폴드",
+    body:'<div class="sec"><h4>역할</h4><p>ECS task를 대상으로 등록하고 health check가 실패한 task를 트래픽 경로에서 제외한다. 장애 복구 기준을 사람의 판단이 아니라 ALB 상태 판정으로 이동시킨다.</p></div><div class="sec"><h4>운영 포인트</h4><span class="chip">health check path</span><span class="chip">deregistration delay</span><span class="chip">healthy threshold</span></div>'},
+  service:{tag:"SVC-A04 · ECS Service",title:"ECS Service",type:"Train A · 런타임 프로세서",
+    body:'<div class="sec"><h4>역할</h4><p>컨테이너화된 백엔드를 desired count 2 이상으로 유지하고, task 교체·재시작·rolling deployment를 ECS scheduler에 위임한다.</p></div><div class="sec"><h4>효과</h4><ul><li>단일 EC2 장애점 제거</li><li>배포 중 신규 task 정상화 후 이전 task drain</li><li>서비스 상태를 CloudWatch 지표로 노출</li></ul></div><div class="sec"><h4>AWS 리소스</h4><span class="chip">ECS Service</span><span class="chip">Task Definition</span><span class="chip">Service Auto Recovery</span></div>'},
+  db:{tag:"TK-A05 · 데이터 베셀",title:"RDS / Data Store",type:"Train A · 상태 저장소",
+    body:'<div class="sec"><h4>역할</h4><p>ECS task가 stateless로 교체될 수 있도록 애플리케이션 상태를 외부 데이터 저장소에 둔다. 런타임 이중화와 데이터 영속성을 분리한다.</p></div><div class="sec"><h4>운영 포인트</h4><span class="chip">connection metrics</span><span class="chip">backup</span><span class="chip">migration window</span></div>'},
+  response:{tag:"DEP-A06 · Rolling Deploy",title:"ECS Rolling Deployment",type:"Train A · 배포 전환",
+    body:'<div class="sec"><h4>역할</h4><p>새 task가 Target Group health check를 통과한 뒤 기존 task를 drain한다. 배포 중 다운타임을 줄이는 핵심 전환 지점이다.</p></div><div class="sec"><h4>운영 포인트</h4><span class="chip">minimum healthy percent</span><span class="chip">deployment health gate</span><span class="chip">rollback decision</span></div>'},
+  ratelimit:{tag:"HC-A1 · Health Gate",title:"ALB Health Check Gate",type:"Train A · 배포/트래픽 밸브",
+    body:'<div class="sec"><h4>역할</h4><p>Target Group이 healthy로 판정한 task에만 트래픽을 열어 배포 중 장애 task 노출을 막는다.</p></div><div class="sec"><h4>설정면</h4><span class="chip">health check path</span><span class="chip">interval</span><span class="chip">threshold</span></div>'},
+  "ft-a101":{tag:"FT-A101 · ALB RequestCount",title:"ALB 요청량 계측",type:"계측기 · CloudWatch Metric",
+    body:'<div class="sec"><h4>측정</h4><p>ALB RequestCount와 TargetResponseTime을 CloudWatch metric으로 수집해 배포 전후 트래픽 변화를 확인한다.</p></div>'},
+  "ai-a102":{tag:"HC-A102 · Target Health",title:"Target Group Health 계측",type:"계측기 · ALB Health",
+    body:'<div class="sec"><h4>측정</h4><p>HealthyHostCount와 UnHealthyHostCount로 ECS task가 실제로 트래픽을 받을 준비가 되었는지 판단한다.</p></div>'},
+  "qic-a103":{tag:"SIC-A103 · ECS Count",title:"ECS Desired/Running Count",type:"계측기 · Service Indicator",
+    body:'<div class="sec"><h4>측정</h4><p>ECS desired count와 running count의 차이를 확인해 scheduler가 원하는 복제 수를 회복했는지 본다.</p></div>'},
+  "lic-a104":{tag:"LIC-A104 · DB Connection",title:"DB Connection Level",type:"계측기 · Resource Level",
+    body:'<div class="sec"><h4>측정</h4><p>배포·스케일 전환 중 DB 커넥션 사용률이 급증하지 않는지 관측한다. 인프라 전환의 병목 후보를 분리하는 지표다.</p></div>'},
+  "qv-a105":{tag:"DG-A105 · Deployment Gate",title:"Deployment Health Gate",type:"계측기 · 배포 판정",
+    body:'<div class="sec"><h4>검증</h4><p>ALB target health, ECS running count, CloudWatch alarm 상태가 모두 정상이면 rolling deployment를 완료 상태로 본다.</p></div>'},
 
   // TRAIN B
-  producer:{tag:"PRD-B · 이벤트 소스",title:"Event Producer",type:"Train B · 이벤트 발행",
-    body:'<div class="sec"><h4>역할</h4><p>비즈니스 이벤트(주문 · 결제 · 알림 등)를 Retry Queue로 발행하는 프로듀서 매니폴드. 이벤트별 독립 처리 보장.</p></div><div class="sec"><h4>설계 원칙</h4><span class="chip">이벤트 발행</span><span class="chip">비동기</span></div>'},
-  circuitbreaker:{tag:"CB-B · 회로차단기",title:"Circuit Breaker",type:"Train B · 보호 인터록",
-    body:'<div class="sec"><h4>역할</h4><p>연쇄 장애(cascading failure) 방지용 회로차단기. 오류율 임계치 초과 시 OPEN 상태로 전환해 다운스트림 서비스 보호.</p></div><div class="sec"><h4>상태 전이</h4><ul><li>CLOSED: 정상 통과</li><li>OPEN: 즉시 차단(fallback 반환)</li><li>HALF-OPEN: 탐침 요청 1건 허용 후 판정</li></ul></div><div class="sec"><h4>설계 원칙</h4><span class="chip">회로차단기 패턴</span><span class="chip">Fallback</span><span class="chip">카스케이딩 방지</span></div>'},
-  idempkey:{tag:"P-B14 · 멱등키",title:"Idempotency Key 프로세서",type:"Train B · 중복 차단 펌프",
-    body:'<div class="sec"><h4>역할</h4><p>이벤트 처리 전 멱등성 키를 확인. 이미 처리된 키는 즉시 ACK 반환으로 중복 처리 제거. 장애 후 재시작 시에도 정확히 1회 실행을 보장.</p></div><div class="sec"><h4>설계 원칙</h4><span class="chip">멱등성</span><span class="chip">exactly-once</span><span class="chip">중복 제거</span></div>'},
-  retryqueue:{tag:"TK-B15 · 재시도 큐",title:"Retry Queue (지수 백오프 제어 루프)",type:"Train B · 제어 루프 베셀",
-    body:'<div class="sec"><h4>역할</h4><p>실패 이벤트를 SP=COMMITTED 제어 루프로 운용. 지수 백오프(exponential backoff)로 재시도 간격을 증가시키며 일시적 장애를 흡수.</p></div><div class="sec"><h4>상태머신</h4><p>PENDING → UPLOADING → VERIFYING → COMMITTED, 최대 재시도 초과 시 DLQ로 이관.</p></div><div class="sec"><h4>설계 원칙</h4><span class="chip">지수 백오프</span><span class="chip">DLQ</span><span class="chip">at-least-once</span></div>'},
-  dbcommit:{tag:"TK-B17 · 커밋 베셀",title:"DB Commit 베셀",type:"Train B · 데이터스토어",
-    body:'<div class="sec"><h4>역할</h4><p>멱등성 키 검증을 통과한 이벤트만 트랜잭션으로 커밋. 커밋 완료 즉시 Trace 계측기(TI-B18)에 스팬 기록.</p></div><div class="sec"><h4>설계 원칙</h4><span class="chip">ACID 트랜잭션</span><span class="chip">분산 추적</span></div>'},
-  dlq:{tag:"DLQ-B19 · 데드레터",title:"Dead Letter Queue",type:"Train B · 장애 격리",
-    body:'<div class="sec"><h4>역할</h4><p>최대 재시도를 소진한 이벤트를 격리 저장. 자동 알람 발송 후 수동 재처리 또는 폐기 결정을 인간 게이트로 위임.</p></div><div class="sec"><h4>설계 원칙</h4><span class="chip">장애 격리</span><span class="chip">수동 재처리</span><span class="chip">알람 연계</span></div>'},
-  "ti-b11":{tag:"FT-B11 · 이벤트 처리량",title:"Event 처리량 계측",type:"계측기 · 관찰성(Metric)",
-    body:'<div class="sec"><h4>측정</h4><p>Producer 이벤트 발행 처리량 모니터링. 급증/급락 패턴 감지 시 Circuit Breaker 경보 연계.</p></div>'},
-  "pi-b12":{tag:"PIT-B12 · 차단기 압력",title:"Circuit Breaker 오류율 게이지",type:"계측기 · 오류율 트랜스미터",
-    body:'<div class="sec"><h4>측정</h4><p>Circuit Breaker 오류율을 압력 게이지로 모니터링. OPEN 전환 임계치(예: 50%)에 근접 시 조기 경보.</p></div><div class="sec"><h4>설계 원칙</h4><span class="chip">오류율 측정</span><span class="chip">임계치 경보</span></div>'},
-  "qt-b13":{tag:"QT-B13 · 멱등 무결성",title:"Idempotency Key 무결성 검증",type:"계측기 · 품질 트랜스미터",
-    body:'<div class="sec"><h4>검증</h4><p>멱등성 키 형식 · 유효기간 · 캐시 정합성을 검증하여 중복 처리 제로를 보장.</p></div>'},
-  "lic-b16":{tag:"LIC-B16 · 큐 컨트롤러",title:"Retry Queue 레벨 컨트롤러",type:"계측기 · 레벨 인디케이팅 컨트롤",
-    body:'<div class="sec"><h4>제어</h4><p>큐 레벨을 setpoint(COMMITTED)로 수렴시키는 컨트롤러. 지수 백오프 파라미터를 동적 조정.</p></div>'},
-  "cw-b18":{tag:"TI-B18 · 분산추적",title:"Distributed Trace 계측기",type:"계측기 · 추적(Trace)",
-    body:'<div class="sec"><h4>측정</h4><p>DB 커밋 스팬을 분산 추적 시스템에 기록. 요청 경로 전체의 레이턴시를 Trace ID 단위로 재구성.</p></div>'},
+  producer:{tag:"MOD-B · Terraform Modules",title:"Terraform Module Inputs",type:"Train B · IaC 입력",
+    body:'<div class="sec"><h4>역할</h4><p>ALB, ECS, CloudWatch, Sentry 연계값을 모듈 단위로 분리해 콘솔 수동 변경을 코드 리뷰 가능한 변경으로 바꾼다.</p></div><div class="sec"><h4>파일면</h4><span class="chip">alb.tf</span><span class="chip">ecs.tf</span><span class="chip">observability.tf</span></div>'},
+  tfplan:{tag:"PLAN-B12 · Terraform Plan",title:"Terraform Plan Review",type:"Train B · 변경 검토",
+    body:'<div class="sec"><h4>역할</h4><p>실제 apply 전에 생성·변경·삭제 리소스를 확인한다. 인프라 변경의 범위와 위험을 배포 전 검토 가능한 형태로 만든다.</p></div><div class="sec"><h4>검토 항목</h4><ul><li>ALB listener / target group 변경</li><li>ECS service desired count 변경</li><li>CloudWatch alarm 추가</li></ul></div><div class="sec"><h4>키워드</h4><span class="chip">terraform plan</span><span class="chip">diff</span><span class="chip">blast radius</span></div>'},
+  idempkey:{tag:"LOCK-B14 · Remote State",title:"Terraform Remote State Lock",type:"Train B · 상태 잠금",
+    body:'<div class="sec"><h4>역할</h4><p>동시 apply로 인프라 상태가 꼬이지 않도록 remote state와 lock을 둔다. 운영자가 콘솔에서 직접 만지는 흐름을 줄이고, 변경 이력을 코드와 state에 남긴다.</p></div><div class="sec"><h4>키워드</h4><span class="chip">remote state</span><span class="chip">state lock</span><span class="chip">drift control</span></div>'},
+  tfapply:{tag:"APPLY-B15 · Terraform Apply",title:"Terraform Apply Control Loop",type:"Train B · 적용 루프",
+    body:'<div class="sec"><h4>역할</h4><p>검토된 plan을 AWS 리소스에 적용하고, ECS service가 stable 상태로 수렴할 때까지 배포 게이트와 관측 지표를 확인한다.</p></div><div class="sec"><h4>상태</h4><p>PLAN → APPLY → STABILIZE → RECORDED 순서로 인프라 코드와 실제 리소스를 맞춘다.</p></div><div class="sec"><h4>키워드</h4><span class="chip">terraform apply</span><span class="chip">service stable</span><span class="chip">state recorded</span></div>'},
+  dbcommit:{tag:"TK-B17 · AWS Resource State",title:"AWS Resource State",type:"Train B · 적용 결과",
+    body:'<div class="sec"><h4>역할</h4><p>ALB, Target Group, ECS Service, CloudWatch Alarm이 코드화된 기준선으로 생성·갱신된 결과 지점이다.</p></div><div class="sec"><h4>AWS 리소스</h4><span class="chip">ALB</span><span class="chip">ECS</span><span class="chip">CloudWatch</span></div>'},
+  dlq:{tag:"DRIFT-B19 · Drift Review",title:"Drift Review Queue",type:"Train B · 수동 변경 격리",
+    body:'<div class="sec"><h4>역할</h4><p>콘솔에서 생긴 수동 변경이나 예상 밖 리소스 차이를 drift로 격리한다. 바로 덮어쓰지 않고 plan 재검토 대상으로 올린다.</p></div><div class="sec"><h4>키워드</h4><span class="chip">drift</span><span class="chip">manual change</span><span class="chip">review before apply</span></div>'},
+  "ti-b11":{tag:"VC-B11 · Module Version",title:"Terraform Module Version Check",type:"계측기 · Version Control",
+    body:'<div class="sec"><h4>검증</h4><p>인프라 모듈 버전과 변경 파일을 확인해 재현 가능한 배포 단위로 묶는다.</p></div>'},
+  "pi-b12":{tag:"PD-B12 · Plan Diff",title:"Terraform Plan Diff Gauge",type:"계측기 · 변경 압력",
+    body:'<div class="sec"><h4>측정</h4><p>생성·변경·삭제 리소스 수와 영향 범위를 plan 단계에서 확인한다.</p></div>'},
+  "qt-b13":{tag:"SL-B13 · State Lock",title:"Remote State Lock Indicator",type:"계측기 · 상태 잠금",
+    body:'<div class="sec"><h4>검증</h4><p>apply 전에 state lock이 확보되었는지 확인해 동시 변경으로 인한 상태 불일치를 막는다.</p></div>'},
+  "lic-b16":{tag:"SIC-B16 · Apply State",title:"Terraform Apply State Indicator",type:"계측기 · 적용 상태",
+    body:'<div class="sec"><h4>제어</h4><p>PLAN, APPLY, STABILIZE, RECORDED 상태를 순차적으로 표시한다. 화면의 움직임은 실제 로그가 아니라 작업 단계를 설명하는 도식이다.</p></div>'},
+  "cw-b18":{tag:"CW-B18 · CloudWatch",title:"CloudWatch Alarm Attachment",type:"계측기 · AWS 관측",
+    body:'<div class="sec"><h4>측정</h4><p>Terraform으로 생성된 ECS/ALB 리소스에 CloudWatch metric과 alarm을 연결한다.</p></div>'},
 
   // TRAIN C
-  obsources:{tag:"OBS-MANIFOLD · 관찰성",title:"Observability 소스 매니폴드",type:"Train C · 관찰성 입력",
-    body:'<div class="sec"><h4>역할</h4><p>Metric / Trace / Log / Event 4개 신호를 단일 매니폴드로 Aggregator에 공급. 관찰성 삼각(Three Pillars of Observability) 구현.</p></div><div class="sec"><h4>설계 원칙</h4><span class="chip">Metric</span><span class="chip">Trace</span><span class="chip">Log</span><span class="chip">Event</span></div>'},
-  aggregator:{tag:"R-C21 · 집계 리액터",title:"Observability Aggregator",type:"Train C · 수집 코어",
-    body:'<div class="sec"><h4>역할</h4><p>모든 관찰성 신호를 중앙 집계. 상관(correlation) 분석으로 Trace ID 기준 전체 흐름을 재조합.</p></div><div class="sec"><h4>원칙</h4><ul><li>신호 중앙 집계</li><li>이상 패턴 감지</li><li>알람 라우팅</li></ul></div><div class="sec"><h4>설계 원칙</h4><span class="chip">집계</span><span class="chip">상관 분석</span></div>'},
-  tsdb:{tag:"TK-C22 · 시계열 베셀",title:"Time-Series DB",type:"Train C · 관찰성 저장소",
-    body:'<div class="sec"><h4>역할</h4><p>Metric · Trace 데이터를 시계열로 저장. 보존 정책(retention policy)으로 핫/콜드 티어 분리.</p></div><div class="sec"><h4>설계 원칙</h4><span class="chip">시계열</span><span class="chip">Retention Policy</span><span class="chip">티어 분리</span></div>'},
-  dashboard:{tag:"DASHBOARD · 표시",title:"Observability Dashboard",type:"Train C · 프레젠테이션",
-    body:'<div class="sec"><h4>역할</h4><p>시계열 DB 상태를 구독 · 시각화하는 순수 프레젠테이션 레이어. side-effect 없음.</p></div><div class="sec"><h4>설계 원칙</h4><span class="chip">프레젠테이션 전용</span><span class="chip">읽기 전용</span></div>'},
-  humangate:{tag:"GOV · Human Gate",title:"Human Gate (fail-closed 거버넌스)",type:"Train C · 거버넌스 제어 루프",
-    body:'<div class="sec"><h4>역할</h4><p>alert → triage → approve → rollback → close 파이프라인. 자동화 범위를 명확히 정의하고 판단이 필요한 지점은 반드시 인간 승인을 요구하는 fail-closed 거버넌스.</p></div><div class="sec"><h4>제어</h4><ul><li>단계별 승인 게이트</li><li>deadlock watchdog 감시</li><li>자동 롤백 트리거</li></ul></div><div class="sec"><h4>설계 원칙</h4><span class="chip">fail-closed</span><span class="chip">Human-in-the-Loop</span><span class="chip">자동 롤백</span></div>'},
-  "fc-c21":{tag:"FC-C21 · 신호 흐름 제어",title:"관찰성 신호 흐름 제어",type:"계측기 · 플로우 컨트롤",
-    body:'<div class="sec"><h4>제어</h4><p>외부 신호 → Aggregator 데이터 흐름을 제어. 노이즈 필터링 및 샘플링 비율 조정.</p></div>'},
-  "li-c22":{tag:"LI-C22 · 데이터 레벨",title:"시계열 DB 용량 레벨",type:"계측기 · 레벨 인디케이터",
-    body:'<div class="sec"><h4>측정</h4><p>시계열 DB 저장 용량 레벨 표시. Retention Policy 트리거 임계치 모니터링.</p></div>'},
+  obsources:{tag:"GHOST-C20 · 없는 도구의 음영",title:"빈 관제 자리",type:"Train C · Before State",
+    body:'<div class="sec"><h4>문제</h4><p>에러 추적 없음, 비용 가시성 없음, 수동 복구라는 빈 자리를 점선 고스트로 먼저 배치했다. 이후 CloudWatch와 Sentry가 그 자리를 채우는 구조다.</p></div><div class="sec"><h4>정본 문제</h4><p>단일 EC2 장애 시 수동 복구, 배포 중 다운타임, 비용 가시성 부재, 에러 추적 불가.</p></div>'},
+  aggregator:{tag:"CW-C21 · CloudWatch",title:"CloudWatch Metrics / Logs / Alarms",type:"Train C · AWS 관측 코어",
+    body:'<div class="sec"><h4>역할</h4><p>ALB와 ECS에서 나오는 metric, log, alarm을 CloudWatch로 모은다. 비용과 장애 신호를 운영자가 볼 수 있는 표면으로 끌어올린다.</p></div><div class="sec"><h4>구성</h4><ul><li>ALB TargetResponseTime / HealthyHostCount</li><li>ECS CPU/Memory/RunningTaskCount</li><li>log retention과 alarm action</li></ul></div><div class="sec"><h4>AWS 리소스</h4><span class="chip">CloudWatch Metrics</span><span class="chip">Log Group</span><span class="chip">Alarm</span></div>'},
+  tsdb:{tag:"LG-C22 · Log Group",title:"CloudWatch Log Group / Retention",type:"Train C · 로그/비용 표면",
+    body:'<div class="sec"><h4>역할</h4><p>로그 보존 기간을 코드로 관리해 비용 가시성 부재를 줄인다. 장기 보존이 필요한 신호와 단기 운영 로그를 분리하는 지점이다.</p></div><div class="sec"><h4>키워드</h4><span class="chip">retention</span><span class="chip">cost visibility</span><span class="chip">log group</span></div>'},
+  dashboard:{tag:"SENTRY-C23 · Error Trace",title:"Sentry Error Tracking",type:"Train C · 에러 추적",
+    body:'<div class="sec"><h4>역할</h4><p>런타임 예외를 Sentry issue와 trace로 묶어 에러 추적 불가 상태를 해소한다. CloudWatch가 인프라 신호를 맡고, Sentry가 애플리케이션 예외 맥락을 보강한다.</p></div><div class="sec"><h4>키워드</h4><span class="chip">Sentry</span><span class="chip">issue grouping</span><span class="chip">trace context</span></div>'},
+  humangate:{tag:"RUN-C24 · Alarm + Runbook",title:"Alarm / Runbook / Rollback",type:"Train C · 복구 절차화",
+    body:'<div class="sec"><h4>역할</h4><p>CloudWatch alarm을 triage, runbook, rollback, verify 순서로 연결해 수동 복구를 기억 의존 작업이 아니라 절차화된 운영면으로 바꾼다.</p></div><div class="sec"><h4>운영 흐름</h4><ul><li>alarm: 임계치 기반 감지</li><li>triage: 영향 범위 확인</li><li>runbook/rollback: 복구 절차 실행</li><li>verify: ALB/ECS/CloudWatch 상태 확인</li></ul></div><div class="sec"><h4>키워드</h4><span class="chip">CloudWatch Alarm</span><span class="chip">runbook</span><span class="chip">rollback</span></div>'},
+  "fc-c21":{tag:"FC-C21 · Signal Flow",title:"CloudWatch Signal Flow Control",type:"계측기 · 플로우 컨트롤",
+    body:'<div class="sec"><h4>제어</h4><p>ALB/ECS metric과 log가 CloudWatch로 들어오는 경로를 표시한다. 샘플링 수치가 아니라 설계상 연결 지점을 보여주는 계측 버블이다.</p></div>'},
+  "li-c22":{tag:"LI-C22 · Retention Level",title:"Log Retention / Cost Indicator",type:"계측기 · 비용 가시성",
+    body:'<div class="sec"><h4>측정</h4><p>CloudWatch log retention 설정과 비용 가시성 확보 지점을 표시한다.</p></div>'},
 };
 
 /* ===================== PANEL ===================== */
@@ -737,36 +753,29 @@ function _tick(ts){
 }
 requestAnimationFrame(function(ts){ _raf_now=ts; requestAnimationFrame(_tick); });
 
-/* ===================== RETRY QUEUE CONTROL LOOP (rAF dt-based) ===================== */
-(function retryLoop(){
-  const states=["PENDING","UPLOADING","VERIFYING","COMMITTED"];
+/* ===================== TERRAFORM APPLY CONTROL LOOP (rAF dt-based) ===================== */
+(function terraformApplyLoop(){
+  const states=["PLAN","APPLY","STABILIZE","RECORDED"];
   const bars=["○○○○","●○○○","●●○○","●●●●"];
-  const colors=["#f0b429","#4aa8ff","#b08cff","#37e88a"];
+  const colors=["#f0b429","#4aa8ff","#36d9d9","#37e88a"];
+  const stages=["stage: validate","stage: apply","stage: ECS stable","stage: state recorded"];
   // target fill heights (0-86 px range mapped to 0-100%)
   const fillH=[8,36,62,86];
-  let idx=0, backoff=0;
+  let idx=0;
   let elapsed=0, period=1600; // ms per state
   // smooth fill interpolation
   let fillCur=8, fillTarget=8;
   const elState=document.getElementById('smState');
   const elBackoff=document.getElementById('smBackoff');
   const elBar=document.getElementById('smBar');
-  const fill=document.getElementById('queueFill');
+  const fill=document.getElementById('applyFill');
 
   function applyState(i){
     elState.textContent=states[i];
     elState.style.fill=colors[i];
     elBar.textContent=bars[i];
+    elBackoff.textContent=stages[i];
     fillTarget=fillH[i];
-  }
-  function applyRetry(){
-    backoff = backoff? Math.min(backoff*2,3200) : 200;
-    elState.textContent="RETRY";
-    elState.style.fill=colors[0];
-    elBackoff.textContent="backoff: "+backoff+"ms";
-    elBar.textContent="●●⟳○";
-    fillTarget=fillH[1];
-    idx=1;
   }
 
   applyState(0);
@@ -782,19 +791,13 @@ requestAnimationFrame(function(ts){ _raf_now=ts; requestAnimationFrame(_tick); }
     elapsed += dt;
     if(elapsed >= period){
       elapsed -= period;
-      if(idx===2 && Math.random()<0.30){
-        applyRetry();
-      } else {
-        if(idx===3){ backoff=0; }
-        idx=(idx+1)%4;
-        applyState(idx);
-      }
-      elBackoff.textContent="backoff: "+backoff+"ms";
+      idx=(idx+1)%4;
+      applyState(idx);
     }
   });
 })();
 
-/* ===================== DEADLOCK WATCHDOG HEARTBEAT (rAF sine pulse) ===================== */
+/* ===================== CLOUDWATCH ALARM HEARTBEAT (rAF sine pulse) ===================== */
 (function ticker(){
   const dot=document.getElementById('tickerDot');
   const hzEl=document.getElementById('tickerHz');
@@ -806,174 +809,80 @@ requestAnimationFrame(function(ts){ _raf_now=ts; requestAnimationFrame(_tick); }
     const op = 0.2 + v*0.8;
     dot.setAttribute('r', r.toFixed(2));
     dot.setAttribute('opacity', op.toFixed(3));
-    // dim Hz text slightly on off-beat for live feel
+    // dim configured text slightly so the alarm loop reads as active instrumentation.
     hzEl.setAttribute('opacity', (0.6+v*0.4).toFixed(3));
   });
 })();
 
-/* ===================== CIRCUIT BREAKER INTERLOCK (rAF eased) ===================== */
+/* ===================== ECS DEPLOY HEALTH INTERLOCK (rAF eased) ===================== */
 (function interlock(){
   const badge=document.getElementById('interlockBadge');
   const gauge=document.getElementById('ilGauge');
   const pct=document.getElementById('ilPct');
   const status=document.getElementById('ilStatus');
   const box=document.getElementById('ilBox');
-  const cbRO=document.getElementById('cbRO');
+  const deployRO=document.getElementById('deployRO');
   const C=251;
 
-  // p: 0(CLOSE) .. 15(OPEN), animated via rAF
+  // p: 0(PASS) .. 15(BLOCK), animated via rAF
   let pCur=15, pTarget=15;
-  let phase='tripped'; // 'tripped' | 'resetting' | 'closed'
-  let autoRetripTimer=0; // ms countdown after CLOSED
+  let phase='blocked'; // 'blocked' | 'checking' | 'green'
+  let autoBlockTimer=0; // ms countdown after GREEN
 
   function lerp(a,b,t){ return a+(b-a)*t; }
-  function easeOut(t){ return 1-(1-t)*(1-t); }
-
   function applyGaugeRaw(p){
     const frac=Math.max(0,Math.min(1,p/15));
     gauge.setAttribute('stroke-dashoffset',(C-(C*frac)).toFixed(2));
-    pct.textContent = p>=9.5?"OPEN":(p>0.5?"H-OPEN":"CLOSE");
+    pct.textContent = p>=9.5?"BLOCK":(p>0.5?"CHECK":"PASS");
   }
 
-  function setTripped(){
-    pTarget=15; pCur=15; phase='tripped'; autoRetripTimer=0;
+  function setBlocked(){
+    pTarget=15; pCur=15; phase='blocked'; autoBlockTimer=0;
     gauge.setAttribute('stroke','var(--trip)'); pct.setAttribute('fill','var(--trip)');
     box.setAttribute('stroke','var(--trip)');
-    status.textContent="TRIPPED"; status.setAttribute('fill','var(--trip)');
-    cbRO.textContent="OPEN"; cbRO.classList.remove('good'); cbRO.style.color="var(--trip)";
+    status.textContent="WAITING"; status.setAttribute('fill','var(--trip)');
+    deployRO.textContent="BLOCKED"; deployRO.classList.remove('good'); deployRO.style.color="var(--trip)";
     applyGaugeRaw(15);
   }
 
-  function startReset(){
-    if(phase==='resetting') return;
-    phase='resetting'; pTarget=0;
-    status.textContent="HALF-OPEN..."; status.setAttribute('fill','var(--amber)');
+  function startCheck(){
+    if(phase==='checking') return;
+    phase='checking'; pTarget=0;
+    status.textContent="CHECKING"; status.setAttribute('fill','var(--amber)');
     gauge.setAttribute('stroke','var(--amber)'); pct.setAttribute('fill','var(--amber)');
     box.setAttribute('stroke','var(--amber)');
-    cbRO.textContent="H-OPEN"; cbRO.style.color="var(--amber)"; cbRO.classList.remove('good');
+    deployRO.textContent="VERIFY"; deployRO.style.color="var(--amber)"; deployRO.classList.remove('good');
   }
 
-  function setClosed(){
-    phase='closed'; pCur=0; pTarget=0; autoRetripTimer=7000;
+  function setGreen(){
+    phase='green'; pCur=0; pTarget=0; autoBlockTimer=7000;
     gauge.setAttribute('stroke','var(--accent3)'); pct.setAttribute('fill','var(--accent3)');
     box.setAttribute('stroke','var(--accent3)');
-    status.textContent="CLOSED"; status.setAttribute('fill','var(--accent3)');
-    cbRO.textContent="CLOSED"; cbRO.style.color="var(--accent3)"; cbRO.classList.add('good');
+    status.textContent="GREEN"; status.setAttribute('fill','var(--accent3)');
+    deployRO.textContent="ALLOWED"; deployRO.style.color="var(--accent3)"; deployRO.classList.add('good');
     applyGaugeRaw(0);
   }
 
-  setTripped();
+  setBlocked();
 
   _listeners.push(function(dt){
-    if(phase==='resetting'){
+    if(phase==='checking'){
       // ease toward 0
       pCur = lerp(pCur, pTarget, Math.min(dt/600, 1));
       applyGaugeRaw(pCur);
-      if(pCur < 0.3){ setClosed(); }
-    } else if(phase==='closed'){
-      autoRetripTimer -= dt;
-      if(autoRetripTimer <= 0){ setTripped(); }
+      if(pCur < 0.3){ setGreen(); }
+    } else if(phase==='green'){
+      autoBlockTimer -= dt;
+      if(autoBlockTimer <= 0){ setBlocked(); }
     }
   });
 
   badge.addEventListener('click',function(e){
     e.stopPropagation();
-    if(phase==='tripped'){ startReset(); }
-    else if(phase==='closed'){ setTripped(); }
-    else { /* resetting - ignore */ }
+    if(phase==='blocked'){ startCheck(); }
+    else if(phase==='green'){ setBlocked(); }
+    else { /* checking - ignore */ }
   });
-})();
-
-/* ===================== LIVE EVENT LOG STREAMING ===================== */
-(function liveLog(){
-  const container=document.getElementById('liveLog');
-  const MAX_LINES=7;
-  const lines=[];
-
-  // readout counters
-  const roEls=document.querySelectorAll('.ro .val');
-  let throughput=1240, retries=0, backoffMs=0;
-  // find readout by label
-  const roMap={};
-  document.querySelectorAll('.ro').forEach(function(ro){
-    const lab=ro.querySelector('.lab');
-    const val=ro.querySelector('.val');
-    if(lab&&val) roMap[lab.textContent.trim()]=val;
-  });
-
-  const EVENTS=[
-    {lvl:'info',msgs:['req processed: POST /api/orders','req processed: GET /api/users/{id}','req processed: PUT /api/products','req processed: GET /api/search','req processed: DELETE /api/sessions','batch committed: 32 events','idempotency key hit: skipped dup']},
-    {lvl:'ok',msgs:['CB CLOSED: probe OK','commit TK-B17: success','queue drained: 0 pending','auth SVC-A03: token valid','retryqueue: COMMITTED','DLQ: 0 messages','aggregator: flush OK']},
-    {lvl:'warn',msgs:['backoff retry: 400ms','CB HALF-OPEN: probe sent','queue depth: 18 (high)','rate limit near: 87%','LIC-A104: pool 76%','backoff retry: 800ms','DLQ enqueue: event B']},
-    {lvl:'err',msgs:['CB OPEN: error rate 54%','retry exhausted -> DLQ','timeout: downstream 503','auth reject: invalid JWT','idempotency key miss','queue overflow: shed load']},
-  ];
-
-  function pad2(n){ return n<10?'0'+n:String(n); }
-  function nowStr(){
-    const d=new Date();
-    return pad2(d.getHours())+':'+pad2(d.getMinutes())+':'+pad2(d.getSeconds());
-  }
-
-  function pickEvent(){
-    // weighted: 50% info, 30% ok, 15% warn, 5% err
-    const r=Math.random();
-    let bucket;
-    if(r<0.50) bucket=EVENTS[0];
-    else if(r<0.80) bucket=EVENTS[1];
-    else if(r<0.95) bucket=EVENTS[2];
-    else bucket=EVENTS[3];
-    const msg=bucket.msgs[Math.floor(Math.random()*bucket.msgs.length)];
-    return {lvl:bucket.lvl, msg};
-  }
-
-  function addLine(){
-    const ev=pickEvent();
-    const row=document.createElement('div');
-    row.className='log-line';
-    const ts=document.createElement('span'); ts.className='log-ts'; ts.textContent=nowStr();
-    const lvl=document.createElement('span'); lvl.className='log-lvl '+ev.lvl;
-    lvl.textContent={info:'INFO',ok:'OK  ',warn:'WARN',err:'ERR '}[ev.lvl];
-    const msg=document.createElement('span'); msg.className='log-msg'; msg.textContent=ev.msg;
-    row.appendChild(ts); row.appendChild(lvl); row.appendChild(msg);
-    container.appendChild(row);
-    lines.push(row);
-    // fade in
-    requestAnimationFrame(function(){ row.classList.add('visible'); });
-
-    // remove old lines
-    if(lines.length>MAX_LINES){
-      const old=lines.shift();
-      old.classList.remove('visible');
-      old.classList.add('fading');
-      setTimeout(function(){ if(old.parentNode) old.parentNode.removeChild(old); },650);
-    }
-  }
-
-  // update readout counters with micro-variation
-  let roTimer=0;
-  function updateReadouts(dt){
-    roTimer+=dt;
-    if(roTimer<400) return;
-    roTimer=0;
-    throughput += Math.round((Math.random()-0.46)*8);
-    throughput = Math.max(980, Math.min(1680, throughput));
-    if(roMap['TRAINS']) roMap['TRAINS'].textContent='3 계열';
-  }
-
-  // log interval jitter
-  let logTimer=0, logPeriod=900;
-  _listeners.push(function(dt){
-    logTimer+=dt;
-    updateReadouts(dt);
-    if(logTimer>=logPeriod){
-      logTimer=0;
-      logPeriod=700+Math.random()*800; // 700..1500ms jitter
-      addLine();
-    }
-  });
-
-  // seed a few lines immediately
-  for(let i=0;i<3;i++) addLine();
 })();
 
 /* ===================== font readiness ===================== */

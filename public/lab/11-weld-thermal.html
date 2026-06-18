@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>박양하 · Nd:YAG LASER WELDER / 레이저 접합 — 1064nm 펄스</title>
+<title>Nd:YAG LASER WELDER · 1064nm 펄스 · 키홀 / 심 / 패턴 용접</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -190,23 +190,6 @@
   #doestate{ margin-top:8px; font-size:11.5px; color:var(--amber); letter-spacing:.08em; height:14px;
              text-shadow:0 0 8px #000; }
 
-  /* ============ Event log ============ */
-  #eventlog{
-    position:absolute; z-index:8; left:36px; bottom:278px;
-    font-family:var(--mono); font-size:11px; line-height:1.7;
-    letter-spacing:.03em; pointer-events:none;
-    width:min(370px,40vw);
-  }
-  #eventlog .elog-row{ display:flex; gap:7px; align-items:baseline; }
-  #eventlog .elog-row + .elog-row{ margin-top:2px; }
-  #eventlog .elog-row.fresh{ animation:logIn .35s ease-out; }
-  @keyframes logIn{ from{opacity:0; transform:translateX(-6px);} to{opacity:1; transform:none;} }
-  #eventlog .ets{ color:var(--hud-dim); min-width:90px; }
-  #eventlog .emsg{ color:var(--hud); }
-  #eventlog .emsg .ehot{ color:var(--hot); }
-  #eventlog .emsg .eamb{ color:var(--amber); }
-  #eventlog .emsg .eok{ color:#7fd6ff; }
-
   /* contact strip */
   #contact{ position:absolute; z-index:8; left:50%; bottom:30px; transform:translateX(-50%);
             font-family:var(--mono); font-size:11.5px; color:var(--hud-dim); letter-spacing:.06em;
@@ -216,7 +199,6 @@
   @media (max-width:1180px){
     #identity{ max-width:46vw; }
     #metrics{ display:none; }
-    #eventlog{ display:none; }
     #thermbox{ display:none; }
     #meters{ top:128px; }
   }
@@ -270,8 +252,8 @@
   <!-- bottom-right -->
   <div class="hud" id="br">
     <div id="clock"><b>--:--:--.--</b></div>
-    <div><span class="lbl">SITE</span> <b>이랜텍 LASER CELL / Nd:YAG · 정밀접합</b></div>
-    <div><span class="lbl">OP</span> <b>PARK Y.</b> &nbsp; <span class="lbl">UNIT</span> <b>LWPS-07</b></div>
+    <div><span class="lbl">CELL</span> <b>LASER WELD / Nd:YAG · 정밀 접합</b></div>
+    <div><span class="lbl">CTRL</span> <b>CNC-AUTO</b> &nbsp; <span class="lbl">UNIT</span> <b>LWPS-07</b></div>
   </div>
 
   <!-- beam crosshair -->
@@ -295,16 +277,13 @@
 
   <!-- identity -->
   <div id="identity">
-    <div class="ey">Nd:YAG LASER WELDING . 정밀 접합 — 이랜텍</div>
-    <h1>박양하<span class="sub">펄스 레이저 발진·키홀·심 용접을 실장비처럼 운용</span></h1>
+    <div class="ey">Nd:YAG PULSED LASER WELDER · 1064nm</div>
+    <h1>LW-300<span class="sub">Nd:YAG 1064nm 펄스 발진 · 전도형 / 키홀 / 심 · 패턴 용접</span></h1>
     <div class="tags">
       <span>1064nm · 펄스 발진</span><span>전도형 ↔ 키홀 전이</span><span>펄스에너지·PRF·피크출력</span>
-      <span>심 용접 · 점 중첩(overlap)</span><span>디포커스·스폿 제어</span><span>플룸·스패터 최소화</span>
+      <span>심 용접 · 점 중첩(overlap)</span><span>패턴 경로 드로잉</span><span>디포커스·스폿 제어</span>
     </div>
   </div>
-
-  <!-- live event log -->
-  <div id="eventlog"></div>
 
   <!-- secondary metric tickers -->
   <div id="metrics">
@@ -312,6 +291,7 @@
     <div class="m"><span class="lab">펄스 폭 &nbsp;</span><span class="num dn" id="mt-pw">4.0 ms</span></div>
     <div class="m"><span class="lab">용접 속도 &nbsp;</span><span class="num dn" id="mt-travel">8.0 mm/s</span></div>
     <div class="m"><span class="lab">디포커스 &nbsp;</span><span class="num up" id="mt-defocus">0.0 mm</span></div>
+    <div class="m"><span class="lab">점 피치·중첩 &nbsp;</span><span class="num dn" id="mt-pitch">—</span></div>
     <div class="m"><span class="lab">심 진행 &nbsp;</span><span class="num up" id="mt-bead">0 mm</span></div>
     <div class="m"><span class="lab">스패터 &nbsp;</span><span class="num dn" id="mt-spatter">LOW</span></div>
   </div>
@@ -405,29 +385,94 @@ window.addEventListener('resize', resize);
    Each carries REAL Nd:YAG parameters. avgPwr ~= pulseE * PRF.
    ============================================================ */
 const PROGRAMS = [
-  { yr:'CONDUCTION', co:'전도형 용접', ro:'얕고 넓은 비드 · 외관 우선',
-    regime:'conduction', fiber:400, gas:'Ar 15 L/min', focal:'f160',
+  { yr:'CONDUCTION', co:'전도형 용접', ro:'얕고 넓은 비드 · 직선 심',
+    regime:'conduction', path:'line', seamMM:120,
+    fiber:400, gas:'Ar 15 L/min', focal:'f160',
     pulseE:9.0, peakKW:1.8, pulseMs:5.0, prf:12, spotMM:0.60, defocus:1.2,
     travel:5.0, penet:0.35, beadW:1.10, peak:1720, spatter:'NONE',
-    desc:'<b>전도형(Conduction) 모드</b>: 파워밀도가 임계 이하라 표면만 녹는다. 디포커스 <b>+1.2mm</b>로 스폿을 키워 파워밀도를 낮추면 <span class="beam">얕고 넓은 비드</span>가 형성되고 아스펙트비가 1 미만이 된다. 플룸·스패터가 거의 없어 외관 품질이 최상급이다.' },
-  { yr:'KEYHOLE', co:'키홀 용접', ro:'깊은 용입 · 고아스펙트',
-    regime:'keyhole', fiber:400, gas:'He 20 L/min', focal:'f160',
+    desc:'<b>전도형(Conduction) 모드</b>: 파워밀도가 임계 이하라 표면만 녹는다. 디포커스 <b>+1.2mm</b>로 스폿을 키워 파워밀도를 낮추면 <span class="beam">얕고 넓은 비드</span>가 형성되고 아스펙트비가 1 미만이 된다. 헤드가 <b>직선 심</b>을 따라가며 넓은 비드를 그린다.' },
+  { yr:'KEYHOLE', co:'키홀 용접', ro:'깊은 용입 · 곡선 추종',
+    regime:'keyhole', path:'curve', seamMM:140,
+    fiber:400, gas:'He 20 L/min', focal:'f160',
     pulseE:22.0, peakKW:5.5, pulseMs:4.0, prf:18, spotMM:0.40, defocus:0.0,
     travel:9.0, penet:2.4, beadW:0.85, signature:true, peak:2300, spatter:'LOW',
-    desc:'<b>키홀(Keyhole) 모드</b>: 파워밀도가 <span class="hot">10^6 W/cm²</span>를 넘으면 금속이 증발해 증기압이 용탕을 밀어내고 깊은 구멍(키홀)을 뚫는다. 빔이 다중 반사로 흡수돼 <b>아스펙트비 ≈ 3</b>의 깊은 용입을 얻는다. He 보호가스로 플라즈마 플룸을 억제한다.' },
-  { yr:'SEAM · OVERLAP', co:'심 용접', ro:'점 중첩 70% · 기밀 심',
-    regime:'seam', fiber:400, gas:'Ar 18 L/min', focal:'f120',
+    desc:'<b>키홀(Keyhole) 모드</b>: 파워밀도가 <span class="hot">10^6 W/cm²</span>를 넘으면 금속이 증발해 증기압이 용탕을 밀어내고 깊은 구멍(키홀)을 뚫는다. <b>아스펙트비 ≈ 3</b>의 깊은 용입을 <span class="beam">곡선 경로</span>를 따라 정밀 추종하며 그린다. He로 플룸 억제.' },
+  { yr:'SEAM · CONTOUR', co:'심 용접', ro:'점 중첩 · 기밀 윤곽 심',
+    regime:'seam', path:'contour', seamMM:200,
+    fiber:400, gas:'Ar 18 L/min', focal:'f120',
     pulseE:14.0, peakKW:3.8, pulseMs:3.5, prf:22, spotMM:0.45, defocus:0.3,
     travel:7.0, penet:1.3, beadW:0.95, peak:2050, spatter:'LOW',
-    desc:'<b>심(Seam) 용접</b>: 펄스 점용접을 일정 <b>중첩률(약 70%)</b>로 겹쳐 연속 기밀 심을 만든다. PRF·용접속도가 중첩률을 결정한다 — 속도 / (PRF) = 점 피치. 배터리 캔·센서 하우징 같은 <span class="beam">기밀·미세 접합</span>에 쓰는 전형적 모드다.' },
-  { yr:'DOE · WINDOW', co:'조건 창 DOE', ro:'펄스/디포커스 · 검사',
-    regime:'doe', fiber:400, gas:'Ar 15 L/min', focal:'f160',
+    desc:'<b>심(Seam) 용접</b>: 펄스 점용접을 <b>중첩률</b>로 겹쳐 연속 기밀 심을 만든다. <b>속도 / PRF = 점 피치</b>로 중첩이 결정된다. 헤드가 부품 <span class="beam">윤곽(닫힌 경로)</span>을 한 바퀴 돌며 배터리 캔·센서 하우징의 기밀 심을 그린다.' },
+  { yr:'DOE · STITCH', co:'스티치 / 조건 창', ro:'펄스/디포커스 · 패턴',
+    regime:'doe', path:'stitch', seamMM:120,
+    fiber:400, gas:'Ar 15 L/min', focal:'f160',
     pulseE:16.0, peakKW:4.0, pulseMs:4.0, prf:16, spotMM:0.50, defocus:0.6,
     travel:6.0, penet:1.0, beadW:1.00, peak:1980, spatter:'LOW',
-    desc:'<b>조건 창 DOE</b>: 펄스에너지·펄스폭·PRF·디포커스를 인자로 잡고 용입·비드폭·기공·스패터를 반응으로 본다. 전도형↔키홀 <b>전이 경계</b>를 파워밀도 축에서 찾아 작업 창(window)을 표준화하고, 단면·X선 검사 항목으로 CTQ를 등록한다.' }
+    desc:'<b>스티치 / 조건 창 DOE</b>: 펄스에너지·PRF·디포커스를 인자로, 헤드가 경로 위에 <b>스티치 패턴</b>(단속 점군)을 그린다. 전도형↔키홀 <b>전이 경계</b>를 파워밀도 축에서 찾아 작업 창(window)을 표준화하고 단면·X선 CTQ를 등록한다.' }
 ];
 let activePass = 0;
 let passNo = 1;
+
+/* ============================================================
+   PROGRAMMED WELD PATHS (the "drawing" geometry)
+   Each program defines a parametric trajectory pathPoint(p,u),
+   u in [0,1], returning grid-space {x,y}. The focus head follows
+   this path and the bead is drawn ALONG it (AMADA-style pattern/
+   seam drawing): straight seam, curved seam, closed contour, stitch.
+   Geometry is deterministic — motion is intentional, not random.
+   ============================================================ */
+function pathPoint(p, u){
+  const cx = GW*0.50, cy = GH*0.52;
+  const halfW = GW*0.30;            // seam half-length (grid units)
+  switch(p.path){
+    case 'line':
+      return { x: cx + (u*2-1)*halfW, y: cy };
+    case 'curve': {                  // smooth S-curve seam (1.5 waves)
+      const x = cx + (u*2-1)*halfW;
+      const y = cy + Math.sin(u*Math.PI*3)*GH*0.16;
+      return { x, y };
+    }
+    case 'stitch':                   // straight track; deposition is gated to stitches
+      return { x: cx + (u*2-1)*halfW, y: cy };
+    case 'contour': {                // rounded-rectangle perimeter (closed hermetic seam)
+      const w = GW*0.30, h = GH*0.30, r = Math.min(w,h)*0.34;
+      return roundedRectPoint(cx, cy, w, h, r, u);
+    }
+  }
+  return { x:cx, y:cy };
+}
+/* perimeter param of a centred rounded rect (w,h full extents, r corner radius) */
+function roundedRectPoint(cx, cy, w, h, r, u){
+  const hw=w/2, hh=h/2;
+  const sLine = Math.max(0.0001, w - 2*r), vLine = Math.max(0.0001, h - 2*r);
+  const cArc = (Math.PI/2)*r;
+  const seg = [sLine, cArc, vLine, cArc, sLine, cArc, vLine, cArc]; // top→TR→right→BR→bottom→BL→left→TL
+  let total=0; for(const s of seg) total+=s;
+  let d = u*total, i=0;
+  while(i<seg.length && d>seg[i]){ d-=seg[i]; i++; }
+  const f = d/seg[Math.min(i,seg.length-1)];
+  switch(i){
+    case 0: return { x: cx-hw+r + sLine*f,            y: cy-hh };
+    case 1: return arcPt(cx+hw-r, cy-hh+r, r, -Math.PI/2, f);
+    case 2: return { x: cx+hw,                          y: cy-hh+r + vLine*f };
+    case 3: return arcPt(cx+hw-r, cy+hh-r, r, 0, f);
+    case 4: return { x: cx+hw-r - sLine*f,             y: cy+hh };
+    case 5: return arcPt(cx-hw+r, cy+hh-r, r, Math.PI/2, f);
+    case 6: return { x: cx-hw,                          y: cy+hh-r - vLine*f };
+    default:return arcPt(cx-hw+r, cy-hh+r, r, Math.PI, f);
+  }
+}
+function arcPt(ox, oy, r, a0, f){
+  const a=a0 + (Math.PI/2)*f;
+  return { x: ox + Math.cos(a)*r, y: oy + Math.sin(a)*r };
+}
+/* stitch mask: along a stitch program, beam deposits in short welds with gaps */
+const STITCH_N = 7, STITCH_DUTY = 0.58;
+function stitchOn(u){
+  if(u<=0||u>=1) return true;
+  const ph = (u*STITCH_N) % 1;
+  return ph < STITCH_DUTY;
+}
 
 /* ---------- grid helpers ---------- */
 function gx(){ return arc.gx; }
@@ -469,6 +514,7 @@ const arc = {
   y:0,                 // grid-space weld line height
   beadProgress:0,      // 0..1 along the seam
   beadMM:0,            // displayed seam length (mm)
+  runSecs:5.0,         // travel time of current seam = seamMM / (travel*SPEEDUP)
   arcSeconds:0,        // emission seconds (resets each seam, used for emit readout)
   pulseClock:0,        // accumulates seconds, fires a pulse every 1/PRF
   pulseGate:0,         // seconds remaining in current pulse "on" window
@@ -478,26 +524,23 @@ const arc = {
 // the deposited seam: list of {x,y,r,heat} spot-overlaps stamped behind the head (screen space)
 let bead = [];
 
-const PASS_RUN_SECS = 5.0;   // emission travel time per seam
 const STRIKE_SECS   = 0.55;  // shutter open / first lamp pump ramp
 const CRATER_SECS   = 0.9;   // power taper / down-slope at seam end
 const RESET_SECS    = 0.45;  // index to next seam / re-clamp
 
-function passSpan(p){
-  // travel left -> right across the central band
-  arc.startX = GW*0.18;
-  arc.endX   = GW*0.82;
-  arc.y      = GH*p.y;
-}
+const TRAVEL_SPEEDUP = 4.2;   // time-compression so the loop stays lively;
+                              // pitch coupling (spacing ∝ travel/PRF) is preserved.
 
 function beginPass(i){
   activePass = i;
   const p = PROGRAMS[i];
-  // weld line height: keep a stable band (use 0.46..0.50 by regime)
-  p.y = (p.regime==='keyhole')?0.50:(p.regime==='conduction')?0.44:0.47;
-  passSpan(p);
-  arc.gx = arc.startX;
-  arc.gy = arc.y;
+  // seam travel time derives from real travel speed & path length (deterministic)
+  arc.runSecs = Math.max(3.2, Math.min(7.5, p.seamMM / (p.travel*TRAVEL_SPEEDUP)));
+  // park the head at the start of the programmed path
+  const s = pathPoint(p, 0);
+  arc.startX = s.x; arc.endX = pathPoint(p,1).x; arc.y = s.y;
+  arc.gx = s.x;
+  arc.gy = s.y;
   arc.beadProgress = 0;
   arc.beadMM = 0;
   arc.arcSeconds = 0;
@@ -518,7 +561,6 @@ function beginPass(i){
   chip.classList.toggle('keyhole', p.regime==='keyhole');
   // retune parameter targets to this program's nominal values
   retuneParams(p);
-  logEvent('SHUTTER', '<span class="eamb">'+p.yr+'</span> 셔터 OPEN — 1064nm '+p.pulseE.toFixed(0)+'J / '+p.prf+'Hz 발진 준비', true);
 }
 
 function advancePass(){
@@ -559,60 +601,44 @@ function arcUpdate(now, dt){
     arc.pulse = 0;
   }
 
+  // deposit guard: stitch programs weld in short runs with gaps along the path
+  const canDeposit = (p.path!=='stitch') || stitchOn(arc.beadProgress);
+
   if(arc.phase==='reset'){
     arc.power = 0;
-    arc.gx = arc.startX;
-    arc.gy = arc.y;
+    const s=pathPoint(p,0); arc.gx=s.x; arc.gy=s.y;
     if(arc.t >= RESET_SECS){ arc.phase='strike'; arc.t=0; }
   }
   else if(arc.phase==='strike'){
-    // shutter open / lamp pump ramp: macro envelope rises, head holds at start
+    // shutter open / lamp pump ramp: macro envelope rises, head holds at path start
     const f = Math.min(1, arc.t/STRIKE_SECS);
     arc.power = (0.40 + 0.60*f);
-    arc.gx = arc.startX;
-    arc.gy = arc.y;
+    const s=pathPoint(p,0); arc.gx=s.x; arc.gy=s.y;
     // first pulses tack the start of the seam
-    if(pulseFired){
-      depositSpot(now, p, arc.power);
-      logPulseFlash(p);
-    }
-    if(arc.t >= STRIKE_SECS){
-      arc.phase='run'; arc.t=0;
-      logEvent('EMIT', '<span class="ehot">EMIT</span> 펄스 트레인 발진 — '+p.regime.toUpperCase()+', 심 진행 시작');
-    }
+    if(pulseFired){ depositSpot(now, p, arc.power); }
+    if(arc.t >= STRIKE_SECS){ arc.phase='run'; arc.t=0; }
   }
   else if(arc.phase==='run'){
-    // steady emission travelling left->right; seam builds via spot-overlap
+    // steady emission travelling ALONG the programmed path; seam drawn via spot-overlap
     arc.arcSeconds += dts;
-    arc.beadProgress = Math.min(1, arc.t/PASS_RUN_SECS);
-    const fe = arc.beadProgress;
-    arc.gx = arc.startX + (arc.endX-arc.startX)*fe;
-    arc.gy = arc.y; // laser tracks the joint precisely (no weave)
+    arc.beadProgress = Math.min(1, arc.t/arc.runSecs);
+    const pt = pathPoint(p, arc.beadProgress);
+    arc.gx = pt.x; arc.gy = pt.y;              // head traces the programmed trajectory
     arc.power = 0.94 + 0.05*Math.sin(now*0.02);
-    // each fired pulse drives the keyhole/melt and stamps a seam spot
-    if(pulseFired){
-      depositSpot(now, p, arc.power);
-      logPulseFlash(p);
-    }
-    arc.beadMM = Math.round(arc.beadProgress * 120); // seam ~120mm
+    // each fired pulse drives the keyhole/melt and stamps a seam spot on the path
+    if(pulseFired && canDeposit){ depositSpot(now, p, arc.power); }
+    arc.beadMM = Math.round(arc.beadProgress * p.seamMM);
 
-    if(arc.t >= PASS_RUN_SECS){
-      arc.phase='crater'; arc.t=0;
-      logEvent('TAPER', '심 종단 도달 — <span class="eamb">파워 다운슬로프</span> 크레이터 충전', false);
-    }
+    if(arc.t >= arc.runSecs){ arc.phase='crater'; arc.t=0; }
   }
   else if(arc.phase==='crater'){
-    // taper: dwell at end, pulse energy ramps down, pool fills then solidifies
+    // taper: dwell at path end, pulse energy ramps down, pool fills then solidifies
     const f = Math.min(1, arc.t/CRATER_SECS);
-    arc.gx = arc.endX;
-    arc.gy = arc.y;
+    const e=pathPoint(p,1); arc.gx=e.x; arc.gy=e.y;
     arc.power = (1.0 - f*0.85);            // ramp down
-    if(pulseFired){
-      depositSpot(now, p, arc.power);
-    }
+    if(pulseFired){ depositSpot(now, p, arc.power); }
     if(arc.t >= CRATER_SECS){
       arc.phase='reset'; arc.t=0; arc.power=0; arc.pulse=0;
-      logEvent('SEAM-OK', '<span class="eok">'+p.regime.toUpperCase()+' 심 완료</span> — 길이 '+arc.beadMM+'mm, 스패터 '+p.spatter, false);
       // hand off to the next program (loops forever)
       advancePass();
       return;
@@ -672,9 +698,6 @@ const params = {
   travel: { tgt:8.0, disp:8.0, unit:'mm/s',  base:8.0, range:0.3,  el:null, fixed:1 },
   defocus:{ tgt:0.0, disp:0.0, unit:'mm',    base:0.0, range:0.10, el:null, fixed:1 }
 };
-let paramJitterTimer = 0;
-const PARAM_JITTER_INTERVAL = 50;
-
 function initParams(){
   params.pulseE.el  = document.getElementById('g-pe');
   params.peakKW.el  = document.getElementById('g-pk');
@@ -692,23 +715,14 @@ function retuneParams(p){
   params.defocus.base = p.defocus;
   document.getElementById('mt-spatter').textContent = p.spatter;
 }
-function jitterParamTargets(){
-  for(const k in params){
-    const pr = params[k];
-    pr.tgt = pr.base + (Math.random()-0.5)*2 * pr.range;
-  }
-}
 function updateParams(dt){
-  paramJitterTimer++;
-  if(paramJitterTimer >= PARAM_JITTER_INTERVAL + Math.random()*30){
-    paramJitterTimer = 0; jitterParamTargets();
-  }
   const lerpK = 1 - Math.pow(0.04, dt/60);
-  // when the laser is off (reset), peak power collapses but pulse energy/PRF setpoints hold
+  // setpoints are the program nominals — they glide between programs (intentional motion),
+  // no random jitter. When the laser is off (reset) peak power collapses; setpoints hold.
   const live = (arc.phase==='run' || arc.phase==='strike' || arc.phase==='crater');
   for(const k in params){
     const pr = params[k];
-    const target = (k==='peakKW') ? (live ? pr.tgt : 0) : pr.tgt;
+    const target = (k==='peakKW') ? (live ? pr.base : 0) : pr.base;
     pr.disp += (target - pr.disp) * lerpK;
   }
   const p = PROGRAMS[activePass];
@@ -737,63 +751,25 @@ function updateParams(dt){
   const pdens = (params.peakKW.disp*1000) / Math.max(1e-6, areaCM2); // W/cm^2
   const pdStr = live ? pdens.toExponential(1).replace('e+','e') : '0';
   document.getElementById('pdens').textContent = pdStr + ' W/cm²';
-  // penetration & bead width drift around program nominal
-  const penet = p.penet * (0.92 + 0.16*Math.abs(Math.sin(performance.now()*0.0006)));
-  const beadW = p.beadW * (0.95 + 0.10*Math.abs(Math.sin(performance.now()*0.0008+1)));
+  // penetration & bead width are coupled to the live pulse (deeper at the pulse peak)
+  const pulseLift = 0.86 + 0.14*arc.pulse;
+  const penet = live ? p.penet * pulseLift : 0;
+  const beadW = live ? p.beadW * (0.95 + 0.05*arc.pulse) : 0;
   document.getElementById('penet').textContent = penet.toFixed(2) + ' mm';
   document.getElementById('beadw').textContent = beadW.toFixed(2) + ' mm';
   const aspect = penet/Math.max(0.01,beadW);
   document.getElementById('aspect').textContent = aspect.toFixed(1) + ' : 1';
 
+  // ---- point pitch & overlap: the direct parameter↔pattern coupling ----
+  // pitch[mm] = travel[mm/s] / PRF[Hz];  overlap% = 1 - pitch/spot.
+  // This is exactly what sets the visible bead-spot spacing on the drawn path.
+  const pitch = params.travel.disp / Math.max(1, params.prf.disp);
+  const overlap = Math.max(0, Math.min(99, (1 - pitch/p.spotMM)*100));
+  document.getElementById('mt-pitch').textContent =
+    live ? (pitch.toFixed(2) + 'mm · ' + overlap.toFixed(0) + '%') : '—';
+
   document.getElementById('mt-bead').textContent = arc.beadMM + ' mm';
   document.getElementById('arctime').textContent = arc.arcSeconds.toFixed(1) + 's';
-}
-
-/* ============================================================
-   EVENT LOG — rolling, never freezes; oldest rows drop off
-   ============================================================ */
-const elLog = document.getElementById('eventlog');
-const LOG_MAX = 6;
-function pad2(n){ n=''+n; return n.length<2?'0'+n:n; }
-function logTime(){
-  const d=new Date();
-  return pad2(d.getMinutes())+':'+pad2(d.getSeconds())+'.'+pad2((d.getMilliseconds()/10)|0);
-}
-function logEvent(code, msg){
-  const row=document.createElement('div');
-  row.className='elog-row fresh';
-  row.innerHTML='<span class="ets">'+logTime()+' '+code+'</span><span class="emsg">'+msg+'</span>';
-  elLog.appendChild(row);
-  while(elLog.children.length > LOG_MAX) elLog.removeChild(elLog.firstChild);
-}
-/* occasional per-pulse flash line so the log feels alive with the train */
-let pulseLogTimer = 0;
-function logPulseFlash(p){
-  pulseLogTimer++;
-  if(pulseLogTimer % 9 === 0){
-    logEvent('PULSE', '1064nm 펄스 — '+params.pulseE.disp.toFixed(1)+'J · '+Math.round(params.peakKW.disp*10)/10+'kW peak');
-  }
-}
-
-/* periodic process chatter so the log keeps moving even mid-seam */
-const CHATTER = [
-  ['MONITOR','펄스 트레인 안정 — 에너지 편차 ±2% 이내'],
-  ['BEAM','빔 정렬 정상 — 광섬유 전송 손실 < 0.5dB'],
-  ['GAS','보호가스 유량 정상 — 산화/플룸 억제 양호'],
-  ['HAZ','열영향부 폭 관리값 이내, 경도 양호'],
-  ['FOCUS','초점위치 추종 — 디포커스 setpoint 유지'],
-  ['CTQ','심 외관/용입 CTQ 샘플 캡처']
-];
-let chatterTimer = 2.0;
-function chatterUpdate(dts){
-  chatterTimer -= dts;
-  if(chatterTimer<=0){
-    chatterTimer = 1.6 + Math.random()*1.8;
-    if(arc.phase==='run'){
-      const c = CHATTER[(Math.random()*CHATTER.length)|0];
-      logEvent(c[0], c[1]);
-    }
-  }
 }
 
 /* ============================================================
@@ -835,6 +811,53 @@ function renderField(){
   ctx.imageSmoothingEnabled=true;
   ctx.imageSmoothingQuality='high';
   ctx.drawImage(off,0,0,GW,GH,0,0,SW,SH);
+}
+
+/* ---- render the PROGRAMMED PATH + the laser "drawing" trace ----
+   (1) faint dashed guideline = the seam/pattern the head will draw
+   (2) glowing trajectory = the part already welded (grows along the path)
+   This is the AMADA-style pattern/seam drawing made visible. */
+function renderPath(now){
+  const p = PROGRAMS[activePass];
+  const N = 200;
+  ctx.save();
+  // (1) planned program path — faint dashed guide
+  ctx.globalCompositeOperation='source-over';
+  ctx.setLineDash([5,7]);
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(150,225,255,0.16)';
+  ctx.beginPath();
+  for(let i=0;i<=N;i++){
+    const s=pathPoint(p,i/N); const x=s.x/GW*SW, y=s.y/GH*SH;
+    i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // (2) welded-so-far trajectory — the drawn weld trace
+  const wf = arc.beadProgress;
+  if(wf>0.002 && arc.power>0.001){
+    ctx.globalCompositeOperation='lighter';
+    ctx.lineCap='round'; ctx.lineJoin='round';
+    drawWelded(p, wf, 5.5, 'rgba(255,140,55,0.10)');   // wide molten underglow
+    drawWelded(p, wf, 1.8, 'rgba(255,206,140,0.50)');  // bright solidified core
+  }
+  ctx.restore();
+}
+function drawWelded(p, wf, width, color){
+  const N = Math.max(8, Math.round(wf*220));
+  const stitch = (p.path==='stitch');
+  ctx.lineWidth = width; ctx.strokeStyle = color;
+  ctx.beginPath();
+  let pen=false;
+  for(let i=0;i<=N;i++){
+    const u = wf*i/N;
+    const on = !stitch || stitchOn(u);
+    const s = pathPoint(p,u); const x=s.x/GW*SW, y=s.y/GH*SH;
+    if(on){ if(!pen){ ctx.moveTo(x,y); pen=true; } else ctx.lineTo(x,y); }
+    else { pen=false; }
+  }
+  ctx.stroke();
 }
 
 /* ---- render the deposited seam (cooling spot-overlap line) ---- */
@@ -1095,10 +1118,10 @@ function loop(now){
   frame++;
 
   arcUpdate(now, dt);
-  chatterUpdate(dts);
   simulate(dt);
 
   renderField();
+  renderPath(now);
   renderBead(now);
   renderArc(now, dts);
   renderThermal();

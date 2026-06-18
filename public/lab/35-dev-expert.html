@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCENE 05 · 관점 — THE DEVELOPER'S VIEW / 기술의 확신, 현장의 안개</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  :root{
+    --bg:#050505;
+    --bg2:#101010;
+    --phos:#d7d7d7;          /* 인광 화이트 */
+    --phos-dim:#8d8d8d;
+    --phos-deep:#3a3a3a;
+    --code:#6ea8ff;          /* 단 하나의 액센트 — 시스템/코드의 확신(IDE 블루) */
+    --code-bright:#cfe0ff;
+    --code-deep:#23467f;
+    --fog:#9aa0a8;           /* 안개 — 채도 빠진 차가운 회색(액센트 아님) */
+    --kr:"Pretendard","Pretendard Variable",-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--phos);
+    font-family:var(--kr);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .kr{word-break:keep-all;}
+
+  .stage{position:fixed;inset:0;overflow:hidden;background:
+    radial-gradient(125% 130% at 30% 46%, #0d0d0e 0%, #070708 52%, #030303 100%);}
+
+  #scene{position:absolute;inset:0;display:block;}
+
+  /* ---------- CRT shell ---------- */
+  .scan{
+    position:fixed;inset:0;z-index:60;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0px,rgba(0,0,0,0) 2px,rgba(0,0,0,0.20) 3px,rgba(0,0,0,0) 4px);
+    mix-blend-mode:multiply;opacity:.5;
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:61;pointer-events:none;
+    background:radial-gradient(ellipse 142% 128% at 42% 48%,rgba(0,0,0,0) 60%,rgba(0,0,0,0.50) 100%);
+  }
+  .grain{
+    position:fixed;inset:-50%;z-index:59;pointer-events:none;opacity:.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 1.15s steps(3) infinite;
+  }
+  @keyframes grain{0%{transform:translate(0,0);}50%{transform:translate(-3%,2%);}100%{transform:translate(2%,-2%);}}
+
+  /* ---------- kicker / footer ---------- */
+  .kicker{
+    position:absolute;top:5.2vh;left:0;right:0;z-index:30;
+    display:flex;justify-content:center;align-items:center;gap:16px;
+    font-family:var(--mono);font-size:11px;letter-spacing:5px;
+    color:var(--phos-dim);text-transform:uppercase;
+  }
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--code);
+    box-shadow:0 0 10px var(--code);animation:beat 2.6s ease-in-out infinite;}
+  @keyframes beat{0%,100%{opacity:.32;}50%{opacity:1;}}
+  .kicker .sep{color:var(--phos-deep);}
+  .kicker b{color:var(--code);font-weight:500;letter-spacing:3px;
+    text-shadow:0 0 12px rgba(110,168,255,.4);}
+
+  .footer{
+    position:absolute;bottom:4.6vh;left:0;right:0;z-index:30;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:0 5.4vw;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:3px;
+  }
+  .footer .lhs{color:var(--code);text-shadow:0 0 10px rgba(110,168,255,.3);}
+  .footer .lhs small{color:var(--phos-deep);letter-spacing:2px;}
+  .footer .rhs{color:var(--phos-deep);}
+  .footer .rhs .fz{color:var(--fog);filter:blur(.6px);}
+
+  /* ---------- HERO TYPOGRAPHY (the star) ---------- */
+  #type{position:absolute;inset:0;z-index:25;pointer-events:none;}
+
+  .l1{
+    position:absolute;left:5.2%;top:17.6%;max-width:48%;
+    font-family:var(--kr);font-weight:700;
+    font-size:clamp(22px,2.62vw,54px);line-height:1.30;letter-spacing:-.018em;
+    color:var(--phos);
+    text-shadow:0 0 4px rgba(255,255,255,.12);
+  }
+  .l1 em{
+    font-style:normal;color:var(--code-bright);position:relative;
+    text-shadow:0 0 20px rgba(110,168,255,.5),0 0 46px rgba(110,168,255,.22);
+  }
+  .l1 em::after{
+    content:"";position:absolute;left:0;right:0;bottom:-.10em;height:2px;
+    background:linear-gradient(90deg,var(--code),rgba(110,168,255,0));
+    box-shadow:0 0 10px rgba(110,168,255,.55);
+  }
+
+  .l2{
+    position:absolute;left:5.2%;bottom:15.2%;max-width:64%;
+    font-family:var(--kr);font-weight:800;
+    font-size:clamp(28px,3.5vw,74px);line-height:1.22;letter-spacing:-.022em;
+    color:var(--phos);
+  }
+  /* 현장/경험 — 개발자에겐 초점이 풀리는 단어. 회색 안개색 + 호흡하는 블러(JS) */
+  .l2 .fog{
+    color:var(--fog);font-weight:700;
+    display:inline-block;will-change:filter,transform,opacity;
+    text-shadow:0 0 10px rgba(154,160,168,.18);
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <canvas id="scene"></canvas>
+
+  <div class="kicker">
+    <span>씬 05 · 관점</span>
+    <span class="sep">/</span>
+    <span class="dot"></span>
+    <b>THE DEVELOPER'S VIEW</b>
+    <span class="sep">/</span>
+    <span class="kr">기술의 확신 · 현장의 안개</span>
+  </div>
+
+  <div id="type">
+    <h1 class="l1 kr">개발자는 <em>기술</em>을<br>가장 잘 압니다.</h1>
+    <h2 class="l2 kr">하지만 제조 <span class="fog" data-i="0">현장</span>의 복잡한<br>업무와 <span class="fog" data-i="1">경험</span>은 알기 어렵습니다.</h2>
+  </div>
+
+  <div class="footer">
+    <span class="lhs">SYSTEM · CODE · ARCHITECTURE&nbsp;&nbsp;<small>또렷 IN&nbsp;FOCUS</small></span>
+    <span class="rhs"><span class="fz">공정 · 설비 · 암묵지 · 경험</span>&nbsp;&nbsp;FIELD&nbsp;안개</span>
+  </div>
+
+  <div class="grain"></div>
+  <div class="scan"></div>
+  <div class="vignette"></div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   SCENE 05 · 관점 — THE DEVELOPER'S VIEW
+   거울쌍: 씬4(실무자 관점)의 수평 반전. 씬4 = 현장 또렷 / 시스템 흐림.
+   씬5 = 시스템(코드·아키텍처) 또렷·정적 / 제조 현장(공정·설비·암묵지·경험)
+   으로 갈수록 초점이 풀리고 안개가 밀려와 정의를 잃고 일렁임(불투명·동적).
+   화면을 가로지르는 단 하나의 '초점면(focus plane)' — 개발자 지식의 경계.
+   시스템 언어(직교 트레이스)가 우측 현장으로 뻗다가 초점면에서 해상도를
+   잃고(실선→점선→입자) 안개로 흩어진다.  액센트는 코드 블루 하나뿐이며,
+   안개 깊은 곳으로 갈수록 채도가 빠져 무채색이 된다.
+   ※ 가짜 로그/난수/헤드라인 가짜수치 없음 — 모든 모션은 의도된 시간함수.
+   ════════════════════════════════════════════════════════════════ */
+(function(){
+  "use strict";
+
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  const fogWords = Array.from(document.querySelectorAll('.l2 .fog'));
+
+  let W=0,H=0,DPR=Math.min(window.devicePixelRatio||1,2);
+
+  /* ---- color helpers ---- */
+  const CODE=[110,168,255], CODEB=[207,224,255], CODED=[35,70,127];
+  const PHOS=[215,215,215], DIM=[141,141,141], DEEP=[58,58,58], FOG=[154,160,168];
+  const mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
+  const rgba=(c,a)=>'rgba('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+','+a+')';
+  const clamp=(a,b,v)=>v<a?a:v>b?b:v;
+  const smooth=t=>{t=clamp(0,1,t);return t*t*(3-2*t);};
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const ease=x=>x<=0?0:x>=1?1:x*x*(3-2*x);
+  const ramp=(a,b,x)=>ease((x-a)/(b-a));
+
+  /* ---- layout geometry (W/H dependent) ---- */
+  let FOCUS=0, BAND=0;           // 초점면 x + 전이 폭
+  function geo(){
+    FOCUS = W*0.555;             // 또렷↔안개 경계
+    BAND  = W*0.115;             // 전이 폭
+  }
+  // sharpness: 1 = 완전 또렷(좌) → 0 = 완전 안개(우)
+  function sharpAt(x, drift){
+    return 1 - smooth((x - (FOCUS - BAND + drift)) / (2*BAND));
+  }
+
+  function resize(){
+    W=window.innerWidth; H=window.innerHeight;
+    canvas.width=W*DPR; canvas.height=H*DPR;
+    canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    geo();
+    buildScene();
+  }
+  window.addEventListener('resize',resize);
+
+  /* ---- scene model (deterministic) ---- */
+  let codeLines=[], arch=[], traces=[], fieldTerms=[], machines=[], fogPuffs=[];
+
+  function buildScene(){
+    // ── 코드 컬럼 (좌측, 또렷·정적) — 일반적 구조 토큰만(가짜 수치/로그 없음) ──
+    // tokens: [text, kind]  kind: 0 kw, 1 ident, 2 punct, 3 type, 4 dim
+    codeLines = [
+      [['const',0],[' ',2],['system',1],[' = ',2],['compose',1],['(',2]],
+      [['  ',2],['pipeline',1],[',',2]],
+      [['  ',2],['schema',1],[',',2],['  ',2],['contract',1],[',',2]],
+      [[')',2]],
+      [['',2]],
+      [['function',0],[' ',2],['resolve',1],['(',2],['node',1],[')',2],[' {',2]],
+      [['  ',2],['return',0],[' ',2],['graph',1],['.',2],['walk',1],['(',2],['node',1],[')',2]],
+      [['}',2]],
+      [['',2]],
+      [['class',0],[' ',2],['Service',3],[' ',2],['extends',0],[' ',2],['Core',3],[' {}',2]],
+      [['',2]],
+      [['api',1],['  ⟶  ',4],['model',1],['  ⟶  ',4],['store',1]],
+    ];
+
+    // ── 아키텍처 스키매틱 (중앙 또렷 존) — 직교 트레이스로 연결된 모듈 ──
+    const ax0=W*0.300, ay0=H*0.250, cw=W*0.103, ch=H*0.108, gapx=W*0.135, gapy=H*0.235;
+    arch = [
+      {label:'API',     x:ax0,          y:ay0},
+      {label:'SERVICE', x:ax0+gapx,     y:ay0},
+      {label:'MODEL',   x:ax0,          y:ay0+gapy},
+      {label:'SCHEMA',  x:ax0+gapx,     y:ay0+gapy},
+    ].map(m=>({...m,w:cw,h:ch,cx:m.x+cw/2,cy:m.y+ch/2}));
+
+    // 직교 트레이스 (모듈 사이) — 마지막 하나는 현장(우)으로 뻗어 해상도 상실
+    traces = [
+      orTrace(arch[0], arch[1], 'h'),     // API → SERVICE
+      orTrace(arch[0], arch[2], 'v'),     // API → MODEL
+      orTrace(arch[3], arch[1], 'v'),     // SCHEMA → SERVICE
+      orTrace(arch[2], arch[3], 'h'),     // MODEL → SCHEMA
+      // SERVICE 에서 우측 현장으로 뻗는 시스템 언어 — 초점면에서 흩어진다
+      reachTrace(arch[1]),
+      reachTrace(arch[3]),
+    ];
+
+    // ── 현장 용어 (우측 안개) — 실재 개념, 정의를 잃고 부유 ──
+    const TERMS=['공정','설비','암묵지','숙련','경험','현장','노하우','비가시'];
+    fieldTerms = TERMS.map((t,i)=>({
+      txt:t,
+      bx: W*(0.700 + (i%4)*0.066) + ((i>>2)? W*0.018:0),
+      by: H*(0.300 + ((i*0.137)%1)*0.46),
+      amp: H*(0.05 + (i%3)*0.018),
+      ph: i*0.91,
+      per: 7.2 + (i%4)*1.6,        // surfacing 주기(초)
+      drift: 0.10 + (i%3)*0.05,
+    }));
+
+    // ── 설비 실루엣 (안개 속, 디포커스) — 기어/탱크/컨베이어 ──
+    machines = [
+      {kind:'gear',     x:W*0.760, y:H*0.355, r:H*0.085, ph:0.0,  spd:0.16},
+      {kind:'tank',     x:W*0.895, y:H*0.560, r:H*0.110, ph:1.7,  spd:0.0},
+      {kind:'conveyor', x:W*0.715, y:H*0.700, r:H*0.060, ph:3.1,  spd:0.5},
+    ];
+
+    // ── 안개 퍼프 (라디얼 그라데이션, 연속 드리프트) ──
+    fogPuffs=[];
+    const NP=16;
+    for(let i=0;i<NP;i++){
+      fogPuffs.push({
+        bx: W*(0.60 + ((i*0.211)%1)*0.42),
+        by: H*(0.10 + ((i*0.347)%1)*0.86),
+        r:  H*(0.16 + ((i*0.123)%1)*0.20),
+        ph: i*0.77,
+        spx: 0.6 + (i%5)*0.16,
+        spy: 0.4 + (i%4)*0.12,
+        amp: W*(0.018 + (i%4)*0.010),
+      });
+    }
+  }
+
+  // 직교 L-트레이스 점열
+  function orTrace(a,b,first){
+    const p0=[a.cx,a.cy], p3=[b.cx,b.cy];
+    let knee = first==='h' ? [b.cx, a.cy] : [a.cx, b.cy];
+    return {pts:[p0,knee,p3], reach:false};
+  }
+  // 우측 현장으로 뻗는 트레이스 (모듈 우변 → 초점면 너머)
+  function reachTrace(a){
+    const y=a.cy + (a.label==='SCHEMA'? H*0.045 : -H*0.045);
+    const x0=a.x+a.w;
+    return {pts:[[x0,a.cy],[x0+W*0.04,y],[FOCUS+BAND*1.5,y]], reach:true, y:y, x0:x0+W*0.04};
+  }
+
+  /* ---- timing ---- */
+  const CYCLE=9.0;   // 시스템 스캔 펄스 주기 (이음매 없는 호흡)
+  const _off=(parseFloat(new URLSearchParams(location.search).get('t'))||0)*1000;
+  let t0=performance.now()-_off;
+
+  /* ════════ DRAW ════════ */
+  function draw(now){
+    const time=(now-t0)/1000;           // 단조 시간 → 안개/주기함수 자연 이음매
+    const cphase=(time % CYCLE)/CYCLE;   // 시스템 스캔 위상
+    const focusDrift = Math.sin(time*0.42)*W*0.012;   // 초점면 미세 호흡
+
+    ctx.clearRect(0,0,W,H);
+
+    drawGrid(time, focusDrift);
+    drawFogWash(time, focusDrift);       // 우측 안개 볼륨 베이스 — '현장은 안개로 가득'
+    drawFog(time);                       // 안개(라디얼) — 아키텍처보다 먼저(뒤에 깔림)
+    drawMachines(time, focusDrift);      // 디포커스 설비 실루엣
+    drawCodeColumn(time);                // 좌측 코드 컬럼(또렷·정적)
+    drawArch(time, cphase, focusDrift);  // 아키텍처 모듈+트레이스(또렷)
+    drawFocusPlane(time, focusDrift);    // 초점면 — 지식의 경계
+    drawFieldTerms(time, focusDrift);    // 현장 용어(디포커스, 부유)
+    drawFogAccentBleed(time);            // 액센트가 근거리 안개에 살짝 번짐
+
+    syncType(time);
+
+    requestAnimationFrame(draw);
+  }
+
+  /* ── 1) 배경 그리드: 좌측 직교 또렷 → 우측 변형·소멸 ── */
+  function drawGrid(time, fdrift){
+    const step=46;
+    ctx.lineWidth=1;
+    // 수직선
+    for(let x=W*0.04; x<W*0.98; x+=step){
+      const s=sharpAt(x, fdrift);
+      if(s<0.02) continue;
+      const jit=(1-s)*Math.sin(x*0.05+time*0.8)*8;
+      const a=0.030*s + 0.010*(1-s);
+      ctx.strokeStyle=rgba(mix(FOG,CODE,s*0.35), a);
+      ctx.beginPath();
+      // 안개 구간은 선이 끊겨 점선화
+      if(s>0.55){
+        ctx.moveTo(x+jit, H*0.10); ctx.lineTo(x+jit, H*0.92);
+      }else{
+        for(let y=H*0.10; y<H*0.92; y+=10){
+          const dj=(1-s)*Math.sin(y*0.06+time+x)*6;
+          ctx.moveTo(x+jit+dj, y); ctx.lineTo(x+jit+dj, y+5*s);
+        }
+      }
+      ctx.stroke();
+    }
+    // 수평선
+    for(let y=H*0.12; y<H*0.92; y+=step){
+      ctx.beginPath();
+      let started=false;
+      for(let x=W*0.04; x<W*0.98; x+=8){
+        const s=sharpAt(x, fdrift);
+        const a=0.028*s;
+        if(a<0.004){ started=false; continue; }
+        const jit=(1-s)*Math.sin(y*0.05+time*0.7+x*0.02)*6;
+        ctx.strokeStyle=rgba(mix(FOG,CODE,s*0.30), a);
+        if(!started){ ctx.beginPath(); ctx.moveTo(x, y+jit); started=true; }
+        else ctx.lineTo(x, y+jit);
+      }
+      ctx.stroke();
+    }
+  }
+
+  /* ── 1.5) 안개 볼륨 베이스: 초점면 우측으로 차오르는 회색 안개층 ── */
+  function drawFogWash(time, fdrift){
+    const x0=FOCUS-BAND*0.4+fdrift, x1=W*1.0;
+    const g=ctx.createLinearGradient(x0,0,x1,0);
+    g.addColorStop(0, rgba(FOG,0));
+    g.addColorStop(0.35, rgba(FOG,0.045));
+    g.addColorStop(0.72, rgba(FOG,0.075+0.012*Math.sin(time*0.4)));
+    g.addColorStop(1, rgba(FOG,0.052));
+    ctx.fillStyle=g;
+    ctx.fillRect(x0,0,x1-x0,H);
+  }
+
+  /* ── 2) 안개: 드리프트하는 라디얼 퍼프(연속) ── */
+  function drawFog(time){
+    ctx.save();
+    ctx.globalCompositeOperation='lighter';
+    for(const p of fogPuffs){
+      const x=p.bx + Math.sin(time*0.12*p.spx + p.ph)*p.amp
+                   + Math.cos(time*0.07 + p.ph*1.3)*p.amp*0.5;
+      const y=p.by + Math.cos(time*0.10*p.spy + p.ph)*p.amp*0.7;
+      const s=sharpAt(x, 0);
+      const depth=clamp(0,1,(x-FOCUS)/(W*0.40));   // 우로 갈수록 짙음
+      const a=(0.040 + 0.090*depth) * (0.62+0.38*Math.sin(time*0.5+p.ph));
+      if(a<=0) continue;
+      const r=p.r*(1+0.12*Math.sin(time*0.3+p.ph));
+      const g=ctx.createRadialGradient(x,y,0,x,y,r);
+      g.addColorStop(0, rgba(FOG, a));
+      g.addColorStop(0.55, rgba(FOG, a*0.45));
+      g.addColorStop(1, rgba(FOG, 0));
+      ctx.fillStyle=g;
+      ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  /* ── 3) 설비 실루엣: 안개 속 디포커스(ctx.filter blur) ── */
+  function drawMachines(time, fdrift){
+    for(const m of machines){
+      const s=sharpAt(m.x, fdrift);
+      const depth=clamp(0,1,(m.x-FOCUS)/(W*0.42));
+      const blurPx=2.5 + depth*7.5;
+      const a=0.18 + 0.16*(1-depth);
+      ctx.save();
+      ctx.filter='blur('+blurPx.toFixed(1)+'px)';
+      ctx.strokeStyle=rgba(FOG, a);
+      ctx.lineWidth=2.2;
+      ctx.translate(m.x, m.y);
+      if(m.kind==='gear'){
+        const rot=time*m.spd;
+        ctx.rotate(rot);
+        const teeth=12, ro=m.r, ri=m.r*0.74;
+        ctx.beginPath();
+        for(let i=0;i<teeth*2;i++){
+          const ang=i/(teeth*2)*Math.PI*2;
+          const rr=(i%2===0)?ro:ri;
+          const px=Math.cos(ang)*rr, py=Math.sin(ang)*rr;
+          i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+        }
+        ctx.closePath(); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0,0,m.r*0.34,0,Math.PI*2); ctx.stroke();
+      }else if(m.kind==='tank'){
+        const w=m.r*1.05, h=m.r*1.55;
+        ctx.beginPath();
+        ctx.moveTo(-w,-h*0.35);
+        ctx.lineTo(-w, h*0.5);
+        ctx.quadraticCurveTo(-w,h*0.72,-w*0.6,h*0.72);
+        ctx.lineTo(w*0.6,h*0.72);
+        ctx.quadraticCurveTo(w,h*0.72,w,h*0.5);
+        ctx.lineTo(w,-h*0.35);
+        ctx.quadraticCurveTo(w,-h*0.62,0,-h*0.62);
+        ctx.quadraticCurveTo(-w,-h*0.62,-w,-h*0.35);
+        ctx.stroke();
+        // 액위 — 천천히 일렁임
+        const lv=h*0.10+Math.sin(time*0.6)*h*0.05;
+        ctx.beginPath(); ctx.moveTo(-w*0.92,lv); ctx.lineTo(w*0.92,lv); ctx.stroke();
+      }else{ // conveyor — 롤러 3개 + 벨트
+        const rr=m.r*0.5, span=m.r*2.4;
+        for(let i=-1;i<=1;i++){
+          ctx.beginPath(); ctx.arc(i*span*0.5,0,rr,0,Math.PI*2); ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.moveTo(-span*0.5,-rr); ctx.lineTo(span*0.5,-rr);
+        ctx.moveTo(-span*0.5, rr); ctx.lineTo(span*0.5, rr);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+    ctx.filter='none';
+  }
+
+  /* ── 4) 코드 컬럼(좌측, 또렷·정적) ── */
+  function drawCodeColumn(time){
+    const x0=W*0.052, y0=H*0.300, lh=H*0.0395;
+    ctx.textBaseline='alphabetic';
+    const fs=Math.max(11, Math.min(16, W*0.0098));
+    ctx.font='500 '+fs+"px 'JetBrains Mono', monospace";
+    // 미세한 스트림 글린트(정적이되 살아있음)
+    const glint=(Math.sin(time*1.3)*0.5+0.5);
+    for(let li=0; li<codeLines.length; li++){
+      const y=y0+li*lh;
+      let cx=x0;
+      const lineGlow = (li===Math.floor((time*0.9)%codeLines.length))?0.18:0;
+      for(const [txt,kind] of codeLines[li]){
+        let col, a;
+        if(kind===0){ col=CODE;  a=0.92; }          // keyword
+        else if(kind===3){ col=CODEB; a=0.95; }      // type
+        else if(kind===1){ col=PHOS; a=0.80; }       // identifier
+        else if(kind===4){ col=mix(CODE,DIM,0.5); a=0.55; } // arrow dim
+        else { col=DIM; a=0.55; }                    // punct
+        a += lineGlow;
+        if(col===CODE||col===CODEB){
+          ctx.shadowColor=rgba(CODE,0.5); ctx.shadowBlur=8;
+        } else ctx.shadowBlur=0;
+        ctx.fillStyle=rgba(col, clamp(0,1,a));
+        ctx.fillText(txt, cx, y);
+        cx += ctx.measureText(txt).width;
+      }
+      ctx.shadowBlur=0;
+    }
+    // 커서 깜빡임 — 마지막 줄 끝
+    if((time%1.0)<0.55){
+      const cy=y0+(codeLines.length-1)*lh;
+      ctx.fillStyle=rgba(CODEB, 0.85);
+      ctx.shadowColor=rgba(CODE,0.7); ctx.shadowBlur=10;
+      ctx.fillRect(W*0.052+W*0.118, cy-fs*0.82, fs*0.55, fs*0.95);
+      ctx.shadowBlur=0;
+    }
+  }
+
+  /* ── 5) 아키텍처 모듈 + 직교 트레이스(또렷) ── */
+  function drawArch(time, cphase, fdrift){
+    // 스캔 펄스: cphase 0→1 동안 트레이스를 따라 빛이 흐름(끝·시작에서 페이드)
+    const scanFade=Math.sin(cphase*Math.PI);   // 이음매 0
+    // 트레이스 먼저(박스 뒤)
+    for(const tr of traces){
+      drawTrace(tr, time, cphase, scanFade, fdrift);
+    }
+    // 모듈 박스
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    for(const m of arch){
+      const s=sharpAt(m.cx, fdrift);
+      const a=0.85*s;
+      // 글로우 외곽
+      ctx.save();
+      ctx.shadowColor=rgba(CODE,0.45*s); ctx.shadowBlur=14*s;
+      ctx.strokeStyle=rgba(CODE, a);
+      ctx.lineWidth=1.5;
+      roundRect(m.x,m.y,m.w,m.h,6); ctx.stroke();
+      ctx.restore();
+      // 내부 미세 베이스(채움)
+      ctx.fillStyle=rgba(CODED, 0.12*s);
+      roundRect(m.x,m.y,m.w,m.h,6); ctx.fill();
+      // 라벨
+      ctx.font="700 "+Math.max(11,Math.min(15,W*0.0090))+"px 'JetBrains Mono', monospace";
+      ctx.fillStyle=rgba(CODEB, 0.95*s);
+      ctx.shadowColor=rgba(CODE,0.5*s); ctx.shadowBlur=8*s;
+      ctx.fillText(m.label, m.cx, m.cy);
+      ctx.shadowBlur=0;
+      // 포트 점
+      ctx.fillStyle=rgba(CODE,0.8*s);
+      ctx.beginPath(); ctx.arc(m.x+m.w, m.cy, 2.2,0,Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(m.x, m.cy, 2.2,0,Math.PI*2); ctx.fill();
+    }
+    ctx.textAlign='start';
+  }
+
+  function drawTrace(tr, time, cphase, scanFade, fdrift){
+    const pts=tr.pts;
+    if(!tr.reach){
+      // 또렷한 직교 연결선
+      ctx.strokeStyle=rgba(CODE,0.34);
+      ctx.lineWidth=1.4; ctx.lineJoin='miter';
+      ctx.beginPath(); ctx.moveTo(pts[0][0],pts[0][1]);
+      for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
+      ctx.stroke();
+      // 스캔 펄스 패킷
+      drawPacket(pts, cphase, scanFade);
+    }else{
+      // 현장으로 뻗는 트레이스 — 초점면에서 실선→점선→입자로 와해
+      drawReachTrace(tr, time, fdrift);
+    }
+  }
+
+  // 트레이스 길이 누적 → 위상 보간점
+  function ptAlong(pts, u){
+    let segL=[], total=0;
+    for(let i=0;i<pts.length-1;i++){
+      const d=Math.hypot(pts[i+1][0]-pts[i][0],pts[i+1][1]-pts[i][1]);
+      segL.push(d); total+=d;
+    }
+    let d=u*total;
+    for(let i=0;i<segL.length;i++){
+      if(d<=segL[i]){
+        const t=d/segL[i];
+        return [lerp(pts[i][0],pts[i+1][0],t), lerp(pts[i][1],pts[i+1][1],t)];
+      }
+      d-=segL[i];
+    }
+    return pts[pts.length-1];
+  }
+
+  function drawPacket(pts, cphase, scanFade){
+    if(scanFade<0.02) return;
+    const p=ptAlong(pts, cphase);
+    ctx.fillStyle=rgba(CODEB, 0.9*scanFade);
+    ctx.shadowColor=rgba(CODE,1); ctx.shadowBlur=12;
+    ctx.beginPath(); ctx.arc(p[0],p[1],2.4,0,Math.PI*2); ctx.fill();
+    ctx.shadowBlur=0;
+  }
+
+  // 시스템 언어가 현장으로 뻗다가 해상도를 잃는다
+  function drawReachTrace(tr, time, fdrift){
+    const y=tr.y, x0=tr.x0, x1=tr.pts[2][0];
+    ctx.lineJoin='miter';
+    // 모듈→x0: 짧은 또렷 구간
+    ctx.strokeStyle=rgba(CODE,0.32); ctx.lineWidth=1.4;
+    ctx.beginPath(); ctx.moveTo(tr.pts[0][0],tr.pts[0][1]);
+    ctx.lineTo(tr.pts[1][0],tr.pts[1][1]); ctx.stroke();
+    // x0 → 초점면: 실선이 점선화하며 알파 감소
+    let x=x0;
+    while(x<x1){
+      const s=sharpAt(x, fdrift);
+      const dash=lerp(14,2,1-s);        // 또렷=긴 대시, 안개=짧은 점
+      const gap =lerp(3,9,1-s);
+      const a=0.30*s;
+      if(a>0.01){
+        ctx.strokeStyle=rgba(mix(FOG,CODE,s), a);
+        ctx.lineWidth=lerp(0.6,1.4,s);
+        ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(Math.min(x+dash,x1),y); ctx.stroke();
+      }
+      x+=dash+gap;
+    }
+    // 초점면 너머 — 입자로 흩어짐(드리프트)
+    const NP=10;
+    for(let i=0;i<NP;i++){
+      const fx=x1 + i*W*0.012;
+      const s=sharpAt(fx, fdrift);
+      const depth=clamp(0,1,(fx-FOCUS)/(W*0.18));
+      const py=y + Math.sin(time*1.1 + i*0.9 + tr.y*0.01)*H*0.018*depth
+                 + Math.cos(time*0.7 + i)*H*0.010*depth;
+      const a=0.34*(1-depth)*(1-depth);
+      if(a<0.01) continue;
+      const r=lerp(1.6,0.7,depth);
+      ctx.fillStyle=rgba(mix(CODE,FOG,depth), a);
+      ctx.beginPath(); ctx.arc(fx,py,r,0,Math.PI*2); ctx.fill();
+    }
+  }
+
+  /* ── 6) 초점면 — 개발자 지식의 경계 ── */
+  function drawFocusPlane(time, fdrift){
+    const fx=FOCUS+fdrift;
+    // 부드러운 세로 그라데이션 밴드(또렷↔안개 전이)
+    const g=ctx.createLinearGradient(fx-BAND,0,fx+BAND,0);
+    g.addColorStop(0, rgba(CODE,0));
+    g.addColorStop(0.5, rgba(CODE,0.030));
+    g.addColorStop(0.62, rgba(FOG,0.020));
+    g.addColorStop(1, rgba(FOG,0));
+    ctx.fillStyle=g;
+    ctx.fillRect(fx-BAND,0,BAND*2,H);
+    // 경계 캘리퍼 — 절제된 틱(개발자가 닿는 한계)
+    const ticks=18;
+    for(let i=0;i<ticks;i++){
+      const ty=H*0.16 + (i/(ticks-1))*H*0.66;
+      const pulse=0.5+0.5*Math.sin(time*1.4 - i*0.4);
+      const a=0.10+0.16*pulse;
+      ctx.strokeStyle=rgba(mix(CODE,FOG,0.4), a);
+      ctx.lineWidth=1;
+      ctx.beginPath(); ctx.moveTo(fx-4,ty); ctx.lineTo(fx+4,ty); ctx.stroke();
+    }
+    // 세로 hairline
+    ctx.strokeStyle=rgba(mix(CODE,FOG,0.5),0.10);
+    ctx.lineWidth=1;
+    ctx.setLineDash([2,6]);
+    ctx.beginPath(); ctx.moveTo(fx,H*0.14); ctx.lineTo(fx,H*0.86); ctx.stroke();
+    ctx.setLineDash([]);
+    // 라벨
+    ctx.save();
+    ctx.font="600 9.5px 'JetBrains Mono', monospace";
+    ctx.fillStyle=rgba(mix(CODE,FOG,0.45),0.5);
+    ctx.textAlign='center';
+    ctx.translate(fx, H*0.115);
+    ctx.fillText('— 지식의 경계 · LIMIT OF FOCUS —', 0, 0);
+    ctx.restore();
+    ctx.textAlign='start';
+  }
+
+  /* ── 7) 현장 용어 — 디포커스, 부유(정의를 잃음) ── */
+  function drawFieldTerms(time, fdrift){
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    const fs=Math.max(15, Math.min(26, W*0.0155));
+    for(const ft of fieldTerms){
+      const life=(Math.sin(time*(2*Math.PI/ft.per) + ft.ph)*0.5+0.5); // 0..1 부상/침강
+      const x=ft.bx + Math.sin(time*ft.drift + ft.ph)*W*0.012;
+      const y=ft.by - life*ft.amp + Math.cos(time*0.5+ft.ph)*H*0.012;
+      const s=sharpAt(x, fdrift);
+      const depth=clamp(0,1,(x-FOCUS)/(W*0.40));
+      // 절대 또렷해지지 않음: 최소 블러 2px, 깊을수록 짙음
+      const blurPx=2.2 + depth*5.2 + (1-life)*1.5;
+      const a=(0.30 + 0.42*life) * (0.62+0.38*(1-depth));
+      ctx.save();
+      ctx.filter='blur('+blurPx.toFixed(1)+'px)';
+      ctx.font="700 "+fs+"px 'Pretendard', sans-serif";
+      ctx.fillStyle=rgba(FOG, a);
+      ctx.fillText(ft.txt, x, y);
+      ctx.restore();
+    }
+    ctx.filter='none';
+    ctx.textAlign='start';
+  }
+
+  /* ── 8) 액센트 번짐: 근거리 안개에 코드 블루가 살짝 스밈 후 무채색화 ── */
+  function drawFogAccentBleed(time){
+    const x=FOCUS+BAND*0.6 + Math.sin(time*0.5)*W*0.01;
+    const y=H*0.5;
+    const r=W*0.10;
+    const g=ctx.createRadialGradient(x,y,0,x,y,r);
+    const a=0.05+0.02*Math.sin(time*0.7);
+    g.addColorStop(0, rgba(CODE, a));
+    g.addColorStop(1, rgba(CODE, 0));
+    ctx.save();
+    ctx.globalCompositeOperation='lighter';
+    ctx.fillStyle=g;
+    ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  /* ── 타이포 반응: 현장/경험 단어가 끝없이 디포커스 호흡 ── */
+  function syncType(time){
+    fogWords.forEach((el,i)=>{
+      const ph=i*1.7;
+      const blur=2.6 + (Math.sin(time*0.9+ph)*0.5+0.5)*2.6;   // 2.6~5.2px, 절대 또렷X
+      const dx=Math.sin(time*0.6+ph)*3.0;
+      const dy=Math.cos(time*0.45+ph)*2.0;
+      const op=0.72 + 0.16*Math.sin(time*0.8+ph+1.0);
+      el.style.filter='blur('+blur.toFixed(2)+'px)';
+      el.style.transform='translate('+dx.toFixed(2)+'px,'+dy.toFixed(2)+'px)';
+      el.style.opacity=op.toFixed(3);
+    });
+  }
+
+  /* ---- small geom helpers ---- */
+  function roundRect(x,y,w,h,r){
+    ctx.beginPath();
+    ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r);
+    ctx.arcTo(x+w,y+h,x,y+h,r);
+    ctx.arcTo(x,y+h,x,y,r);
+    ctx.arcTo(x,y,x+w,y,r);
+    ctx.closePath();
+  }
+
+  resize();
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

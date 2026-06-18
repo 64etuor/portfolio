@@ -1,227 +1,227 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { ACTS } from './acts'
-import { BaselineLayer } from './BaselineLayer'
-import { VersionHUD } from './VersionHUD'
-import { Subtitle } from './Subtitle'
-import { Finale } from './Finale'
-import { Transition } from './Transition'
-import { BootSlate } from './BootSlate'
 
-// Deterministic per-act seed (id chars → number) for the datum-line variation.
-function seedOf(id: string): number {
-  let s = 0
-  for (let i = 0; i < id.length; i++) s = (s * 31 + id.charCodeAt(i)) % 9973
-  return s
+// Neutral film accent (progress bar / controls). Scenes carry their own color.
+const ACCENT = '#cdd2d8'
+
+// Per-beat scene-cut flavor, keyed by the INCOMING beat's id (else 'default').
+const TX_VARIANT: Record<string, string> = {
+  's6-collision': 'glitch', // 충돌 — 디지털 글리치/찢김
+  's8-insight': 'weave', // 연결 — 양쪽(현업·개발)이 중앙에서 만나 봉합
+  's9-bridge': 'weave', // 해결(양손잡이) — 봉합
+  's10-crossdomain': 'weave', // 크로스도메인 — 봉합
+  ending: 'bloom', // 엔딩 — 빛이 바깥으로 열림
+}
+
+// The scene that plays after (actIdx, sceneIdx), or null at the end of the film.
+function nextIndex(actIdx: number, sceneIdx: number): [number, number] | null {
+  const a = ACTS[actIdx]
+  if (sceneIdx + 1 < a.scenes.length) return [actIdx, sceneIdx + 1]
+  if (actIdx + 1 < ACTS.length) return [actIdx + 1, 0]
+  return null
 }
 
 /**
- * Film — the autoplay portfolio controller.
+ * Film — the autoplay portfolio "film" controller (DX→AX narrative).
  *
- * Flow:
- *  - Autoplays ACTS in order. Within an act, its scenes cycle (gentle fade)
- *    sharing the act's durationMs. Between acts it CUTS (no crossfade).
- *  - Overlays: BaselineLayer (datum motif), VersionHUD, Subtitle, ProgressBar,
- *    and an always-visible "Skip to Gantt" button.
- *  - Controls: Play/Pause, ← rewind one act.
- *  - prefers-reduced-motion: skip autoplay, render Finale directly.
- *  - When the last act finishes → reveal Finale.
+ * Timing model (fixes the "cut too early / clock starts before the scene shows"
+ * problems):
+ *  - Per-scene durations come from acts.ts (Shot.ms), tuned to each scene's arc.
+ *  - Double-buffered iframes. The NEXT scene is PREFETCHED into the hidden slot
+ *    while the current one plays, so a cut is an instant cross-fade with no load
+ *    wait. (Heavy scenes never flash a black/blank frame.)
+ *  - The per-scene CLOCK only starts once the scene is actually VISIBLE (painted
+ *    in the visible slot) — so each scene gets its full budget regardless of how
+ *    long it took to load, and its static intro is never spent behind the fade.
+ *  - prefers-reduced-motion: skip autoplay, render the ending catchphrase.
+ *  - After the ending beat → onFilmEnd() returns to the landing.
  */
 export function Film() {
+  const router = useRouter()
   const [reduced, setReduced] = useState(false)
-  const [ready, setReady] = useState(false) // resolved reduced-motion check
-  const [showFinale, setShowFinale] = useState(false)
+  const [ready, setReady] = useState(false)
+  const [ended, setEnded] = useState(false)
 
   const [actIdx, setActIdx] = useState(0)
   const [sceneIdx, setSceneIdx] = useState(0)
   const [paused, setPaused] = useState(false)
   const [progress, setProgress] = useState(0)
 
-  // Double-buffered scene iframes: two stable <iframe> slots. The next scene is
-  // loaded into the HIDDEN slot and we cross-fade to it only after it fires
-  // `load` — so heavy self-contained scenes never show a black loading frame
-  // (the prior scene stays up until the next one has painted). Fixes the
-  // "black + datum line" autoplay caused by per-scene iframe remount/reload.
+  // Two stable iframe slots; we cross-fade between them.
   const [slotFiles, setSlotFiles] = useState<[string | null, string | null]>(() => [
-    ACTS[0].scenes[0],
+    ACTS[0].scenes[0].file,
     null,
   ])
   const [visibleSlot, setVisibleSlot] = useState(0)
+  const [txId, setTxId] = useState(0) // bumps on each cut → replays the transition overlay
 
-  // Phase 2 (purely visual — never touches the rAF clock / paused / act state):
-  //  - seam: the active match-cut overlay (from→to act ids), self-expiring.
-  //  - showBootSlate: the one-shot projector ignition over the boot act.
-  const [seam, setSeam] = useState<{ from: string; to: string } | null>(null)
-  const [showBootSlate, setShowBootSlate] = useState(false)
-  const prevActIdxRef = useRef(0)
-
-  // Honor prefers-reduced-motion.
   useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    if (mq.matches) {
-      setReduced(true)
-      setShowFinale(true)
-    }
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setReduced(true)
     setReady(true)
   }, [])
 
-  const act = ACTS[actIdx]
+  const shot = ACTS[actIdx].scenes[sceneIdx]
+  const currentFile = shot.file
+  const currentMs = shot.ms
+  // The current scene is "visible" only once the visible slot actually holds it.
+  const visible = slotFiles[visibleSlot] === currentFile
 
-  // Boot slate: one-shot projector ignition, only over the very first (boot) act.
-  // Mounts once we're ready and not in reduced/finale; self-clears via onDone.
+  const onFilmEnd = useCallback(() => setEnded(true), [])
   useEffect(() => {
-    if (!ready || reduced || showFinale) return
-    if (actIdx === 0 && prevActIdxRef.current === 0) setShowBootSlate(true)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [ready])
+    if (ended) router.push('/')
+  }, [ended, router])
 
-  // Match-cut seam: when actIdx changes, render the Transition overlay for ~0.55s.
-  // This is intentionally decoupled from the clock effect — it only reads the
-  // previous/next act ids and sets `seam`; it never pauses or reschedules the rAF
-  // tick, so the film keeps advancing underneath and reaching the Gantt on time.
+  // Reveal the current scene: show whichever slot has it (prefetched → instant);
+  // otherwise load it into the hidden slot and reveal on its `load`.
   useEffect(() => {
-    const prev = prevActIdxRef.current
-    if (prev !== actIdx) {
-      if (!reduced && !showFinale && ready) {
-        setSeam({ from: ACTS[prev].id, to: ACTS[actIdx].id })
-      }
-      prevActIdxRef.current = actIdx
+    if (reduced || !ready) return
+    const at = slotFiles.indexOf(currentFile)
+    if (at === visibleSlot) return
+    if (at >= 0) {
+      setVisibleSlot(at)
+      return
     }
-  }, [actIdx, reduced, showFinale, ready])
-
-  // Timing refs for pause-aware scheduling.
-  const rafRef = useRef<number | null>(null)
-  const sceneStartRef = useRef(0) // performance.now() at scene start
-  const elapsedAtPauseRef = useRef(0) // accumulated elapsed when paused
-
-  const advanceFromScene = useCallback(() => {
-    setSceneIdx((prevScene) => {
-      const a = ACTS[actIdx]
-      if (prevScene + 1 < a.scenes.length) {
-        return prevScene + 1
-      }
-      // Act finished → next act, or finale.
-      setActIdx((prevAct) => {
-        if (prevAct + 1 >= ACTS.length) {
-          setShowFinale(true)
-          return prevAct
-        }
-        return prevAct + 1
-      })
-      return 0
+    const hidden = visibleSlot ^ 1
+    setSlotFiles((prev) => {
+      if (prev[hidden] === currentFile) return prev
+      const n: [string | null, string | null] = [prev[0], prev[1]]
+      n[hidden] = currentFile
+      return n
     })
-  }, [actIdx])
+  }, [currentFile, slotFiles, visibleSlot, reduced, ready])
 
-  // Drive the current scene's timer + progress bar. Re-runs on act/scene/pause.
+  // NOTE: no prefetch. Each scene loads only when it becomes current (load-on-cut),
+  // so its rAF starts at reveal ≈ t0 — the scene is seen from its true start point
+  // (static intro → dynamic), not mid-loop. The load gap is hidden by the cut overlay.
+
+  const advance = useCallback(() => {
+    const n = nextIndex(actIdx, sceneIdx)
+    if (!n) {
+      onFilmEnd()
+      return
+    }
+    setActIdx(n[0])
+    setSceneIdx(n[1])
+  }, [actIdx, sceneIdx, onFilmEnd])
+
+  // Clock — starts only when the current scene is VISIBLE, runs for currentMs.
+  const rafRef = useRef<number | null>(null)
+  const startRef = useRef(0)
+  const carriedRef = useRef(0)
+  // Shared per-scene guard: advance() fires at most once per scene, even if two
+  // rAF loops briefly coexist (React StrictMode double-invokes effects in dev).
+  // Reset to false whenever the scene changes (see the reset effect below).
+  const advancedRef = useRef(false)
   useEffect(() => {
-    if (reduced || showFinale || !ready) return
-    const a = ACTS[actIdx]
-    const perScene = a.durationMs / a.scenes.length
+    if (reduced || ended || !ready || !visible) return
 
     if (paused) {
-      // Freeze: capture elapsed so resume continues from here.
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
-      elapsedAtPauseRef.current =
-        elapsedAtPauseRef.current + (performance.now() - sceneStartRef.current)
+      carriedRef.current += performance.now() - startRef.current
       return
     }
 
-    // (Re)start clock for this scene, accounting for any prior partial elapsed.
-    const carried = elapsedAtPauseRef.current
-    sceneStartRef.current = performance.now()
+    startRef.current = performance.now()
     let alive = true
-
     const tick = () => {
       if (!alive) return
-      const elapsed = carried + (performance.now() - sceneStartRef.current)
-      const p = Math.min(1, elapsed / perScene)
+      const elapsed = carriedRef.current + (performance.now() - startRef.current)
+      const p = Math.min(1, elapsed / currentMs)
       setProgress(p)
       if (p >= 1) {
-        elapsedAtPauseRef.current = 0
-        advanceFromScene()
+        if (!advancedRef.current) {
+          advancedRef.current = true
+          carriedRef.current = 0
+          advance()
+        }
         return
       }
       rafRef.current = requestAnimationFrame(tick)
     }
     rafRef.current = requestAnimationFrame(tick)
-
     return () => {
       alive = false
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
-  }, [actIdx, sceneIdx, paused, reduced, showFinale, ready, advanceFromScene])
+  }, [actIdx, sceneIdx, paused, reduced, ended, ready, visible, currentMs, advance])
 
-  // Reset carried elapsed whenever we move to a fresh scene (not on pause toggle).
+  // On a fresh scene: reset the clock guard, and fire the cinematic cut transition.
+  // (Skip the very first scene so the overlay doesn't flash on initial load; the
+  // ref-compare also makes it immune to React StrictMode's double-invoke in dev.)
+  const prevSceneRef = useRef('')
   useEffect(() => {
-    elapsedAtPauseRef.current = 0
+    const key = `${actIdx}-${sceneIdx}`
+    if (prevSceneRef.current && prevSceneRef.current !== key) setTxId((n) => n + 1)
+    prevSceneRef.current = key
+    carriedRef.current = 0
+    advancedRef.current = false
     setProgress(0)
   }, [actIdx, sceneIdx])
 
-  // Buffer: load the current scene into the hidden slot whenever it changes.
-  // We never overwrite the visible slot (keeps the prior scene painted) and skip
-  // if the hidden slot is already loading the target.
-  useEffect(() => {
-    if (reduced || showFinale || !ready) return
-    const cur = ACTS[actIdx]?.scenes[sceneIdx]
-    if (!cur) return
-    setSlotFiles((prev) => {
-      if (prev[visibleSlot] === cur) return prev
-      const hidden = visibleSlot ^ 1
-      if (prev[hidden] === cur) return prev
-      const next: [string | null, string | null] = [prev[0], prev[1]]
-      next[hidden] = cur
-      return next
-    })
-  }, [actIdx, sceneIdx, reduced, showFinale, ready, visibleSlot])
+  const revealOnLoad = (i: number) => {
+    if (slotFiles[i] === currentFile && i !== visibleSlot) setVisibleSlot(i)
+  }
 
-  const rewindAct = useCallback(() => {
-    setShowFinale(false)
-    elapsedAtPauseRef.current = 0
-    setSceneIdx(0)
-    setActIdx((i) => Math.max(0, i - 1))
+  const rewindBeat = useCallback(() => {
+    setEnded(false)
+    carriedRef.current = 0
+    setActIdx((i) => {
+      const t = Math.max(0, i - 1)
+      setSceneIdx(0)
+      return t
+    })
   }, [])
 
-  const skipToGantt = useCallback(() => setShowFinale(true), [])
+  const skipToEnd = useCallback(() => {
+    setEnded(false)
+    carriedRef.current = 0
+    setSceneIdx(0)
+    setActIdx(ACTS.length - 1)
+  }, [])
 
-  // Keyboard: space = play/pause, ArrowLeft = rewind one act.
+  // Keyboard: space = play/pause, ArrowLeft = rewind one beat.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (showFinale) return
       if (e.code === 'Space') {
         e.preventDefault()
         setPaused((p) => !p)
       } else if (e.code === 'ArrowLeft') {
         e.preventDefault()
-        rewindAct()
+        rewindBeat()
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [showFinale, rewindAct])
+  }, [rewindBeat])
 
-  if (!ready) return <div style={{ position: 'fixed', inset: 0, background: '#0b0d10' }} />
+  if (!ready) return <div style={{ position: 'fixed', inset: 0, background: '#050505' }} />
 
-  if (showFinale) return <Finale />
-
-  const currentFile = act.scenes[sceneIdx]
-  // Overall film progress across all acts (for the top progress bar).
-  const totalActs = ACTS.length
-  const actProgress = (actIdx + (sceneIdx + progress) / act.scenes.length) / totalActs
-
-  // Reveal a buffer slot once its scene has finished loading. The 0.5s opacity
-  // cross-fade (below) doubles as warm-up time for the scene's first canvas paint.
-  const revealOnLoad = (i: number) => {
-    if (slotFiles[i] && slotFiles[i] === currentFile && i !== visibleSlot) {
-      setVisibleSlot(i)
-    }
+  // Reduced motion: skip the journey, render the ending catchphrase directly.
+  if (reduced) {
+    const endFile = ACTS[ACTS.length - 1].scenes[0].file
+    return (
+      <div style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
+        <iframe
+          src={`/lab/${endFile}`}
+          title="ending"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
+        />
+      </div>
+    )
   }
+
+  // Overall film progress across all scenes (flattened) for the top bar.
+  const flatTotal = ACTS.reduce((s, a) => s + a.scenes.length, 0)
+  const flatIdx = ACTS.slice(0, actIdx).reduce((s, a) => s + a.scenes.length, 0) + sceneIdx
+  const overall = Math.min(1, (flatIdx + progress) / flatTotal)
+  const txVariant = TX_VARIANT[ACTS[actIdx].id] ?? 'default'
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
-      {/* Letterboxed scene viewport — two stable buffered iframes that cross-fade.
-          The hidden slot pre-loads the next scene; we only fade it in on `load`,
-          so a heavy scene's blank/loading frame is never shown. */}
+      {/* Buffered scene viewport — two stable iframes that cross-fade. */}
       <div style={{ position: 'absolute', inset: 0 }}>
         {[0, 1].map((i) => {
           const f = slotFiles[i]
@@ -239,8 +239,16 @@ export function Film() {
                 height: '100%',
                 border: 0,
                 pointerEvents: 'none',
+                // Materialize: the incoming scene comes INTO FOCUS (blur→sharp,
+                // settle from a slight zoom, fade up) so its content builds in
+                // naturally instead of being pre-rendered. Outgoing dissolves out.
                 opacity: isVisible ? 1 : 0,
-                transition: 'opacity 0.5s ease',
+                filter: isVisible ? 'blur(0px)' : 'blur(11px)',
+                transform: isVisible ? 'scale(1)' : 'scale(1.035)',
+                transformOrigin: 'center',
+                transition: isVisible
+                  ? 'opacity 640ms ease, filter 720ms cubic-bezier(.2,.7,.2,1), transform 720ms cubic-bezier(.2,.7,.2,1)'
+                  : 'opacity 380ms ease, filter 380ms ease, transform 380ms ease',
                 zIndex: isVisible ? 2 : 1,
               }}
             />
@@ -249,64 +257,37 @@ export function Film() {
       </div>
 
       {/* Cinematic letterbox + vignette */}
-      <div
-        style={{
-          position: 'absolute',
-          inset: 0,
-          pointerEvents: 'none',
-          zIndex: 20,
-          boxShadow: 'inset 0 0 220px rgba(0,0,0,0.6)',
-        }}
-      />
+      <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 20, boxShadow: 'inset 0 0 220px rgba(0,0,0,0.6)' }} />
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '5vh', background: '#000', pointerEvents: 'none', zIndex: 20 }} />
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '5vh', background: '#000', pointerEvents: 'none', zIndex: 20 }} />
 
-      {/* Datum-line motif — morphs form per act (boot/rail/caliper/db/cursor/trace/radar) */}
-      <BaselineLayer color={act.color} actId={act.id} seed={seedOf(act.id)} />
-
-      {/* Inter-act match-cut overlay (visual only; does not affect the clock) */}
-      {seam && (
-        <Transition
-          from={seam.from}
-          to={seam.to}
-          color={act.color}
-          onDone={() => setSeam(null)}
-        />
-      )}
-
-      {/* Boot projector ignition (one-shot over the boot act) */}
-      {showBootSlate && (
-        <BootSlate color={act.color} onDone={() => setShowBootSlate(false)} />
-      )}
-
-      {/* Era label (top-left, dry) */}
-      {act.label && (
-        <div
-          style={{
-            position: 'absolute',
-            top: '6.5vh',
-            left: 20,
-            zIndex: 40,
-            fontFamily: 'var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)',
-            fontSize: 12,
-            letterSpacing: '0.16em',
-            color: act.color,
-            textShadow: '0 1px 8px rgba(0,0,0,0.9)',
-            pointerEvents: 'none',
-          }}
-        >
-          {act.label}
+      {/* Cinematic scene-cut transition — the key replays the animation on each cut */}
+      {txId > 0 && (
+        <div className={`film-tx film-tx--${txVariant}`} key={txId} aria-hidden>
+          {txVariant === 'glitch' && (
+            <>
+              <div className="ftx-flash" />
+              <div className="ftx-slice a" />
+              <div className="ftx-slice b" />
+              <div className="ftx-noise" />
+            </>
+          )}
+          {txVariant === 'weave' && (
+            <>
+              <div className="ftx-wl" />
+              <div className="ftx-wr" />
+              <div className="ftx-merge" />
+            </>
+          )}
+          {txVariant === 'bloom' && <div className="ftx-b" />}
+          {txVariant === 'default' && (
+            <>
+              <div className="film-tx-bloom" />
+              <div className="film-tx-slash" />
+            </>
+          )}
         </div>
       )}
-
-      {/* Overlays */}
-      <VersionHUD version={act.version} color={act.color} />
-      <Subtitle
-        subtitles={act.subtitles}
-        durationMs={act.durationMs}
-        actKey={`${act.id}`}
-        color={act.color}
-      />
 
       {/* Overall progress bar (top) */}
       <div
@@ -315,25 +296,17 @@ export function Film() {
           left: 0,
           top: 0,
           height: 2,
-          width: `${actProgress * 100}%`,
-          background: act.color,
-          transition: 'width 90ms linear',
+          width: `${overall * 100}%`,
+          background: ACCENT,
+          opacity: 0.55,
+          transition: 'width 120ms linear',
           zIndex: 41,
         }}
       />
 
-      {/* Controls (bottom-right): play/pause + rewind */}
-      <div
-        style={{
-          position: 'absolute',
-          right: 20,
-          bottom: 16,
-          zIndex: 50,
-          display: 'flex',
-          gap: 8,
-        }}
-      >
-        <button onClick={rewindAct} aria-label="이전 막" style={ctrlBtn}>
+      {/* Controls (bottom-right): rewind + play/pause */}
+      <div style={{ position: 'absolute', right: 20, bottom: 16, zIndex: 50, display: 'flex', gap: 8 }}>
+        <button onClick={rewindBeat} aria-label="이전" style={ctrlBtn}>
           ←
         </button>
         <button onClick={() => setPaused((p) => !p)} aria-label={paused ? '재생' : '일시정지'} style={ctrlBtn}>
@@ -341,9 +314,9 @@ export function Film() {
         </button>
       </div>
 
-      {/* Skip to Gantt (top-right, always visible) */}
+      {/* Skip to ending (top-right) */}
       <button
-        onClick={skipToGantt}
+        onClick={skipToEnd}
         style={{
           position: 'absolute',
           top: '6.2vh',
@@ -360,7 +333,7 @@ export function Film() {
           letterSpacing: '0.03em',
         }}
       >
-        Skip to Gantt →
+        건너뛰기 →
       </button>
     </div>
   )

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SCM HMI -- 이랜텍 창고 물류 개선 TF</title>
+<title>SCM HMI -- 창고물류 이관 프로세스 개선</title>
 <style>
   @font-face {
     font-family:'Share Tech Mono';
@@ -97,8 +97,8 @@
     content:"";position:absolute;inset:4px;border-radius:4px;background:#0c1014;
   }
   .logo::after{
-    content:"PY";position:absolute;inset:0;display:grid;place-items:center;
-    font:700 13px/1 'Share Tech Mono',monospace;color:#39d6ff;
+    content:"SCM";position:absolute;inset:0;display:grid;place-items:center;
+    font:700 11px/1 'Share Tech Mono',monospace;color:#39d6ff;
   }
   .brand h1{font-size:14px;letter-spacing:.06em;font-weight:700;color:#e8f1f8}
   .brand .sub{font-size:10.5px;color:var(--txt-dim);letter-spacing:.12em;margin-top:2px}
@@ -387,12 +387,12 @@
     <div class="brand">
       <div class="logo"></div>
       <div>
-        <h1>이랜텍 · 창고 물류 개선 HMI</h1>
+        <h1>창고물류 이관 개선 HMI</h1>
         <div class="sub">INVENTORY TRANSFER DIGITALIZATION BOARD</div>
       </div>
     </div>
-    <div class="hdr-block"><div class="k">Plant</div><div class="v">이랜텍 제조창고</div></div>
-    <div class="hdr-block"><div class="k">Operator</div><div class="v">박양하 · SCM TF 리더</div></div>
+    <div class="hdr-block"><div class="k">Plant</div><div class="v">제조창고</div></div>
+    <div class="hdr-block"><div class="k">Operator</div><div class="v">OPERATOR · SCM TF</div></div>
     <div class="hdr-block"><div class="k">기간</div><div class="v">2023.03 ~ 2023.05</div></div>
     <div class="hdr-spacer"></div>
     <div class="mode-pill"><span class="dot"></span>TF VIEW</div>
@@ -567,7 +567,7 @@
               <g transform="translate(560,275)">
                 <rect x="0" y="0" width="260" height="90" rx="10" fill="url(#steelG)" stroke="#46535f" stroke-width="2"/>
                 <text x="130" y="-8" text-anchor="middle" fill="#dbe7f0" font-size="11" font-weight="700">TF-CTR · SCM 개선 TF 통합관제</text>
-                <text x="130" y="108" text-anchor="middle" fill="#7e8c99" font-size="9">이랜텍 SCM 개선 TF · 제조·영업 이관 전산화 · 재고회전율 +17%</text>
+                <text x="130" y="108" text-anchor="middle" fill="#7e8c99" font-size="9">SCM 개선 TF · 제조·영업 이관 전산화 · 재고회전율 +17%</text>
                 <!-- mini status lamps -->
                 <g font-family="'Share Tech Mono',monospace" font-size="9">
                   <circle cx="30" cy="30" r="6" fill="#21d07a" class="led"/><text x="44" y="34" fill="#c4d2dd">구매</text>
@@ -601,8 +601,8 @@
               <span class="micro-kpi" title="정본 유지 KPI: 재고회전율 +17%"><span class="muted">KPI</span> +17% TURN</span>
             </div>
             <div class="inv-body">
-              <div class="inv-stat"><span class="k">회사</span><span class="v">이랜텍 (TF 과제: 2023.03 ~ 2023.05)</span></div>
-              <div class="inv-stat"><span class="k">연계</span><span class="v">삼성전자 상생협력아카데미 제조 리더 양성 1기 · 멘토링 4회 · TF 5명</span></div>
+              <div class="inv-stat"><span class="k">TF</span><span class="v">창고물류 개선 TF (2023.03 ~ 2023.05)</span></div>
+              <div class="inv-stat"><span class="k">구성</span><span class="v">TF 5명 · 제조·영업·구매·생산관리 협업</span></div>
               <div class="inv-stat"><span class="k">문제</span><span class="v">제조·영업 간 재고 이관 프로세스가 전산화되어 있지 않아 재고 정확도가 낮고 과잉·부족 재고가 반복되었음.</span></div>
               <div class="inv-stat"><span class="k">성과</span><span class="v">재고 정확도 개선·과잉/부족 반복 해소 <span class="micro-kpi" title="정본 유지 보조 KPI">재고회전율 +17%</span></span></div>
               <div class="inv-note">창고 물류 개선 TF 관점에서 이관 기준, 부서 승인 흐름, ERP 기록 기준, 현장 3정5S를 함께 정리해 제조창고와 영업창고의 재고 위치·책임·수량 기준을 맞춘 과제.</div>
@@ -665,7 +665,7 @@
   <!-- ============ QUALITY (SCM KPI) ============ -->
   <section class="stage" data-stage="quality">
     <div class="panel">
-      <div class="panel-h"><div class="ttl">SCM 성과 지표 대시보드 <small>이랜텍 · 삼성 SCM 개선 TF 실측 KPI</small></div><div class="tagid">KPI-001</div></div>
+      <div class="panel-h"><div class="ttl">SCM 성과 지표 대시보드 <small>창고물류 개선 TF 실측 KPI</small></div><div class="tagid">KPI-001</div></div>
       <div class="q-grid" id="qGrid"></div>
     </div>
     <div class="panel" style="margin-top:16px">
@@ -691,13 +691,13 @@
   <!-- ============ HISTORY (career timeline) ============ -->
   <section class="stage" data-stage="history">
     <div class="panel">
-      <div class="panel-h"><div class="ttl">공정 운전 이력 <small>커리어 = 배치 이력 (Batch History)</small></div><div class="tagid">HIST-001</div></div>
+      <div class="panel-h"><div class="ttl">SCM 개선 추진 이력 <small>TF 단계별 배치 이력 (Batch History)</small></div><div class="tagid">HIST-001</div></div>
       <div class="hist" id="histList"></div>
     </div>
     <div class="panel" style="margin-top:16px">
       <div class="panel-h"><div class="ttl">운영자 연락 채널</div><div class="tagid">COMM</div></div>
       <div class="contact-bar">
-        <span><span class="ic">◆</span>SCM 개선 TF 리더 · 제조 생산관리과장</span>
+        <span><span class="ic">◆</span>CONTACT · SCM 개선 TF</span>
       </div>
     </div>
   </section>
@@ -712,8 +712,7 @@
       </div>
     </div>
     <div class="scm-note">
-      <b>SCM 개선 TF (이랜텍 · 2023.03 ~ 2023.05)</b> -- 삼성전자 상생협력아카데미 제조 리더 양성 1기 멘토링(4회)을 받아
-      구매·영업·제조·생산관리 4개 부서 TF 5명을 구성, 3개월간 직접 리딩.
+      <b>SCM 개선 TF (2023.03 ~ 2023.05)</b> -- 구매·영업·제조·생산관리 4개 부서 TF 5명을 구성, 3개월 운영.
       제조·영업 간 재고 이관 프로세스가 전산화되어 있지 않아 재고 정확도가 낮고 과잉·부족 재고가 반복되던 문제를
       이관 기준 정리 → ERP 기록 프로세스 반영 → 창고 3정5S → 재고 정확도 개선·과잉/부족 해소로 연결했다.
       재고회전율 <span class="micro-kpi" title="정본 유지 보조 KPI">+17%</span>는 보조 성과지표로 유지한다.
@@ -770,8 +769,8 @@
     <div class="seg">문서상태: <b style="color:#21d07a">정본 반영</b></div>
     <div class="seg">검토주기: <b class="mono">TF WEEKLY</b></div>
     <div class="seg">개선항목: <b id="sbAlm" class="mono" style="color:#21d07a">5</b></div>
-    <div class="seg">노드: <b class="mono">이랜텍 / SCM-TF-01</b></div>
-    <div class="seg hdr-spacer" style="border-right:0;justify-content:flex-end;color:#7e8c99">© 박양하 PARK YANGHA · SCM 재고·물류 HMI</div>
+    <div class="seg">노드: <b class="mono">SCM-TF-01</b></div>
+    <div class="seg hdr-spacer" style="border-right:0;justify-content:flex-end;color:#7e8c99">SCM 재고·물류 HMI DEMO</div>
   </footer>
 
 </div>
@@ -853,8 +852,8 @@
   /* ===== SETPOINT list ===== */
   const spDefs=[
     {nm:'보조 KPI · 재고회전율', yr:'정본 유지 수치', pv:'+17', un:'%UP', c:'#21d07a'},
-    {nm:'이랜텍 · 창고 물류 개선', yr:'2023.03-2023.05 (TF 과제)', pv:'TF', un:'3개월', c:'#ffd23f'},
-    {nm:'삼성 상생협력아카데미', yr:'제조 리더 양성 1기 · 멘토링 4회', pv:'멘토', un:'4회', c:'#39d6ff'},
+    {nm:'창고물류 이관 개선', yr:'3개월 TF 과제 (2023.03-2023.05)', pv:'TF', un:'3개월', c:'#ffd23f'},
+    {nm:'TF 추진 협업', yr:'제조·영업·구매·생산관리 4개 부서', pv:'5명', un:'구성', c:'#39d6ff'},
     {nm:'제조·영업 이관 프로세스', yr:'ERP 기록·승인 흐름 정리', pv:'DONE', un:'RTN', c:'#21d07a'},
   ];
   const spList=$('#spList');
@@ -875,7 +874,7 @@
     {sev:'#39b6ff', ts:'P3', desc:'전산 반영 -- ERP 재고 기록 기준과 이관 처리 흐름 정합화', st:'RTN'},
     {sev:'#21d07a', ts:'P4', desc:'현장 표준화 -- 제조·영업 창고 3정5S와 재고 위치 기준 정비', st:'RTN'},
     {sev:'#21d07a', ts:'P5', desc:'결과 -- 재고 정확도 개선, 과잉·부족 재고 반복 해소, 재고회전율 +17%', st:'RTN'},
-    {sev:'#39b6ff', ts:'MT', desc:'삼성전자 상생협력아카데미 제조 리더 양성 1기 멘토링 4회 연계', st:'RTN'},
+    {sev:'#39b6ff', ts:'MT', desc:'외부 멘토링 4회 연계 · TF 추진 방향 피드백 반영', st:'RTN'},
     {sev:'#21d07a', ts:'TF', desc:'TF 5명 구성, 2023.03~2023.05 기간 창고 물류 개선 과제 리딩', st:'RTN'},
   ];
 
@@ -940,7 +939,7 @@
   /* ===== Quality (SCM KPI) cards ===== */
   const qDefs=[
     {big:'전산화', cap:'제조·영업 간 재고 이관<br>수기 처리에서 ERP 기록 기준으로 전환', delta:'+17% TURN KPI', dn:false},
-    {big:'3개월', cap:'TF 리딩 기간<br>이랜텍 SCM 개선 TF · 2023.03~2023.05', delta:'TF LEAD', dn:false},
+    {big:'3개월', cap:'TF 추진 기간<br>창고물류 개선 · 2023.03~2023.05', delta:'TF LEAD', dn:false},
     {big:'정확도', cap:'재고 위치·수량·책임 기준 정합화<br>과잉·부족 재고 반복 해소', delta:'INVENTORY ACCURACY', dn:false},
     {big:'3정5S', cap:'제조·영업 창고 전면 실시<br>현장 정리·정돈·청소·청결·습관화', delta:'WH STANDARD UP', dn:false},
   ];
@@ -954,18 +953,18 @@
 
   /* ===== History ===== */
   const hist=[
-    {when:'2023.03', sub:'~2023.05', role:'SCM 개선 TF 리더 (이랜텍 재직 중 연계 과제)', org:'이랜텍 · 삼성전자 상생협력아카데미',
-     body:'삼성전자 상생협력아카데미 제조 리더 양성 1기 연계 과제. 제조·영업 간 재고 이관 프로세스가 전산화되어 있지 않아 재고 정확도가 낮고 과잉·부족 재고가 반복되던 문제를 TF 5명으로 3개월 리딩. 삼성 멘토링 4회. 제조-영업 재고 이관 전산 프로세스 개선, ERP 기록 기준 정합화, 제조·영업 창고 3정5S 실시.',
-     chips:['이관전산화','재고 정확도 개선','과잉/부족 해소','재고회전율 +17%','3정5S','삼성 멘토링 4회','TF 5명']},
-    {when:'2020.08', sub:'~2022.11', role:'생산관리과장 · 배터리팩 총괄', org:'은성에스아이티',
-     body:'2차전지 배터리팩 라인 총괄. 비전검사 도입 및 IATF16949 품질체계 운영.',
-     chips:['비전검사','IATF16949','ERP','품질체계']},
-    {when:'2023.09', sub:'~2024.12', role:'공정기술 엔지니어', org:'솔라엣지',
-     body:'데이터 DB·대시보드 구축. 검사성적서 자동발행, MES 도입으로 공정 데이터 통합·셋업 표준화.',
-     chips:['MES','데이터 DB','검사성적서 자동','대시보드']},
-    {when:'2025.08', sub:'현재', role:'총괄본부장', org:'미러리스',
-     body:'CRM·키오스크·모바일앱 통합 운영. FastAPI 백엔드, AWS/GCP 인프라, CI/CD 파이프라인 구축.',
-     chips:['FastAPI','AWS/GCP','CI/CD','RPA','AI MCP']},
+    {when:'Phase 1', sub:'분석·기준 정립', role:'재고 흐름 분석 · 문제 정의', org:'SCM 개선 TF · 제조·영업·구매·생산관리',
+     body:'제조창고와 영업창고 사이 재고 이관 프로세스의 미전산화 문제를 현장 확인. 과잉·부족 재고 반복 구간과 수기 이관 지점을 TF에서 분리하고 개선 우선순위를 수립.',
+     chips:['재고 흐름 분석','문제 정의','수기 이관 지점 식별','개선 우선순위']},
+    {when:'Phase 2', sub:'프로세스 설계', role:'이관 기준 정리 · ERP 프로세스 설계', org:'SCM 개선 TF · 구매·제조·영업 협업',
+     body:'제조창고 출고, 영업창고 입고, 부서 승인 기준을 정리. ERP 재고 기록 기준과 이관 처리 흐름을 정합화하여 전산 반영.',
+     chips:['이관 기준 정립','ERP 기록 기준','부서 승인 흐름','이관전산화']},
+    {when:'Phase 3', sub:'현장 표준화', role:'창고 3정5S · 재고 위치 기준 정비', org:'SCM 개선 TF · 제조창고·영업창고',
+     body:'제조창고와 영업창고 3정5S 전면 실시. 재고 위치·수량·책임 기준 정합화. 과잉·부족 재고 반복 해소.',
+     chips:['3정5S','재고 위치 기준','수량 정합화','책임 명확화']},
+    {when:'결과', sub:'KPI 달성', role:'SCM 개선 TF 완료 · 보조 KPI 확인', org:'SCM 개선 TF · 전체 부서',
+     body:'재고 정확도 개선, 과잉·부족 재고 반복 해소. 보조 KPI: 재고회전율 +17%.',
+     chips:['이관전산화 완료','재고 정확도 개선','과잉/부족 해소','재고회전율 +17%','3정5S']},
   ];
   const histList=$('#histList');
   hist.forEach(function(h){
@@ -1295,7 +1294,7 @@
     {nm:'3정5S 제조창고', sub:'정리·정돈·청소·청결·습관화', v:'완료', col:'#21d07a', sp:'W -> RTN'},
     {nm:'3정5S 영업창고', sub:'완제품 창고 전면 적용', v:'완료', col:'#21d07a', sp:'W -> RTN'},
     {nm:'TF 킥오프', sub:'구매·영업·제조·생산관리', v:'완료', col:'#21d07a', sp:'W -> RTN'},
-    {nm:'삼성 멘토링 연계', sub:'상생협력아카데미 1기', v:'완료', col:'#21d07a', sp:'W -> RTN'},
+    {nm:'외부 멘토링 연계', sub:'TF 추진 방향 피드백 4회', v:'완료', col:'#21d07a', sp:'W -> RTN'},
     {nm:'보조 KPI · 재고회전율', sub:'정본 유지 수치 +17%', v:'+17%', col:'#21d07a', sp:'KPI UP'},
   ];
   const ssotGrid=$('#ssotGrid');
@@ -1317,7 +1316,7 @@
     {lk:'물류 흐름 개선', sub:'제조→영업 이관 승인 흐름 표준화', dep:'완료', qd:'RTN'},
     {lk:'이관 프로세스 전산화', sub:'제조->영업 재고 이관 ERP 처리', dep:'완료', qd:'RTN'},
     {lk:'창고 3정5S 실시', sub:'제조·영업 창고 전면 정비', dep:'완료', qd:'RTN'},
-    {lk:'TF 주간 보고', sub:'삼성 멘토 피드백 반영', dep:'완료', qd:'RTN'},
+    {lk:'TF 주간 보고', sub:'멘토 피드백 반영', dep:'완료', qd:'RTN'},
   ];
   const gapQueue=$('#gapQueue');
   if(gapQueue){

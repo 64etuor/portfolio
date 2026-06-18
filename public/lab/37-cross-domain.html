@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCENE 10 · 핵심 메시지 — CROSS-DOMAIN / 경계가 교집합이 되는 순간</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+
+  :root{
+    --bg:#050505;
+    --bg2:#101010;
+    --phos:#d7d7d7;
+    --phos-dim:#8d8d8d;
+    --phos-deep:#3a3a3a;
+    --warm:#d6a15a;        /* 제조 — faint warm tint */
+    --cool:#62b0cc;        /* IT — faint cool tint */
+    --gold:#f0c879;        /* 교집합 — the single bright accent */
+    --gold-hot:#fff1cf;
+    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
+  }
+  @font-face{
+    font-family:'JetBrains Mono';font-display:swap;font-weight:400;
+    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff2') format('woff2');
+  }
+  @font-face{
+    font-family:'JetBrains Mono';font-display:swap;font-weight:700;
+    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-700-normal.woff2') format('woff2');
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);color:var(--phos);
+    font-family:var(--mono);overflow:hidden;
+    word-break:keep-all;-webkit-font-smoothing:antialiased;
+  }
+  .kr{font-family:'Pretendard',var(--mono);}
+
+  /* ===== full-bleed cinematic stage ===== */
+  #stage{position:fixed;inset:0;overflow:hidden;
+    background:radial-gradient(ellipse 130% 130% at 50% 45%, var(--bg2) 0%, var(--bg) 60%, #000 100%);}
+  #field{position:absolute;inset:0;display:block;z-index:5;}
+
+  /* CRT shell */
+  #stage::before{ /* scanlines */
+    content:"";position:absolute;inset:0;z-index:60;pointer-events:none;
+    background:repeating-linear-gradient(0deg,
+      rgba(0,0,0,0) 0px,rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0.13) 3px,rgba(0,0,0,0.13) 4px);
+    mix-blend-mode:multiply;}
+  #stage::after{ /* vignette */
+    content:"";position:absolute;inset:0;z-index:61;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 48%, transparent 54%, rgba(0,0,0,.80) 100%);
+    opacity:.92;}
+  #flicker{position:absolute;inset:0;z-index:62;pointer-events:none;
+    background:rgba(255,247,224,.010);animation:flick 6.5s steps(2) infinite;}
+  @keyframes flick{0%,95%{opacity:0}96%{opacity:.5}97%{opacity:0}98%{opacity:.35}100%{opacity:0}}
+
+  /* ===== overlay typography (the protagonist) ===== */
+  .ov{position:absolute;z-index:30;pointer-events:none;}
+
+  /* corner frame chrome */
+  .frame{position:absolute;z-index:34;color:var(--phos-deep);font-family:var(--mono);
+    font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;opacity:.7;}
+  .frame.tl{top:26px;left:32px}
+  .frame.tr{top:26px;right:32px;text-align:right}
+  .frame.bl{bottom:26px;left:32px}
+  .frame.br{bottom:26px;right:32px;text-align:right}
+  .frame b{color:var(--gold);font-weight:700;text-shadow:0 0 8px rgba(240,200,121,.4)}
+
+  /* line 1 — the thesis (upper) */
+  #l1{top:11.5%;left:50%;transform:translateX(-50%) translateY(10px);
+    text-align:center;width:92%;
+    font-family:'Pretendard',var(--mono);font-weight:600;
+    font-size:clamp(18px,2.3vw,40px);line-height:1.32;letter-spacing:-.01em;
+    color:var(--phos-dim);opacity:0;}
+  #l1 .key{color:var(--phos);font-weight:700;}
+  #l1 em{font-style:normal;color:var(--gold);font-weight:800;
+    text-shadow:0 0 18px rgba(240,200,121,.5),0 0 46px rgba(240,200,121,.22);}
+
+  /* line 2 — the climactic resolution (lower, biggest) */
+  #l2{bottom:11.5%;left:50%;transform:translateX(-50%) translateY(16px);
+    text-align:center;width:94%;
+    font-family:'Pretendard',var(--mono);font-weight:800;
+    font-size:clamp(26px,3.7vw,68px);line-height:1.18;letter-spacing:-.02em;
+    color:var(--phos);text-shadow:0 0 16px rgba(215,215,215,.16);opacity:0;}
+  #l2 em{font-style:normal;position:relative;color:var(--gold-hot);
+    text-shadow:0 0 22px rgba(240,200,121,.6),0 0 60px rgba(240,200,121,.28);}
+
+  @media (max-width:760px){
+    .frame{font-size:9px;letter-spacing:.16em}
+    #l1{top:8%} #l2{bottom:8%}
+  }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="field"></canvas>
+  <div id="flicker"></div>
+
+  <!-- chrome -->
+  <div class="frame tl">SCN&nbsp;10 · 핵심 메시지</div>
+  <div class="frame tr">CROSS-DOMAIN&nbsp;INTERSECTION</div>
+  <div class="frame bl">제조&nbsp;<b>⟡</b>&nbsp;IT</div>
+  <div class="frame br">∞&nbsp;SEAMLESS&nbsp;LOOP</div>
+
+  <!-- hero typography -->
+  <h1 id="l1" class="ov kr">크로스 도메인 지식이 <em>경쟁력</em>이 되는 시대.</h1>
+  <h2 id="l2" class="ov kr">제조와 IT의 <em>경계</em>를 이해하는 사람이 <em>변화</em>를 만듭니다.</h2>
+</div>
+
+<script>
+"use strict";
+/* ════════════════════════════════════════════════════════════════
+   SCENE 10 · 핵심 메시지 — CROSS-DOMAIN INTERSECTION
+   메타포: 제조(좌)·IT(우) 두 영역이 정적으로 분리된 채 출발한다.
+   가운데 강한 '경계(membrane)'가 둘을 가른다. 장면이 깨어나면 두 링이
+   서로를 향해 수렴하며 경계가 녹고, 겹치는 자리에 vesica(교집합) 렌즈가
+   금빛으로 점화된다. 지식 입자들이 렌즈를 통해 양방향으로 건너가며,
+   '경계를 넘는 순간' 정확히 금빛(=경쟁력)으로 물든다. 교집합만이
+   유일한 밝은 액센트. 절정에서 한참 작렬(hold) → 다시 벌어져 시작점으로
+   복귀(seamless). 모든 모션은 의도된 시간함수 — 난수 텔레메트리·가짜수치 없음.
+   ════════════════════════════════════════════════════════════════ */
+
+const cv = document.getElementById('field');
+const ctx = cv.getContext('2d');
+const l1El = document.getElementById('l1');
+const l2El = document.getElementById('l2');
+
+let W=0,H=0,CX=0,CY=0,R=0,MIN=0,DPR=Math.min(window.devicePixelRatio||1,2);
+
+/* ---- color arrays + helpers ---- */
+const PHOS=[215,215,215], DIM=[141,141,141], DEEP=[58,58,58],
+      WARM=[214,161,90], COOL=[98,176,204], GOLD=[240,200,121], GOLDH=[255,241,207];
+function rgba(c,a){return 'rgba('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+','+a+')';}
+function mix(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
+const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+const lerp=(a,b,t)=>a+(b-a)*t;
+const smooth=t=>{t=clamp(t,0,1);return t*t*(3-2*t);};
+
+/* ---- seeded PRNG (deterministic, repeatable geometry) ---- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
+
+/* ---- domain vocabularies (generic — no names/numbers) ---- */
+const TERMS_MFG = ['공정','설비','양산','수율','금형','품질','계측','현장'];
+const TERMS_IT  = ['데이터','모델','파이프라인','배포','추론','스키마','센서','학습'];
+
+/* ---- field constellations + orbit terms (seeded once per resize) ---- */
+let mfgField=[], itField=[], mfgTerms=[], itTerms=[], particles=[];
+
+function build(){
+  const rng = mulberry32(91017);
+
+  // domain constellation dots (relative to ring center, drift slowly)
+  mfgField=[]; itField=[];
+  for(let i=0;i<16;i++){
+    const a=rng()*Math.PI*2, rr=Math.sqrt(rng())*0.86;
+    mfgField.push({a, rr, ph:rng()*Math.PI*2, sz:0.7+rng()*1.5, sp:0.10+rng()*0.16});
+  }
+  for(let i=0;i<16;i++){
+    const a=rng()*Math.PI*2, rr=Math.sqrt(rng())*0.86;
+    itField.push({a, rr, ph:rng()*Math.PI*2, sz:0.7+rng()*1.5, sp:0.10+rng()*0.16});
+  }
+
+  // orbit term labels — kept on the OUTER half of each lobe (away from lens)
+  mfgTerms=[]; itTerms=[];
+  const pick=5;
+  for(let i=0;i<pick;i++){
+    // left lobe outer half: angle around PI (pointing left), spread ±0.62π
+    const base = Math.PI + (i/(pick-1)-0.5)*1.24;
+    mfgTerms.push({txt:TERMS_MFG[i], base, ph:rng()*Math.PI*2, rad:0.80+rng()*0.06});
+  }
+  for(let i=0;i<pick;i++){
+    const base = 0 + (i/(pick-1)-0.5)*1.24; // right lobe outer half (pointing right)
+    itTerms.push({txt:TERMS_IT[i], base, ph:rng()*Math.PI*2, rad:0.80+rng()*0.06});
+  }
+
+  // crossing knowledge particles (bidirectional through the lens)
+  particles=[];
+  const NP=40;
+  for(let i=0;i<NP;i++){
+    const dir = (i%2===0)?1:-1;                 // +1 = MFG→IT, -1 = IT→MFG
+    const lane=(rng()*2-1);                      // funnel position [-1,1]
+    const speed=0.052+rng()*0.060;
+    const phase=rng();
+    const carrier=(i%7===0);                     // a few carry a labelled term
+    let label=null;
+    if(carrier){
+      label = dir>0 ? TERMS_MFG[(i*3)%TERMS_MFG.length]
+                    : TERMS_IT[(i*3)%TERMS_IT.length];
+    }
+    particles.push({dir,lane,speed,phase,carrier,label, sz:1.3+rng()*1.5});
+  }
+}
+
+function resize(){
+  W=window.innerWidth; H=window.innerHeight;
+  cv.width=W*DPR; cv.height=H*DPR;
+  cv.style.width=W+'px'; cv.style.height=H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  CX=W/2; CY=H*0.445; MIN=Math.min(W,H);
+  R=MIN*0.235;
+}
+window.addEventListener('resize', ()=>{resize();build();});
+
+/* ════════ TIMELINE ════════ */
+const CYCLE = 15.0;     // seconds, seamless period
+// convergence amount conv(f): 0 = rings apart (boundary hard), 1 = overlapped (lens blazing)
+function conv(f){
+  if(f<0.08) return 0;
+  if(f<0.34) return smooth((f-0.08)/0.26);
+  if(f<0.84) return 1;
+  return 1 - smooth((f-0.84)/0.16);
+}
+
+/* ---- lens (vesica) bounds at a given y; null if outside / no overlap ---- */
+let RING_d=0, LCX=0, RCX=0, HY=0;
+function lensBounds(y){
+  if(HY<=0) return null;
+  const dy=y-CY;
+  if(Math.abs(dy)>=HY) return null;
+  const s=Math.sqrt(R*R-dy*dy);
+  const xl=RCX - s;   // right circle's left edge
+  const xr=LCX + s;   // left  circle's right edge
+  if(xr<=xl) return null;
+  return [xl,xr];
+}
+function inLens(x,y){
+  const b=lensBounds(y);
+  return b && x>=b[0] && x<=b[1];
+}
+
+let t0=null;
+/* optional ?t=SECONDS jump for deterministic verification/deep-linking */
+const _off=(parseFloat(new URLSearchParams(location.search).get('t'))||0)*1000;
+
+function frame(now){
+  if(t0===null) t0=now-_off;
+  const T=(now-t0)/1000;            // monotonic seconds (continuous flow)
+  const f=(T%CYCLE)/CYCLE;          // cyclic phase
+  const cv01=conv(f);
+
+  // ring geometry this frame
+  RING_d = lerp(R*1.06, R*0.48, cv01);
+  LCX = CX - RING_d;  RCX = CX + RING_d;
+  HY = (RING_d<R) ? Math.sqrt(R*R - RING_d*RING_d) : 0;
+
+  const bloom = 0.5+0.5*Math.sin(T*1.7);          // gentle blaze breathing
+  const goldPulse = 0.6+0.4*Math.sin(T*1.6);
+
+  ctx.clearRect(0,0,W,H);
+
+  drawFields(T, cv01);
+  drawRings(T, cv01, bloom);
+  drawOrbitTerms(T, cv01);
+  drawBoundary(T, cv01);
+  drawLens(cv01, bloom);
+  drawParticles(T, cv01);
+  drawCenterBloom(cv01, bloom);
+  drawLabels(T, cv01, goldPulse);
+
+  /* ---- DOM hero text sync ---- */
+  const o1 = smooth((f-0.12)/0.12) * (1 - smooth((f-0.88)/0.12));
+  const o2 = smooth((f-0.34)/0.12) * (1 - smooth((f-0.90)/0.10));
+  l1El.style.opacity=o1.toFixed(3);
+  l1El.style.transform=`translateX(-50%) translateY(${lerp(10,0,smooth((f-0.12)/0.14)).toFixed(1)}px)`;
+  l2El.style.opacity=o2.toFixed(3);
+  l2El.style.transform=`translateX(-50%) translateY(${lerp(16,0,smooth((f-0.34)/0.14)).toFixed(1)}px)`;
+
+  requestAnimationFrame(frame);
+}
+
+/* ---- domain constellation fields ---- */
+function drawFields(T, c){
+  const draw=(arr,cx,tint)=>{
+    for(const p of arr){
+      const a=p.a + Math.sin(T*p.sp+p.ph)*0.05;
+      const rr=p.rr*R*(0.92);
+      const x=cx+Math.cos(a)*rr, y=CY+Math.sin(a)*rr;
+      const tw=0.4+0.6*(0.5+0.5*Math.sin(T*1.3+p.ph));
+      const col=mix(DIM, tint, 0.35);
+      ctx.fillStyle=rgba(col, (0.10+0.22*tw)*(0.55+0.45*c));
+      ctx.beginPath(); ctx.arc(x,y,p.sz,0,6.283); ctx.fill();
+    }
+  };
+  draw(mfgField, LCX, WARM);
+  draw(itField, RCX, COOL);
+}
+
+/* ---- two domain rings ---- */
+function drawRings(T, c, bloom){
+  ctx.lineJoin='round'; ctx.lineCap='round';
+  const ring=(cx,tint)=>{
+    const col=mix(PHOS, tint, 0.22);
+    // wide glow
+    ctx.strokeStyle=rgba(col, 0.10+0.06*c);
+    ctx.lineWidth=6;
+    ctx.shadowColor=rgba(tint,0.5); ctx.shadowBlur=14;
+    ctx.beginPath(); ctx.arc(cx,CY,R,0,6.283); ctx.stroke();
+    // crisp core
+    ctx.shadowBlur=6;
+    ctx.strokeStyle=rgba(col, 0.40+0.30*c);
+    ctx.lineWidth=1.6;
+    ctx.beginPath(); ctx.arc(cx,CY,R,0,6.283); ctx.stroke();
+    ctx.shadowBlur=0;
+  };
+  ring(LCX, WARM);
+  ring(RCX, COOL);
+}
+
+/* ---- orbit term labels on outer lobes ---- */
+function drawOrbitTerms(T, c){
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  const fpx=Math.max(11,Math.min(15,MIN*0.0135));
+  const draw=(arr,cx,tint)=>{
+    ctx.font="600 "+fpx+"px 'Pretendard', sans-serif";
+    for(const tt of arr){
+      const ang=tt.base + Math.sin(T*0.22+tt.ph)*0.05;
+      const rr=R*tt.rad;
+      const x=cx+Math.cos(ang)*rr, y=CY+Math.sin(ang)*rr;
+      const tw=0.5+0.5*Math.sin(T*0.9+tt.ph);
+      const col=mix(DIM, tint, 0.45);
+      ctx.fillStyle=rgba(col, 0.22+0.28*tw);
+      ctx.fillText(tt.txt, x, y);
+    }
+  };
+  draw(mfgTerms, LCX, WARM);
+  draw(itTerms, RCX, COOL);
+}
+
+/* ---- boundary membrane: hard when separated, dissolves on convergence ---- */
+function drawBoundary(T, c){
+  const a=(1-c);
+  if(a<0.02) return;
+  const yTop=CY-R*1.04, yBot=CY+R*1.04;
+  ctx.save();
+  ctx.strokeStyle=rgba(DEEP, 0.85*a);
+  ctx.lineWidth=1.2;
+  const segs=26;
+  ctx.beginPath();
+  for(let i=0;i<=segs;i++){
+    const fy=i/segs, y=lerp(yTop,yBot,fy);
+    const jag=Math.sin(i*1.7+T*0.8)*MIN*0.004*a;
+    i===0?ctx.moveTo(CX+jag,y):ctx.lineTo(CX+jag,y);
+  }
+  ctx.stroke();
+  // flickering tension arcs across the seam (only while strongly divided)
+  if(a>0.35){
+    for(let k=0;k<3;k++){
+      const fl=Math.sin(T*2.3+k*2.1);
+      if(fl<0.6) continue;
+      const av=(fl-0.6)*0.6*a;
+      const y0=lerp(yTop,yBot,0.22+k*0.26);
+      ctx.strokeStyle=rgba(k%2?WARM:COOL, av);
+      ctx.lineWidth=1.1;
+      ctx.beginPath();
+      let yy=y0, xx=CX;
+      ctx.moveTo(xx,yy);
+      for(let s=0;s<5;s++){ yy+=R*0.06; xx=CX+Math.sin(T*3+s+k)*MIN*0.006; ctx.lineTo(xx,yy); }
+      ctx.stroke();
+    }
+  }
+  ctx.restore();
+}
+
+/* ---- vesica lens fill + edge glow (the intersection — only bright accent) ---- */
+function drawLens(c, bloom){
+  if(HY<=0 || c<0.02) return;
+  const steps=44;
+  // build polygon: down the right-circle left edge, up the left-circle right edge
+  const pts=[];
+  for(let i=0;i<=steps;i++){
+    const y=CY-HY + (2*HY)*(i/steps);
+    const b=lensBounds(y); if(!b) continue;
+    pts.push([b[0],y]);
+  }
+  for(let i=steps;i>=0;i--){
+    const y=CY-HY + (2*HY)*(i/steps);
+    const b=lensBounds(y); if(!b) continue;
+    pts.push([b[1],y]);
+  }
+  if(pts.length<3) return;
+
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(pts[0][0],pts[0][1]);
+  for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i][0],pts[i][1]);
+  ctx.closePath();
+
+  // gold fill — vertical gradient, intensity scales with convergence + breathing
+  const grad=ctx.createLinearGradient(0,CY-HY,0,CY+HY);
+  const k=c*(0.78+0.22*bloom);
+  grad.addColorStop(0, rgba(GOLD, 0.05*k));
+  grad.addColorStop(0.5, rgba(GOLD, 0.20*k));
+  grad.addColorStop(1, rgba(GOLD, 0.05*k));
+  ctx.fillStyle=grad; ctx.fill();
+
+  // edge glow
+  ctx.strokeStyle=rgba(GOLDH, (0.30+0.30*bloom)*c);
+  ctx.lineWidth=1.6;
+  ctx.shadowColor=rgba(GOLD,0.8); ctx.shadowBlur=18*c;
+  ctx.stroke();
+  ctx.restore();
+}
+
+/* ---- crossing knowledge particles ---- */
+function drawParticles(T, c){
+  if(c<0.04) return;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  const tfpx=Math.max(11,Math.min(15,MIN*0.013));
+  for(const p of particles){
+    const frac=((T*p.speed + p.phase)%1+1)%1;
+    // x travels from inside source ring → through lens → into target ring
+    const xL=LCX - R*0.42, xR=RCX + R*0.42;
+    const x = p.dir>0 ? lerp(xL,xR,frac) : lerp(xR,xL,frac);
+    // funnel: vertical spread narrows to lens height near centre
+    const s=1-Math.abs(2*frac-1);                     // 0 ends, 1 centre
+    const spread=lerp(R*0.52, (HY>0?HY*0.82:R*0.4), smooth(s));
+    const y=CY + p.lane*spread;
+
+    // fade at the extreme ends (emerge from / sink into rings)
+    const ends=clamp(Math.min(frac/0.10,(1-frac)/0.10),0,1);
+    // centrality → how 'golden' (valuable) it becomes crossing the boundary
+    const central=clamp(1-Math.abs(x-CX)/(R*0.62),0,1);
+    const lensFlag=inLens(x,y)?1:0;
+    const gold=Math.max(central*0.85, lensFlag);
+    const base = p.dir>0 ? mix(PHOS,WARM,0.45) : mix(PHOS,COOL,0.45);
+    const col=mix(base, GOLDH, gold);
+    const a=(0.55+0.4*gold)*ends*c;
+
+    // glow when valuable
+    if(gold>0.15){
+      const gr=ctx.createRadialGradient(x,y,0,x,y,p.sz*6+6*gold);
+      gr.addColorStop(0, rgba(GOLD, 0.42*gold*ends*c));
+      gr.addColorStop(1, rgba(GOLD,0));
+      ctx.fillStyle=gr;
+      ctx.beginPath(); ctx.arc(x,y,p.sz*6+6*gold,0,6.283); ctx.fill();
+    }
+    // motion trail
+    const tx = x - p.dir*8;
+    ctx.strokeStyle=rgba(col, a*0.35);
+    ctx.lineWidth=p.sz*0.9;
+    ctx.beginPath(); ctx.moveTo(tx,y); ctx.lineTo(x,y); ctx.stroke();
+    // core
+    ctx.fillStyle=rgba(col, a);
+    ctx.beginPath(); ctx.arc(x,y,p.sz,0,6.283); ctx.fill();
+
+    // carrier term label — visible only near the crossing
+    if(p.carrier && p.label && central>0.30){
+      ctx.font="700 "+tfpx+"px 'Pretendard', sans-serif";
+      ctx.fillStyle=rgba(GOLDH, 0.85*central*c);
+      ctx.shadowColor=rgba(GOLD,0.7); ctx.shadowBlur=10*central;
+      ctx.fillText(p.label, x, y-p.sz-9);
+      ctx.shadowBlur=0;
+    }
+  }
+}
+
+/* ---- central bloom at the heart of the lens ---- */
+function drawCenterBloom(c, bloom){
+  if(HY<=0||c<0.05) return;
+  const rad=HY*0.95;
+  const gr=ctx.createRadialGradient(CX,CY,0,CX,CY,rad);
+  const k=c*(0.42+0.28*bloom);
+  gr.addColorStop(0, rgba(GOLDH, 0.30*k));
+  gr.addColorStop(0.35, rgba(GOLD, 0.16*k));
+  gr.addColorStop(1, rgba(GOLD,0));
+  ctx.save();
+  ctx.globalCompositeOperation='screen';
+  ctx.fillStyle=gr;
+  ctx.beginPath(); ctx.arc(CX,CY,rad,0,6.283); ctx.fill();
+  ctx.restore();
+}
+
+/* ---- labels: domains + intersection ---- */
+function drawLabels(T, c, goldPulse){
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  // domain anchor labels on the outer flanks
+  const bigpx=Math.max(20,Math.min(40,MIN*0.036));
+  const tagpx=Math.max(9,Math.min(12,MIN*0.011));
+  const lx=LCX - R*0.60, rx=RCX + R*0.60;
+
+  ctx.font="800 "+bigpx+"px 'Pretendard', sans-serif";
+  // 제조
+  ctx.fillStyle=rgba(mix(PHOS,WARM,0.4), 0.92);
+  ctx.shadowColor=rgba(WARM,0.35); ctx.shadowBlur=12;
+  ctx.fillText('제조', lx, CY-bigpx*0.18);
+  // IT
+  ctx.fillStyle=rgba(mix(PHOS,COOL,0.4), 0.92);
+  ctx.shadowColor=rgba(COOL,0.35); ctx.shadowBlur=12;
+  ctx.fillText('IT', rx, CY-bigpx*0.18);
+  ctx.shadowBlur=0;
+
+  ctx.font="700 "+tagpx+"px 'JetBrains Mono', monospace";
+  ctx.fillStyle=rgba(mix(DIM,WARM,0.4), 0.7);
+  ctx.fillText('MANUFACTURING', lx, CY+bigpx*0.55);
+  ctx.fillStyle=rgba(mix(DIM,COOL,0.4), 0.7);
+  ctx.fillText('DIGITAL', rx, CY+bigpx*0.55);
+
+  // 교집합 label — rides just above the lens cusp, lights up at the climax
+  if(HY>0 && c>0.18){
+    const a=smooth((c-0.18)/0.4);
+    const yTag=CY-HY-tagpx*2.1;
+    ctx.font="800 "+Math.max(14,Math.min(22,MIN*0.020))+"px 'Pretendard', sans-serif";
+    ctx.fillStyle=rgba(GOLDH, (0.5+0.45*goldPulse)*a);
+    ctx.shadowColor=rgba(GOLD,0.8); ctx.shadowBlur=16*a;
+    ctx.fillText('교집합', CX, yTag);
+    ctx.shadowBlur=0;
+    ctx.font="700 "+tagpx+"px 'JetBrains Mono', monospace";
+    ctx.fillStyle=rgba(GOLD, 0.6*a);
+    ctx.fillText('INTERSECTION', CX, yTag+tagpx*1.9);
+  }
+}
+
+/* ---- boot (fonts ready, headless-safe fallback) ---- */
+function start(){ resize(); build(); requestAnimationFrame(frame); }
+if(document.fonts && document.fonts.ready){
+  let go=false; const fire=()=>{ if(!go){ go=true; start(); } };
+  document.fonts.ready.then(fire);
+  setTimeout(fire, 700);
+} else { start(); }
+</script>
+</body>
+</html>

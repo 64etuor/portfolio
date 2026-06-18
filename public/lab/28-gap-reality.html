@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCENE 02 · 현실 — THE DIVERGENCE / 기대와 성과의 격차</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+
+  :root{
+    --bg:#050505;
+    --bg2:#101010;
+    --phos:#d7d7d7;        /* 기대선 — 인광 화이트 */
+    --phos-dim:#8d8d8d;
+    --phos-deep:#3a3a3a;
+    --gap:#5fb5c2;         /* 단 하나의 액센트 — 차가운 void(격차) */
+    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
+  }
+  @font-face{
+    font-family:'JetBrains Mono';font-display:swap;font-weight:400;
+    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff2') format('woff2');
+  }
+  @font-face{
+    font-family:'JetBrains Mono';font-display:swap;font-weight:700;
+    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-700-normal.woff2') format('woff2');
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--phos);
+    font-family:var(--mono);
+    overflow:hidden;
+    word-break:keep-all;
+    -webkit-font-smoothing:none;
+  }
+  .kr{font-family:'Pretendard',var(--mono);}
+
+  /* ===== full-bleed CRT shell ===== */
+  #crt{
+    position:fixed;inset:0;overflow:hidden;
+    background:radial-gradient(ellipse 135% 135% at 60% 46%, var(--bg2) 0%, var(--bg) 60%, #000 100%);
+  }
+  #c{position:absolute;inset:0;display:block;width:100%;height:100%}
+
+  /* scanlines + vignette overlay (tone-matched to 05) */
+  #shell{position:absolute;inset:0;z-index:40;pointer-events:none}
+  #shell::before{
+    content:"";position:absolute;inset:0;
+    background:repeating-linear-gradient(0deg,
+      rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0.13) 3px, rgba(0,0,0,0.13) 4px);
+    mix-blend-mode:multiply;
+  }
+  #shell::after{
+    content:"";position:absolute;inset:0;
+    background:radial-gradient(ellipse at 52% 48%, transparent 56%, rgba(0,0,0,.78) 100%);
+    opacity:.9;
+  }
+
+  /* ===== big typography (protagonist) ===== */
+  #type{position:absolute;inset:0;z-index:20;pointer-events:none;
+    text-shadow:0 0 4px rgba(255,255,255,.14);}
+
+  .eyebrow{
+    position:absolute;left:5.4%;top:12.2%;
+    font-family:var(--mono);font-size:clamp(10px,.82vw,15px);
+    letter-spacing:.42em;color:var(--phos-dim);text-shadow:none;
+  }
+  .eyebrow b{color:var(--gap);text-shadow:0 0 8px rgba(95,181,194,.4)}
+
+  .s1{
+    position:absolute;left:5.2%;top:16.4%;max-width:42%;
+    font-weight:600;font-size:clamp(20px,2.36vw,48px);line-height:1.34;
+    color:var(--phos);letter-spacing:-.01em;
+  }
+  .s1 em{font-style:normal;color:#fff;
+    border-bottom:2px solid var(--phos-deep);padding-bottom:1px}
+
+  .s2{
+    position:absolute;left:5.2%;bottom:13.5%;max-width:46%;
+    font-weight:700;font-size:clamp(26px,3.42vw,70px);line-height:1.22;
+    color:var(--phos);letter-spacing:-.02em;
+  }
+  .s2 em{font-style:normal;position:relative;color:#fff}
+  .s2 em::after{
+    content:"";position:absolute;left:0;right:0;bottom:-.08em;height:2px;
+    background:linear-gradient(90deg,var(--gap),transparent);
+    box-shadow:0 0 10px rgba(95,181,194,.5);
+  }
+  .s2 .void{color:var(--gap);text-shadow:0 0 14px rgba(95,181,194,.45)}
+
+  /* legend / axis caption */
+  #legend{
+    position:absolute;z-index:20;right:4.5%;bottom:6.2%;
+    display:flex;gap:20px;align-items:center;pointer-events:none;
+    font-family:var(--mono);font-size:clamp(9px,.74vw,12.5px);
+    color:var(--phos-dim);letter-spacing:.06em;
+  }
+  #legend .it{display:flex;align-items:center;gap:7px}
+  #legend .dot{width:9px;height:9px;border-radius:50%}
+  #legend .dot.exp{background:var(--phos);box-shadow:0 0 7px rgba(215,215,215,.6)}
+  #legend .dot.real{background:var(--gap);box-shadow:0 0 8px rgba(95,181,194,.7)}
+  #legend .bar{width:3px;height:13px;background:var(--gap);opacity:.8}
+  #legend small{color:var(--phos-deep);margin-left:3px}
+</style>
+</head>
+<body>
+<div id="crt">
+  <canvas id="c"></canvas>
+
+  <div id="type">
+    <div class="eyebrow"><b>SCENE 02</b> &nbsp;/&nbsp; 현 실 &nbsp;·&nbsp; THE DIVERGENCE</div>
+    <h1 class="s1 kr">많은 기업들이 <em>디지털 전환</em>에<br>투자합니다.</h1>
+    <h2 class="s2 kr">하지만 <em>기대만큼의 <span class="void">성과</span></em>를<br>내지 못하는 경우가 많습니다.</h2>
+  </div>
+
+  <div id="legend">
+    <div class="it"><span class="dot exp"></span>기대 <small>EXPECTATION</small></div>
+    <div class="it"><span class="dot real"></span>성과 <small>REALITY</small></div>
+    <div class="it"><span class="bar"></span>격차 <small>GAP</small></div>
+  </div>
+
+  <div id="shell"></div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   SCENE 02 · 현실 — THE DIVERGENCE
+   핵심 메타포: 기대선과 성과선이 좌측 원점에서 포개진 채 출발해,
+   투자/시간이 우측으로 흐를수록 성과선이 처지며 그 사이 void(격차)가
+   열린다. void에는 계측 눈금(caliper drop-ticks)이 돋아 격차를 '측정'한다.
+   단 하나의 차가운 시안 액센트는 오직 void·성과선에만 스며든다.
+   정적(좌·포개짐) → 동적(우·최대격차).  루프: 격차가 한번 열렸다가
+   끝 구간에서 CRT 밝기가 가라앉는 동안 매끄럽게 포개져 닫힌다(seamless).
+   ※ 가짜 수치/난수 텔레메트리 없음 — 모든 모션은 의도된 시간함수.
+   ════════════════════════════════════════════════════════════════ */
+const cv = document.getElementById('c');
+const g  = cv.getContext('2d');
+const typeEl = document.getElementById('type');
+const legendEl = document.getElementById('legend');
+const s1El = document.querySelector('.s1');
+const s2El = document.querySelector('.s2');
+const eyebrowEl = document.querySelector('.eyebrow');
+
+let W=0, H=0, DPR=Math.min(window.devicePixelRatio||1, 2);
+function resize(){
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = W*DPR; cv.height = H*DPR;
+  cv.style.width = W+'px'; cv.style.height = H+'px';
+  g.setTransform(DPR,0,0,DPR,0,0);
+}
+window.addEventListener('resize', resize);
+resize();
+
+/* ---- helpers ---- */
+const clamp = (a,b,v)=>Math.max(a,Math.min(b,v));
+const smooth = t=>{t=clamp(0,1,t);return t*t*(3-2*t);};
+const lerp = (a,b,t)=>a+(b-a)*t;
+function rgba(hex,a){
+  let h=hex.replace('#','');
+  if(h.length===3)h=h.split('').map(x=>x+x).join('');
+  const r=parseInt(h.slice(0,2),16),gg=parseInt(h.slice(2,4),16),b=parseInt(h.slice(4,6),16);
+  return `rgba(${r},${gg},${b},${a})`;
+}
+const PHOS = '#d7d7d7', GAPC = '#5fb5c2', DIM = '#8d8d8d', DEEP='#3a3a3a';
+
+/* ════════ TIMELINE ════════
+   CYCLE 초 주기. f = 0..1.
+   G(f)  = 격차 개방량 0(포개짐)..1(최대).
+   dip(f)= 화면 밝기 배수 1..0.34..1 (루프 봉합을 가리는 호흡).            */
+const CYCLE = 13.0;     // seconds, seamless period
+
+function G(f){
+  if(f < 0.10) return 0;                                   // 정적: 두 선 포개짐
+  if(f < 0.62) return smooth((f-0.10)/0.52);               // 동적: 격차 개방
+  if(f < 0.82){                                            // 최대 격차 + 미세 호흡
+    const b=(f-0.62)/0.20;
+    return 1 - 0.05*(0.5-0.5*Math.cos(b*Math.PI*2));
+  }
+  return 1 - smooth((f-0.82)/0.18);                        // 봉합: 포개짐으로 복귀
+}
+function dip(f){
+  if(f < 0.80) return 1;
+  if(f < 0.90) return 1 - 0.64*smooth((f-0.80)/0.10);      // 밝기 가라앉음
+  return 0.36 + 0.64*smooth((f-0.90)/0.10);                // 회복 → 1
+}
+
+/* curve geometry (재계산은 매 프레임, W/H 의존) */
+function geo(){
+  return {
+    Lx: W*0.345, Rx: W*0.935,
+    yBot: H*0.795,            // 좌측 원점 높이(낮음)
+    yTop: H*0.305,            // 기대선 우측 정점(높음)
+    maxGap: H*0.255           // 우측 최대 격차(px)
+  };
+}
+// 기대선: 좌→우 상승(투자 누적). 약한 S로 '투영 곡선' 느낌.
+function expY(tx, q){ return q.yBot + (q.yTop - q.yBot) * (0.30*tx + 0.70*smooth(tx)); }
+// 격차 프로파일: 좌측 원점 0 → 우측 1 (미래일수록 큰 격차)
+function gapProf(tx){ return Math.pow(smooth(clamp(0,1,(tx-0.10)/0.90)), 1.25); }
+// 성과선: 기대선에서 격차만큼 아래로 (down = +y)
+function realY(tx, q, gv){ return expY(tx,q) + q.maxGap * gapProf(tx) * gv; }
+
+const N = 90;                  // 곡선 샘플 수
+let tickScroll = 0;            // caliper 눈금 드리프트
+let gridScroll = 0;
+let start = null;
+
+function frame(now){
+  if(start===null) start = now;
+  const t = (now - start)/1000;
+  const f = (t % CYCLE) / CYCLE;
+  const gv = G(f);
+  const dv = dip(f);
+  const q = geo();
+
+  tickScroll = (tickScroll + 0.00060) % 1;
+  gridScroll = (gridScroll + 0.18) % 64;
+
+  g.clearRect(0,0,W,H);
+
+  /* ---- 1) 배경 그리드 (스크롤하는 시간축 격자) ---- */
+  g.lineWidth = 1;
+  g.strokeStyle = rgba('#ffffff', 0.022*dv);
+  for(let gx = (q.Lx - gridScroll); gx < q.Rx; gx += 64){
+    g.beginPath(); g.moveTo(gx, q.yTop-H*0.04); g.lineTo(gx, q.yBot+H*0.02); g.stroke();
+  }
+  for(let gy = q.yTop; gy <= q.yBot+H*0.02; gy += 64){
+    g.beginPath(); g.moveTo(q.Lx, gy); g.lineTo(q.Rx, gy); g.stroke();
+  }
+  // 기준 베이스라인(원점)
+  g.strokeStyle = rgba(DEEP, 0.85*dv); g.lineWidth = 1.2;
+  g.beginPath(); g.moveTo(q.Lx, q.yBot); g.lineTo(q.Rx, q.yBot); g.stroke();
+
+  /* ---- precompute curve points ---- */
+  const ex=[], ey=[], rx=[], ry=[];
+  for(let i=0;i<=N;i++){
+    const tx=i/N, X=lerp(q.Lx,q.Rx,tx);
+    ex.push(X); ey.push(expY(tx,q));
+    rx.push(X); ry.push(realY(tx,q,gv));
+  }
+
+  /* ---- 2) VOID fill (격차 면적) — 단 하나의 액센트가 스며듦 ---- */
+  if(gv>0.001){
+    g.save();
+    g.beginPath();
+    g.moveTo(ex[0],ey[0]);
+    for(let i=1;i<=N;i++) g.lineTo(ex[i],ey[i]);
+    for(let i=N;i>=0;i--) g.lineTo(rx[i],ry[i]);
+    g.closePath();
+    const grad = g.createLinearGradient(0,q.yTop,0,q.yBot+q.maxGap);
+    grad.addColorStop(0, rgba(GAPC, 0.04*dv));
+    grad.addColorStop(1, rgba(GAPC, 0.20*dv));
+    g.fillStyle = grad; g.fill();
+
+    /* ---- 3) caliper drop-ticks — 격차를 '측정'하는 눈금 ---- */
+    g.clip();                     // void 내부로 클리핑
+    const TK = 16;
+    for(let k=0;k<TK;k++){
+      let tx = ((k/TK) + tickScroll) % 1;
+      tx = 0.12 + tx*0.86;        // 측정 구간
+      const X = lerp(q.Lx,q.Rx,tx);
+      const yT = expY(tx,q), yB = realY(tx,q,gv);
+      const len = yB - yT;
+      if(len < 2) continue;
+      const edgeFade = smooth(clamp(0,1,(tx-0.12)/0.12)) * smooth(clamp(0,1,(1.0-tx)/0.10));
+      const a = 0.34 * gapProf(tx) * edgeFade * dv;
+      g.strokeStyle = rgba(GAPC, a); g.lineWidth = 1;
+      g.beginPath(); g.moveTo(X, yT); g.lineTo(X, yB); g.stroke();
+      // 양끝 serif 캡
+      g.strokeStyle = rgba(GAPC, a*1.3);
+      g.beginPath(); g.moveTo(X-3,yT); g.lineTo(X+3,yT); g.stroke();
+      g.beginPath(); g.moveTo(X-3,yB); g.lineTo(X+3,yB); g.stroke();
+    }
+    g.restore();
+  }
+
+  /* ---- 4) 기대선 (EXPECTATION) — 인광 화이트, 자신만만 ---- */
+  g.lineJoin='round'; g.lineCap='round';
+  g.shadowColor = rgba(PHOS, 0.5*dv); g.shadowBlur = 12;
+  g.strokeStyle = rgba(PHOS, 0.95*dv); g.lineWidth = 2.4;
+  g.beginPath(); g.moveTo(ex[0],ey[0]);
+  for(let i=1;i<=N;i++) g.lineTo(ex[i],ey[i]);
+  g.stroke();
+  g.shadowBlur = 0;
+
+  /* ---- 5) 성과선 (REALITY) — 차가운 시안으로 식어감 ---- */
+  // 격차가 클수록 phosphor→gap 으로 색이 식는 그라데이션
+  const rgrad = g.createLinearGradient(q.Lx,0,q.Rx,0);
+  rgrad.addColorStop(0, rgba(PHOS, 0.9*dv));
+  rgrad.addColorStop(0.45, rgba('#9ec9cf', 0.9*dv));
+  rgrad.addColorStop(1, rgba(GAPC, 0.95*dv));
+  g.shadowColor = rgba(GAPC, 0.45*gv*dv); g.shadowBlur = 10;
+  g.strokeStyle = rgrad; g.lineWidth = 2.4;
+  g.beginPath(); g.moveTo(rx[0],ry[0]);
+  for(let i=1;i<=N;i++) g.lineTo(rx[i],ry[i]);
+  g.stroke();
+  g.shadowBlur = 0;
+
+  /* ---- 6) 우측 선단 — 두 점 + 캘리퍼 브래킷(격차) + 라벨 ---- */
+  const pulse = 0.5 + 0.5*Math.sin(now/420);
+  const exDx = ex[N], exDy = ey[N];
+  const rlDx = rx[N], rlDy = ry[N];
+
+  // 캘리퍼 브래킷 (격차를 잰다 — 추상, 수치 없음)
+  if(gv>0.02){
+    const bx = exDx + 26;
+    g.strokeStyle = rgba(GAPC, 0.55*dv); g.lineWidth = 1.2;
+    g.beginPath(); g.moveTo(bx, exDy); g.lineTo(bx, rlDy); g.stroke();
+    g.beginPath(); g.moveTo(bx-6,exDy); g.lineTo(bx+6,exDy); g.stroke();   // 상단 캡
+    g.beginPath(); g.moveTo(bx-6,rlDy); g.lineTo(bx+6,rlDy); g.stroke();   // 하단 캡
+    // 가운데 화살촉(격차 방향)
+    const my=(exDy+rlDy)/2;
+    g.beginPath(); g.moveTo(bx,my-5); g.lineTo(bx,my+5); g.stroke();
+    g.font = "600 13px 'Pretendard', sans-serif";
+    g.fillStyle = rgba(GAPC, (0.5+0.4*gv)*dv);
+    g.textAlign='left'; g.textBaseline='middle';
+    g.fillText('격차', bx+11, my-8);
+    g.font = "700 9px "+ "'JetBrains Mono', monospace";
+    g.fillStyle = rgba(GAPC, 0.42*dv);
+    g.fillText('GAP', bx+11, my+6);
+  }
+
+  // 기대 점 (phosphor)
+  drawDot(exDx, exDy, PHOS, pulse, dv);
+  g.font = "600 17px 'Pretendard', sans-serif";
+  g.textAlign='left'; g.textBaseline='middle';
+  g.fillStyle = rgba(PHOS, 0.95*dv);
+  g.fillText('기대', exDx+14, exDy-2);
+  g.font = "700 9px 'JetBrains Mono', monospace";
+  g.fillStyle = rgba(DIM, 0.8*dv);
+  g.fillText('EXPECTATION', exDx+14, exDy+13);
+
+  // 성과 점 (gap accent)
+  drawDot(rlDx, rlDy, GAPC, pulse, dv);
+  g.font = "700 17px 'Pretendard', sans-serif";
+  g.fillStyle = rgba(GAPC, 0.98*dv);
+  g.fillText('성과', rlDx+14, rlDy+ (rlDy>exDy?2:-2));
+  g.font = "700 9px 'JetBrains Mono', monospace";
+  g.fillStyle = rgba(GAPC, 0.6*dv);
+  g.fillText('REALITY', rlDx+14, rlDy+17);
+
+  /* ---- 7) 하단 축 캡션 (추상 — 수치 없음) ---- */
+  g.font = "10px 'JetBrains Mono', monospace";
+  g.fillStyle = rgba(DIM, 0.55*dv);
+  g.textAlign='right'; g.textBaseline='alphabetic';
+  g.fillText('투자 누적 · 시간  →', q.Rx, q.yBot + H*0.052);
+  g.textAlign='left';
+  g.save();
+  g.translate(q.Lx - 22, (q.yTop+q.yBot)/2);
+  g.rotate(-Math.PI/2);
+  g.fillStyle = rgba(DIM, 0.5*dv);
+  g.fillText('성과  ↑', 0, 0);
+  g.restore();
+
+  /* ---- 8) 타이포/레전드 밝기·등장 동기화 ---- */
+  const s1op = smooth((f-0.00)/0.08) * (f<0.86?1:lerp(1,0.35,smooth((f-0.86)/0.14)));
+  const s2op = smooth((f-0.30)/0.16) * (f<0.80?1:1-smooth((f-0.80)/0.10));
+  eyebrowEl.style.opacity = (0.9*dv).toFixed(3);
+  s1El.style.opacity = (s1op*dv).toFixed(3);
+  s2El.style.opacity = (clamp(0,1,s2op)*dv).toFixed(3);
+  // s2 는 격차가 열리며 살짝 위로 떠오른다
+  s2El.style.transform = `translateY(${lerp(14,0,clamp(0,1,s2op))}px)`;
+  legendEl.style.opacity = (0.85*dv).toFixed(3);
+
+  requestAnimationFrame(frame);
+}
+
+function drawDot(x,y,color,pulse,dv){
+  const r = 4.2;
+  // halo
+  const hg = g.createRadialGradient(x,y,0,x,y,r*5.5);
+  hg.addColorStop(0, rgba(color, (0.5+0.25*pulse)*dv));
+  hg.addColorStop(1, rgba(color, 0));
+  g.fillStyle = hg;
+  g.beginPath(); g.arc(x,y,r*5.5,0,7); g.fill();
+  // core
+  g.fillStyle = rgba(color, dv);
+  g.beginPath(); g.arc(x,y,r,0,7); g.fill();
+  g.fillStyle = rgba('#ffffff', 0.55*dv);
+  g.beginPath(); g.arc(x-r*0.3,y-r*0.3,r*0.34,0,7); g.fill();
+}
+
+/* boot — 폰트 준비 후 시작 (headless 안전 폴백) */
+function boot(){ requestAnimationFrame(frame); }
+if(document.fonts && document.fonts.ready){
+  let on=false; const go=()=>{ if(!on){on=true;boot();} };
+  document.fonts.ready.then(go);
+  setTimeout(go, 600);
+} else boot();
+</script>
+</body>
+</html>

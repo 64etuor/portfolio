@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>박양하 · 디지털 트윈 — 연결된 도메인 = 조직·공정의 트윈</title>
+<title>디지털 트윈 — 연결된 도메인 = 조직·공정의 트윈</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
 :root{
@@ -218,7 +218,7 @@ canvas{display:block;outline:none}
 <!-- top bar -->
 <div class="hud" id="topbar">
   <div class="brand">
-    <span class="nm">박양하 · Park Yangha</span>
+    <span class="nm">도메인 트윈</span>
     <span class="role">연결된 도메인 = 조직·공정의 디지털 트윈</span>
     <span class="tw"><span class="dot"></span>DOMAIN TWIN · SILO→CONNECTED LIVE</span>
   </div>
@@ -245,7 +245,7 @@ canvas{display:block;outline:none}
         <div class="layer-dot" style="background:var(--c-mfg);box-shadow:0 0 4px rgba(255,122,138,.55)"></div>
         <div>
           <div class="layer-label" style="color:var(--c-mfg)">제조 현장</div>
-          <div class="layer-sub">은성·이랜텍·솔라엣지 — 설비·공정·OEE·물류</div>
+          <div class="layer-sub">설비·공정·OEE·물류 — 제조 현장 도메인</div>
         </div>
       </div>
       <div class="layer-row">
@@ -337,7 +337,7 @@ canvas{display:block;outline:none}
       <span class="val" id="xdState">SYNCED</span>
     </div>
     <div class="xd-port">
-      <b>LOG:</b> 시대는 변한다, 사람도 변해야 한다.<br>제조 현장(은성·이랜텍·솔라엣지) → 데이터/SW → AI —<br><span class="ph">도메인을 코드와 모델로 잇는 사람</span>이 조직의 트윈이 된다.
+      <b>LOG:</b> 세 도메인이 연결될 때 — 경계의 문제가 비로소 보인다.<br>제조 현장 → 데이터/SW → AI —<br><span class="ph">도메인을 코드와 모델로 잇는 허브</span>가 조직의 트윈이 된다.
     </div>
   </div>
 </div>
@@ -351,7 +351,7 @@ import { CSS2DRenderer, CSS2DObject } from "https://esm.sh/three@0.184.0/example
 const STATIONS = [
   {
     id:"mfg-cell", station:"MFG CELL 01", label:"제조 현장 레이어", color:0xff7a8a, css:"--c-mfg", layer:"mfg",
-    role:"은성·이랜텍·솔라엣지 — 공정·설비·품질·물류 도메인", period:"생산운영 PM / 공정기술 엔지니어",
+    role:"공정·설비·품질·물류 — 제조 현장 도메인", period:"제조 현장 레이어 — 공정·설비 도메인",
     kind:"machine",
     metrics:[
       {v:"OEE 92%", l:"종합설비효율"},
@@ -362,7 +362,7 @@ const STATIONS = [
     log:[
       "사일로 시: 공정 이상이 <b>데이터 레이어에 도달하지 않음</b> — 누락·오분류",
       "연결 시: 현장 OEE·Takt·안돈 신호가 <b>파이프라인으로 즉시 반영</b>",
-      "은성·이랜텍·솔라엣지 현장 경험 — <b>공정 변수의 실제 의미</b>를 안다",
+      "제조 현장 경험 — <b>공정 변수의 실제 의미</b>를 안다",
       "수기 관리 → 디지털 전환 — <b>현장 도메인 지식이 설계를 결정</b>",
       "단일 데이터 전문가는 이 맥락 없이 <b>지표 해석 오류 발생</b>",
     ],
@@ -371,7 +371,7 @@ const STATIONS = [
   },
   {
     id:"dev-cell", station:"DEV CELL 02", label:"데이터 / 개발 레이어", color:0x6fb4ff, css:"--c-dev", layer:"dev",
-    role:"MES · 파이프라인 · SSOT — 현장을 코드로 구조화", period:"데이터 엔지니어링 / 시스템 구축",
+    role:"MES · 파이프라인 · SSOT — 현장을 코드로 구조화", period:"데이터 엔지니어링 — 현장을 코드로 구조화",
     kind:"data",
     metrics:[
       {v:"MES", l:"현장 공정을 코드로 구조화"},
@@ -382,7 +382,7 @@ const STATIONS = [
     log:[
       "사일로 시: <b>현장 맥락 없는 BI 지표</b> — 수치는 있으나 해석 오류",
       "연결 시: 제조 도메인 지식이 <b>스키마 설계·ETL 로직에 반영</b>",
-      "<b>MES 자체 개발</b>(솔라엣지) — 현장을 아는 사람만 설계 가능한 구조",
+      "<b>MES 자체 개발</b> — 현장을 아는 사람만 설계 가능한 구조",
       "검사성적서 자동발행 · S/N 추적성 — <b>공정 도메인이 코드를 결정</b>",
       "데이터 전문가만으로는 <b>현장 변수의 의미를 파이프라인에 담지 못함</b>",
     ],
@@ -391,7 +391,7 @@ const STATIONS = [
   },
   {
     id:"ai-cell", station:"AI CELL 03", label:"AI 도메인 레이어", color:0xc9a3ff, css:"--c-ai", layer:"ai",
-    role:"예측 · 이상탐지 · 에이전트 — 모델로 도메인을 연결", period:"AI 전환 / AX 추진",
+    role:"예측 · 이상탐지 · 에이전트 — 모델로 도메인을 연결", period:"AI 도메인 — 예측·이상탐지·에이전트",
     kind:"ax",
     metrics:[
       {v:"사일로 시", l:"도메인 없는 모델 — 오탐·오분류"},
@@ -888,7 +888,7 @@ detailEl.innerHTML = `
     </div>
   </div>
   <div class="dt-foot">
-    <span>박양하 · Park Yangha — 연결된 도메인 = 조직·공정의 디지털 트윈</span>
+    <span>연결된 도메인 = 조직·공정의 디지털 트윈</span>
   </div>
 `;
 document.body.appendChild(detailEl);

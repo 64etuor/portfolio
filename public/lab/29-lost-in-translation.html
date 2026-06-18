@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOST IN TRANSLATION // 소통의 문제</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+
+  :root{
+    --bg:#050505;
+    --bg2:#101010;
+    --phos:#d7d7d7;
+    --phos-dim:#8d8d8d;
+    --phos-deep:#3a3a3a;
+    --accent:#cda35f;          /* the one survived signal */
+    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
+    --s: min(1vw, 1.778vh);    /* 16:9-locked sizing unit */
+  }
+  @font-face{font-family:'JetBrains Mono';font-display:swap;font-weight:400;
+    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff2') format('woff2');}
+  @font-face{font-family:'JetBrains Mono';font-display:swap;font-weight:700;
+    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-700-normal.woff2') format('woff2');}
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--phos);
+    font-family:var(--mono);
+    overflow:hidden;
+    word-break:keep-all;
+    -webkit-font-smoothing:none;
+  }
+  .kr{font-family:'Pretendard',var(--mono);}
+
+  /* ===== CRT shell ===== */
+  #crt{
+    position:fixed;inset:0;overflow:hidden;
+    background:radial-gradient(ellipse 130% 130% at 50% 48%, var(--bg2) 0%, var(--bg) 60%, #000 100%);
+  }
+  #crt::before{ /* scanlines */
+    content:"";position:absolute;inset:0;z-index:80;pointer-events:none;
+    background:repeating-linear-gradient(0deg,
+      rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0.13) 3px, rgba(0,0,0,0.13) 4px);
+    mix-blend-mode:multiply;
+  }
+  #crt::after{ /* vignette */
+    content:"";position:absolute;inset:0;z-index:81;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 50%, transparent 56%, rgba(0,0,0,.74) 100%);
+    opacity:.88;
+  }
+  #flick{position:absolute;inset:0;z-index:82;pointer-events:none;
+    background:rgba(215,215,215,.012);mix-blend-mode:screen;}
+
+  /* ===== stage ===== */
+  #stage{position:absolute;inset:0;z-index:10;text-shadow:0 0 3px rgba(255,255,255,.16);}
+
+  /* framing ticks + caption */
+  .frame{position:absolute;inset:calc(var(--s)*2.4);border:1px solid rgba(58,58,58,.5);
+    pointer-events:none;z-index:12;}
+  .tick{position:absolute;width:calc(var(--s)*1.1);height:calc(var(--s)*1.1);
+    border:1px solid var(--phos-deep);}
+  .tick.tl{top:-1px;left:-1px;border-right:0;border-bottom:0}
+  .tick.tr{top:-1px;right:-1px;border-left:0;border-bottom:0}
+  .tick.bl{bottom:-1px;left:-1px;border-right:0;border-top:0}
+  .tick.br{bottom:-1px;right:-1px;border-left:0;border-top:0}
+
+  .cap{position:absolute;z-index:14;font-size:calc(var(--s)*0.92);letter-spacing:.18em;
+    color:var(--phos-dim);text-shadow:none;}
+  .cap.tl{top:calc(var(--s)*3.6);left:calc(var(--s)*4);}
+  .cap.tr{top:calc(var(--s)*3.6);right:calc(var(--s)*4);text-align:right;}
+  .cap b{color:var(--phos);font-weight:700}
+  #phase{color:var(--accent);text-shadow:none}
+
+  /* central axis the translation head rides on */
+  #axis{position:absolute;left:50%;top:18%;bottom:24%;width:1px;z-index:11;
+    background:linear-gradient(180deg,transparent,rgba(58,58,58,.55) 18%,rgba(58,58,58,.55) 82%,transparent);
+    transform:translateX(-.5px);opacity:.0;}
+
+  /* scanning translation head */
+  #head{position:absolute;top:30%;height:34%;width:1px;z-index:13;
+    background:linear-gradient(180deg,transparent,var(--accent),transparent);
+    box-shadow:0 0 14px 2px rgba(205,163,95,.30);opacity:0;}
+  #head::after{content:"";position:absolute;left:-7px;top:50%;width:14px;height:14px;
+    transform:translateY(-50%) rotate(45deg);
+    border:1px solid var(--accent);background:rgba(205,163,95,.05);}
+
+  /* layer stack (the tech layers being peeled) */
+  #layers{position:absolute;left:calc(var(--s)*5.5);top:50%;transform:translateY(-50%);
+    z-index:14;display:flex;flex-direction:column;gap:calc(var(--s)*0.7);min-width:calc(var(--s)*17);}
+  .lyr{display:flex;align-items:baseline;gap:calc(var(--s)*0.9);font-size:calc(var(--s)*0.98);
+    letter-spacing:.06em;color:var(--phos-dim);white-space:nowrap;will-change:transform,opacity;}
+  .lyr .id{color:var(--phos-deep);font-size:calc(var(--s)*0.8);width:calc(var(--s)*2.2)}
+  .lyr .en{color:var(--phos-deep);font-size:calc(var(--s)*0.78);letter-spacing:.14em}
+  .lyr.base{color:var(--accent);}
+  .lyr.base .id,.lyr.base .en{color:rgba(205,163,95,.55)}
+  .lyr .kr{font-weight:600}
+  #divider{height:1px;background:var(--phos-deep);margin:calc(var(--s)*0.4) 0;opacity:.7}
+
+  /* the typographic core */
+  #typo{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);z-index:13;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding-left:calc(var(--s)*22);padding-right:calc(var(--s)*6);}
+
+  #source{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;
+    gap:0 calc(var(--s)*1.05);max-width:calc(var(--s)*78);}
+  #source .w{font-family:'Pretendard',var(--mono);font-weight:600;
+    font-size:calc(var(--s)*3.5);line-height:1.18;color:var(--phos);
+    will-change:transform,filter,opacity;display:inline-block;}
+
+  #gloss{display:flex;flex-wrap:wrap;justify-content:center;
+    gap:0 calc(var(--s)*1.4);margin-top:calc(var(--s)*1.4);max-width:calc(var(--s)*82);
+    min-height:calc(var(--s)*2.2);}
+  #gloss .g{font-family:var(--mono);font-size:calc(var(--s)*1.12);color:var(--phos-dim);
+    letter-spacing:.04em;white-space:nowrap;text-shadow:none;will-change:transform,opacity;
+    opacity:0;}
+  #gloss .g .blk{color:var(--phos-deep)}
+
+  #answer{display:flex;flex-wrap:wrap;justify-content:center;align-items:baseline;
+    gap:0 calc(var(--s)*1.0);max-width:calc(var(--s)*82);position:absolute;
+    top:50%;left:0;right:0;transform:translateY(-50%);
+    padding-left:calc(var(--s)*22);padding-right:calc(var(--s)*6);pointer-events:none;}
+  #answer .w{font-family:'Pretendard',var(--mono);font-weight:500;
+    font-size:calc(var(--s)*2.55);line-height:1.3;color:var(--phos);
+    will-change:transform,filter,opacity;opacity:0;display:inline-block;}
+  #answer .w .hl{color:var(--accent);font-weight:700;}
+
+  /* signal-align gauge (purely visual, phase-driven — no numbers) */
+  #gauge{position:absolute;left:50%;bottom:calc(var(--s)*4.4);transform:translateX(-50%);
+    z-index:14;width:calc(var(--s)*34);text-align:center;}
+  #gauge .lab{font-size:calc(var(--s)*0.8);letter-spacing:.26em;color:var(--phos-dim);
+    text-shadow:none;margin-bottom:calc(var(--s)*0.7);}
+  #gauge .lab b{color:var(--accent);font-weight:700}
+  #bar{height:calc(var(--s)*0.42);border:1px solid var(--phos-deep);position:relative;overflow:hidden;}
+  #fill{position:absolute;left:0;top:0;bottom:0;width:100%;
+    background:linear-gradient(90deg,rgba(205,163,95,.25),var(--accent));}
+  #notch{position:absolute;top:0;bottom:0;width:1px;background:var(--phos-deep);}
+
+  @media (max-width:760px){
+    #layers{left:calc(var(--s)*2.4);min-width:calc(var(--s)*15)}
+    #typo,#answer{padding-left:calc(var(--s)*17)}
+  }
+</style>
+</head>
+<body>
+<div id="crt">
+  <div id="flick"></div>
+  <div id="stage">
+
+    <div class="frame">
+      <span class="tick tl"></span><span class="tick tr"></span>
+      <span class="tick bl"></span><span class="tick br"></span>
+    </div>
+
+    <div class="cap tl"><span class="kr">SCENE 03 · <b>문제 제기</b></span></div>
+    <div class="cap tr">STATUS · <span id="phase" class="kr">QUESTION</span></div>
+
+    <div id="axis"></div>
+    <div id="head"></div>
+
+    <div id="layers"></div>
+
+    <div id="typo">
+      <div id="source"></div>
+      <div id="gloss"></div>
+    </div>
+    <div id="answer"></div>
+
+    <div id="gauge">
+      <div class="lab kr">신호 정합 · <b>SIGNAL ALIGN</b></div>
+      <div id="bar"><div id="fill"></div>
+        <span id="notch" style="left:25%"></span>
+        <span id="notch" style="left:50%"></span>
+        <span id="notch" style="left:75%"></span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+
+/* ---------- content ---------- */
+const Q = ["왜","시스템","구축은","늘","어려울까요?"];           // the question (translated/garbled)
+const A = [                                                      // the answer (revealed beneath)
+  {t:"기술의"},{t:"문제가"},{t:"아니라,"},
+  {t:"소통의", hl:"소통"},{t:"문제일"},{t:"수"},{t:"있습니다."}
+];
+const LAYERS = [                                                 // tech layers, top→bottom (peel order)
+  {id:"L04", kr:"배포",   en:"DEPLOY"},
+  {id:"L03", kr:"구현",   en:"BUILD"},
+  {id:"L02", kr:"설계",   en:"DESIGN"},
+  {id:"L01", kr:"요구사항", en:"SPEC"},
+];
+const BASE = {id:"L00", kr:"소통", en:"COMMUNICATION"};
+
+/* ---------- real mojibake: UTF-8 bytes misread as CP1252 ---------- */
+const CP={0x80:'€',0x82:'‚',0x83:'ƒ',0x84:'„',0x85:'…',0x86:'†',0x87:'‡',0x88:'ˆ',
+  0x89:'‰',0x8A:'Š',0x8B:'‹',0x8C:'Œ',0x8E:'Ž',0x91:'‘',0x92:'’',
+  0x93:'“',0x94:'”',0x95:'•',0x96:'–',0x97:'—',0x98:'˜',0x99:'™',
+  0x9A:'š',0x9B:'›',0x9C:'œ',0x9E:'ž',0x9F:'Ÿ'};
+const enc = new TextEncoder();
+const bytesOf = s => Array.from(enc.encode(s));
+const moji = s => bytesOf(s).map(b =>
+  b<0x80 ? String.fromCharCode(b) : (b>=0xA0 ? String.fromCharCode(b) : (CP[b]||'�'))).join('');
+const hexs = s => bytesOf(s).map(b=>b.toString(16).toUpperCase().padStart(2,'0')).join(' ');
+const bins = s => bytesOf(s).map(b=>b.toString(2).padStart(8,'0')).join(' ');
+
+/* per-token machine renderings of the question */
+const TOK = Q.map(w => ({ moji:moji(w), hex:hexs(w), bin:bins(w) }));
+/* how far each token's translation drifts out of register (outer words slip more) */
+const DRIFT = [-1.0, 1.7, -2.4, 2.9, -3.6];
+
+/* ---------- build DOM ---------- */
+const srcEl=$('#source'), glsEl=$('#gloss'), ansEl=$('#answer'),
+      lyrWrap=$('#layers'), headEl=$('#head'), axisEl=$('#axis'),
+      fillEl=$('#fill'), phaseEl=$('#phase'), stageEl=$('#stage');
+
+const srcW=[], glsW=[], ansW=[], lyrEls=[];
+
+Q.forEach(w=>{ const s=document.createElement('span'); s.className='w kr'; s.textContent=w;
+  srcEl.appendChild(s); srcW.push(s); });
+TOK.forEach(()=>{ const g=document.createElement('span'); g.className='g';
+  glsEl.appendChild(g); glsW.push(g); });
+A.forEach(a=>{ const s=document.createElement('span'); s.className='w kr';
+  if(a.hl){ const i=a.t.indexOf(a.hl);
+    s.innerHTML = a.t.slice(0,i)+'<span class="hl">'+a.hl+'</span>'+a.t.slice(i+a.hl.length); }
+  else s.textContent=a.t;
+  ansEl.appendChild(s); ansW.push(s); });
+
+[...LAYERS, BASE].forEach((L,i)=>{
+  const d=document.createElement('div');
+  d.className='lyr'+(L===BASE?' base':'');
+  d.innerHTML='<span class="id">'+L.id+'</span><span class="kr">'+L.kr+'</span><span class="en">'+L.en+'</span>';
+  if(L===BASE){ const hr=document.createElement('div'); hr.id='divider'; lyrWrap.appendChild(hr); }
+  lyrWrap.appendChild(d); lyrEls.push(d);
+});
+
+/* ---------- timeline (ms) ---------- */
+const T_POSE=3000, T_TRANS=8000, T_PEEL=12500, T_RESOLVE=16000, LOOP=19000;
+const clamp=(v,a=0,b=1)=>v<a?a:v>b?b:v;
+const smooth=t=>{t=clamp(t);return t*t*(3-2*t);};
+const lerp=(a,b,t)=>a+(b-a)*t;
+
+/* sizing unit in px, for drift offsets */
+let U = Math.min(innerWidth/100, innerHeight/100*1.778);
+addEventListener('resize',()=>{U=Math.min(innerWidth/100, innerHeight/100*1.778);});
+
+const BLOCKS=['▚','▞','▒','▓','░','█'];
+
+/* render one gloss token: machine layer for word i at time, with shimmer near the head */
+function renderGloss(i, mode, shimmer, time){
+  const tk=TOK[i];
+  let str = mode===0 ? tk.moji : mode===1 ? tk.hex : tk.bin;
+  if(shimmer>0){
+    const arr=[...str];
+    const n=Math.max(1, Math.round(arr.length*shimmer*0.5));
+    for(let k=0;k<n;k++){
+      // deterministic, wave-driven pick — not random noise
+      const idx=Math.abs((Math.floor(time/70)+i*7+k*13))%arr.length;
+      if(arr[idx]!==' ') arr[idx]=' '+BLOCKS[(Math.floor(time/110)+idx+i)%BLOCKS.length];
+    }
+    return arr.join('').replace(/ (.)/g,'<b class="blk">$1</b>');
+  }
+  return str;
+}
+
+const PHASE_TXT=[['QUESTION','질문'],['TRANSLATING…','번역'],['DECODING','해체'],['COMMUNICATION','소통']];
+function setPhase(k){ const p=PHASE_TXT[k]; if(phaseEl.dataset.k!==''+k){ phaseEl.dataset.k=k;
+  phaseEl.textContent=p[1]+' / '+p[0]; } }
+
+/* ---------- master loop ---------- */
+let start=null;
+function frame(now){
+  if(start===null) start=now;
+  const t=(now-start)%LOOP;
+  render(t, now);
+  requestAnimationFrame(frame);
+}
+function render(t, time){
+
+  // sub-phase progressions
+  const pPose = clamp(t/T_POSE);
+  const pTr   = clamp((t-T_POSE)/(T_TRANS-T_POSE));
+  const pPeel = clamp((t-T_TRANS)/(T_PEEL-T_TRANS));
+  const pRes  = clamp((t-T_PEEL)/(T_RESOLVE-T_PEEL));
+  const pRel  = clamp((t-T_RESOLVE)/(LOOP-T_RESOLVE));
+
+  setPhase(t<T_POSE?0 : t<T_TRANS?1 : t<T_PEEL?2 : 3);
+
+  /* ---- SOURCE (clean → destabilized → fade out) ---- */
+  const srcMaster = clamp(pPose*1.0) * (1-smooth(pPeel)); // in during pose, out during peel
+  srcW.forEach((el,i)=>{
+    const intro = smooth((pPose - i*0.10)/0.5);            // staggered fade-in
+    // destabilization during translate: blur pulse + micro drift, strongest as head passes word
+    const wordX = (i+0.5)/Q.length;
+    const headPos = pTr;                                    // 0..1 sweep
+    const near = Math.exp(-Math.pow((wordX-headPos)/0.14,2));
+    const destab = pTr*(1-pPeel);
+    const blur = destab*near*2.6;
+    const dy = Math.sin(time/420 + i*1.7)*destab*near*5;
+    const dim = 1 - destab*near*0.45;
+    el.style.opacity = (t<T_POSE? intro : srcMaster).toFixed(3);
+    el.style.filter = `blur(${blur.toFixed(2)}px)`;
+    el.style.transform = `translateY(${dy.toFixed(2)}px)`;
+    el.style.color = `rgba(215,215,215,${dim.toFixed(3)})`;
+  });
+
+  /* ---- GLOSS (machine translation slips out of register) ---- */
+  const glsMaster = smooth(pTr) * (1-smooth(pPeel));
+  glsW.forEach((el,i)=>{
+    if(glsMaster<=0.001){ el.style.opacity='0'; return; }
+    const mode = Math.floor(time/950 + i*0.6)%3;            // cycle MOJI/HEX/BIN, offset per token
+    const wordX=(i+0.5)/Q.length;
+    const near = Math.exp(-Math.pow((wordX-pTr)/0.16,2));
+    const shimmer = (pTr<1? near : 0) * (1-pPeel);
+    el.innerHTML = renderGloss(i, mode, shimmer, time);
+    const drift = DRIFT[i]*U*1.5*(smooth(pTr)*(1-smooth(pPeel)));   // slide away, then snap back
+    const dy = Math.sin(time/520 + i*2.1)*1.6*(1-pPeel);
+    el.style.transform = `translate(${drift.toFixed(2)}px,${dy.toFixed(2)}px)`;
+    el.style.opacity = (glsMaster*lerp(0.5,0.92,near)).toFixed(3);
+  });
+
+  /* ---- translation head + axis ---- */
+  const headVis = smooth(pTr*4)*(1-smooth(pPeel))*(1-smooth(pTr>0.85?(pTr-0.85)/0.15:0)*0.0);
+  axisEl.style.opacity = (smooth(pTr*3)*(1-smooth(pPeel))*0.9).toFixed(3);
+  headEl.style.opacity = (headVis*0.9).toFixed(3);
+  {
+    const L=22*U, R=innerWidth-6*U;                          // sweep within the typo band
+    const x = lerp(L, R, pTr);
+    headEl.style.left = x.toFixed(1)+'px';
+  }
+
+  /* ---- LAYER PEEL (reveal communication) ---- */
+  lyrEls.forEach((el,i)=>{
+    if(i<4){
+      // peel top-down during PEEL; slide back home during RELEASE
+      const trig = clamp((pPeel - i*0.18)/0.34);
+      let peeled = smooth(trig);
+      peeled *= (1-smooth(pRel));                            // return home at loop seam
+      const x = -peeled*40 - peeled*0;
+      el.style.transform = `translateX(${x.toFixed(1)}px)`;
+      el.style.opacity = (lerp(0.85, 0, peeled)).toFixed(3);
+      el.style.color = `rgba(141,141,141,${(1-peeled).toFixed(3)})`;
+    } else {
+      // base = 소통 : dim until peel, then brighten; ease back at seam
+      const lit = smooth(pPeel)*(1-smooth(pRel*0.8));
+      const pulse = 0.5+0.5*Math.sin(time/700);
+      const glow = lit*(0.55+0.45*pulse);
+      el.style.color = `rgba(205,163,95,${lerp(0.45,1,lit).toFixed(3)})`;
+      el.style.textShadow = `0 0 ${(glow*12).toFixed(1)}px rgba(205,163,95,${(glow*0.5).toFixed(2)})`;
+      el.style.transform = `translateX(0)`;
+    }
+  });
+  $('#divider').style.opacity = (0.5+0.4*smooth(pPeel)*(1-smooth(pRel))).toFixed(2);
+
+  /* ---- ANSWER (assembles beneath, 소통 glows) ---- */
+  ansW.forEach((el,i)=>{
+    const inP = smooth((pPeel - i*0.07)/0.40);               // staggered assemble during peel
+    let op = inP;
+    op *= (1-smooth(pRel));                                   // fade out at seam → loop
+    const blur = (1-inP)*4.0*(1-pRel) + 0.0;
+    const dy = lerp(10,0,inP);
+    el.style.opacity = op.toFixed(3);
+    el.style.filter = `blur(${(blur*(1-pRes)).toFixed(2)}px)`;
+    el.style.transform = `translateY(${(dy*(1-pRes)).toFixed(2)}px)`;
+    const hl=el.querySelector('.hl');
+    if(hl){
+      const pulse=0.5+0.5*Math.sin(time/620);
+      const g=inP*(0.6+0.4*pulse)*(1-smooth(pRel));
+      hl.style.textShadow=`0 0 ${(g*16).toFixed(1)}px rgba(205,163,95,${(g*0.6).toFixed(2)})`;
+    }
+  });
+
+  /* ---- SIGNAL ALIGN gauge (visual, phase-driven) ---- */
+  // aligned(1) at rest → drops through translate → recovers as communication resolves
+  let align = 1;
+  align -= smooth(pTr)*0.78;
+  align += smooth(pPeel)*0.55;
+  align += smooth(pRes)*0.25;
+  align = clamp(align,0.06,1);
+  const jit = (pTr>0 && pPeel<1)? Math.sin(time/90)*0.012*(1-pPeel):0;
+  fillEl.style.width = ((align+jit)*100).toFixed(1)+'%';
+  fillEl.style.opacity = (0.4+0.6*align).toFixed(2);
+
+  /* ---- film flicker ---- */
+  $('#flick').style.opacity = (0.5+0.5*Math.sin(time/55)).toFixed(2);
+}
+
+/* start after fonts (safe fallback for headless) */
+function go(){
+  // deterministic freeze hook for QA: ?t=<ms> renders one static frame
+  const m=location.search.match(/[?&]t=(\d+)/);
+  if(m){ render(Math.min(+m[1],LOOP-1), +m[1]); return; }
+  requestAnimationFrame(frame);
+}
+if(document.fonts && document.fonts.ready){
+  let s=false; const f=()=>{ if(!s){s=true;go();} };
+  document.fonts.ready.then(f); setTimeout(f,700);
+} else go();
+</script>
+</body>
+</html>

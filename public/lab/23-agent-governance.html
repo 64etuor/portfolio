@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Boule Control Room — AI 에이전트 거버넌스 · 박양하</title>
+<title>Boule Control Room — AI 에이전트 거버넌스</title>
 <style>
   :root{
     --bg:#06080c;
@@ -45,10 +45,10 @@
     background-size:40px 40px;
     mask:radial-gradient(1400px 900px at 60% 30%,#000 30%,transparent 90%);
   }
-  .wrap{position:relative;z-index:1;max-width:1860px;margin:0 auto;padding:18px 22px 40px;}
+  .wrap{position:relative;z-index:1;max-width:1880px;margin:0 auto;padding:12px 18px 18px;}
 
   /* ===== TOP BAR ===== */
-  .topbar{display:flex;align-items:center;gap:20px;padding:12px 18px;
+  .topbar{display:flex;align-items:center;gap:18px;padding:9px 16px;
     border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,var(--panel2),var(--panel));
     box-shadow:0 1px 0 rgba(255,255,255,.02) inset, 0 18px 40px -28px #000;}
   .brand{display:flex;align-items:center;gap:13px;}
@@ -74,8 +74,8 @@
     border-radius:8px;padding:8px 12px;background:var(--panel);min-width:96px;text-align:center}
 
   /* ===== GRID LAYOUT ===== */
-  .grid{display:grid;gap:14px;margin-top:14px;
-    grid-template-columns: 1.15fr 2.2fr 1.15fr;
+  .grid{display:grid;gap:10px;margin-top:10px;
+    grid-template-columns: 1.1fr 2.3fr 1.1fr;
     grid-template-rows:auto auto auto;
     grid-template-areas:
       "fleet  pipe   know"
@@ -86,11 +86,11 @@
     .grid{grid-template-columns:1fr 1fr;grid-template-areas:
       "pipe pipe" "fleet know" "human log" "guards guards" "vault vault";}
   }
-  .panel{position:relative;border:1px solid var(--line);border-radius:14px;
+  .panel{position:relative;border:1px solid var(--line);border-radius:13px;
     background:linear-gradient(180deg,var(--panel2),var(--panel));
     box-shadow:0 18px 40px -34px #000, 0 1px 0 rgba(255,255,255,.02) inset;
-    padding:14px 15px 15px;overflow:hidden}
-  .panel > .ph{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+    padding:11px 12px 12px;overflow:hidden}
+  .panel > .ph{display:flex;align-items:center;gap:9px;margin-bottom:10px}
   .ph .tag{font:700 10px/1 var(--mono);letter-spacing:1.4px;color:var(--ink3);text-transform:uppercase}
   .ph h2{font-size:13px;margin:0;font-weight:640;letter-spacing:.2px}
   .ph .pin{margin-left:auto;font:600 10px/1 var(--mono);color:var(--signal);
@@ -100,8 +100,8 @@
 
   /* ===== CENTER PIPELINE ===== */
   #pipe{grid-area:pipe;display:flex;flex-direction:column}
-  .pipe-canvas-wrap{position:relative;flex:1;min-height:300px}
-  #pipeCanvas{width:100%;height:300px;display:block}
+  .pipe-canvas-wrap{position:relative;flex:1;min-height:272px}
+  #pipeCanvas{width:100%;height:272px;display:block}
   .pipe-controls{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
   .btn{font:600 11px/1 var(--mono);color:var(--ink);background:var(--panel);
     border:1px solid var(--line2);border-radius:8px;padding:9px 13px;cursor:pointer;
@@ -129,7 +129,7 @@
   /* ===== FLEET ===== */
   #fleet{grid-area:fleet}
   .agent{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line);
-    border-radius:10px;background:var(--panel);margin-bottom:8px;position:relative;overflow:hidden}
+    border-radius:10px;background:var(--panel);margin-bottom:6px;position:relative;overflow:hidden}
   .agent .glyph{width:30px;height:30px;border-radius:8px;flex:0 0 auto;display:grid;place-items:center;
     font:700 12px/1 var(--mono);color:#06120d;background:var(--ink3)}
   .agent .meta{flex:1;min-width:0}
@@ -216,7 +216,7 @@
     margin-bottom:7px;display:flex;align-items:center;gap:6px}
   .stream .sh .ct{margin-left:auto;color:var(--signal)}
   .feed{flex:1;overflow:hidden;border:1px solid var(--line);border-radius:9px;background:#070b11;
-    padding:6px 4px 6px 8px;position:relative;height:248px}
+    padding:6px 4px 6px 8px;position:relative;height:226px}
   .feed::after{content:"";position:absolute;left:0;right:0;bottom:0;height:42px;
     background:linear-gradient(transparent,#070b11);pointer-events:none}
   .ev{font:600 10.5px/1.5 var(--mono);color:var(--ink2);display:flex;gap:8px;padding:1px 0;white-space:nowrap;
@@ -232,7 +232,7 @@
   /* ===== GUARDS ===== */
   #guards{grid-area:guards}
   .guard{border:1px solid var(--signal-dim);border-radius:10px;background:rgba(54,224,164,.035);
-    padding:10px 11px;margin-bottom:9px;position:relative}
+    padding:9px 11px;margin-bottom:7px;position:relative}
   .guard .gh{display:flex;align-items:center;gap:8px;font:650 12px/1.1 var(--sans)}
   .guard .gh .led{width:8px;height:8px;border-radius:50%;background:var(--signal);box-shadow:0 0 8px var(--signal)}
   .guard .gh .st{margin-left:auto;font:700 9px/1 var(--mono);color:var(--signal);
@@ -243,8 +243,8 @@
 
   /* ===== VAULT GOVERNANCE / 자가통치 ===== */
   #vault{grid-area:vault}
-  .vault-grid{display:grid;gap:12px;grid-template-columns:repeat(3,1fr);}
-  @media (max-width:1100px){.vault-grid{grid-template-columns:1fr 1fr}}
+  .vault-grid{display:grid;gap:10px;grid-template-columns:repeat(4,1fr);}
+  @media (max-width:1320px){.vault-grid{grid-template-columns:1fr 1fr}}
   @media (max-width:680px){.vault-grid{grid-template-columns:1fr}}
   .vcard{border:1px solid var(--line);border-radius:11px;background:#070b11;padding:11px 12px;
     display:flex;flex-direction:column;gap:9px;position:relative;overflow:hidden}
@@ -305,8 +305,8 @@
   .cron-foot b{color:var(--signal)}
 
   /* ===== FOOTER / CONTACT ===== */
-  .footer{margin-top:16px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
-    border:1px solid var(--line);border-radius:14px;padding:14px 18px;
+  .footer{margin-top:10px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+    border:1px solid var(--line);border-radius:13px;padding:11px 16px;
     background:linear-gradient(180deg,var(--panel2),var(--panel))}
   .footer .who{font:650 13px/1.3 var(--sans)}
   .footer .who small{display:block;font:500 11px/1.4 var(--mono);color:var(--ink3);margin-top:3px}
@@ -530,6 +530,18 @@
           <div class="nz-bal" id="nzBal">slug: changelog-net-zero · [A]==[R] · 비대화 거버너</div>
         </div>
 
+        <!-- maintenance cron freshness -->
+        <div class="vcard">
+          <div class="vch"><span class="vt">MAINTENANCE CRON</span><span class="vp" id="cronPin">FRESH</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="cron-row"><span class="cn">read_log</span><span class="bar"><i style="width:88%"></i></span><span class="age">1d</span></div>
+            <div class="cron-row"><span class="cn">graph_health</span><span class="bar"><i style="width:62%"></i></span><span class="age">3d</span></div>
+            <div class="cron-row"><span class="cn">dead_notes</span><span class="bar"><i class="due" style="width:24%"></i></span><span class="age">due</span></div>
+            <div class="cron-row"><span class="cn">status_aging</span><span class="bar"><i style="width:71%"></i></span><span class="age">2d</span></div>
+          </div>
+          <div class="cron-foot">run_due_maintenance.py · CADENCE_DAYS+state · 의존성 순서 · 매주 월 <b>06:00 cron</b></div>
+        </div>
+
         <!-- telemetry 5-signal -->
         <div class="vcard" style="grid-column:span 2">
           <div class="vch"><span class="vt">TELEMETRY · read-side 5-signal</span><span class="vp">MEASURED</span></div>
@@ -541,18 +553,6 @@
             <div class="sig" data-sig="4"><span class="sled"></span><span class="sn">knowledge_gap</span><span class="sv" id="sig4">12</span></div>
           </div>
           <div class="sig-note">graph_health = god-notes · hub-overload · echo-chambers / knowledge_gap = 끊긴 wikilink 랭킹 → <b>다음에 쓸 것</b>. 측정은 자동, 판결은 아님.</div>
-        </div>
-
-        <!-- maintenance cron freshness -->
-        <div class="vcard">
-          <div class="vch"><span class="vt">MAINTENANCE CRON</span><span class="vp" id="cronPin">FRESH</span></div>
-          <div style="display:flex;flex-direction:column;gap:6px">
-            <div class="cron-row"><span class="cn">read_log</span><span class="bar"><i style="width:88%"></i></span><span class="age">1d</span></div>
-            <div class="cron-row"><span class="cn">graph_health</span><span class="bar"><i style="width:62%"></i></span><span class="age">3d</span></div>
-            <div class="cron-row"><span class="cn">dead_notes</span><span class="bar"><i class="due" style="width:24%"></i></span><span class="age">due</span></div>
-            <div class="cron-row"><span class="cn">status_aging</span><span class="bar"><i style="width:71%"></i></span><span class="age">2d</span></div>
-          </div>
-          <div class="cron-foot">run_due_maintenance.py · CADENCE_DAYS+state · 의존성 순서 · 매주 월 <b>06:00 cron</b></div>
         </div>
 
         <!-- instruction-audit feed -->
@@ -569,12 +569,13 @@
 
   <!-- ===================== FOOTER ===================== -->
   <div class="footer">
-    <div class="who">박양하 · AI 에이전트 아키텍트
-      <small>제조 엔지니어 → 풀스택 → 자율 개발 시스템 설계 · 구현</small></div>
+    <div class="who">Boule Governance Doctrine
+      <small>경계 설계 → 인간 게이트 → fail-closed 복귀 · 이벤트 소싱 단일 진실원천</small></div>
     <div class="impact">
-      <div class="imp"><b>−85%</b><span>운영경비</span></div>
-      <div class="imp"><b>−451분</b><span>사무공수 / 일</span></div>
-      <div class="imp"><b>0건</b><span>불량 · 제조 뿌리</span></div>
+      <div class="imp"><b>FAIL-CLOSED</b><span>autonomy 기본값</span></div>
+      <div class="imp"><b>48/48</b><span>vault-lint 게이트</span></div>
+      <div class="imp"><b>1-SSOT</b><span>AGENTS.md 단일원천</span></div>
+      <div class="imp"><b>append-only</b><span>이벤트 · 감사 로그</span></div>
     </div>
   </div>
 

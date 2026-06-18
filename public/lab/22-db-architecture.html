@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DB 모델링 &amp; 데이터 아키텍처 · 박양하</title>
+<title>DB 모델링 &amp; 데이터 아키텍처</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap');
 
@@ -201,7 +201,7 @@
   }
   .hint b{color:var(--acc2)}
   .model-caption{
-    position:absolute;left:12px;top:12px;right:auto;max-width:430px;z-index:5;display:none;
+    position:absolute;left:12px;bottom:44px;top:auto;right:auto;max-width:360px;z-index:5;display:none;
     font-size:11px;line-height:1.6;color:var(--ink-dim);
     background:linear-gradient(180deg,#0f2820cc,#0c121acc);
     border:1px solid #1d5a48;border-left:3px solid var(--acc);border-radius:9px;
@@ -247,7 +247,7 @@
     background:linear-gradient(180deg,#0b1119,#0a0e14);overflow:hidden}
   #flowSvg{position:absolute;inset:0;width:100%;height:100%}
   .node{position:absolute;border-radius:11px;border:1px solid var(--line2);background:var(--panel2);
-    padding:11px 13px;width:168px;box-shadow:0 10px 30px -14px #000}
+    padding:11px 13px;width:168px;box-shadow:0 10px 30px -14px #000;z-index:5}
   .node .nh{font-family:'JetBrains Mono';font-size:12px;font-weight:700;display:flex;align-items:center;gap:7px}
   .node .ns{font-size:10.5px;color:var(--dim);margin-top:4px;line-height:1.4}
   .node .ic{width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px}
@@ -323,7 +323,7 @@
 
   /* ===== CDC Live Log Panel ===== */
   .cdc-log-wrap{
-    position:absolute;right:14px;top:14px;width:310px;z-index:4;
+    position:absolute;right:14px;top:90px;width:310px;z-index:4;
     background:#0a101acc;border:1px solid var(--line);border-radius:11px;
     overflow:hidden;backdrop-filter:blur(8px);
   }
@@ -377,7 +377,7 @@
       <div class="logo">db</div>
       <div>
         <div>data<b>·</b>studio <span style="color:var(--dim);font-weight:500">/ schema.lab</span></div>
-        <div class="sub mono">DB 모델링 &amp; 데이터 아키텍처 — 박양하</div>
+        <div class="sub mono">DB 모델링 &amp; 데이터 아키텍처</div>
       </div>
     </div>
     <div class="tabs" id="tabs">
@@ -560,18 +560,18 @@
     <div class="seg accent" id="footView">01 · ERD</div>
     <div class="seg" id="footEngine">PostgreSQL · 정규화 MES 스키마</div>
     <div class="seg" id="footTbl">tables: --</div>
-    <div class="seg">박양하 · 공정기술 · DB 아키텍처</div>
+    <div class="seg">MES 공정기술 · DB 아키텍처</div>
     <div class="spacer" style="flex:1"></div>
   </footer>
 </div>
 
 <script>
 /* ============================================================
-   DATA: SolarEdge 공정 데이터 관리 시스템 실제 스키마
+   DATA: MES 공정 데이터 관리 시스템 스키마
    ============================================================ */
 const MODELS = {
-  solaredge: {
-    label:"SolarEdge 공정 데이터 관리 MES",
+  mes: {
+    label:"MES 공정 데이터 관리 스키마",
     desc:"공정·BOM·S/N·자재·검사 정규화",
     engine:"PostgreSQL · 정규화 MES 스키마",
     enginePill:"PostgreSQL engine",
@@ -1436,7 +1436,7 @@ function renderDDL(ddl){
 /* ============================================================
    VIEW 1: ERD ENGINE
    ============================================================ */
-let curModel='solaredge';
+let curModel='mes';
 let curTable=null;
 let pan={x:40,y:30,k:1};
 
@@ -1519,11 +1519,21 @@ function fitView(){
     maxX=Math.max(maxX,t.x+w);maxY=Math.max(maxY,t.y+h);
   });
   const cw=canvasWrap.clientWidth, ch=canvasWrap.clientHeight;
-  const gw=maxX-minX+80, gh=maxY-minY+80;
-  const k=Math.min(cw/gw, ch/gh, 1);
+  /* Reserve space for overlay panels so no node is hidden behind them:
+     - top:  30px padding
+     - bottom: 28px erd-stats bar + 110px model-caption (left:12px bottom:44px ~80px tall + gap)
+     - left/right: 50px / 30px padding */
+  const cap=document.getElementById('modelCaption');
+  const capShown = cap && cap.classList.contains('show');
+  const PAD_T=30, PAD_L=50, PAD_R=30;
+  const PAD_B = 28 + (capShown ? 110 : 10);
+  const gw=maxX-minX, gh=maxY-minY;
+  const availW=cw-PAD_L-PAD_R, availH=ch-PAD_T-PAD_B;
+  const k=Math.min(availW/Math.max(gw,1), availH/Math.max(gh,1), 1);
   pan.k=Math.max(.45,Math.min(k,1));
-  pan.x=(cw-(gw)*pan.k)/2 - minX*pan.k +40;
-  pan.y=(ch-(gh)*pan.k)/2 - minY*pan.k +30;
+  /* Center content within the usable area */
+  pan.x=PAD_L + (availW-gw*pan.k)/2 - minX*pan.k;
+  pan.y=PAD_T + Math.max(0,(availH-gh*pan.k)/2) - minY*pan.k;
   applyTransform();
   drawRels();
 }
@@ -1712,7 +1722,7 @@ let erdAutoResumeTimer=null;
 /* ============================================================
    SAMPLE CHANGE EVENT STREAM
    ============================================================ */
-const CDC_EVENTS_SOLAREDGE=[
+const CDC_EVENTS_MES=[
   ['ins','work_order','INSERT work_order wo_no=<val>23P30027KMDA1</val> status=<val>OPEN</val> plan_qty=280'],
   ['ins','serial_unit','INSERT serial_unit sn=<val>KMD-MOD-0042</val> serial_level=MODULE current_status=<val>WIP</val>'],
   ['ins','material_issue','INSERT material_issue wo_no=23P30027KMDA1 lot_no=<val>CELL-L230911</val> issued_qty=46'],
@@ -1795,7 +1805,7 @@ function appendCdcLine(type,tbl,msg){
   cdcEvtCountLocal++;
 }
 function getCdcEvents(){
-  return curModel==='solaredge'?CDC_EVENTS_SOLAREDGE:CDC_EVENTS_EBOM;
+  return curModel==='mes'?CDC_EVENTS_MES:CDC_EVENTS_EBOM;
 }
 function fireCdcEvent(){
   const evts=getCdcEvents();

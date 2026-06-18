@@ -3,1034 +3,540 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>박양하 · GraphRAG / 신경-기호 익스플로러 (Leiden · 멀티홉 검색)</title>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<title>Hermes Control Plane — OKF 정본 · Graphiti temporal index</title>
 <style>
-:root{
-  --bg:#06070b;
-  --bg-2:#090b11;
-  --panel:#0b0e15;
-  --panel-2:#0f131c;
-  --line:#1a2030;
-  --line-soft:#141926;
-  --ink:#e8edf6;
-  --ink-2:#97a3bb;
-  --ink-3:#586377;
-  --ink-4:#3a4356;
-  --signal:#5bd6ff;            /* graph cyan */
-  --signal-dim:#1c6a86;
-  --amber:#ffc861;             /* citation / trace */
-  --magenta:#ff5d8f;           /* contradicts / conflict */
-  /* Leiden community colors */
-  --c0:#5bd6ff;  /* AI / 검색 */
-  --c1:#ffa94d;  /* 제조 / 공정 */
-  --c2:#b18cff;  /* 철학 / 기호 */
-  --c3:#54e6a8;  /* 데이터 / 시스템 */
-  --c4:#ff6f91;  /* 심리 / 인식 */
-  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
-  --sans:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
-}
-*{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%}
-body{
-  background:
-    radial-gradient(980px 600px at 84% -16%, rgba(91,214,255,.045), transparent 62%),
-    var(--bg);
-  color:var(--ink);
-  font-family:var(--sans);
-  word-break:keep-all;
-  line-height:1.5;
-  -webkit-font-smoothing:antialiased;
-  overflow:hidden;
-}
-::selection{background:rgba(91,214,255,.26);color:#fff}
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
 
-/* film grain */
-body::after{
-  content:"";position:fixed;inset:0;pointer-events:none;z-index:60;
-  background:repeating-linear-gradient(0deg, rgba(255,255,255,.012) 0 1px, transparent 1px 3px);
-  mix-blend-mode:overlay;opacity:.45;
-}
+  :root{
+    --bg:#050505;
+    --bg2:#0e0e0e;
+    --phos:#d7d7d7;          /* phosphor bright */
+    --phos-dim:#8d8d8d;
+    --phos-deep:#3a3a3a;
+    --read:#4fe0c4;          /* accent 1 — 검색/적재 데이터 흐름 */
+    --read-bright:#c4f8ee;
+    --read-deep:#1d6b5f;
+    --gov:#e6b24f;           /* accent 2 — OKF 정본 · PR write 거버넌스 */
+    --gov-deep:#6b531d;
+    --deny:#e0685a;          /* 직접 write 차단 (극히 절제) */
+    --kr:"Pretendard","Pretendard Variable",-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--phos);
+    font-family:var(--kr);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .kr{word-break:keep-all;}
 
-.shell{
-  min-height:100vh;display:grid;
-  grid-template-rows:auto minmax(0,1fr) auto;
-  gap:12px;padding:16px 18px 14px;max-width:1360px;margin:0 auto;
-}
+  .stage{position:fixed;inset:0;overflow:hidden;background:
+    radial-gradient(130% 92% at 50% 44%, #0d0d0d 0%, #070707 50%, #030303 100%);}
+  #scene{position:absolute;inset:0;display:block;}
 
-/* ─── topbar ─── */
-header.topbar{
-  display:flex;align-items:center;justify-content:space-between;
-  border:1px solid var(--line);border-radius:13px;
-  background:linear-gradient(180deg,rgba(255,255,255,.022),rgba(0,0,0,0));
-  padding:11px 16px;backdrop-filter:blur(6px);
-}
-.brand{display:flex;align-items:center;gap:13px}
-.logo{
-  width:36px;height:36px;border-radius:9px;position:relative;flex:none;
-  background:radial-gradient(circle at 34% 30%, var(--signal), #0a3344 72%);
-  box-shadow:0 0 0 1px rgba(91,214,255,.34), 0 0 22px rgba(91,214,255,.28);
-}
-.logo svg{position:absolute;inset:0;width:100%;height:100%}
-.brand .meta b{font-size:14px;letter-spacing:.1px;display:block}
-.brand .meta span{font-family:var(--mono);font-size:10px;color:var(--ink-3);letter-spacing:.4px}
-.modeltag{
-  font-family:var(--mono);font-size:10.5px;color:var(--ink-2);
-  border:1px solid var(--line);border-radius:999px;padding:5px 11px;
-  background:rgba(255,255,255,.025);display:flex;gap:8px;align-items:center;
-}
-.modeltag .dot{width:7px;height:7px;border-radius:50%;background:var(--signal);
-  box-shadow:0 0 0 1px rgba(91,214,255,.35)}
-.toprite{display:flex;align-items:center;gap:20px;font-family:var(--mono);font-size:11px;color:var(--ink-2)}
-.stat{display:flex;flex-direction:column;align-items:flex-end;line-height:1.2}
-.stat b{color:var(--ink);font-size:13px;font-variant-numeric:tabular-nums}
-.stat span{color:var(--ink-3);font-size:9px;letter-spacing:.5px}
+  /* ---------- CRT shell ---------- */
+  .scan{
+    position:fixed;inset:0;z-index:60;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0px,rgba(0,0,0,0) 2px,rgba(0,0,0,0.22) 3px,rgba(0,0,0,0) 4px);
+    mix-blend-mode:multiply;opacity:.5;
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:61;pointer-events:none;
+    background:radial-gradient(ellipse at center,rgba(0,0,0,0) 50%,rgba(0,0,0,0.64) 100%);
+  }
+  .grain{
+    position:fixed;inset:-50%;z-index:59;pointer-events:none;opacity:.04;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 1.1s steps(3) infinite;
+  }
+  @keyframes grain{0%{transform:translate(0,0);}50%{transform:translate(-3%,2%);}100%{transform:translate(2%,-2%);}}
 
-/* ─── main grid: graph | concise right rail ─── */
-.main{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:12px;min-height:0}
-@media(max-width:1180px){.main{grid-template-columns:minmax(0,1fr) 300px}}
+  /* ---------- kicker / footer ---------- */
+  .kicker{
+    position:absolute;top:4.4vh;left:0;right:0;z-index:30;
+    display:flex;justify-content:center;align-items:center;gap:16px;
+    font-family:var(--mono);font-size:11px;letter-spacing:4px;
+    color:var(--phos-dim);text-transform:uppercase;
+  }
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--read);
+    box-shadow:0 0 10px var(--read);animation:beat 2.4s ease-in-out infinite;}
+  @keyframes beat{0%,100%{opacity:.32;}50%{opacity:1;}}
+  .kicker .sep{color:var(--phos-deep);}
+  .kicker .hl{color:var(--read);letter-spacing:3px;text-shadow:0 0 12px rgba(79,224,196,.4);}
 
-.card{
-  border:1px solid var(--line);border-radius:14px;background:var(--panel);
-  position:relative;overflow:hidden;display:flex;flex-direction:column;min-height:0;
-}
-.card-h{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:9px 13px;border-bottom:1px solid var(--line-soft);
-  font-family:var(--mono);font-size:10.5px;color:var(--ink-2);letter-spacing:.3px;
-  background:linear-gradient(180deg,rgba(255,255,255,.016),transparent);flex:none;
-}
-.card-h .tt{display:flex;align-items:center;gap:8px;color:var(--ink);font-weight:600}
-.card-h .tt .sq{width:8px;height:8px;border-radius:2px;background:var(--signal)}
-.card-h .rt{color:var(--ink-3);font-size:9.5px}
+  .legend{
+    position:absolute;bottom:4.2vh;left:0;right:0;z-index:30;
+    display:flex;justify-content:center;flex-wrap:wrap;gap:22px;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:1.5px;color:var(--phos-dim);
+  }
+  .legend .it{display:flex;align-items:center;gap:8px;}
+  .legend .sw{width:18px;height:0;border-top:2px solid var(--phos-deep);flex:none;}
+  .legend .sw.read{border-top-color:var(--read);box-shadow:0 0 8px rgba(79,224,196,.5);}
+  .legend .sw.gov{border-top-color:var(--gov);box-shadow:0 0 8px rgba(230,178,79,.5);}
+  .legend .x{color:var(--deny);font-weight:700;}
+  .legend b{color:var(--phos);font-weight:500;}
 
-/* ─── graph canvas ─── */
-#graphCard{position:relative}
-#graphWrap{position:relative;flex:1;min-height:0;cursor:grab}
-#graphWrap.dragging{cursor:grabbing}
-#graph{display:block;width:100%;height:100%;touch-action:none}
-
-/* toolbar over graph */
-.gtools{
-  position:absolute;top:11px;left:11px;display:flex;flex-direction:column;gap:8px;z-index:8;
-}
-.seg{
-  display:flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;
-  background:rgba(8,10,16,.72);backdrop-filter:blur(6px);
-}
-.seg button{
-  font-family:var(--mono);font-size:10.5px;color:var(--ink-2);background:transparent;
-  border:0;padding:7px 13px;cursor:pointer;letter-spacing:.4px;transition:.14s;border-right:1px solid var(--line-soft);
-}
-.seg button:last-child{border-right:0}
-.seg button:hover{color:var(--ink)}
-.seg button.on{color:#04121a;background:var(--signal);font-weight:700;text-shadow:none}
-.seg.alt button.on{background:var(--amber);color:#1a1102}
-
-.btn{
-  font-family:var(--mono);font-size:10.5px;color:var(--ink);letter-spacing:.5px;
-  border:1px solid var(--signal-dim);border-radius:9px;padding:8px 13px;cursor:pointer;
-  background:linear-gradient(180deg,rgba(91,214,255,.14),rgba(91,214,255,.05));
-  display:inline-flex;align-items:center;gap:7px;transition:.15s;
-}
-.btn:hover{border-color:var(--signal);background:rgba(91,214,255,.12)}
-.btn .ic{width:7px;height:7px;border-radius:50%;background:var(--amber)}
-.btn.busy{opacity:.55;pointer-events:none}
-
-/* legend (communities) */
-.legend{
-  position:absolute;left:11px;bottom:11px;display:flex;flex-direction:column;gap:5px;z-index:7;
-  font-family:var(--mono);font-size:10px;color:var(--ink-2);
-  background:rgba(6,7,11,.62);border:1px solid var(--line-soft);
-  padding:9px 11px;border-radius:10px;backdrop-filter:blur(5px);max-width:230px;
-}
-.legend .lh{color:var(--ink-3);font-size:9px;letter-spacing:.8px;margin-bottom:1px}
-.legend .row{display:flex;align-items:center;gap:8px;cursor:pointer;opacity:.95;transition:.12s}
-.legend .row:hover{color:var(--ink)}
-.legend .row.dim{opacity:.34}
-.legend .chip{width:10px;height:10px;border-radius:3px;flex:none}
-.legend small{color:var(--ink-3);margin-left:auto;font-size:9px}
-
-/* edge type key */
-.edgekey{
-  position:absolute;right:11px;bottom:11px;z-index:7;
-  font-family:var(--mono);font-size:9.5px;color:var(--ink-2);
-  background:rgba(6,7,11,.62);border:1px solid var(--line-soft);
-  padding:8px 11px;border-radius:10px;backdrop-filter:blur(5px);display:flex;flex-direction:column;gap:4px;
-}
-.edgekey .lh{color:var(--ink-3);font-size:9px;letter-spacing:.8px;margin-bottom:1px}
-.edgekey .row{display:flex;align-items:center;gap:8px}
-.edgekey .ln{width:26px;height:0;border-top:2px solid var(--ink-3);flex:none}
-.edgekey .ln.contra{border-top:2px dashed var(--magenta)}
-.edgekey .ln.refine{border-top:2px dotted var(--signal)}
-
-/* entity hover card */
-.entcard{
-  position:absolute;z-index:12;pointer-events:none;
-  width:268px;border:1px solid var(--line);border-radius:11px;
-  background:linear-gradient(180deg,rgba(15,19,28,.97),rgba(9,11,17,.97));
-  box-shadow:0 14px 44px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.02);
-  padding:0;opacity:0;transform:translateY(4px);transition:opacity .12s, transform .12s;backdrop-filter:blur(8px);
-}
-.entcard.show{opacity:1;transform:translateY(0)}
-.entcard .eh{display:flex;align-items:center;gap:9px;padding:11px 13px 8px}
-.entcard .edot{width:11px;height:11px;border-radius:3px;flex:none}
-.entcard .et{font-size:13.5px;font-weight:700;letter-spacing:-.1px}
-.entcard .ek{font-family:var(--mono);font-size:9px;color:var(--ink-3);margin-left:auto;letter-spacing:.4px;
-  border:1px solid var(--line);border-radius:5px;padding:2px 6px}
-.entcard .ebody{padding:0 13px 7px;font-size:11.5px;color:var(--ink-2);line-height:1.5}
-.entcard .erel{padding:8px 13px 12px;border-top:1px solid var(--line-soft);display:flex;flex-direction:column;gap:4px}
-.entcard .erel .rr{display:flex;align-items:center;gap:7px;font-family:var(--mono);font-size:10px;color:var(--ink-2)}
-.entcard .erel .rt{color:var(--amber);min-width:74px}
-.entcard .erel .rt.contra{color:var(--magenta)}
-
-/* ─── right rail ─── */
-.rail{display:flex;flex-direction:column;gap:12px;min-height:0}
-.rail .card{flex:none}
-
-/* retrieval trace panel */
-#traceCard{flex:1 1 auto;min-height:0}
-#traceBody{padding:11px 13px;overflow:auto;flex:1;min-height:0;display:flex;flex-direction:column;gap:9px}
-.query-line{
-  font-family:var(--mono);font-size:11px;color:var(--ink);
-  border:1px solid var(--line);border-radius:9px;padding:9px 11px;background:var(--bg-2);
-  display:flex;gap:8px;align-items:flex-start;line-height:1.45;
-}
-.query-line .q{color:var(--signal)}
-.query-line .qq{color:var(--ink)}
-.trace-meta{display:flex;gap:7px;flex-wrap:wrap;font-family:var(--mono);font-size:9.5px}
-.pill{border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--ink-2);letter-spacing:.3px;display:flex;gap:6px;align-items:center}
-.pill b{color:var(--ink);font-variant-numeric:tabular-nums}
-.pill .pd{width:6px;height:6px;border-radius:50%;background:var(--signal)}
-
-.hops{display:flex;flex-direction:column;gap:0;position:relative;margin-top:2px}
-.hop{
-  display:flex;gap:10px;padding:7px 2px;position:relative;opacity:.25;transform:translateX(-4px);
-  transition:opacity .3s, transform .3s;
-}
-.hop.live{opacity:1;transform:translateX(0)}
-.hop .rail-dot{position:relative;flex:none;width:18px;display:flex;justify-content:center}
-.hop .rail-dot::before{content:"";position:absolute;top:16px;bottom:-9px;width:2px;background:var(--line);left:50%;transform:translateX(-50%)}
-.hop:last-child .rail-dot::before{display:none}
-.hop .nd{width:13px;height:13px;border-radius:50%;margin-top:3px;border:2px solid var(--bg);box-shadow:0 0 0 1px rgba(255,255,255,.06);z-index:1;background:var(--ink-3)}
-.hop.live .nd{box-shadow:0 0 0 1px rgba(255,255,255,.16)}
-.hop .hc{flex:1;min-width:0}
-.hop .htop{display:flex;align-items:baseline;gap:7px}
-.hop .hname{font-size:12px;font-weight:700;color:var(--ink)}
-.hop .hkind{font-family:var(--mono);font-size:8.5px;color:var(--ink-3);text-transform:uppercase;letter-spacing:.6px}
-.hop .hvia{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);margin-top:1px}
-.hop .hvia .via-rel{color:var(--amber)}
-.hop .hvia .via-rel.contra{color:var(--magenta)}
-.hop .hvia .mode{color:var(--signal)}
-.hop .hscore{font-family:var(--mono);font-size:9px;color:var(--ink-3);margin-top:2px}
-
-.cite{
-  margin-top:6px;border:1px solid var(--line-soft);border-left:2px solid var(--amber);
-  border-radius:0 8px 8px 0;background:rgba(255,200,97,.04);
-  padding:8px 11px;font-size:11px;color:var(--ink-2);line-height:1.5;opacity:0;max-height:0;overflow:hidden;
-  transition:opacity .35s, max-height .35s;
-}
-.cite.show{opacity:1;max-height:160px}
-.cite .cl{font-family:var(--mono);font-size:8.5px;color:var(--amber);letter-spacing:.6px;display:block;margin-bottom:3px}
-.cite .conflict{color:var(--magenta);font-weight:600}
-
-/* quadrant card */
-#quadWrap{position:relative;height:236px}
-#quad{display:block;width:100%;height:100%}
-.quad-cap{font-family:var(--mono);font-size:9px;color:var(--ink-3);padding:0 13px 9px;line-height:1.4}
-
-.foot{
-  display:flex;justify-content:space-between;align-items:center;
-  font-family:var(--mono);font-size:10px;color:var(--ink-3);padding:0 4px;letter-spacing:.3px;gap:12px;
-}
-.foot b{color:var(--ink-2);font-weight:600}
-.foot a{color:var(--ink-2);text-decoration:none;border-bottom:1px solid var(--line)}
-.foot a:hover{color:var(--signal)}
-.foot .sep{color:var(--ink-4);margin:0 8px}
-
-/* loading veil until fonts ready */
-#veil{position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;align-items:center;justify-content:center;
-  transition:opacity .4s;font-family:var(--mono);font-size:12px;color:var(--ink-3);letter-spacing:1px}
-#veil.gone{opacity:0;pointer-events:none}
-#veil .v{display:flex;gap:10px;align-items:center}
-#veil .vd{width:9px;height:9px;border-radius:50%;background:var(--signal);box-shadow:0 0 0 1px rgba(91,214,255,.35)}
-
-@media(max-width:1100px){
-  body{overflow:auto}
-  .shell{height:auto;min-height:100vh}
-  .main{grid-template-columns:1fr}
-  #graphCard{height:560px}
-}
+  #veil{position:fixed;inset:0;z-index:90;background:var(--bg);display:flex;
+    align-items:center;justify-content:center;transition:opacity .5s;
+    font-family:var(--mono);font-size:12px;color:var(--phos-deep);letter-spacing:3px;}
+  #veil.gone{opacity:0;pointer-events:none;}
+  #veil .vd{width:8px;height:8px;border-radius:50%;background:var(--read);margin-right:12px;
+    box-shadow:0 0 12px var(--read);animation:beat 1.4s ease-in-out infinite;}
 </style>
 </head>
 <body>
-<div id="veil"><div class="v"><span class="vd"></span>지식그래프 인덱싱 · Leiden 커뮤니티 계산 중…</div></div>
+<div class="stage">
+  <canvas id="scene"></canvas>
 
-<div class="shell">
-  <!-- TOPBAR -->
-  <header class="topbar">
-    <div class="brand">
-      <div class="logo">
-        <svg viewBox="0 0 36 36" fill="none">
-          <circle cx="11" cy="13" r="3" fill="#06121a"/><circle cx="25" cy="10" r="2.4" fill="#06121a"/>
-          <circle cx="18" cy="24" r="2.6" fill="#06121a"/><circle cx="27" cy="25" r="2.2" fill="#06121a"/>
-          <path d="M11 13 L25 10 M11 13 L18 24 M18 24 L27 25 M25 10 L27 25" stroke="#06121a" stroke-width="1.2" opacity=".7"/>
-        </svg>
-      </div>
-      <div class="meta">
-        <b>박양하 · GraphRAG / 신경-기호 익스플로러</b>
-        <span>triple 추출 → Leiden 클러스터 → 벡터+그래프 하이브리드 멀티홉 검색</span>
-      </div>
-    </div>
-    <div class="toprite">
-      <div class="modeltag"><span class="dot"></span>GRAPH INDEX · STATIC</div>
-      <div class="stat"><b id="statN">—</b><span>ENTITIES</span></div>
-      <div class="stat"><b id="statE">—</b><span>RELATIONS</span></div>
-      <div class="stat"><b id="statC">5</b><span>COMMUNITIES</span></div>
-    </div>
-  </header>
-
-  <!-- MAIN -->
-  <div class="main">
-    <!-- GRAPH -->
-    <section class="card" id="graphCard">
-      <div class="card-h">
-        <span class="tt"><span class="sq"></span>지식그래프 · entity / typed-relation 익스플로러</span>
-        <span class="rt">drag = pan · wheel = zoom · hover = entity card</span>
-      </div>
-      <div id="graphWrap">
-        <canvas id="graph"></canvas>
-
-        <div class="gtools">
-          <div class="seg" id="modeSeg">
-            <button data-mode="vector">벡터</button>
-            <button data-mode="graph">그래프</button>
-            <button data-mode="hybrid" class="on">하이브리드</button>
-          </div>
-          <button class="btn" id="runBtn"><span class="ic"></span>멀티홉 질의 실행</button>
-        </div>
-
-        <div class="legend" id="legend">
-          <div class="lh">LEIDEN COMMUNITIES</div>
-        </div>
-
-        <div class="edgekey">
-          <div class="lh">TYPED RELATIONS</div>
-          <div class="row"><span class="ln"></span>partOf / derivedFrom</div>
-          <div class="row"><span class="ln refine"></span>refines / introducedBy</div>
-          <div class="row"><span class="ln contra"></span>contradicts</div>
-        </div>
-
-        <div class="entcard" id="entcard">
-          <div class="eh"><span class="edot"></span><span class="et"></span><span class="ek"></span></div>
-          <div class="ebody"></div>
-          <div class="erel"></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- RIGHT RAIL -->
-    <aside class="rail">
-      <!-- RETRIEVAL TRACE -->
-      <section class="card" id="traceCard">
-        <div class="card-h">
-          <span class="tt"><span class="sq" style="background:var(--amber)"></span>retrieval trace · 멀티홉 인용</span>
-          <span class="rt" id="traceMode">HYBRID</span>
-        </div>
-        <div id="traceBody">
-          <div class="query-line"><span class="q">?</span><span class="qq" id="queryText"></span></div>
-          <div class="trace-meta" id="traceMeta"></div>
-          <div class="hops" id="hops"></div>
-        </div>
-      </section>
-
-      <!-- QUADRANT -->
-      <section class="card">
-        <div class="card-h">
-          <span class="tt"><span class="sq" style="background:var(--c2)"></span>검증가능성 × 설명가능성</span>
-          <span class="rt">method placement</span>
-        </div>
-        <div id="quadWrap"><canvas id="quad"></canvas></div>
-        <div class="quad-cap">검증가능성=제3자가 도출과정을 재추적 · 설명가능성=사람이 이해. <b style="color:var(--signal)">GraphRAG</b>=두 축의 균형점.</div>
-      </section>
-
-    </aside>
+  <div class="kicker">
+    <span>llmwiki ARCHITECTURE</span>
+    <span class="sep">/</span>
+    <span class="dot"></span>
+    <span class="hl kr">HERMES · 단일 진입점 제어 평면</span>
+    <span class="sep">/</span>
+    <span>OKF · GRAPHITI</span>
   </div>
 
-  <div class="foot">
-    <div><b>GraphRAG</b> = 지식 그래프 + 하이브리드 검색 · 분산 표상의 재추적 한계를 typed-relation 경로로 보완</div>
+  <div class="legend kr">
+    <div class="it"><span class="sw read"></span><b>검색 · ingest 흐름</b> (read plane)</div>
+    <div class="it"><span class="sw gov"></span><b>OKF 정본 · PR write</b> (governance)</div>
+    <div class="it"><span class="x">✕</span><b>LLM 직접 write 차단</b> — PR proposal 경유</div>
   </div>
+
+  <div class="grain"></div>
+  <div class="scan"></div>
+  <div class="vignette"></div>
 </div>
+
+<div id="veil"><span class="vd"></span>CONTROL PLANE 토폴로지 구성 중…</div>
 
 <script>
 "use strict";
-/* ───────────────────────── KNOWLEDGE GRAPH DATA (real entities) ───────────────────────── */
-// communities (Leiden clusters)
-const COMM = [
-  {id:0, name:"AI · 검색 / 에이전트", color:"#5bd6ff"},
-  {id:1, name:"제조 · 공정 / 시스템", color:"#ffa94d"},
-  {id:2, name:"철학 · 기호 / 인식론", color:"#b18cff"},
-  {id:3, name:"데이터 · SSOT / 운영", color:"#54e6a8"},
-  {id:4, name:"심리 · 인지 / 의미", color:"#ff6f91"},
-];
+/* ════════════════════════════════════════════════════════════════════
+   Hermes Control Plane — 시스템 아키텍처 다이어그램
+   경계 1: runtime agents → Hermes MCP 만 호출 (단일 진입점)
+   경계 2: Graphiti temporal graph 는 Hermes 뒤에 은닉 (직접 접근 불가)
+   경계 3: 문서 write 는 PR proposal 게이트로만 (LLM 직접 write 금지)
+   모션: 결정적(시간 파라미터) · 무한 루프 · 난수/가짜 로그 없음
+   ════════════════════════════════════════════════════════════════════ */
 
-// entities: id, label, community, desc(real korean notes)
-const NODES = [
-  {id:"graphrag", label:"GraphRAG", c:0, r:13, desc:"entity/relation triple 추출 → Leiden 커뮤니티 클러스터링 → 벡터+그래프 하이브리드 멀티홉 검색. 산업적 neuro-symbolic 인스턴스."},
-  {id:"neurosym", label:"신경-기호 통합", c:0, r:12, desc:"neural perception + symbolic reasoning. 분산 표상은 합성이 빈약·검증가능성이 낮다 → 규제·감사가 기호 통합을 압박. (AlphaGeometry 패턴)"},
-  {id:"triple", label:"triple 추출", c:0, r:8, desc:"비정형 텍스트에서 (주어, 술어, 목적어) 관계를 뽑아 그래프의 엣지로 물질화. 표상 비용의 1차 지불 지점."},
-  {id:"leiden", label:"Leiden 클러스터링", c:0, r:9, desc:"엔티티 그래프를 모듈도 최적화로 커뮤니티 분할. 멀티홉 검색의 의미적 지형(communities)을 생성."},
-  {id:"hybrid", label:"벡터+그래프 하이브리드", c:0, r:10, desc:"벡터=유사도 이웃(explainable·unverifiable), 그래프=typed-relation 홉(추적가능). 둘을 블렌딩해 멀티홉 질의 경로를 구성."},
-  {id:"mcp", label:"MCP", c:0, r:8, desc:"Model Context Protocol — 도구/리소스를 표준 인터페이스로 노출. 에이전트가 그래프·벡터 검색을 호출하는 배선."},
-  {id:"llmwiki", label:"LLM Wiki", c:0, r:8, desc:"세션을 가로질러 누적되는 마크다운 지식베이스(Karpathy 모델). GraphRAG의 정성적 소스 코퍼스."},
-  {id:"chunking", label:"문서 청킹", c:0, r:8, desc:"원문을 검색 가능한 단위로 나누는 전처리. triple 추출과 벡터 seed 검색이 같은 근거 조각을 공유하게 한다."},
-  {id:"harness", label:"검색 하네스", c:0, r:8, desc:"질의 → seed 검색 → 그래프 홉 → 재랭킹 → 인용 묶음. 검색 실행과 검증 게이트를 분리한다."},
-  {id:"rerank", label:"재랭킹", c:0, r:9, desc:"벡터 seed와 그래프 경로를 함께 점수화한다. 유사도만 큰 후보보다 인용 가능한 경로를 우선한다."},
-
-  {id:"mfg", label:"제조 / 공정", c:1, r:12, desc:"DOE·공정능력·불량저감의 현장. 그의 도메인 지식이 추상적 그래프 엔티티의 그라운딩 앵커가 된다."},
-  {id:"mes", label:"MES", c:1, r:10, desc:"제조실행시스템. 실시간 운영 데이터의 발생원 → 데이터/SSOT 커뮤니티로 흐른다."},
-  {id:"idemp", label:"멱등성", c:1, r:8, desc:"재시도해도 같은 결과 — triple 추출·색인 파이프라인의 무결성 원리. 같은 코퍼스에서 같은 그래프를 재구성한다."},
-  {id:"evidence", label:"근거 체인", c:1, r:8, desc:"검색 결과가 어떤 엔티티와 typed-relation을 거쳤는지 남기는 인용 경로. GraphRAG의 재추적 단위."},
-
-  {id:"ssot", label:"데이터 / SSOT", c:3, r:11, desc:"단일 진실 공급원. Outbox+CDC→팬아웃. 그래프 스키마가 어떤 범주가 존재하는지 형식적으로 약속(존재론적 개입)."},
-  {id:"schema", label:"스키마 정의", c:3, r:9, desc:"콰인의 존재론적 개입 — 스키마 정의 = 그 범주가 존재한다는 형식적 약속. 너무 좁으면 절단, 너무 넓으면 그라운딩 희석."},
-  {id:"semweb", label:"Semantic Web", c:3, r:8, desc:"2001 — 표상의 1세대. 비용을 인간 큐레이션에 부과했다. return-to-graphs의 역사적 선조."},
-  {id:"vecemb", label:"vector embeddings", c:3, r:9, desc:"분산 표상. explainable·unverifiable — 유사도는 보이지만 도출과정은 재추적 불가. 합성이 빈약."},
-
-  {id:"verif", label:"검증가능성", c:2, r:10, desc:"제3자가 도출 과정을 재추적할 수 있음. 형식증명=verifiable·unexplainable. ≠ 설명가능성."},
-  {id:"explain", label:"설명가능성", c:2, r:9, desc:"사람이 이해할 수 있음. 벡터검색=explainable·unverifiable. 검증가능성과 독립적 축."},
-  {id:"grounding", label:"그라운딩", c:2, r:10, desc:"형식의 무결성은 보장하되 내용의 진실은 보장하지 않는 경향. schema-width의 함수 — 절단 vs 희석."},
-  {id:"repcost", label:"표상 비용", c:2, r:10, desc:"표상은 무료가 아니다. LLM은 지식획득 병목을 제거한 게 아니라 비용을 재배치했다."},
-  {id:"formal", label:"형식증명", c:2, r:8, desc:"verifiable·unexplainable. AlphaGeometry처럼 기호 엔진이 검증 가능한 도출을 생산하나 사람 직관엔 불투명."},
-  {id:"quine", label:"콰인 존재론", c:2, r:8, desc:"존재론적 개입 — 무엇을 변항으로 양화하느냐가 무엇이 존재하는지를 약속한다. 스키마=온톨로지."},
-
-  {id:"wittg", label:"비트겐슈타인", c:4, r:9, desc:"의미는 사용에서. 형식체계의 한계 — 규칙따르기. 기호 그라운딩 문제의 철학적 뿌리."},
-  {id:"deleuze", label:"들뢰즈", c:4, r:8, desc:"리좀 — 위계 없는 다중 연결. 그래프 위상 자체가 사유의 이미지. 차이와 반복."},
-  {id:"jung", label:"융", c:4, r:8, desc:"원형 — 분산된 상징의 집단적 구조. 잠재 표상과 기호 사이의 심리적 가교."},
-];
-
-// typed edges: source,target,rel,kind(part|deriv|refine|intro|contra)
-const LINKS = [
-  ["triple","graphrag","partOf","part"],
-  ["leiden","graphrag","partOf","part"],
-  ["hybrid","graphrag","partOf","part"],
-  ["graphrag","neurosym","derivedFrom","deriv"],
-  ["neurosym","formal","introducedBy","intro"],
-  ["hybrid","vecemb","derivedFrom","deriv"],
-  ["hybrid","leiden","refines","refine"],
-  ["leiden","triple","derivedFrom","deriv"],
-  ["chunking","triple","partOf","part"],
-  ["mcp","harness","partOf","part"],
-  ["harness","rerank","partOf","part"],
-  ["llmwiki","graphrag","derivedFrom","deriv"],
-  ["graphrag","mcp","refines","refine"],
-  ["rerank","hybrid","refines","refine"],
-
-  ["mes","mfg","partOf","part"],
-  ["mfg","ssot","derivedFrom","deriv"],
-  ["mes","ssot","derivedFrom","deriv"],
-  ["idemp","evidence","refines","refine"],
-  ["evidence","verif","refines","refine"],
-  ["idemp","ssot","partOf","part"],
-
-  ["schema","ssot","partOf","part"],
-  ["schema","quine","derivedFrom","deriv"],
-  ["semweb","ssot","introducedBy","intro"],
-  ["vecemb","semweb","refines","refine"],
-  ["graphrag","semweb","derivedFrom","deriv"],
-  ["schema","grounding","refines","refine"],
-  ["ssot","mfg","refines","refine"],
-
-  ["verif","explain","contradicts","contra"],
-  ["formal","verif","partOf","part"],
-  ["vecemb","explain","partOf","part"],
-  ["vecemb","verif","contradicts","contra"],
-  ["grounding","schema","derivedFrom","deriv"],
-  ["repcost","vecemb","refines","refine"],
-  ["repcost","semweb","derivedFrom","deriv"],
-  ["repcost","graphrag","refines","refine"],
-  ["quine","schema","introducedBy","intro"],
-  ["grounding","formal","refines","refine"],
-  ["neurosym","verif","derivedFrom","deriv"],
-
-  ["wittg","grounding","refines","refine"],
-  ["wittg","explain","derivedFrom","deriv"],
-  ["deleuze","leiden","refines","refine"],
-  ["jung","vecemb","refines","refine"],
-  ["wittg","quine","contradicts","contra"],
-];
-
-const REL_LABEL = {part:"partOf", deriv:"derivedFrom", refine:"refines", intro:"introducedBy", contra:"contradicts"};
-
-/* build adjacency */
-const nodeById = {};
-NODES.forEach(n=>{ n.adj=[]; nodeById[n.id]=n; });
-const EDGES = LINKS.map(([s,t,rel,kind])=>{
-  const e={source:nodeById[s], target:nodeById[t], rel, kind};
-  nodeById[s].adj.push({node:nodeById[t], rel, kind, dir:1, edge:e});
-  nodeById[t].adj.push({node:nodeById[s], rel, kind, dir:-1, edge:e});
-  return e;
-});
-
-const STATIC_ENTITY_COUNT = 27;
-const STATIC_RELATION_COUNT = 43;
-document.getElementById("statN").textContent = STATIC_ENTITY_COUNT;
-document.getElementById("statE").textContent = STATIC_RELATION_COUNT;
-
-/* ───────────────────────── FORCE SIMULATION (hand-rolled) ───────────────────────── */
-const cv = document.getElementById("graph");
+const cv = document.getElementById("scene");
 const ctx = cv.getContext("2d");
-let W=0,H=0,DPR=Math.min(2,window.devicePixelRatio||1);
-const wrap = document.getElementById("graphWrap");
+let W=0, H=0, DPR=Math.min(2, window.devicePixelRatio||1);
 
-function sizeGraph(){
-  const r = wrap.getBoundingClientRect();
-  W=r.width; H=r.height;
-  cv.width=W*DPR; cv.height=H*DPR; cv.style.width=W+"px"; cv.style.height=H+"px";
+/* layout container, recomputed on resize */
+const L = {};
+
+function resize(){
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = W*DPR; cv.height = H*DPR;
+  cv.style.width = W+"px"; cv.style.height = H+"px";
   ctx.setTransform(DPR,0,0,DPR,0,0);
-}
-// view transform (pan/zoom)
-let view={x:0,y:0,k:1};
-
-// seed positions: cluster communities into ring sectors for a clean first paint
-function seed(){
-  const cx=W/2, cy=H/2, R=Math.min(W,H)*0.30;
-  const byC={}; COMM.forEach(c=>byC[c.id]=[]);
-  NODES.forEach(n=>byC[n.c].push(n));
-  COMM.forEach((c,ci)=>{
-    const ang0 = (ci/COMM.length)*Math.PI*2 - Math.PI/2;
-    const ccx = cx + Math.cos(ang0)*R, ccy = cy + Math.sin(ang0)*R*0.86;
-    c.cx=ccx; c.cy=ccy;
-    byC[c.id].forEach((n,i)=>{
-      const a = (i/byC[c.id].length)*Math.PI*2;
-      const rr = 28 + (n.r||8)*1.4 + (i%3)*16;
-      n.x = ccx + Math.cos(a)*rr + (Math.random()-.5)*8;
-      n.y = ccy + Math.sin(a)*rr + (Math.random()-.5)*8;
-      n.vx=0; n.vy=0;
-    });
-  });
+  layout();
 }
 
-function simStep(alpha){
-  // repulsion (Barnes-hut-lite: O(n^2) fine for ~28 nodes)
-  for(let i=0;i<NODES.length;i++){
-    const a=NODES[i];
-    for(let j=i+1;j<NODES.length;j++){
-      const b=NODES[j];
-      let dx=a.x-b.x, dy=a.y-b.y;
-      let d2=dx*dx+dy*dy; if(d2<1)d2=1;
-      const d=Math.sqrt(d2);
-      const rep = (a.r+b.r)*70 / d2 * alpha;
-      const fx=dx/d*rep, fy=dy/d*rep;
-      a.vx+=fx; a.vy+=fy; b.vx-=fx; b.vy-=fy;
-    }
+/* ───────────────── layout ───────────────── */
+function layout(){
+  // working band leaves room for kicker (top) + legend (bottom)
+  const top = H*0.205, bot = H*0.835;
+  const left = W*0.045, right = W*0.955;
+  const cw = right-left, ch = bot-top;
+  const midY = (top+bot)/2;
+
+  L.top=top; L.bot=bot; L.left=left; L.right=right; L.midY=midY;
+
+  // ── boundary membrane (단일 진입점) ──
+  L.gateX = left + cw*0.275;
+
+  // ── runtime agents (left) ──
+  const agX = left + cw*0.085;
+  const agW = Math.min(cw*0.155, 190);
+  const agH = Math.min(ch*0.205, 78);
+  const agGap = Math.min(ch*0.09, 34);
+  const agTotal = agH*3 + agGap*2;
+  const agTop = midY - agTotal/2;
+  L.agents = [
+    {label:"runtime agent", role:"task · planner", x:agX, y:agTop+agH/2,            w:agW, h:agH},
+    {label:"runtime agent", role:"task · coder",   x:agX, y:agTop+agH*1.5+agGap,    w:agW, h:agH},
+    {label:"runtime agent", role:"task · qa",      x:agX, y:agTop+agH*2.5+agGap*2,  w:agW, h:agH},
+  ];
+  // convergence hub just before the gate
+  L.hub = {x: L.gateX - cw*0.045, y: midY};
+  L.gate = {x: L.gateX, y: midY, h: Math.min(ch*0.62, 340)};
+
+  // ── HERMES control plane (center) ──
+  const hx = left + cw*0.355, hw = cw*0.305;
+  const hh = Math.min(ch*0.58, 320), hy = midY - hh/2;
+  L.hermes = {x:hx, y:hy, w:hw, h:hh};
+  // 4 modules in 2x2 grid inside hermes
+  const padX = hw*0.07, padTop = hh*0.30, padBot = hh*0.07, gMid = hw*0.05;
+  const mW = (hw - padX*2 - gMid)/2;
+  const gridTop = hy + padTop, gridH = hh - padTop - padBot;
+  const mH = (gridH - hh*0.05)/2, vGap = hh*0.05;
+  const cxL = hx + padX, cxR = hx + padX + mW + gMid;
+  const ry0 = gridTop, ry1 = gridTop + mH + vGap;
+  L.modules = [
+    {n:"①", title:"OKF 번들 관리", sub:"okf.bundle",   x:cxL, y:ry0, w:mW, h:mH, key:"bundle"},
+    {n:"②", title:"Graphiti 적재", sub:"graphiti.ingest", x:cxR, y:ry0, w:mW, h:mH, key:"ingest"},
+    {n:"③", title:"검색 라우팅",   sub:"search.route",  x:cxL, y:ry1, w:mW, h:mH, key:"route"},
+    {n:"④", title:"MCP 권한 제어", sub:"mcp.authz",     x:cxR, y:ry1, w:mW, h:mH, key:"authz"},
+  ];
+  L.modByKey = {}; L.modules.forEach(m=> L.modByKey[m.key]=m);
+
+  // ── Graphiti temporal graph (right, hidden) ──
+  const grW = cw*0.205, grH = Math.min(ch*0.50, 250);
+  const grX = left + cw*0.755, grY = midY - grH/2;
+  L.graphiti = {x:grX, y:grY, w:grW, h:grH};
+
+  // ── OKF canonical store / llmwiki (top) ──
+  L.canon = {x: hx + hw*0.30, y: top + ch*0.045, w: Math.min(cw*0.20,230), h: Math.min(ch*0.135,58)};
+  // ── PR proposal review gate (bottom) ──
+  L.prgate = {x: hx + hw*0.52, y: bot - ch*0.045, w: Math.min(cw*0.22,250), h: Math.min(ch*0.135,58)};
+
+  buildFlows();
+}
+
+/* ───────────────── flow paths (deterministic) ───────────────── */
+function ec(r){ return {x:r.x, y:r.y}; }            // node center (canon/prgate use center coords)
+function modPort(key, side){
+  const m=L.modByKey[key];
+  if(side==="l") return {x:m.x, y:m.y+m.h/2};
+  if(side==="r") return {x:m.x+m.w, y:m.y+m.h/2};
+  if(side==="t") return {x:m.x+m.w/2, y:m.y};
+  return {x:m.x+m.w/2, y:m.y+m.h};                  // bottom
+}
+function agentPort(a){ return {x:a.x+a.w/2, y:a.y}; }
+
+function buildFlows(){
+  const g=L.graphiti, hm=L.hermes, hub=L.hub, gate=L.gate;
+  const gFrontX = g.x, gMidY = g.y+g.h/2;
+  const canon = {x:L.canon.x, y:L.canon.y+L.canon.h/2};
+  const pr    = {x:L.prgate.x, y:L.prgate.y-L.prgate.h/2};
+  const prIn  = {x:L.prgate.x, y:L.prgate.y};
+
+  // static connector edges (drawn under nodes)
+  L.edges = [
+    // agents -> hub
+    ...L.agents.map(a=>({pts:[agentPort(a),{x:hub.x,y:hub.y}], kind:"read", w:1}) ),
+    // hub -> gate -> hermes (search route ③ left port)
+    {pts:[hub, {x:gate.x,y:gate.y}, modPort("route","l")], kind:"read", w:1.4},
+    // hermes ③ search route -> graphiti (right)
+    {pts:[modPort("route","r"), {x:hm.x+hm.w+(g.x-(hm.x+hm.w))*0.45, y:gMidY}, {x:gFrontX, y:gMidY}], kind:"read", w:1.4},
+    // hermes ② ingest -> graphiti
+    {pts:[modPort("ingest","r"), {x:hm.x+hm.w+(g.x-(hm.x+hm.w))*0.5, y:g.y+g.h*0.30}, {x:gFrontX, y:g.y+g.h*0.30}], kind:"read", w:1.2},
+    // canon (OKF) -> hermes ① bundle (top)
+    {pts:[canon, {x:modPort("bundle","t").x, y:(canon.y+modPort("bundle","t").y)/2}, modPort("bundle","t")], kind:"gov", w:1.3},
+    // write proposal: agents/hub -> PR gate -> canon
+    {pts:[{x:hub.x,y:hub.y+8}, {x:hub.x, y:L.bot-6}, {x:prIn.x, y:prIn.y}], kind:"gov", w:1.2, dash:true},
+    {pts:[pr, {x:pr.x, y:canon.y}, {x:canon.x, y:canon.y}], kind:"gov", w:1.3},
+    // permission ④ oversees the boundary gate (control link)
+    {pts:[modPort("authz","l"), {x:gate.x, y:gate.y+gate.h*0.22}], kind:"ctrl", w:1, dash:true},
+  ];
+
+  // animated pulse flows
+  L.flows = [
+    // QUERY: agent hub -> gate -> ③ -> graphiti
+    {path:[hub,{x:gate.x,y:gate.y},modPort("route","l")], col:"read", n:2, speed:0.42, head:true},
+    {path:[modPort("route","r"),{x:gFrontX,y:gMidY}], col:"read", n:2, speed:0.5, head:true},
+    // RESULT: graphiti -> ③ -> gate -> hub (reverse, dim)
+    {path:[{x:gFrontX,y:gMidY},modPort("route","r")], col:"readD", n:2, speed:0.5, head:false},
+    {path:[modPort("route","l"),{x:gate.x,y:gate.y},hub], col:"readD", n:2, speed:0.42, head:false},
+    // INGEST: ② -> graphiti
+    {path:[modPort("ingest","r"),{x:gFrontX,y:g.y+g.h*0.30}], col:"read", n:1, speed:0.34, head:true},
+    // OKF canonical: canon -> ① bundle
+    {path:[canon,{x:modPort("bundle","t").x,y:(canon.y+modPort("bundle","t").y)/2},modPort("bundle","t")], col:"gov", n:2, speed:0.3, head:true},
+    // bundle -> ingest internal handoff (① -> ②)
+    {path:[{x:L.modByKey.bundle.x+L.modByKey.bundle.w,y:L.modByKey.bundle.y+L.modByKey.bundle.h/2},
+           {x:L.modByKey.ingest.x,y:L.modByKey.ingest.y+L.modByKey.ingest.h/2}], col:"govD", n:1, speed:0.4, head:true},
+    // WRITE proposal: hub -> PR gate
+    {path:[{x:hub.x,y:hub.y+8},{x:hub.x,y:L.bot-6},{x:prIn.x,y:prIn.y}], col:"gov", n:2, speed:0.26, head:true},
+    // approved merge: PR gate -> canon
+    {path:[pr,{x:pr.x,y:canon.y},{x:canon.x,y:canon.y}], col:"gov", n:2, speed:0.3, head:true},
+  ];
+
+  // direct-write rejection (periodic, deterministic) — agent attempts canon directly, blocked at membrane
+  L.reject = {
+    from:{x:L.agents[1].x+L.agents[1].w/2+10, y:L.agents[1].y},
+    block:{x:L.gateX-6, y:L.midY - L.gate.h*0.30}
+  };
+}
+
+/* ───────────────── geometry helpers ───────────────── */
+function polyTotal(pts){ let t=0; for(let i=0;i<pts.length-1;i++){const a=pts[i],b=pts[i+1];t+=Math.hypot(b.x-a.x,b.y-a.y);} return t; }
+function ptOn(pts,p){
+  p=((p%1)+1)%1;
+  const total=polyTotal(pts); let d=p*total;
+  for(let i=0;i<pts.length-1;i++){
+    const a=pts[i],b=pts[i+1], seg=Math.hypot(b.x-a.x,b.y-a.y);
+    if(d<=seg){ const k=seg?d/seg:0; return {x:a.x+(b.x-a.x)*k, y:a.y+(b.y-a.y)*k}; }
+    d-=seg;
   }
-  // springs
-  EDGES.forEach(e=>{
-    const a=e.source,b=e.target;
-    let dx=b.x-a.x, dy=b.y-a.y;
-    let d=Math.sqrt(dx*dx+dy*dy)||1;
-    const target=82 + a.r + b.r;
-    const f=(d-target)*0.018*alpha;
-    const fx=dx/d*f, fy=dy/d*f;
-    a.vx+=fx; a.vy+=fy; b.vx-=fx; b.vy-=fy;
-  });
-  // community gravity + global center
-  const cx=W/2, cy=H/2;
-  NODES.forEach(n=>{
-    const c=COMM[n.c];
-    n.vx += (c.cx-n.x)*0.010*alpha;
-    n.vy += (c.cy-n.y)*0.010*alpha;
-    n.vx += (cx-n.x)*0.004*alpha;
-    n.vy += (cy-n.y)*0.004*alpha;
-    n.vx*=0.86; n.vy*=0.86;
-    if(!n.fixed){ n.x+=n.vx; n.y+=n.vy; }
+  return {...pts[pts.length-1]};
+}
+function rr(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
+const COL = {
+  read:"#4fe0c4", readD:"rgba(79,224,196,.42)",
+  gov:"#e6b24f",  govD:"rgba(230,178,79,.40)",
+  ctrl:"rgba(141,141,141,.4)", deny:"#e0685a"
+};
+function strokeFor(kind){ if(kind==="gov")return COL.govD; if(kind==="ctrl")return COL.ctrl; return "rgba(79,224,196,.30)"; }
+
+/* ───────────────── drawing ───────────────── */
+function drawEdges(){
+  L.edges.forEach(e=>{
+    ctx.beginPath();
+    ctx.moveTo(e.pts[0].x,e.pts[0].y);
+    for(let i=1;i<e.pts.length;i++) ctx.lineTo(e.pts[i].x,e.pts[i].y);
+    ctx.lineWidth=e.w; ctx.strokeStyle=strokeFor(e.kind);
+    ctx.setLineDash(e.dash?[3,5]:[]); ctx.stroke(); ctx.setLineDash([]);
   });
 }
 
-/* community hulls (convex) */
-function hull(points){
-  if(points.length<3) return points;
-  points=points.slice().sort((a,b)=>a.x-b.x||a.y-b.y);
-  const cross=(o,a,b)=>(a.x-o.x)*(b.y-o.y)-(a.y-o.y)*(b.x-o.x);
-  const lower=[];
-  for(const p of points){ while(lower.length>=2&&cross(lower[lower.length-2],lower[lower.length-1],p)<=0)lower.pop(); lower.push(p);}
-  const upper=[];
-  for(let i=points.length-1;i>=0;i--){const p=points[i];while(upper.length>=2&&cross(upper[upper.length-2],upper[upper.length-1],p)<=0)upper.pop();upper.push(p);}
-  upper.pop();lower.pop();return lower.concat(upper);
-}
-
-/* ───────────────────────── RENDER ───────────────────────── */
-let hoverNode=null;
-let activeComm=null; // legend filter
-const trace = {path:[], edges:[], mode:"hybrid"};
-
-function toScreen(p){ return {x:(p.x+view.x)*view.k, y:(p.y+view.y)*view.k}; }
-function fromScreen(sx,sy){ return {x:sx/view.k-view.x, y:sy/view.k-view.y}; }
-
-function draw(){
-  ctx.clearRect(0,0,W,H);
-  ctx.save();
-  ctx.translate(view.x*view.k, view.y*view.k);
-  ctx.scale(view.k, view.k);
-
-  // community hulls
-  COMM.forEach(c=>{
-    const pts=NODES.filter(n=>n.c===c.id).map(n=>({x:n.x,y:n.y}));
-    const h=hull(pts);
-    if(h.length>2){
-      ctx.beginPath();
-      const pad=26;
-      // expand hull outward from centroid
-      let cxp=0,cyp=0; h.forEach(p=>{cxp+=p.x;cyp+=p.y;}); cxp/=h.length;cyp/=h.length;
-      const ex=h.map(p=>{const a=Math.atan2(p.y-cyp,p.x-cxp);return {x:p.x+Math.cos(a)*pad,y:p.y+Math.sin(a)*pad};});
-      ctx.moveTo(ex[0].x,ex[0].y);
-      for(let i=1;i<ex.length;i++){
-        const prev=ex[i-1],cur=ex[i];
-        ctx.quadraticCurveTo(prev.x,prev.y,(prev.x+cur.x)/2,(prev.y+cur.y)/2);
+function drawFlows(t){
+  L.flows.forEach(f=>{
+    const baseCol = COL[f.col]||COL.read;
+    const glow = f.col==="read"||f.col==="gov";
+    for(let i=0;i<f.n;i++){
+      const ph = (t*f.speed + i/f.n) % 1;
+      // comet: head + short trailing samples
+      for(let s=0;s<4;s++){
+        const pp = ph - s*0.018;
+        if(pp<0) continue;
+        const pt = ptOn(f.path, pp);
+        const a = (1 - s/4) * (f.head?0.95:0.6);
+        const rad = (s===0? (f.head?2.6:2.0) : 1.6) ;
+        ctx.beginPath(); ctx.arc(pt.x,pt.y,rad,0,7);
+        ctx.fillStyle = applyA(baseCol, a);
+        if(glow && s===0){ ctx.shadowColor=baseCol; ctx.shadowBlur=10; } else ctx.shadowBlur=0;
+        ctx.fill(); ctx.shadowBlur=0;
       }
-      ctx.quadraticCurveTo(ex[ex.length-1].x,ex[ex.length-1].y,(ex[ex.length-1].x+ex[0].x)/2,(ex[ex.length-1].y+ex[0].y)/2);
-      ctx.closePath();
-      const dim = activeComm!==null && activeComm!==c.id;
-      ctx.fillStyle = hexA(c.color, dim?0.015:0.055);
-      ctx.fill();
-      ctx.lineWidth=1/view.k;
-      ctx.strokeStyle=hexA(c.color, dim?0.06:0.22);
-      ctx.stroke();
-      // community label
-      ctx.fillStyle=hexA(c.color, dim?0.18:0.5);
-      ctx.font=`600 ${11/view.k}px var(--mono),monospace`;
-      ctx.textAlign="center";
-      ctx.fillText("◆ "+c.name, cxp, cyp - Math.max(...ex.map(p=>cyp-p.y)) - 6/view.k);
     }
   });
+}
+function applyA(col,a){
+  if(col.startsWith("rgba")) return col.replace(/[\d.]+\)$/, a.toFixed(2)+")");
+  const m=col.match(/#(\w\w)(\w\w)(\w\w)/);
+  if(!m) return col;
+  return `rgba(${parseInt(m[1],16)},${parseInt(m[2],16)},${parseInt(m[3],16)},${a.toFixed(2)})`;
+}
 
-  // edges
-  EDGES.forEach(e=>{
-    const a=e.source,b=e.target;
-    const inTrace = trace.edges.includes(e);
-    const dim = (activeComm!==null && a.c!==activeComm && b.c!==activeComm) ||
-                (hoverNode && hoverNode!==a && hoverNode!==b && !inTrace);
-    drawEdge(e, dim, inTrace);
-  });
-
-  // nodes
-  NODES.forEach(n=>{
-    const c=COMM[n.c];
-    const inTrace = trace.path.includes(n);
-    const dim = (activeComm!==null && n.c!==activeComm && !inTrace) ||
-                (hoverNode && hoverNode!==n && !n.adj.some(a=>a.node===hoverNode) && !inTrace);
-    drawNode(n, c, dim, inTrace);
-  });
-
+function drawBoundary(t){
+  const g=L.gate, x=g.x, y0=g.y-g.h/2, y1=g.y+g.h/2;
+  // membrane line
+  const grd=ctx.createLinearGradient(0,y0,0,y1);
+  grd.addColorStop(0,"rgba(58,58,58,0)"); grd.addColorStop(.5,"rgba(120,120,120,.55)"); grd.addColorStop(1,"rgba(58,58,58,0)");
+  ctx.beginPath(); ctx.moveTo(x,y0); ctx.lineTo(x,y1);
+  ctx.lineWidth=1.4; ctx.strokeStyle=grd; ctx.setLineDash([2,4]); ctx.stroke(); ctx.setLineDash([]);
+  // the single opening (gate) at midY — a bright teal aperture
+  const oy=g.y, oh=26;
+  const pulse=0.5+0.5*Math.sin(t*2.2);
+  ctx.beginPath(); ctx.moveTo(x,oy-oh/2); ctx.lineTo(x,oy+oh/2);
+  ctx.lineWidth=2.4; ctx.strokeStyle=applyA(COL.read,0.75+0.2*pulse);
+  ctx.shadowColor=COL.read; ctx.shadowBlur=12+6*pulse; ctx.stroke(); ctx.shadowBlur=0;
+  // bracket ticks
+  ctx.strokeStyle=applyA(COL.read,0.7); ctx.lineWidth=1.6;
+  [-1,1].forEach(d=>{ ctx.beginPath(); ctx.moveTo(x,oy+d*oh/2); ctx.lineTo(x-6,oy+d*oh/2+d*5); ctx.stroke(); });
+  // label
+  ctx.save();
+  ctx.translate(x-14, y0+ (y1-y0)*0.12);
+  ctx.rotate(-Math.PI/2);
+  ctx.font="600 10px var(--mono),monospace"; ctx.textAlign="right"; ctx.fillStyle="var(--phos-dim)";
+  ctx.fillStyle="rgba(141,141,141,.85)";
+  ctx.fillText("HERMES MCP · 단일 진입점", 0, 0);
   ctx.restore();
 }
 
-function drawEdge(e, dim, inTrace){
-  const a=e.source,b=e.target;
-  ctx.beginPath();
-  ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
-  let col, w;
-  if(inTrace){ col=hexA("#ffc861",0.72); w=1.8/view.k; }
-  else if(e.kind==="contra"){ col=hexA("#ff5d8f", dim?0.12:0.6); w=1.4/view.k; ctx.setLineDash([5/view.k,4/view.k]); }
-  else if(e.kind==="refine"){ col=hexA("#5bd6ff", dim?0.07:0.32); w=1.2/view.k; ctx.setLineDash([1.5/view.k,3/view.k]); }
-  else { col=hexA("#5d6377", dim?0.06:0.32); w=1/view.k; }
-  ctx.strokeStyle=col; ctx.lineWidth=w;
-  ctx.stroke();
-  ctx.setLineDash([]); ctx.shadowBlur=0;
-
-  // arrow + label on hovered/trace edges
-  if((inTrace || (hoverNode && (hoverNode===a||hoverNode===b))) && view.k>0.7){
-    const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
-    const lbl=REL_LABEL[e.kind];
-    ctx.font=`${9/view.k}px var(--mono),monospace`;
-    ctx.textAlign="center";
-    const tw=ctx.measureText(lbl).width;
-    ctx.fillStyle=hexA("#06070b",0.85);
-    ctx.fillRect(mx-tw/2-3/view.k, my-7/view.k, tw+6/view.k, 12/view.k);
-    ctx.fillStyle= e.kind==="contra"?"#ff5d8f":(inTrace?"#ffc861":"#97a3bb");
-    ctx.fillText(lbl, mx, my+2/view.k);
-  }
-}
-
-function drawNode(n, c, dim, inTrace){
-  const r=n.r;
-  if(inTrace){
-    ctx.beginPath(); ctx.arc(n.x,n.y,r+7,0,7);
-    ctx.fillStyle=hexA("#ffc861",0.09); ctx.fill();
-  } else if(hoverNode===n){
-    ctx.beginPath(); ctx.arc(n.x,n.y,r+6,0,7);
-    ctx.fillStyle=hexA(c.color,0.10); ctx.fill();
-  }
-  ctx.beginPath(); ctx.arc(n.x,n.y,r,0,7);
-  const grad=ctx.createRadialGradient(n.x-r*0.35,n.y-r*0.35,1,n.x,n.y,r);
-  const col = inTrace? "#ffc861" : c.color;
-  grad.addColorStop(0, hexA(col, dim?0.35:1));
-  grad.addColorStop(1, hexA(col, dim?0.12:0.65));
-  ctx.fillStyle=grad;
-  if(!dim){ ctx.shadowColor=col; ctx.shadowBlur=inTrace ? 8 : 4; }
-  ctx.fill(); ctx.shadowBlur=0;
-  ctx.lineWidth=1.2/view.k;
-  ctx.strokeStyle=hexA("#ffffff", dim?0.06:(inTrace?0.55:0.18));
-  ctx.stroke();
-
-  // label
-  if(view.k>0.55){
-    const big = r>=10 || hoverNode===n || inTrace || view.k>1.15;
-    if(big){
-      ctx.font=`${(inTrace?700:600)} ${ (r>=11?12.5:11)/view.k }px var(--sans),sans-serif`;
-      ctx.textAlign="center"; ctx.textBaseline="top";
-      ctx.fillStyle=hexA("#06070b",0.55);
-      const tw=ctx.measureText(n.label).width;
-      ctx.fillRect(n.x-tw/2-3/view.k, n.y+r+2/view.k, tw+6/view.k, 14/view.k);
-      ctx.fillStyle= dim? hexA("#97a3bb",0.4) : (inTrace?"#ffe6b0":"#e8edf6");
-      ctx.fillText(n.label, n.x, n.y+r+4/view.k);
-      ctx.textBaseline="alphabetic";
-    }
-  }
-}
-
-function hexA(hex,a){
-  if(hex[0]!=="#") hex="#5bd6ff";
-  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-  // guard: NaN/Infinity alpha → clamp to [0,1]
-  const sa = (isFinite(a) && a===a) ? Math.max(0,Math.min(1,a)) : 0;
-  return `rgba(${r},${g},${b},${sa})`;
-}
-
-/* ───────────────────────── LOOP ───────────────────────── */
-let alpha=1.0;
-let _lastTs=0;
-function tick(ts){
-  ts = (ts && isFinite(ts)) ? ts : performance.now(); // guard: first call from boot() passes no ts
-  const dt = Math.min(ts - _lastTs, 80); // clamp spike frames
-  _lastTs = ts;
-  const dtN = dt / (1000/60); // normalise to 60fps units
-
-  if(alpha>0.02){ simStep(alpha); alpha*=Math.pow(0.985, dtN); }
-  else {
-    // never fully freeze: a faint perpetual breath keeps nodes micro-settling
-    const breath = 0.012 + 0.006*Math.sin(ts*0.0006);
-    simStep(breath);
-  }
-
-  draw();
-  requestAnimationFrame(tick);
-}
-
-/* ───────────────────────── INTERACTION ───────────────────────── */
-let dragging=false, draggedNode=null, last={x:0,y:0}, moved=false;
-function pickNode(sx,sy){
-  const wp=fromScreen(sx,sy);
-  let best=null,bd=1e9;
-  NODES.forEach(n=>{
-    const dx=n.x-wp.x, dy=n.y-wp.y, d=Math.sqrt(dx*dx+dy*dy);
-    if(d< n.r+6 && d<bd){bd=d;best=n;}
+function drawAgents(){
+  L.agents.forEach(a=>{
+    const x=a.x-a.w/2, y=a.y-a.h/2;
+    rr(x,y,a.w,a.h,8);
+    ctx.fillStyle="rgba(16,16,16,.92)"; ctx.fill();
+    ctx.lineWidth=1; ctx.strokeStyle="rgba(70,70,70,.9)"; ctx.stroke();
+    // top port marker (Hermes MCP only)
+    const p=agentPort(a);
+    ctx.beginPath(); ctx.arc(p.x,p.y,3,0,7); ctx.fillStyle=COL.read; ctx.shadowColor=COL.read; ctx.shadowBlur=8; ctx.fill(); ctx.shadowBlur=0;
+    // text
+    ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+    ctx.font="700 12px var(--kr),sans-serif"; ctx.fillStyle="#d7d7d7";
+    ctx.fillText(a.label, x+13, y+a.h*0.42);
+    ctx.font="500 9.5px var(--mono),monospace"; ctx.fillStyle="rgba(141,141,141,.95)";
+    ctx.fillText(a.role, x+13, y+a.h*0.42+15);
+    // port label
+    ctx.font="500 8px var(--mono),monospace"; ctx.fillStyle="rgba(79,224,196,.85)"; ctx.textAlign="left";
+    ctx.fillText("→ hermes.mcp", x+13, y+a.h-9);
   });
-  return best;
-}
-wrap.addEventListener("mousedown",e=>{
-  const r=cv.getBoundingClientRect();
-  const sx=e.clientX-r.left, sy=e.clientY-r.top;
-  const n=pickNode(sx,sy);
-  dragging=true; moved=false; last={x:e.clientX,y:e.clientY};
-  if(n){ draggedNode=n; n.fixed=true; alpha=Math.max(alpha,0.4); }
-  wrap.classList.add("dragging");
-});
-window.addEventListener("mousemove",e=>{
-  const r=cv.getBoundingClientRect();
-  const sx=e.clientX-r.left, sy=e.clientY-r.top;
-  if(dragging){
-    const dx=e.clientX-last.x, dy=e.clientY-last.y;
-    if(Math.abs(dx)+Math.abs(dy)>2) moved=true;
-    if(draggedNode){
-      const wp=fromScreen(sx,sy); draggedNode.x=wp.x; draggedNode.y=wp.y; draggedNode.vx=0;draggedNode.vy=0;
-    } else {
-      view.x+=dx/view.k; view.y+=dy/view.k;
-    }
-    last={x:e.clientX,y:e.clientY};
-    return;
-  }
-  // hover
-  if(sx<0||sy<0||sx>W||sy>H){ setHover(null); return; }
-  const n=pickNode(sx,sy);
-  setHover(n, sx, sy);
-});
-window.addEventListener("mouseup",()=>{
-  if(draggedNode){ draggedNode.fixed=false; draggedNode=null; }
-  dragging=false; wrap.classList.remove("dragging");
-});
-wrap.addEventListener("wheel",e=>{
-  e.preventDefault();
-  const r=cv.getBoundingClientRect();
-  const sx=e.clientX-r.left, sy=e.clientY-r.top;
-  const wp=fromScreen(sx,sy);
-  const f=e.deltaY<0?1.12:0.893;
-  view.k=Math.max(0.4,Math.min(3.2,view.k*f));
-  // zoom toward cursor
-  view.x = sx/view.k - wp.x;
-  view.y = sy/view.k - wp.y;
-},{passive:false});
-
-/* entity card */
-const entcard=document.getElementById("entcard");
-function setHover(n, sx, sy){
-  if(n===hoverNode){ if(n) positionCard(sx,sy); return; }
-  hoverNode=n;
-  if(!n){ entcard.classList.remove("show"); return; }
-  const c=COMM[n.c];
-  entcard.querySelector(".edot").style.color=c.color;
-  entcard.querySelector(".edot").style.background=c.color;
-  entcard.querySelector(".et").textContent=n.label;
-  entcard.querySelector(".ek").textContent=c.name;
-  entcard.querySelector(".ebody").textContent=n.desc;
-  const rel=entcard.querySelector(".erel"); rel.innerHTML="";
-  n.adj.slice(0,4).forEach(a=>{
-    const div=document.createElement("div"); div.className="rr";
-    const rt=document.createElement("span"); rt.className="rt"+(a.kind==="contra"?" contra":"");
-    rt.textContent=(a.dir>0?"→ ":"← ")+REL_LABEL[a.kind];
-    const nm=document.createElement("span"); nm.textContent=a.node.label; nm.style.color="var(--ink)";
-    div.appendChild(rt); div.appendChild(nm); rel.appendChild(div);
-  });
-  entcard.classList.add("show");
-  positionCard(sx,sy);
-}
-function positionCard(sx,sy){
-  let x=sx+18, y=sy+14;
-  if(x+278>W) x=sx-278;
-  if(y+170>H) y=Math.max(8,sy-170);
-  entcard.style.left=x+"px"; entcard.style.top=y+"px";
+  // section label
+  ctx.font="600 9.5px var(--mono),monospace"; ctx.fillStyle="rgba(141,141,141,.7)"; ctx.textAlign="center";
+  ctx.fillText("RUNTIME AGENTS", L.agents[0].x, L.agents[0].y-L.agents[0].h/2-14);
+  ctx.fillStyle="rgba(58,58,58,.9)"; ctx.font="500 8px var(--mono),monospace";
+  ctx.fillText("graphiti 직접 호출 없음", L.agents[0].x, L.agents[0].y-L.agents[0].h/2-2);
 }
 
-/* ───────────────────────── MULTI-HOP RETRIEVAL ───────────────────────── */
-// curated query paths per mode (genuine multi-hop traversals across communities)
-const QUERIES = {
-  hybrid: {
-    q:"\"분산 표상의 검증가능성 한계를 GraphRAG가 어떻게 보완하나?\"",
-    path:["vecemb","graphrag","leiden","schema","verif"],
-    cites:[
-      {n:"vecemb", mode:"VECTOR", via:null, score:"sim 0.91",
-        txt:"벡터검색은 explainable·unverifiable — 유사도 이웃은 보이나 도출과정 재추적 불가, 합성이 빈약."},
-      {n:"graphrag", mode:"GRAPH", via:"derivedFrom", score:"hop 1 · w 1.0",
-        txt:"GraphRAG = triple 추출 → Leiden 클러스터 → 하이브리드 멀티홉. 산업적 neuro-symbolic 인스턴스."},
-      {n:"leiden", mode:"GRAPH", via:"partOf", score:"hop 2 · w .82",
-        txt:"Leiden 커뮤니티가 검색의 의미적 지형을 만든다 — 여러 커뮤니티를 가로지르는 경로가 곧 추론 사슬."},
-      {n:"schema", mode:"GRAPH", via:"refines", score:"hop 3 · w .77",
-        txt:"스키마 정의 = 존재론적 개입(콰인). 형식적 약속이 도출과정을 재추적 가능하게 만든다."},
-      {n:"verif", mode:"GRAPH", via:"derivedFrom", score:"hop 4 · w .74",
-        txt:"검증가능성 = 제3자가 도출과정을 재추적. 그래프 경로 자체가 인용 가능한 증거 사슬이 된다."},
-    ]},
-  vector: {
-    q:"\"표상 비용 · neuro-symbolic 에 가까운 이웃은?\"",
-    path:["repcost","vecemb","semweb","graphrag"],
-    cites:[
-      {n:"repcost", mode:"VECTOR", via:null, score:"seed",
-        txt:"표상은 무료가 아니다 — LLM은 지식획득 병목을 제거한 게 아니라 비용을 재배치했다."},
-      {n:"vecemb", mode:"VECTOR", via:null, score:"sim 0.88",
-        txt:"분산 표상 — 가장 가까운 임베딩 이웃. explainable하나 unverifiable."},
-      {n:"semweb", mode:"VECTOR", via:null, score:"sim 0.81",
-        txt:"Semantic Web(2001) — 표상 비용을 인간 큐레이션에 부과한 1세대. return-to-graphs의 선조."},
-      {n:"graphrag", mode:"VECTOR", via:null, score:"sim 0.76",
-        txt:"순수 벡터 모드는 '왜 이 이웃인가'를 형식적으로 약속하지 못한다 → 그래프 모드 필요."},
-    ]},
-  graph: {
-    q:"\"형식증명과 벡터검색의 모순을 어떤 typed-relation이 잇나?\"",
-    path:["formal","verif","explain","vecemb"],
-    cites:[
-      {n:"formal", mode:"GRAPH", via:null, score:"anchor",
-        txt:"형식증명 = verifiable·unexplainable. (AlphaGeometry 패턴) 기호 엔진의 검증 가능한 도출."},
-      {n:"verif", mode:"GRAPH", via:"partOf", score:"hop 1",
-        txt:"검증가능성 — 형식증명이 만족시키는 축. 사람의 이해(설명가능성)와는 독립."},
-      {n:"explain", mode:"GRAPH", via:"contradicts", score:"hop 2 · ⚠ conflict",
-        conflict:true,
-        txt:"⚠ CONTRADICTS — 검증가능성↔설명가능성은 한 방법이 동시에 최대화하기 어려운 긴장 관계."},
-      {n:"vecemb", mode:"GRAPH", via:"partOf", score:"hop 3",
-        txt:"벡터검색은 explainable·unverifiable로 형식증명의 정확한 거울상. GraphRAG가 둘의 균형점."},
-    ]},
-};
+function drawHermes(){
+  const h=L.hermes;
+  // outer membrane glow
+  rr(h.x-3,h.y-3,h.w+6,h.h+6,16);
+  ctx.strokeStyle="rgba(79,224,196,.12)"; ctx.lineWidth=1; ctx.stroke();
+  // panel
+  rr(h.x,h.y,h.w,h.h,14);
+  const pg=ctx.createLinearGradient(0,h.y,0,h.y+h.h);
+  pg.addColorStop(0,"rgba(20,22,21,.96)"); pg.addColorStop(1,"rgba(11,12,12,.96)");
+  ctx.fillStyle=pg; ctx.fill();
+  ctx.lineWidth=1.4; ctx.strokeStyle="rgba(79,224,196,.34)"; ctx.stroke();
+  // header
+  ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+  ctx.font="800 16px var(--kr),sans-serif"; ctx.fillStyle="#e7faf5";
+  ctx.fillText("HERMES", h.x+h.w*0.07, h.y+h.h*0.115);
+  ctx.font="600 10px var(--mono),monospace"; ctx.fillStyle="rgba(79,224,196,.9)";
+  ctx.fillText("CONTROL PLANE", h.x+h.w*0.07+86, h.y+h.h*0.115);
+  ctx.font="500 10px var(--kr),sans-serif"; ctx.fillStyle="rgba(141,141,141,.95)";
+  ctx.fillText("제어 평면 · 유일한 진입점 · 라우팅 / 권한 / 정본 / 적재", h.x+h.w*0.07, h.y+h.h*0.115+17);
 
-const hopsEl=document.getElementById("hops");
-const queryText=document.getElementById("queryText");
-const traceMeta=document.getElementById("traceMeta");
-const traceModeEl=document.getElementById("traceMode");
-let revealTimer=null;
-
-function loadQuery(mode){
-  trace.mode=mode;
-  const Q=QUERIES[mode];
-  queryText.textContent=Q.q;
-  traceModeEl.textContent=mode.toUpperCase();
-  // build trace path + edges
-  trace.path = Q.path.map(id=>nodeById[id]);
-  trace.edges=[];
-  for(let i=0;i<trace.path.length-1;i++){
-    const a=trace.path[i], b=trace.path[i+1];
-    const e=EDGES.find(e=>(e.source===a&&e.target===b)||(e.source===b&&e.target===a));
-    if(e) trace.edges.push(e);
-  }
-  // meta pills
-  const comms=new Set(trace.path.map(n=>n.c));
-  traceMeta.innerHTML=
-    `<span class="pill"><span class="pd"></span>${mode==="vector"?"벡터 유사도":mode==="graph"?"typed-relation 홉":"벡터→그래프 블렌드"}</span>`+
-    `<span class="pill"><b>${trace.path.length}</b> nodes</span>`+
-    `<span class="pill"><b>${comms.size}</b> communities</span>`+
-    `<span class="pill"><b>${trace.edges.length}</b> hops</span>`;
-  // build hop list
-  hopsEl.innerHTML="";
-  Q.cites.forEach((c,i)=>{
-    const n=nodeById[c.n], com=COMM[n.c];
-    const hop=document.createElement("div"); hop.className="hop"; hop.dataset.i=i;
-    hop.innerHTML=`
-      <div class="rail-dot"><div class="nd" style="color:${c.conflict?'#ff5d8f':com.color};background:${c.conflict?'#ff5d8f':com.color}"></div></div>
-      <div class="hc">
-        <div class="htop"><span class="hname">${n.label}</span><span class="hkind">${com.name}</span></div>
-        <div class="hvia">${c.via?`via <span class="via-rel${c.conflict?' contra':''}">${c.via}</span> · `:""}<span class="mode">${c.mode}</span></div>
-        <div class="hscore">${c.score}</div>
-        <div class="cite"><span class="cl">CITED · ${n.id}.md</span>${c.conflict?`<span class="conflict">${c.txt}</span>`:c.txt}</div>
-      </div>`;
-    hopsEl.appendChild(hop);
+  // modules
+  L.modules.forEach(m=>{
+    rr(m.x,m.y,m.w,m.h,9);
+    ctx.fillStyle="rgba(8,9,9,.9)"; ctx.fill();
+    ctx.lineWidth=1; ctx.strokeStyle="rgba(60,72,70,.95)"; ctx.stroke();
+    // number badge
+    ctx.font="700 12px var(--mono),monospace"; ctx.fillStyle="rgba(79,224,196,.9)"; ctx.textAlign="left";
+    ctx.fillText(m.n, m.x+11, m.y+m.h*0.42);
+    ctx.font="700 12.5px var(--kr),sans-serif"; ctx.fillStyle="#d7d7d7";
+    ctx.fillText(m.title, m.x+30, m.y+m.h*0.42);
+    ctx.font="500 9px var(--mono),monospace"; ctx.fillStyle="rgba(141,141,141,.85)";
+    ctx.fillText(m.sub, m.x+30, m.y+m.h*0.42+15);
+    // port dot
+    ctx.beginPath(); ctx.arc(m.x+m.w-9,m.y+m.h-9,2.2,0,7); ctx.fillStyle="rgba(79,224,196,.6)"; ctx.fill();
   });
 }
 
-function runQuery(animate){
-  const Q=QUERIES[trace.mode];
-  alpha=Math.max(alpha,0.18);
-  // reset reveal
-  if(revealTimer){ clearInterval(revealTimer); revealTimer=null; }
-  const hops=[...hopsEl.children];
-  hops.forEach(h=>{h.classList.remove("live"); h.querySelector(".cite").classList.remove("show");});
-  let i=0;
-  const step=()=>{
-    if(i<hops.length){
-      hops[i].classList.add("live");
-      hops[i].querySelector(".cite").classList.add("show");
-      i++;
-    } else { clearInterval(revealTimer); revealTimer=null; }
-  };
-  if(animate){
-    step(); revealTimer=setInterval(step, 620);
+function drawGraphiti(t){
+  const g=L.graphiti;
+  // temporal time-slices receding (t-axis up-right)
+  const slices=4, dx=g.w*0.055, dy=-g.h*0.06;
+  for(let i=slices-1;i>=0;i--){
+    const ox=g.x+dx*i, oy=g.y+dy*i;
+    rr(ox,oy,g.w,g.h,12);
+    const a = 0.20 + (slices-i)/slices*0.16;
+    ctx.fillStyle=`rgba(14,16,16,${a.toFixed(2)})`; ctx.fill();
+    ctx.lineWidth=1; ctx.strokeStyle=`rgba(79,224,196,${(0.05+(slices-1-i)/slices*0.13).toFixed(2)})`; ctx.stroke();
+  }
+  // front slice graph nodes (deterministic positions, gentle temporal drift)
+  const fx=g.x, fy=g.y;
+  ctx.save(); rr(fx,fy,g.w,g.h,12); ctx.clip();
+  const NODES=[[.22,.30],[.46,.20],[.70,.34],[.34,.55],[.60,.58],[.80,.66],[.26,.78],[.52,.80]];
+  const EDG=[[0,1],[1,2],[0,3],[3,4],[1,4],[4,5],[3,6],[6,7],[4,7],[2,5]];
+  const np=NODES.map((n,i)=>({x:fx+g.w*(n[0]+Math.sin(t*0.4+i)*0.006), y:fy+g.h*(n[1]+Math.cos(t*0.4+i*1.3)*0.008)}));
+  ctx.lineWidth=1; ctx.strokeStyle="rgba(79,224,196,.18)";
+  EDG.forEach(([a,b])=>{ ctx.beginPath(); ctx.moveTo(np[a].x,np[a].y); ctx.lineTo(np[b].x,np[b].y); ctx.stroke(); });
+  np.forEach((p,i)=>{
+    const pulse=0.5+0.5*Math.sin(t*1.4+i*0.9);
+    ctx.beginPath(); ctx.arc(p.x,p.y,2.4,0,7);
+    ctx.fillStyle=applyA(COL.read,0.4+0.4*pulse); ctx.fill();
+  });
+  ctx.restore();
+  // t-axis arrow
+  ctx.strokeStyle="rgba(141,141,141,.5)"; ctx.lineWidth=1; ctx.setLineDash([2,3]);
+  ctx.beginPath(); ctx.moveTo(g.x+g.w*0.5, g.y+g.h+10); ctx.lineTo(g.x+g.w*0.5+dx*slices, g.y+g.h+10+dy*slices); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.font="500 8.5px var(--mono),monospace"; ctx.fillStyle="rgba(141,141,141,.7)"; ctx.textAlign="left";
+  ctx.fillText("t →  temporal", g.x+g.w*0.5+6, g.y+g.h+5+dy*slices);
+
+  // hidden scrim hint + label
+  ctx.font="600 10px var(--mono),monospace"; ctx.fillStyle="rgba(141,141,141,.9)"; ctx.textAlign="center";
+  ctx.fillText("GRAPHITI · temporal graph index", g.x+g.w/2, g.y-14);
+  ctx.font="500 9px var(--kr),sans-serif"; ctx.fillStyle="rgba(224,104,90,.7)";
+  ctx.fillText("HIDDEN · 런타임 직접 접근 ✕", g.x+g.w/2, g.y-2);
+}
+
+function drawCanon(){
+  const c=L.canon, x=c.x-c.w/2, y=c.y-c.h/2;
+  rr(x,y,c.w,c.h,9);
+  ctx.fillStyle="rgba(20,17,10,.95)"; ctx.fill();
+  ctx.lineWidth=1.3; ctx.strokeStyle="rgba(230,178,79,.5)"; ctx.stroke();
+  // left accent bar (canonical)
+  ctx.fillStyle=COL.gov; ctx.fillRect(x,y+6,3,c.h-12);
+  ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+  ctx.font="700 12.5px var(--kr),sans-serif"; ctx.fillStyle="#f0dcab";
+  ctx.fillText("OKF · 정본 문서 포맷", x+14, y+c.h*0.44);
+  ctx.font="500 9px var(--mono),monospace"; ctx.fillStyle="rgba(230,178,79,.8)";
+  ctx.fillText("llmwiki canonical bundle", x+14, y+c.h*0.44+15);
+}
+
+function drawPRGate(t){
+  const p=L.prgate, x=p.x-p.w/2, y=p.y-p.h/2;
+  rr(x,y,p.w,p.h,9);
+  ctx.fillStyle="rgba(20,17,10,.95)"; ctx.fill();
+  ctx.lineWidth=1.3; ctx.strokeStyle="rgba(230,178,79,.55)"; ctx.stroke();
+  // gate chevrons
+  const pulse=0.5+0.5*Math.sin(t*2.0);
+  ctx.strokeStyle=applyA(COL.gov,0.6+0.3*pulse); ctx.lineWidth=2;
+  for(let i=0;i<2;i++){ const gx=x+16+i*7; ctx.beginPath(); ctx.moveTo(gx,y+p.h*0.32); ctx.lineTo(gx+6,y+p.h/2); ctx.lineTo(gx,y+p.h*0.68); ctx.stroke(); }
+  ctx.textAlign="left"; ctx.textBaseline="alphabetic";
+  ctx.font="700 12.5px var(--kr),sans-serif"; ctx.fillStyle="#f0dcab";
+  ctx.fillText("PR PROPOSAL · 리뷰 게이트", x+34, y+p.h*0.44);
+  ctx.font="500 9px var(--mono),monospace"; ctx.fillStyle="rgba(230,178,79,.8)";
+  ctx.fillText("write → review → merge", x+34, y+p.h*0.44+15);
+}
+
+function drawReject(t){
+  // deterministic 6s cycle: a direct-write attempt rises, then is blocked at membrane
+  const period=6.0, ph=(t%period)/period;
+  if(ph>0.55) { return; } // idle portion of cycle
+  const k=ph/0.55; // 0..1 travel toward membrane
+  const from=L.reject.from, to=L.reject.block;
+  const px=from.x+(to.x-from.x)*Math.min(k,1);
+  const py=from.y+(to.y-from.y)*Math.min(k,1);
+  // dashed attempt trail
+  ctx.strokeStyle=applyA(COL.deny,0.35); ctx.lineWidth=1.2; ctx.setLineDash([3,4]);
+  ctx.beginPath(); ctx.moveTo(from.x,from.y); ctx.lineTo(px,py); ctx.stroke(); ctx.setLineDash([]);
+  if(k>=0.96){
+    // blocked flash + ✕
+    const f=0.5+0.5*Math.sin(t*9);
+    ctx.strokeStyle=applyA(COL.deny,0.7+0.3*f); ctx.lineWidth=2;
+    const s=6; ctx.beginPath();
+    ctx.moveTo(to.x-s,to.y-s); ctx.lineTo(to.x+s,to.y+s);
+    ctx.moveTo(to.x+s,to.y-s); ctx.lineTo(to.x-s,to.y+s); ctx.stroke();
+    ctx.font="600 8.5px var(--mono),monospace"; ctx.fillStyle=applyA(COL.deny,0.85); ctx.textAlign="left";
+    ctx.fillText("직접 write 거부", to.x+12, to.y+3);
   } else {
-    // first paint: reveal all instantly for a calm static state
-    hops.forEach(h=>{h.classList.add("live"); h.querySelector(".cite").classList.add("show");});
+    ctx.beginPath(); ctx.arc(px,py,2.4,0,7); ctx.fillStyle=COL.deny; ctx.fill();
   }
 }
 
-/* ambient trace replay — periodically re-flow the current trace so it never stalls dead */
-let lastInteract=0;
-function markInteract(){ lastInteract=performance.now(); }
-wrap.addEventListener("mousedown", markInteract);
-wrap.addEventListener("wheel", markInteract, {passive:true});
-document.getElementById("modeSeg").addEventListener("click", markInteract);
-document.getElementById("runBtn").addEventListener("click", markInteract);
-function ambientReplay(){
-  // skip if user touched the graph/controls recently or a reveal is mid-flight
-  if(performance.now()-lastInteract < 6000) return;
-  if(revealTimer) return;
-  if(document.hidden) return;
-  runQuery(true);
-}
-setInterval(ambientReplay, 9000);
-
-/* mode segmented control */
-document.getElementById("modeSeg").addEventListener("click",e=>{
-  const b=e.target.closest("button"); if(!b) return;
-  [...e.currentTarget.children].forEach(x=>x.classList.toggle("on", x===b));
-  loadQuery(b.dataset.mode);
-  runQuery(true);
-});
-document.getElementById("runBtn").addEventListener("click",e=>{
-  const btn=e.currentTarget; btn.classList.add("busy");
-  loadQuery(trace.mode);
-  runQuery(true);
-  setTimeout(()=>btn.classList.remove("busy"), QUERIES[trace.mode].cites.length*620+300);
-});
-
-/* legend */
-const legend=document.getElementById("legend");
-COMM.forEach(c=>{
-  const row=document.createElement("div"); row.className="row"; row.dataset.c=c.id;
-  row.innerHTML=`<span class="chip" style="background:${c.color}"></span>${c.name}<small>${NODES.filter(n=>n.c===c.id).length}</small>`;
-  row.addEventListener("click",()=>{
-    activeComm = (activeComm===c.id)? null : c.id;
-    [...legend.querySelectorAll(".row")].forEach(r=>r.classList.toggle("dim", activeComm!==null && +r.dataset.c!==activeComm));
-  });
-  legend.appendChild(row);
-});
-
-/* ───────────────────────── QUADRANT (verifiability × explainability) ───────────────────────── */
-const qc=document.getElementById("quad"), qx=qc.getContext("2d");
-const QUAD_METHODS=[
-  {label:"형식증명", x:0.86, y:0.16, col:"#b18cff", note:"verifiable·unexplainable", ox:0, oy:0},
-  {label:"벡터검색", x:0.18, y:0.84, col:"#ff6f91", note:"explainable·unverifiable", ox:0, oy:0},
-  {label:"규칙엔진", x:0.72, y:0.62, col:"#ffa94d", note:"rule-based", ox:0, oy:0},
-  {label:"GraphRAG", x:0.66, y:0.70, col:"#5bd6ff", note:"균형점 · balance", star:true, ox:0, oy:0},
-];
-let qW,qH;
-function sizeQuad(){
-  const r=qc.parentElement.getBoundingClientRect();
-  qW=r.width; qH=r.height;
-  qc.width=qW*DPR; qc.height=qH*DPR; qc.style.width=qW+"px"; qc.style.height=qH+"px";
-  qx.setTransform(DPR,0,0,DPR,0,0);
-}
-function drawQuad(){
-  qx.clearRect(0,0,qW,qH);
-  const pad=30, w=qW-pad*1.4, h=qH-pad*1.2, ox=pad, oy=10;
-  const X=v=>ox+v*w, Y=v=>oy+(1-v)*h; // y: explainability up
-  // grid
-  qx.strokeStyle="rgba(26,32,48,.9)"; qx.lineWidth=1;
-  for(let i=0;i<=4;i++){
-    qx.beginPath(); qx.moveTo(X(i/4),Y(0)); qx.lineTo(X(i/4),Y(1)); qx.stroke();
-    qx.beginPath(); qx.moveTo(X(0),Y(i/4)); qx.lineTo(X(1),Y(i/4)); qx.stroke();
-  }
-  // axes
-  qx.strokeStyle="rgba(88,99,119,.55)"; qx.lineWidth=1.4;
-  qx.beginPath(); qx.moveTo(X(0),Y(0)); qx.lineTo(X(1),Y(0)); qx.stroke();
-  qx.beginPath(); qx.moveTo(X(0),Y(0)); qx.lineTo(X(0),Y(1)); qx.stroke();
-  // axis labels
-  qx.fillStyle="#586377"; qx.font="9px var(--mono),monospace"; qx.textAlign="center";
-  qx.fillText("검증가능성 →", X(0.5), Y(0)+18);
-  qx.save(); qx.translate(ox-16, oy+h/2); qx.rotate(-Math.PI/2);
-  qx.fillText("설명가능성 →", 0, 0); qx.restore();
-  // points
-  QUAD_METHODS.forEach(m=>{
-    const px=X(m.x), py=Y(m.y);
-    qx.beginPath(); qx.arc(px,py, m.star?7:5.5, 0,7);
-    qx.fillStyle=m.col; qx.fill();
-    if(m.star){ qx.strokeStyle="#fff"; qx.lineWidth=1.6; qx.stroke(); }
-    qx.fillStyle= m.star?"#cdeeff":"#c6cfde";
-    qx.font=`${m.star?"700 ":""}10.5px var(--sans),sans-serif`;
-    qx.textAlign = m.x>0.6?"right":"left";
-    const lx = m.x>0.6? px-10 : px+10;
-    qx.fillText(m.label, lx, py-4);
-    qx.fillStyle="#586377"; qx.font="8px var(--mono),monospace";
-    qx.fillText(m.note, lx, py+7);
-  });
+/* ───────────────── loop ───────────────── */
+let t0=null;
+function frame(ts){
+  if(t0===null) t0=ts;
+  const t=(ts-t0)/1000;
+  ctx.clearRect(0,0,W,H);
+  drawBoundary(t);
+  drawGraphiti(t);
+  drawEdges();
+  drawCanon();
+  drawPRGate(t);
+  drawAgents();
+  drawHermes();
+  drawFlows(t);
+  drawReject(t);
+  requestAnimationFrame(frame);
 }
 
-/* ───────────────────────── BOOT ───────────────────────── */
-function resizeAll(){ sizeGraph(); sizeQuad(); drawQuad(); }
-window.addEventListener("resize",resizeAll);
-
+/* ───────────────── boot ───────────────── */
 function boot(){
-  sizeGraph(); seed();
-  // settle layout quickly for crisp first paint
-  for(let i=0;i<260;i++){ simStep(1.0*Math.pow(0.985,i)); }
-  alpha=0.08; // small residual settling only
-  sizeQuad(); drawQuad();
-  // first-paint: hybrid query already traced, hops revealed
-  loadQuery("hybrid");
-  runQuery(false);
-  tick();
-  // reveal
+  resize();
+  requestAnimationFrame(frame);
   const veil=document.getElementById("veil");
   veil.classList.add("gone");
-  setTimeout(()=>veil.remove(),450);
+  setTimeout(()=>veil.remove(),520);
 }
-
+window.addEventListener("resize", resize);
 if(document.fonts && document.fonts.ready){
   Promise.race([document.fonts.ready, new Promise(r=>setTimeout(r,1200))]).then(boot);
-} else { window.addEventListener("load",boot); }
+} else { window.addEventListener("load", boot); }
 </script>
 </body>
 </html>

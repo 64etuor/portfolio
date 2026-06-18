@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>두 관점 · TWO PERSPECTIVES — 현장과 시스템, 하나의 화면</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SCENE · 두 관점 (TWO PERSPECTIVES)  —  씬4(실무자)+씬5(개발자) 통합 재구성
+  한 화면에서 실무자(FIELD)↔개발자(DEV) 관점이 거울처럼 교차하며 무한 루프.
+    · FIELD : 따뜻한 큰 한글 타이포 LEFT  +  제조 시안 라이브 몽타주 RIGHT
+              배경엔 떠있는 톱니바퀴(기어=제조/현장) — 35의 기어를 이식.
+    · DEV   : 거울 반전 — 차가운 시스템 몽타주 LEFT  +  타이포 RIGHT
+              배경은 코드/시스템 그리드로 전환, 기어는 물러난다.
+  하이라이트(또렷한 타이포+몽타주)가 중앙을 축으로 L↔R 로 건너간다.
+  단일 결정적 마스터 클록 — 난수/가짜로그 없음. 모든 모션은 시간/위상 함수.
+  미리보기는 현재 관점의 시안만 마운트(전환 구간에만 잠시 양측 크로스페이드).
+  개인/회사명 없음.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  :root{
+    --bg:#050505;
+    --phos:#e6e6e6;
+    --phos-dim:#8d8d8d;
+    --phos-deep:#3a3a3a;
+    /* FIELD — 현장/제조 : 따뜻한 액센트 */
+    --warm:#d98a3d;
+    --warm-bright:#f3c184;
+    --warm-deep:#6e451f;
+    /* DEV — 시스템/코드 : 차가운 액센트 */
+    --cold:#6ea8ff;
+    --cold-bright:#cfe0ff;
+    --cold-deep:#23467f;
+    --kr:"Pretendard","Pretendard Variable",-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+    --s:0.30;            /* iframe scale (JS sets) */
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);color:var(--phos);font-family:var(--kr);
+    overflow:hidden;-webkit-font-smoothing:antialiased;
+  }
+  .kr{word-break:keep-all;}
+
+  .stage{position:fixed;inset:0;overflow:hidden;background:
+    radial-gradient(128% 120% at 50% 48%, #0c0b0a 0%, #060607 54%, #030303 100%);}
+  #bg{position:absolute;inset:0;display:block;z-index:1;}
+
+  /* ───────── CRT / film shell ───────── */
+  .scan{position:fixed;inset:0;z-index:70;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0px,rgba(0,0,0,0) 2px,rgba(0,0,0,.20) 3px,rgba(0,0,0,0) 4px);
+    mix-blend-mode:multiply;opacity:.5;}
+  .vignette{position:fixed;inset:0;z-index:71;pointer-events:none;
+    background:radial-gradient(ellipse 140% 124% at 50% 50%,rgba(0,0,0,0) 56%,rgba(0,0,0,.62) 100%);}
+  .grain{position:fixed;inset:-50%;z-index:69;pointer-events:none;opacity:.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 1.12s steps(3) infinite;}
+  @keyframes grain{0%{transform:translate(0,0);}50%{transform:translate(-3%,2%);}100%{transform:translate(2%,-2%);}}
+
+  /* ───────── kicker (top) ───────── */
+  .kicker{position:absolute;top:5.0vh;left:0;right:0;z-index:40;
+    display:flex;justify-content:center;align-items:center;gap:15px;
+    font-family:var(--mono);font-size:11px;letter-spacing:5px;
+    color:var(--phos-dim);text-transform:uppercase;pointer-events:none;}
+  .kicker .rec{width:8px;height:8px;border-radius:50%;background:var(--warm);
+    box-shadow:0 0 10px var(--warm);animation:beat 2.6s ease-in-out infinite;}
+  @keyframes beat{0%,100%{opacity:.4;}50%{opacity:1;}}
+  .kicker .sep{color:var(--phos-deep);}
+  #vlabel{min-width:230px;text-align:center;letter-spacing:4px;
+    transition:color .5s;color:var(--warm);text-shadow:0 0 12px rgba(217,138,61,.4);}
+
+  /* ───────── HERO typography blocks ───────── */
+  .col{position:absolute;top:50%;z-index:30;pointer-events:none;
+    width:42vw;transform:translateY(-50%);will-change:transform,opacity,filter;}
+  #fieldText{left:5.2vw;text-align:left;}
+  #devText  {right:5.2vw;text-align:right;}
+
+  .l1{font-family:var(--kr);font-weight:800;
+    font-size:clamp(26px,3.4vw,62px);line-height:1.20;letter-spacing:-.022em;
+    color:var(--phos);text-shadow:0 0 4px rgba(255,255,255,.10);}
+  .l1 em{font-style:normal;position:relative;}
+  #fieldText .l1 em{color:var(--warm-bright);
+    text-shadow:0 0 22px rgba(217,138,61,.5),0 0 54px rgba(217,138,61,.22);}
+  #devText .l1 em{color:var(--cold-bright);
+    text-shadow:0 0 22px rgba(110,168,255,.5),0 0 50px rgba(110,168,255,.22);}
+  .l1 em::after{content:"";position:absolute;left:0;right:0;bottom:-.12em;height:3px;}
+  #fieldText .l1 em::after{background:linear-gradient(90deg,var(--warm),rgba(217,138,61,0));
+    box-shadow:0 0 12px rgba(217,138,61,.6);}
+  #devText .l1 em::after{background:linear-gradient(90deg,rgba(110,168,255,0),var(--cold));
+    box-shadow:0 0 12px rgba(110,168,255,.55);}
+
+  .l2{margin-top:3.0vh;font-family:var(--kr);font-weight:600;
+    font-size:clamp(16px,1.74vw,30px);line-height:1.46;letter-spacing:-.012em;
+    color:var(--phos-dim);max-width:30ch;}
+  #devText .l2{margin-left:auto;}
+  .l2 .dim{font-weight:600;display:inline-block;
+    font-family:var(--mono);font-size:.86em;letter-spacing:0;padding:0 .06em;}
+  #fieldText .l2 .dim{color:var(--cold);text-shadow:0 0 10px rgba(110,168,255,.18);}
+  #devText   .l2 .dim{color:var(--warm);text-shadow:0 0 10px rgba(217,138,61,.18);}
+  .l2 .strange{color:#b6bcc0;font-weight:700;display:inline-block;}
+
+  /* ───────── montage (live preview cascade) ───────── */
+  .montage{position:absolute;top:50%;z-index:20;
+    transform:translateY(-50%);will-change:transform,opacity,filter;}
+  #fieldMontage{right:4.6vw;}
+  #devMontage  {left:4.6vw;}
+  .montage .stackwrap{position:relative;
+    width:calc(1600px*var(--s));
+    height:calc(1000px*var(--s) + 2*var(--casY,120px));}
+
+  .pframe{position:absolute;left:0;top:0;
+    width:calc(1600px*var(--s));height:calc(1000px*var(--s));
+    border:1px solid rgba(255,255,255,.10);border-radius:7px;overflow:hidden;
+    background:#070707;box-shadow:0 18px 50px rgba(0,0,0,.62);
+    will-change:transform,opacity;}
+  #fieldMontage .pframe{border-color:rgba(217,138,61,.30);
+    box-shadow:0 18px 48px rgba(0,0,0,.6),0 0 26px rgba(217,138,61,.10);}
+  #devMontage .pframe{border-color:rgba(110,168,255,.30);
+    box-shadow:0 18px 48px rgba(0,0,0,.6),0 0 26px rgba(110,168,255,.10);}
+
+  .pframe .scaler{position:absolute;top:0;left:0;width:1600px;height:1000px;
+    transform:scale(var(--s));transform-origin:top left;}
+  .pframe iframe{width:1600px;height:1000px;border:0;display:block;
+    pointer-events:none;background:#070707;}
+  /* 패널 상단 라벨 태그 */
+  .ptag{position:absolute;top:0;left:0;right:0;z-index:3;
+    display:flex;justify-content:space-between;align-items:center;
+    padding:7px 11px;font-family:var(--mono);font-size:10px;letter-spacing:2px;
+    background:linear-gradient(180deg,rgba(4,4,4,.82),rgba(4,4,4,0));
+    color:var(--phos-dim);text-transform:uppercase;pointer-events:none;}
+  .ptag .live{display:flex;align-items:center;gap:6px;}
+  .ptag .live i{width:6px;height:6px;border-radius:50%;display:inline-block;
+    animation:beat 2s ease-in-out infinite;}
+  #fieldMontage .ptag b{color:var(--warm-bright);font-weight:600;}
+  #fieldMontage .ptag .live i{background:var(--warm);box-shadow:0 0 8px var(--warm);}
+  #devMontage .ptag b{color:var(--cold-bright);font-weight:600;}
+  #devMontage .ptag .live i{background:var(--cold);box-shadow:0 0 8px var(--cold);}
+  /* 패널 내부 인터랙션 차단(클릭 흡수 방지) */
+  .pframe .seal{position:absolute;inset:0;z-index:2;}
+
+  /* ───────── bottom perspective rail ───────── */
+  .rail{position:absolute;left:50%;bottom:5.4vh;transform:translateX(-50%);
+    z-index:40;width:min(640px,52vw);pointer-events:none;}
+  .rail .ends{display:flex;justify-content:space-between;align-items:baseline;
+    font-family:var(--mono);font-size:11px;letter-spacing:3px;margin-bottom:9px;}
+  .rail .ends .lf{color:var(--warm);text-shadow:0 0 10px rgba(217,138,61,.4);}
+  .rail .ends .rt{color:var(--cold);text-align:right;text-shadow:0 0 10px rgba(110,168,255,.4);}
+  .rail .ends small{display:block;font-size:8.5px;letter-spacing:2px;color:var(--phos-deep);margin-top:3px;}
+  .rail .ends .rt small{text-align:right;}
+  .rail .track{position:relative;height:2px;
+    background:linear-gradient(90deg,rgba(217,138,61,.55),rgba(141,141,141,.16) 50%,rgba(110,168,255,.55));}
+  .rail .tick{position:absolute;top:-3px;width:1px;height:8px;background:var(--phos-deep);}
+  .rail .puck{position:absolute;top:50%;left:0;width:13px;height:13px;border-radius:50%;
+    transform:translate(-50%,-50%);background:var(--warm);
+    box-shadow:0 0 14px rgba(217,138,61,.7);}
+
+  .footer{position:absolute;bottom:2.4vh;left:0;right:0;z-index:40;text-align:center;
+    font-family:var(--mono);font-size:9.5px;letter-spacing:3px;color:var(--phos-deep);pointer-events:none;}
+  .footer b{color:var(--phos-dim);font-weight:500;}
+
+  @media (max-width:820px){
+    .col{width:50vw;}
+    .l2{max-width:24ch;}
+    .rail{width:72vw;}
+    .kicker{font-size:9.5px;letter-spacing:3px;gap:9px;}
+    #vlabel{min-width:0;}
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <canvas id="bg"></canvas>
+
+  <div class="kicker">
+    <span class="kr">두 관점</span>
+    <span class="sep">/</span>
+    <span class="rec"></span>
+    <span id="vlabel" class="kr">실무자 관점 · FIELD EXPERT</span>
+    <span class="sep">/</span>
+    <span>TWO&nbsp;PERSPECTIVES</span>
+  </div>
+
+  <!-- FIELD 타이포 (좌) -->
+  <div id="fieldText" class="col">
+    <h1 class="l1 kr">현업은 <em>업무</em>를<br>가장 잘 압니다.</h1>
+    <h2 class="l2 kr">하지만 <span class="dim">시스템 언어</span>와
+      <span class="dim">개발 프로세스</span>는
+      <span class="strange">낯설게</span> 느껴집니다.</h2>
+  </div>
+
+  <!-- DEV 타이포 (우) -->
+  <div id="devText" class="col">
+    <h1 class="l1 kr">개발자는 <em>기술</em>을<br>가장 잘 압니다.</h1>
+    <h2 class="l2 kr">하지만 제조 <span class="dim">현장</span>의 복잡한
+      업무와 <span class="dim">경험</span>은
+      <span class="strange">알기 어렵습니다.</span></h2>
+  </div>
+
+  <!-- FIELD 몽타주 (우) : 제조 시안 -->
+  <div id="fieldMontage" class="montage">
+    <div class="stackwrap">
+      <div class="pframe" data-i="0" data-src="11-weld-thermal.html">
+        <div class="ptag"><b>레이저 용접 · THERMAL</b><span class="live"><i></i>LIVE</span></div>
+        <div class="scaler"><iframe loading="lazy" scrolling="no" title="laser welding preview"></iframe></div>
+        <div class="seal"></div>
+      </div>
+      <div class="pframe" data-i="1" data-src="12-cmm-metrology.html">
+        <div class="ptag"><b>CMM 측정 · METROLOGY</b><span class="live"><i></i>LIVE</span></div>
+        <div class="scaler"><iframe loading="lazy" scrolling="no" title="cmm metrology preview"></iframe></div>
+        <div class="seal"></div>
+      </div>
+      <div class="pframe" data-i="2" data-src="16-robot-pendant.html">
+        <div class="ptag"><b>로봇 교시 · PENDANT</b><span class="live"><i></i>LIVE</span></div>
+        <div class="scaler"><iframe loading="lazy" scrolling="no" title="robot pendant preview"></iframe></div>
+        <div class="seal"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DEV 몽타주 (좌) : 개발 시안 -->
+  <div id="devMontage" class="montage">
+    <div class="stackwrap">
+      <div class="pframe" data-i="0" data-src="22-db-architecture.html">
+        <div class="ptag"><b>DB 아키텍처 · SCHEMA</b><span class="live"><i></i>LIVE</span></div>
+        <div class="scaler"><iframe loading="lazy" scrolling="no" title="db architecture preview"></iframe></div>
+        <div class="seal"></div>
+      </div>
+      <div class="pframe" data-i="1" data-src="26-graphrag.html">
+        <div class="ptag"><b>컨트롤플레인 · GRAPH</b><span class="live"><i></i>LIVE</span></div>
+        <div class="scaler"><iframe loading="lazy" scrolling="no" title="control plane preview"></iframe></div>
+        <div class="seal"></div>
+      </div>
+      <div class="pframe" data-i="2" data-src="39-ide-coding.html">
+        <div class="ptag"><b>IDE 코딩 · EDITOR</b><span class="live"><i></i>LIVE</span></div>
+        <div class="scaler"><iframe loading="lazy" scrolling="no" title="ide coding preview"></iframe></div>
+        <div class="seal"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rail">
+    <div class="ends">
+      <span class="lf">실무자<small>FIELD · 현장 / 제조</small></span>
+      <span class="rt">개발자<small>DEV · 시스템 / 코드</small></span>
+    </div>
+    <div class="track">
+      <span class="tick" style="left:0%"></span>
+      <span class="tick" style="left:50%"></span>
+      <span class="tick" style="left:100%"></span>
+      <span class="puck" id="puck"></span>
+    </div>
+  </div>
+  <div class="footer kr">두 관점은 서로를 <b>완전히</b> 알지 못합니다 — 그래서 <b>잇는 사람</b>이 필요합니다</div>
+
+  <div class="grain"></div>
+  <div class="scan"></div>
+  <div class="vignette"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ════════ refs ════════ */
+  const cv=document.getElementById('bg'), g=cv.getContext('2d');
+  const root=document.documentElement;
+  const fieldText=document.getElementById('fieldText');
+  const devText=document.getElementById('devText');
+  const fieldMon=document.getElementById('fieldMontage');
+  const devMon=document.getElementById('devMontage');
+  const fieldPanels=Array.from(fieldMon.querySelectorAll('.pframe'));
+  const devPanels=Array.from(devMon.querySelectorAll('.pframe'));
+  const vlabel=document.getElementById('vlabel');
+  const puck=document.getElementById('puck');
+
+  let W=0,H=0,DPR=Math.min(window.devicePixelRatio||1,2);
+
+  /* ════════ color helpers ════════ */
+  const WARM=[217,138,61], WARMB=[243,193,132], WARMD=[110,69,31];
+  const COLD=[110,168,255], COLDB=[207,224,255], COLDD=[35,70,127];
+  const DIM=[141,141,141];
+  const mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
+  const rgba=(c,a)=>'rgba('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+','+a+')';
+  const clamp=(a,b,v)=>v<a?a:v>b?b:v;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const ease=x=>{x=clamp(0,1,x);return x*x*(3-2*x);};
+  const ramp=(a,b,x)=>ease((x-a)/(b-a));
+
+  /* ════════ iframe scale + cascade geometry ════════ */
+  let SCALE=0.30, CASY=120, CASX=46, PANW=480, PANH=300;
+  function geo(){
+    const panelW=clamp(330, W*0.30, 600);
+    SCALE=panelW/1600;
+    PANW=1600*SCALE; PANH=1000*SCALE;
+    CASY=PANH*0.46;            // 세로 캐스케이드 간격(겹쳐 쌓임)
+    CASX=PANW*0.10;            // 가로 살짝 어긋남
+    root.style.setProperty('--s', SCALE.toFixed(5));
+    document.querySelectorAll('.stackwrap').forEach(s=>{
+      s.style.setProperty('--casY', CASY.toFixed(1)+'px');
+      s.style.height=(PANH+2*CASY)+'px';
+    });
+  }
+
+  function resize(){
+    W=window.innerWidth;H=window.innerHeight;
+    cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';
+    g.setTransform(DPR,0,0,DPR,0,0);
+    geo();
+    buildBg();
+  }
+  window.addEventListener('resize',resize);
+
+  /* ════════ iframe mount management (현재 관점만 로드) ════════ */
+  function setMounted(panels, on){
+    panels.forEach(p=>{
+      const ifr=p.querySelector('iframe');
+      const src=p.getAttribute('data-src');
+      if(on){ if(ifr.getAttribute('src')!==src) ifr.setAttribute('src',src); }
+      else  { if(ifr.getAttribute('src')) ifr.removeAttribute('src'); }
+    });
+  }
+  let fieldMounted=null, devMounted=null;
+  function reconcileMount(fieldVis, devVis){
+    const wantF=fieldVis>0.012, wantD=devVis>0.012;
+    if(wantF!==fieldMounted){ setMounted(fieldPanels, wantF); fieldMounted=wantF; }
+    if(wantD!==devMounted){ setMounted(devPanels, wantD); devMounted=wantD; }
+  }
+
+  /* ════════ background scene model ════════ */
+  let gears=[], codeCols=[], archBox=[];
+  function buildBg(){
+    // ── 기어(현장/제조) : 떠있는 톱니바퀴, 거울 양측에 분포 ──
+    gears=[
+      {x:W*0.770, y:H*0.345, r:H*0.150, teeth:16, ph:0.0,  spd: 0.085},
+      {x:W*0.770+H*0.150*1.32, y:H*0.345+H*0.150*0.55, r:H*0.092, teeth:11, ph:0.7, spd:-0.124},
+      {x:W*0.660, y:H*0.660, r:H*0.110, teeth:13, ph:1.9, spd:-0.103},
+      {x:W*0.880, y:H*0.700, r:H*0.066, teeth:9,  ph:3.1, spd: 0.150},
+    ];
+    // ── 코드 컬럼(시스템/개발) : 좌측 흐르는 토큰 컬럼 ──
+    const TOK=[
+      'const system = compose(','  pipeline, schema,','  contract, resolver','})',
+      '','function resolve(node){','  return graph.walk(node)','}','',
+      'class Service extends Core {}','','api ⟶ model ⟶ store',
+    ];
+    codeCols=[
+      {x:W*0.075, y:H*0.250, lines:TOK, lh:H*0.040},
+      {x:W*0.280, y:H*0.430, lines:TOK, lh:H*0.038},
+    ];
+    // ── 아키텍처 박스(시스템 그리드 포인트) ──
+    const ax=W*0.150, ay=H*0.270, cw=W*0.090, ch=H*0.092, gx=W*0.130, gy=H*0.220;
+    archBox=[
+      {label:'API',     x:ax,    y:ay},
+      {label:'SERVICE', x:ax+gx, y:ay},
+      {label:'MODEL',   x:ax,    y:ay+gy},
+      {label:'SCHEMA',  x:ax+gx, y:ay+gy},
+    ].map(m=>({...m,w:cw,h:ch,cx:m.x+cw/2,cy:m.y+ch/2}));
+  }
+
+  /* ════════ master timeline (seamless loop) ════════ */
+  const CYCLE=24.0;
+  // perspective p : 0 = FIELD … 1 = DEV
+  function persp(f){
+    if(f<0.38) return 0;
+    if(f<0.50) return ease((f-0.38)/0.12);
+    if(f<0.88) return 1;
+    return 1-ease((f-0.88)/0.12);     // f=1 → 0, 루프 봉합
+  }
+  const _off=(parseFloat(new URLSearchParams(location.search).get('t'))||0);
+  let t0=null;
+
+  /* ════════ draw ════════ */
+  function frame(now){
+    if(t0===null)t0=now;
+    const time=(now-t0)/1000 + _off;
+    const f=(time%CYCLE)/CYCLE;
+    const p=persp(f);                 // 0..1
+    const sf=ease(p);                 // smoothed
+    const fieldVis=1-sf, devVis=sf;
+
+    /* ── 배경 캔버스 ── */
+    g.clearRect(0,0,W,H);
+    drawGears(time, fieldVis);
+    drawSystem(time, devVis);
+    drawSeam(time, sf);               // 중앙 초점 시임 — 하이라이트 이동감
+
+    /* ── 마운트 reconcile ── */
+    reconcileMount(fieldVis, devVis);
+
+    /* ── 타이포 크로스 ── */
+    applyText(fieldText, fieldVis, sf, -1);
+    applyText(devText,   devVis,  sf, +1);
+
+    /* ── 몽타주 크로스 + 스태거 ── */
+    applyMontage(fieldMon, fieldPanels, fieldVis, sf, +1);  // 우측 → 전환 시 중앙으로 물러남
+    applyMontage(devMon,   devPanels,   devVis,  sf, -1);   // 좌측
+
+    /* ── HUD ── */
+    puck.style.left=(sf*100).toFixed(2)+'%';
+    const pc=mix(WARM,COLD,sf);
+    puck.style.background=rgba(mix(WARMB,COLDB,sf),1);
+    puck.style.boxShadow='0 0 14px '+rgba(pc,0.7);
+    setLabel(p, pc);
+
+    requestAnimationFrame(frame);
+  }
+
+  /* ── 타이포 적용 : 또렷↔물러남 ── */
+  function applyText(el, vis, sf, dir){
+    // dir -1 = field(좌, 떠날 때 왼쪽으로) / +1 = dev(우, 들어올 때 오른쪽에서)
+    const out=1-vis;                        // 0 또렷 … 1 사라짐
+    const tx = dir<0 ? lerp(0,-60,sf) : lerp(60,0,sf);
+    const blur = out*3.2;
+    el.style.opacity = ease(vis).toFixed(3);
+    el.style.filter = blur>0.05 ? 'blur('+blur.toFixed(2)+'px)' : 'none';
+    el.style.transform = 'translateY(-50%) translateX('+tx.toFixed(1)+'px)';
+  }
+
+  /* ── 몽타주 적용 : 컨테이너 물러남 + 패널 위→아래 스태거 ── */
+  function applyMontage(box, panels, vis, sf, dir){
+    const out=1-vis;
+    // 컨테이너 : 떠날 때 중앙쪽으로 살짝 밀리며 축소·블러
+    const cx = dir>0 ? lerp(0, 46, sf) : lerp(-46, 0, sf);
+    const sc = vis>=1 ? 1 : lerp(0.92,1,ease(vis));
+    box.style.opacity = ease(vis).toFixed(3);
+    box.style.filter = out>0.02 ? 'blur('+(out*5).toFixed(2)+'px)' : 'none';
+    box.style.transform = 'translateY(-50%) translateX('+cx.toFixed(1)+'px) scale('+sc.toFixed(3)+')';
+    // 패널 : 위→아래 스태거 reveal (vis 가 차오르며 0→1)
+    panels.forEach((pf,i)=>{
+      const rev = ease(clamp(0,1,(vis - i*0.16)/0.46));
+      const ty = i*CASY + lerp(46,0,rev);        // 캐스케이드 + 등장 슬라이드
+      const tx = i*CASX;
+      pf.style.opacity = rev.toFixed(3);
+      pf.style.transform = 'translate('+tx.toFixed(1)+'px,'+ty.toFixed(1)+'px)';
+      pf.style.zIndex = 10+i;
+    });
+  }
+
+  /* ── 기어(현장) : 떠있는 톱니바퀴, fieldVis 로 점등·물러남 ── */
+  function drawGears(time, vis){
+    if(vis<0.01) return;
+    const recede = 1-vis;                        // 물러날수록 축소·흐림
+    g.save();
+    for(const ge of gears){
+      const rot=time*ge.spd + ge.ph;
+      const r=ge.r*lerp(0.88,1,vis);
+      const a=(0.05+0.05*Math.sin(time*0.4+ge.ph))*vis;   // 은은한 호흡
+      g.save();
+      g.translate(ge.x, ge.y);
+      g.rotate(rot);
+      // 톱니 외곽
+      g.strokeStyle=rgba(WARM, 0.30*vis);
+      g.lineWidth=lerp(2.4,1.0,recede);
+      g.shadowColor=rgba(WARM,0.30*vis); g.shadowBlur=14*vis;
+      g.beginPath();
+      const ro=r, ri=r*0.80, rr2=r*0.74;
+      for(let i=0;i<ge.teeth*2;i++){
+        const ang=i/(ge.teeth*2)*Math.PI*2;
+        const rr=(i%2===0)?ro:ri;
+        const px=Math.cos(ang)*rr, py=Math.sin(ang)*rr;
+        i===0?g.moveTo(px,py):g.lineTo(px,py);
+      }
+      g.closePath(); g.stroke();
+      g.shadowBlur=0;
+      // 내부 림 + 허브
+      g.strokeStyle=rgba(WARM,0.22*vis); g.lineWidth=1;
+      g.beginPath(); g.arc(0,0,r*0.62,0,Math.PI*2); g.stroke();
+      g.beginPath(); g.arc(0,0,r*0.20,0,Math.PI*2); g.stroke();
+      // 스포크
+      for(let s=0;s<4;s++){
+        const ang=s/4*Math.PI*2;
+        g.beginPath();
+        g.moveTo(Math.cos(ang)*r*0.20, Math.sin(ang)*r*0.20);
+        g.lineTo(Math.cos(ang)*r*0.62, Math.sin(ang)*r*0.62);
+        g.stroke();
+      }
+      // 은은한 채움 글로우
+      const rg=g.createRadialGradient(0,0,0,0,0,r);
+      rg.addColorStop(0, rgba(WARM, a*0.9));
+      rg.addColorStop(1, rgba(WARM, 0));
+      g.fillStyle=rg; g.beginPath(); g.arc(0,0,r,0,Math.PI*2); g.fill();
+      g.restore();
+    }
+    g.restore();
+  }
+
+  /* ── 시스템(개발) : 코드 컬럼 + 아키텍처 + 그리드, devVis 로 점등 ── */
+  function drawSystem(time, vis){
+    if(vis<0.01) return;
+    // 미세 그리드
+    g.save();
+    g.strokeStyle=rgba(COLD, 0.030*vis); g.lineWidth=1;
+    const step=52;
+    for(let x=W*0.03;x<W*0.55;x+=step){
+      g.beginPath(); g.moveTo(x,H*0.12); g.lineTo(x,H*0.90); g.stroke();
+    }
+    for(let y=H*0.14;y<H*0.90;y+=step){
+      g.beginPath(); g.moveTo(W*0.03,y); g.lineTo(W*0.55,y); g.stroke();
+    }
+    g.restore();
+
+    // 아키텍처 박스 + 트레이스
+    g.save();
+    g.textAlign='center'; g.textBaseline='middle';
+    // 트레이스(직교)
+    g.strokeStyle=rgba(COLD,0.26*vis); g.lineWidth=1.3;
+    const link=(a,b,h)=>{const k=h?[b.cx,a.cy]:[a.cx,b.cy];
+      g.beginPath();g.moveTo(a.cx,a.cy);g.lineTo(k[0],k[1]);g.lineTo(b.cx,b.cy);g.stroke();};
+    if(archBox.length){
+      link(archBox[0],archBox[1],true);
+      link(archBox[0],archBox[2],false);
+      link(archBox[3],archBox[1],false);
+      link(archBox[2],archBox[3],true);
+    }
+    // 스캔 패킷(트레이스를 따라 흐름)
+    const cphase=(time%5.0)/5.0;
+    if(archBox.length){
+      const a=archBox[0], b=archBox[1];
+      const px=lerp(a.cx,b.cx,cphase), py=a.cy;
+      g.fillStyle=rgba(COLDB,0.85*vis);
+      g.shadowColor=rgba(COLD,1); g.shadowBlur=12*vis;
+      g.beginPath(); g.arc(px,py,2.4,0,Math.PI*2); g.fill();
+      g.shadowBlur=0;
+    }
+    for(const m of archBox){
+      g.strokeStyle=rgba(COLD,0.55*vis); g.lineWidth=1.4;
+      g.shadowColor=rgba(COLD,0.4*vis); g.shadowBlur=12*vis;
+      roundRect(m.x,m.y,m.w,m.h,6); g.stroke(); g.shadowBlur=0;
+      g.fillStyle=rgba(COLDD,0.14*vis); roundRect(m.x,m.y,m.w,m.h,6); g.fill();
+      g.font="700 "+Math.max(10,Math.min(14,W*0.0084))+"px 'JetBrains Mono',monospace";
+      g.fillStyle=rgba(COLDB,0.85*vis);
+      g.fillText(m.label, m.cx, m.cy);
+    }
+    g.restore();
+
+    // 흐르는 코드 컬럼
+    g.save();
+    g.textAlign='start'; g.textBaseline='alphabetic';
+    const fs=Math.max(10,Math.min(15,W*0.0090));
+    g.font='500 '+fs+"px 'JetBrains Mono', monospace";
+    for(const col of codeCols){
+      const drift=(time*0.6)%(col.lh*2);
+      for(let li=0;li<col.lines.length;li++){
+        const y=col.y+li*col.lh - drift;
+        if(y<H*0.10||y>H*0.92) continue;
+        const glow=(li===Math.floor((time*0.9)%col.lines.length))?0.18:0;
+        const isKw=/^(const|function|class|return)/.test(col.lines[li].trim());
+        const c=isKw?COLD:DIM;
+        g.fillStyle=rgba(c, (isKw?0.55:0.34)*vis + glow*vis);
+        if(isKw){g.shadowColor=rgba(COLD,0.5*vis);g.shadowBlur=8*vis;} else g.shadowBlur=0;
+        g.fillText(col.lines[li], col.x, y);
+      }
+    }
+    g.shadowBlur=0;
+    g.restore();
+  }
+
+  /* ── 중앙 시임 : 또렷한 쪽을 향한 부드러운 글로우 밴드(하이라이트 이동) ── */
+  function drawSeam(time, sf){
+    // 활성 측(타이포 쪽)에 가까운 곳으로 미세 글로우. field=좌, dev=우.
+    const fx = lerp(W*0.49, W*0.51, sf) + Math.sin(time*0.5)*W*0.006;
+    const band=W*0.055;
+    const col=mix(WARM,COLD,sf);
+    const gr=g.createLinearGradient(fx-band,0,fx+band,0);
+    gr.addColorStop(0, rgba(col,0));
+    gr.addColorStop(0.5, rgba(col,0.028));
+    gr.addColorStop(1, rgba(col,0));
+    g.fillStyle=gr; g.fillRect(fx-band,0,band*2,H);
+    // hairline
+    g.strokeStyle=rgba(col,0.07); g.lineWidth=1;
+    g.setLineDash([2,7]);
+    g.beginPath(); g.moveTo(fx,H*0.15); g.lineTo(fx,H*0.85); g.stroke();
+    g.setLineDash([]);
+  }
+
+  /* ── kicker 라벨 ── */
+  let _lab='';
+  function setLabel(p, col){
+    let txt;
+    if(p<0.12) txt='실무자 관점 · FIELD EXPERT';
+    else if(p<0.50) txt='관점 전환 중 · CROSSING…';
+    else if(p<0.88) txt='개발자 관점 · DEVELOPER';
+    else txt='관점 전환 중 · CROSSING…';
+    const c=rgba(col,1);
+    if(txt!==_lab){ _lab=txt; vlabel.textContent=txt; }
+    vlabel.style.color=c;
+    vlabel.style.textShadow='0 0 12px '+rgba(col,0.45);
+  }
+
+  /* ── helpers ── */
+  function roundRect(x,y,w,h,r){
+    g.beginPath();
+    g.moveTo(x+r,y);
+    g.arcTo(x+w,y,x+w,y+h,r);
+    g.arcTo(x+w,y+h,x,y+h,r);
+    g.arcTo(x,y+h,x,y,r);
+    g.arcTo(x,y,x+w,y,r);
+    g.closePath();
+  }
+
+  /* ── boot (폰트 준비 후, headless 안전 폴백) ── */
+  function boot(){ resize(); requestAnimationFrame(frame); }
+  if(document.fonts && document.fonts.ready){
+    let on=false; const go=()=>{if(!on){on=true;boot();}};
+    document.fonts.ready.then(go); setTimeout(go,650);
+  } else boot();
+})();
+</script>
+</body>
+</html>

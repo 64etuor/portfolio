@@ -828,6 +828,10 @@ requestAnimationFrame(function(ts){ _raf_now=ts; requestAnimationFrame(_tick); }
   let pCur=15, pTarget=15;
   let phase='blocked'; // 'blocked' | 'checking' | 'green'
   let autoBlockTimer=0; // ms countdown after GREEN
+  // auto-driver so the health-check sequence keeps looping unattended (film autoplay);
+  // user clicks still override and re-arm the same loop.
+  let userInteracted=false;
+  let autoStartTimer=2600; // ms before the sequence auto-starts again while idle/blocked
 
   function lerp(a,b,t){ return a+(b-a)*t; }
   function applyGaugeRaw(p){
@@ -838,6 +842,7 @@ requestAnimationFrame(function(ts){ _raf_now=ts; requestAnimationFrame(_tick); }
 
   function setBlocked(){
     pTarget=15; pCur=15; phase='blocked'; autoBlockTimer=0;
+    autoStartTimer=2600; // re-arm auto-start so the loop restarts after a beat
     gauge.setAttribute('stroke','var(--trip)'); pct.setAttribute('fill','var(--trip)');
     box.setAttribute('stroke','var(--trip)');
     status.textContent="WAITING"; status.setAttribute('fill','var(--trip)');
@@ -855,7 +860,9 @@ requestAnimationFrame(function(ts){ _raf_now=ts; requestAnimationFrame(_tick); }
   }
 
   function setGreen(){
-    phase='green'; pCur=0; pTarget=0; autoBlockTimer=7000;
+    // auto-driven GREEN holds briefly so the sequence keeps cycling; a manual
+    // run lingers longer so the user can read the ALLOWED state.
+    phase='green'; pCur=0; pTarget=0; autoBlockTimer=userInteracted?7000:2400;
     gauge.setAttribute('stroke','var(--accent3)'); pct.setAttribute('fill','var(--accent3)');
     box.setAttribute('stroke','var(--accent3)');
     status.textContent="GREEN"; status.setAttribute('fill','var(--accent3)');
@@ -866,19 +873,26 @@ requestAnimationFrame(function(ts){ _raf_now=ts; requestAnimationFrame(_tick); }
   setBlocked();
 
   _listeners.push(function(dt){
-    if(phase==='checking'){
+    if(phase==='blocked'){
+      // unattended autoplay: drive the health-check sequence on a loop so it
+      // never sits frozen at BLOCKED during the film's few seconds on screen.
+      autoStartTimer -= dt;
+      if(autoStartTimer <= 0){ startCheck(); }
+    } else if(phase==='checking'){
       // ease toward 0
       pCur = lerp(pCur, pTarget, Math.min(dt/600, 1));
       applyGaugeRaw(pCur);
       if(pCur < 0.3){ setGreen(); }
     } else if(phase==='green'){
       autoBlockTimer -= dt;
+      // hold GREEN briefly when auto-driven, longer right after a manual click.
       if(autoBlockTimer <= 0){ setBlocked(); }
     }
   });
 
   badge.addEventListener('click',function(e){
     e.stopPropagation();
+    userInteracted=true;
     if(phase==='blocked'){ startCheck(); }
     else if(phase==='green'){ setBlocked(); }
     else { /* checking - ignore */ }

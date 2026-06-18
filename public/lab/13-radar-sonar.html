@@ -185,6 +185,9 @@
   }
   .track-row.in{opacity:1;transform:none;animation:acquire .5s ease;}
   @keyframes acquire{0%{background:rgba(46,255,163,.4);}100%{background:transparent;}}
+  /* re-confirm pulse on later sweep passes -- keeps the table feeling live without resetting the row */
+  .track-row.reack{animation:reack .5s ease;}
+  @keyframes reack{0%{background:rgba(46,255,163,.22);}100%{background:transparent;}}
   .track-row:hover{background:rgba(46,255,163,.08);}
   .track-row.sel{background:rgba(255,176,49,.14);border-left:2px solid var(--amber);}
   .track-row .id{font-family:'IBM Plex Sans KR',sans-serif;font-size:10px;color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -588,9 +591,24 @@
       if(crossed){
         c._emphasis = 1;
         if(!c._detected){ c._detected=true; onAcquire(c); }
+        else { onReacquire(c); } // sweep keeps re-confirming detected signals -> live log never goes quiet
       }
     });
     prevSweep = sweepAngle;
+  }
+
+  // ---- re-acquire: on every later sweep pass over an already-detected signal,
+  // keep the live log flowing + briefly replay the row acquire flash. Throttled
+  // so the ticker reads as a continuous confirmation stream, not a flood.
+  let _lastReannounce = 0;
+  function onReacquire(c){
+    const now = performance.now();
+    if(now - _lastReannounce < 1400) return; // pace the log
+    _lastReannounce = now;
+    const vk = c._verified ? '상태 고정 유지' : '확인 중';
+    setTicker('재확인 -- TRK-'+String(c._trk).padStart(2,'0')+' · '+c.id+' · '+PHASE_LABEL[c._phase]+' · '+vk);
+    const row=[...document.querySelectorAll('.track-row')].find(function(r){return +r.dataset.idx===CONTACTS.indexOf(c);});
+    if(row){ row.classList.remove('reack'); void row.offsetWidth; row.classList.add('reack'); }
   }
 
   // ====== CONFIRM -> table populate ======

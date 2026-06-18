@@ -1088,11 +1088,18 @@ function resetToTree(){
   renderDAG(false);
 }
 async function autoSweep(){
-  await runScoring();           // Gate→Score→Cap→Tiebreaker animation
-  await waitRAF(3500);          // hold rank projection so viewer can read it
-  resetToTree();                // snap back to dependency tree
-  await waitRAF(3000);          // pause on tree before next cycle
-  autoLoopTimer = setTimeout(autoSweep, 0);   // next iteration (rAF-friendly via setTimeout 0)
+  try{
+    await runScoring();         // Gate→Score→Cap→Tiebreaker animation
+    await waitRAF(3500);        // hold rank projection so viewer can read it
+    resetToTree();              // snap back to dependency tree
+    await waitRAF(3000);        // pause on tree before next cycle
+  }catch(e){
+    // never let a single hiccup kill the loop — guarantee the sweep keeps repeating
+    running=false;
+    const b=document.getElementById("runBtn"); if(b) b.removeAttribute("disabled");
+  }
+  // next iteration — the sweep loops forever (no "dead screen" after one run)
+  autoLoopTimer = setTimeout(autoSweep, 600);
 }
 function startAutoLoop(){
   clearTimeout(autoLoopTimer);
@@ -1126,6 +1133,7 @@ let _liveTimer = null;
 const MAX_LIVE_ENTRIES = 28;
 
 function appendLiveLedger(){
+  try{
   const tmpl = LIVE_TEMPLATES[Math.floor(Math.random()*LIVE_TEMPLATES.length)];
   const entry = tmpl();
   _liveSeq++;
@@ -1157,9 +1165,10 @@ function appendLiveLedger(){
   }
   // update counter chip
   document.getElementById("cLedger").textContent = LEDGER.length + _liveSeq - 6;
-
-  // schedule next entry: random 1.2..3.5 s interval
+  }catch(e){ /* swallow — the log stream must never stall */ }
+  // schedule next entry: random 1.2..3.5 s interval (always reschedule, even on error)
   const delay = 1200 + Math.random()*2300;
+  clearTimeout(_liveTimer);
   _liveTimer = setTimeout(appendLiveLedger, delay);
 }
 
@@ -1188,43 +1197,10 @@ function startPulse(){
   _pulseRAF = requestAnimationFrame(pulseTick);
 }
 
-/* ---------- VALUE DISPLACEMENT MICRO-DRIFT ---------- */
-// Gently nudge magnitude bars on the detail panel to simulate live data
-let _driftRAF = null;
-let _driftLast = null;
-let _driftT = 0;
-function driftTick(ts){
-  if(_driftLast===null){ _driftLast=ts; }
-  const dt = Math.min(ts-_driftLast, 100);
-  _driftT += dt;
-  _driftLast = ts;
-  // micro-oscillate the magnitude fills (+-3 from base)
-  const scaleFill = document.getElementById("magScale");
-  const revFill   = document.getElementById("magRev");
-  if(scaleFill && revFill){
-    const base1 = parseFloat(scaleFill.dataset.base||scaleFill.style.width)||0;
-    const base2 = parseFloat(revFill.dataset.base||revFill.style.width)||0;
-    if(!scaleFill.dataset.base) scaleFill.dataset.base=base1;
-    if(!revFill.dataset.base)   revFill.dataset.base=base2;
-    const drift1 = 2.5*Math.sin(_driftT/900 + 0.3);
-    const drift2 = 2.0*Math.sin(_driftT/1100 + 1.1);
-    scaleFill.style.width = Math.max(0, Math.min(100, parseFloat(scaleFill.dataset.base)+drift1)).toFixed(1)+"%";
-    revFill.style.width   = Math.max(0, Math.min(100, parseFloat(revFill.dataset.base)+drift2)).toFixed(1)+"%";
-  }
-  // also nudge axis fills
-  document.querySelectorAll(".afill").forEach((f,i)=>{
-    const bw = parseFloat(f.dataset.base||f.dataset.w||0);
-    if(!f.dataset.base) f.dataset.base=bw;
-    const d = 1.5*Math.sin(_driftT/800 + i*0.7);
-    f.style.width = Math.max(0, Math.min(100, parseFloat(f.dataset.base)+d)).toFixed(1)+"%";
-  });
-  _driftRAF = requestAnimationFrame(driftTick);
-}
-function startDrift(){
-  if(_driftRAF) cancelAnimationFrame(_driftRAF);
-  _driftLast = null;
-  _driftRAF = requestAnimationFrame(driftTick);
-}
+/* ---------- (micro-drift removed) ----------
+   값(scale/irreversibility/5축)은 결정론적이다 — "같은 입력 = 같은 출력".
+   살아있는 느낌은 결정론을 해치지 않는 모션(RUN 스윕·레저 스트림·노드 하트비트)으로만 낸다.
+   미세진동은 결정론 주장과 충돌하므로 의도적으로 제거됨. */
 
 /* ---------- PRUNE (the blocked-action delight) ---------- */
 function attemptPrune(){
@@ -1372,9 +1348,8 @@ function boot(){
   tick(); setInterval(tick,1000);
   // Start auto-sweep after layout is stable (font metrics settled)
   setTimeout(startAutoLoop, 1800);
-  // Start continuous live animations
+  // Start continuous live animations (deterministic-safe: heartbeat + log stream only)
   startPulse();
-  startDrift();
   // Start live ledger streaming after a short delay (stagger from sweep)
   setTimeout(appendLiveLedger, 2400);
 }

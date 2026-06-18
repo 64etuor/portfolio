@@ -737,6 +737,14 @@ function pulseHeat(){
     b.style.height=(15+v*85)+"%";b.style.opacity=(0.25+v*0.75).toFixed(2);
   });
 }
+/* idle breathing — keeps attention bars alive between streams (never freezes) */
+function idleHeat(){
+  [...heat.children].forEach((b,k)=>{
+    const v=0.5+Math.sin(t*1.4+k*0.5)*0.5;
+    b.style.height=(15+v*30)+"%";b.style.opacity=(0.18+v*0.22).toFixed(2);
+  });
+}
+let idleHeatTimer=setInterval(idleHeat,110);
 
 /* light up latent points referenced in this answer */
 function retrieveFor(key){
@@ -882,6 +890,15 @@ const KEYS = ["who","meaning","vecsym","verify","pipeline","mfgai"];
 let cycleIdx = 0;
 let autoCycleTimer = null;
 
+/* ambient idle glow — softly re-lights random latent nodes between streams
+   so the semantic map keeps shimmering (never reads as a frozen frame) */
+let streaming = false;
+let ambientGlowTimer = setInterval(() => {
+  if (streaming || !nodes.length) return;
+  const n = nodes[(Math.random() * nodes.length) | 0];
+  n.lit = Math.max(n.lit, 0.55 + Math.random() * 0.35);
+}, 520);
+
 function scheduleNextCycle(delay) {
   clearTimeout(autoCycleTimer);
   autoCycleTimer = setTimeout(() => {
@@ -898,6 +915,7 @@ function scheduleNextCycle(delay) {
 
 async function runStreamAuto(key) {
   const my = ++runId;
+  streaming = true;
   stream.innerHTML = ""; caret.classList.remove("off");
   qtextEl.textContent = QTEXT[key];
   attnq.textContent = "q: " + QTEXT[key];
@@ -918,6 +936,7 @@ async function runStreamAuto(key) {
   const toks = tokenize(ANSWERS[key]);
   buildHeat(Math.min(48, Math.max(24, toks.length / 3 | 0)));
   attn.classList.add("on");
+  clearInterval(idleHeatTimer);           // hand heat over to the active pulse
   const heatTimer = setInterval(pulseHeat, 90);
 
   for (let k = 0; k < toks.length; k++) {
@@ -935,16 +954,17 @@ async function runStreamAuto(key) {
     d += (Math.random() - 0.5) * tempVal * 40;
     await wait(Math.max(6, d));
   }
-  if (my !== runId) { clearInterval(heatTimer); return; }
-  caret.classList.add("off");
+  if (my !== runId) { clearInterval(heatTimer); idleHeatTimer = setInterval(idleHeat, 110); return; }
   clearInterval(heatTimer);
-  [...heat.children].forEach(b => { b.style.height = "22%"; b.style.opacity = "0.2"; });
+  idleHeatTimer = setInterval(idleHeat, 110);   // resume breathing so bars never freeze
+  // caret keeps blinking during the gap (do NOT turn it off) — screen stays alive
   retr.classList.remove("on");
+  streaming = false;            // gap begins → ambient idle glow takes over
   latEl.textContent = ((performance.now() - t0) / 1000).toFixed(2) + "s";
   tpsEl.textContent = (totalTokens / Math.max((performance.now() - t0) / 1000, 0.05)).toFixed(1);
 
-  // schedule next auto cycle (pause 3.5s before next prompt)
-  scheduleNextCycle(3500);
+  // schedule next auto cycle (short pause so motion loops without a dead gap)
+  scheduleNextCycle(1600);
 }
 
 /* ════════════════════════════════════════════════════════════════

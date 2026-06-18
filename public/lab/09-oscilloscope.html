@@ -583,8 +583,9 @@
     sx.fillText(`CH1 ${state.voltPerDiv.toFixed(1)}V/div`, 150, SH-7);
     sx.fillStyle=COL.amber;
     sx.fillText(`TRIG ${state.trigEdge==='rise'?'↑':'↓'} ${(state.trigLevel*100).toFixed(0)}%`, 290, SH-7);
-    sx.fillStyle=state.running?COL.phos:COL.red;
-    sx.fillText(state.running?'● RUN':'■ STOP', 430, SH-7);
+    const holding = !manualOverride && auto.phase==='hold';
+    sx.fillStyle = holding ? COL.red : (state.running?COL.phos:COL.red);
+    sx.fillText(holding ? '■ HOLD' : (state.running?'● RUN':'■ STOP'), 430, SH-7);
     sx.fillStyle = state.doe>0.5?COL.phos:'#5a6a64';
     sx.fillText(`HOLD ${(state.doe*100|0)}%`, 520, SH-7);
     // top-right CTQ conformance readout
@@ -598,11 +599,34 @@
 
   function fmtTime(ms){ return ms<1 ? (ms*1000)+'µs' : ms+'ms'; }
 
+  // 지도카 line-stop banner shown while the auto cycle is holding the line.
+  function drawHoldBanner(){
+    sx.save();
+    const pulse = 0.55 + 0.45*Math.abs(Math.sin(state.t*4));
+    const bw=300, bh=46, bx=(SW-bw)/2, by=SH*0.16;
+    sx.globalAlpha=0.9;
+    sx.fillStyle='rgba(20,4,4,.78)';
+    roundRectS(bx,by,bw,bh,8); sx.fill();
+    sx.globalAlpha=pulse;
+    sx.strokeStyle=COL.red; sx.lineWidth=2; sx.shadowColor=COL.red; sx.shadowBlur=18;
+    roundRectS(bx,by,bw,bh,8); sx.stroke();
+    sx.shadowBlur=0; sx.globalAlpha=1;
+    sx.textAlign='center';
+    sx.fillStyle=COL.red; sx.font='bold 16px ui-monospace,monospace';
+    sx.fillText('■ 라인 정지 · JIDOKA', SW/2, by+20);
+    sx.fillStyle='#ffb3b3'; sx.font='10px ui-monospace,monospace';
+    sx.fillText('CTQ 이탈 표본 격리 → 역추적 → 자동 재가동', SW/2, by+36);
+    sx.textAlign='left';
+    sx.restore();
+  }
+  function roundRectS(x,y,w,h,r){sx.beginPath();sx.moveTo(x+r,y);sx.arcTo(x+w,y,x+w,y+h,r);sx.arcTo(x+w,y+h,x,y+h,r);sx.arcTo(x,y+h,x,y,r);sx.arcTo(x,y,x+w,y,r);sx.closePath();}
+
   function renderScope(){
     drawGraticule();
     drawTrigger();
     channels.forEach(drawTrace);
-    if(state.running) drawSweepBar();
+    if(sweepActive()) drawSweepBar();
+    if(!manualOverride && auto.phase==='hold') drawHoldBanner();
     drawScopeHUD();
   }
 
@@ -838,25 +862,86 @@
   reseedMeasure();
 
   // ====================================================================
-  // INSPECTION ROUTINE LOG (static, quiet)
+  // INSPECTION ROUTINE LOG (continuously flowing event feed)
   // ====================================================================
+  // Fixed roster of real inspection events; the feed cycles through them
+  // endlessly so the log never stalls at the bottom.
   const LOG_MSGS = [
-    '08:10  初物: start-up 5ea 검사, 용접높이/저항/간극 전 항목 OK',
-    '10:00  순회검사: 2h 주기, n=5 표본 채취, 작업조건 변경 없음',
-    '12:00  中物: mid-lot 5ea CTQ 재확인, 관리한계 내 유지',
-    '14:00  순회검사: JIG 위치 핀 마모 확인, 이상 없음',
-    '16:00  終物: lot close 판정 대기, MES 이력과 검사성적서 대조',
-    '보류 규칙: CTQ 이탈 표본은 격리 후 직전 합격품까지 역추적'
+    {t:'08:10', m:'初物: start-up 5ea 검사, 용접높이/저항/간극 전 항목 OK', k:'ok'},
+    {t:'10:00', m:'순회검사: 2h 주기, n=5 표본 채취, 작업조건 변경 없음', k:'ok'},
+    {t:'12:00', m:'中物: mid-lot 5ea CTQ 재확인, 관리한계 내 유지', k:'ok'},
+    {t:'14:00', m:'순회검사: JIG 위치 핀 마모 확인, 이상 없음', k:'info'},
+    {t:'15:20', m:'CTQ 이탈 감지: 용접높이 표본 격리, 라인 보류(지도카)', k:'hold'},
+    {t:'15:21', m:'직전 합격품까지 역추적, 원인 확인 후 라인 재가동', k:'info'},
+    {t:'16:00', m:'終物: lot close 판정, MES 이력과 검사성적서 대조', k:'ok'},
   ];
+  const LOG_COL = { ok:'#5cc8ff', info:'#6f857c', hold:COL.ch4 };
   const logWrap = document.createElement('div');
-  logWrap.style.cssText='overflow:hidden;max-height:96px;padding:7px 10px 5px;border-top:1px solid rgba(255,255,255,.06);font-size:9.5px;font-family:ui-monospace,"SF Mono",monospace;color:#6f857c;line-height:1.55;display:flex;flex-direction:column;gap:0';
+  logWrap.style.cssText='overflow:hidden;max-height:96px;padding:7px 10px 5px;border-top:1px solid rgba(255,255,255,.06);font-size:9.5px;font-family:ui-monospace,"SF Mono",monospace;line-height:1.55;display:flex;flex-direction:column;gap:0';
   document.querySelector('#loop').closest('.panel').appendChild(logWrap);
-  LOG_MSGS.forEach((msg, idx)=>{
+  const LOG_ROWS = 5;            // visible rows
+  let logHead = 0;              // index of newest event at bottom
+  function makeLogLine(entry){
     const el=document.createElement('div');
-    el.style.cssText='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:'+(idx<3 ? '#5cc8ff' : '#6f857c');
-    el.textContent=msg;
-    logWrap.appendChild(el);
-  });
+    el.style.cssText='white-space:nowrap;overflow:hidden;text-overflow:ellipsis;transition:opacity .5s ease;color:'+(LOG_COL[entry.k]||'#6f857c');
+    el.textContent=entry.t+'  '+entry.m;
+    return el;
+  }
+  function renderLogWindow(){
+    logWrap.innerHTML='';
+    for(let r=LOG_ROWS-1; r>=0; r--){
+      const idx=((logHead - r) % LOG_MSGS.length + LOG_MSGS.length) % LOG_MSGS.length;
+      const el=makeLogLine(LOG_MSGS[idx]);
+      if(r===0) el.style.opacity='1'; else el.style.opacity=String(0.45 + (LOG_ROWS-1-r)*0.14);
+      logWrap.appendChild(el);
+    }
+  }
+  renderLogWindow();
+  // Advance the feed on a steady cadence so events keep streaming.
+  let logTimer=0;
+  const LOG_INTERVAL=2.6;       // seconds between new events
+  function advanceLog(){
+    logHead=(logHead+1)%LOG_MSGS.length;
+    renderLogWindow();
+    // when the auto-anomaly event scrolls in, drive the line-stop demo
+    if(LOG_MSGS[logHead].k==='hold') triggerAutoHold();
+  }
+
+  // ====================================================================
+  // AUTO JIDOKA CYCLE — anomaly → line stop (hold) → auto reset → resume
+  // ====================================================================
+  // Runs autonomously (independent of the manual buttons) so the scene
+  // demonstrates the full stop/recover loop and never stays frozen.
+  // phases: 'inspect' (running, scanning) → 'hold' (containment applied,
+  // line paused) → 'reset' (re-trigger, line restarts) → back to inspect.
+  let manualOverride=false;     // set true if the user touches RUN/STOP or CTQ
+  const auto={ phase:'inspect', timer:0 };
+  const AUTO_HOLD_DUR=2.2;      // seconds the line stays held
+  const AUTO_RESET_DUR=0.9;     // brief reset before resuming inspection
+  function triggerAutoHold(){
+    if(manualOverride) return;
+    if(auto.phase!=='inspect') return;
+    auto.phase='hold'; auto.timer=0;
+    state.doeTarget=1;          // containment tightens the loop
+    loopT=0;                    // restart step response to show fast settle
+  }
+  function updateAuto(dt){
+    if(manualOverride) return;
+    auto.timer+=dt;
+    if(auto.phase==='hold'){
+      // line paused: freeze the sweep head but keep traces/phosphor alive
+      if(auto.timer>=AUTO_HOLD_DUR){ auto.phase='reset'; auto.timer=0; }
+    } else if(auto.phase==='reset'){
+      state.doeTarget=0;        // release containment, line re-arms
+      if(auto.timer>=AUTO_RESET_DUR){
+        auto.phase='inspect'; auto.timer=0;
+        sweepX=0; loopT=0;      // re-trigger a clean acquisition
+      }
+    }
+  }
+  // While held, the sweep should not advance (지도카 정지) but everything
+  // else keeps breathing so the scene stays alive.
+  function sweepActive(){ return state.running && auto.phase!=='hold'; }
 
   // ====================================================================
   // ANIMATION LOOP
@@ -864,6 +949,10 @@
   let last=performance.now();
   function frame(now){
     const dt=Math.min((now-last)/1000, 0.05); last=now;
+    updateAuto(dt);
+    // log feed keeps flowing on its own cadence
+    logTimer+=dt;
+    if(logTimer>=LOG_INTERVAL){ logTimer=0; advanceLog(); }
     if(state.running){
       state.t += dt;
       loopT += dt;
@@ -872,8 +961,10 @@
       // visual period: ~1.5s at default 2ms/div, scales with timePerDiv
       // sweepPeriod(s) = 1.5 * (timePerDiv/2)  => faster knob = faster sweep
       const sweepPeriod = 1.5 * (state.timePerDiv / 2);
-      sweepX += dt * (SW / sweepPeriod);
-      if(sweepX>SW) sweepX=0;
+      if(sweepActive()){                     // sweep pauses during 지도카 hold
+        sweepX += dt * (SW / sweepPeriod);
+        if(sweepX>SW) sweepX=0;
+      }
 
       // measure reseed
       mSeedTimer+=dt;
@@ -892,6 +983,14 @@
     document.getElementById('mDefect').textContent    = mState.defect.cur.toFixed(1);
     document.getElementById('mErrVal').textContent    = mState.errVal.cur.toFixed(3);
     document.getElementById('mStopResp').textContent  = mState.stopResp.cur.toFixed(1)+'ms';
+
+    // reflect auto jidoka phase in the top status pill
+    if(!manualOverride){
+      const holding = auto.phase==='hold';
+      acqDot.className='dot '+(holding?'stop':'run');
+      acqState.textContent = holding ? 'STOP · JIDOKA HOLD'
+        : (auto.phase==='reset' ? 'RESET · 재가동' : 'RUN · INSPECT');
+    }
 
     renderScope();
     renderLoop();
@@ -962,6 +1061,8 @@
   const acqDot=document.getElementById('acqDot');
   const acqState=document.getElementById('acqState');
   runBtn.addEventListener('click',()=>{
+    manualOverride=true;        // user takes over; stop the auto jidoka cycle
+    auto.phase='inspect'; auto.timer=0;
     state.running=!state.running;
     runBtn.dataset.state=state.running?'run':'stop';
     runSub.textContent=state.running?'검사 중':'정지됨';
@@ -972,6 +1073,8 @@
   // CTQ hold button
   const doeBtn=document.getElementById('doeBtn');
   doeBtn.addEventListener('click',()=>{
+    manualOverride=true;        // user takes over; stop the auto jidoka cycle
+    auto.phase='inspect'; auto.timer=0;
     const on=doeBtn.dataset.on==='1';
     doeBtn.dataset.on=on?'0':'1';
     state.doeTarget=on?0:1;

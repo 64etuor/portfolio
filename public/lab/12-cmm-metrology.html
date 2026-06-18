@@ -864,6 +864,56 @@ function genTimeline(){
   xrows.forEach((r,i)=>{
     timeline.push({t:t+1800+i*170,fn:()=>{ r.classList.add("show"); }});
   });
+
+  // ---- loop: hold the completed pipeline, then replay the whole cycle ----
+  const lastT = t+1800+xrows.length*170;
+  timeline.push({t:lastT+CYCLE_HOLD_MS, fn:()=>{ restartCycle(); }});
+}
+
+/* periodic full-cycle restart — replays one-shot timeline visuals
+   (spec-vs-measured fill, stage lighting, Cpk histogram/gauge, cleansing)
+   while the continuous streams (packets, live log, jitter) keep flowing. */
+const CYCLE_HOLD_MS = 5200;
+function restartCycle(){
+  // reset spec-vs-measured rows
+  FEATURES.forEach(f=>{
+    const r=rows[f.key]; if(!r) return;
+    r.classList.remove("show","flash","outrow");
+    r.querySelector(".meas").textContent="— —";
+    r.querySelector(".jud").innerHTML='<span class="tag" style="opacity:.3">대기</span>';
+  });
+  passCount=0; updatePassN();
+
+  // reset pipeline stage lights + trace app rows
+  for(let i=0;i<stageLit.length;i++) stageLit[i]=false;
+  traceRows.forEach(r=>r.classList.remove("on"));
+
+  // reset skill chips
+  chipEls.forEach(c=>c.classList.remove("on"));
+  eqCountEl.textContent="0/"+SKILLS.length;
+
+  // reset Cpk / histogram / verdict
+  cpkTarget=0; cpkShown=0; histReveal=0;
+  cpkNoteEl.textContent="데이터 수집 대기…";
+  verdictEl.classList.remove("on");
+
+  // reset cleansing panel rows (panel itself fades via .on toggle)
+  crossoverEl.classList.remove("on");
+  xrows.forEach(r=>r.classList.remove("show"));
+
+  // reset throughput counters
+  snTarget=0; dupTarget=0; dbTarget=0;
+  snShown=0; dupShown=0; dbShown=0;
+
+  // status back to ingest
+  statled.classList.remove("done");
+  statText.textContent="INGEST";
+
+  // rebuild timeline and rebase the clock so events replay from the top
+  genTimeline();
+  tlIndex=0;
+  started=performance.now();
+  nowMs=0;
 }
 
 function commitFeature(f){

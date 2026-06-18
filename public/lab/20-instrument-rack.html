@@ -212,6 +212,50 @@
   .stled.ok{color:var(--green)} .stled.ok .d{background:var(--green);box-shadow:0 0 6px var(--green)}
   .stled.amb{color:var(--amber)} .stled.amb .d{background:var(--amber);box-shadow:0 0 6px var(--amber)}
 
+  /* ===== instrument readouts (DMM / scope / gauge) ===== */
+  .instgrid{display:grid;grid-template-columns:1.1fr 1.3fr 1fr;gap:11px}
+  @media(max-width:880px){.instgrid{grid-template-columns:1fr}}
+  .inst{position:relative;border:1px solid var(--line2);border-radius:8px;
+    background:linear-gradient(180deg,#0a0f0c,#040806);
+    box-shadow:inset 0 0 34px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.04);
+    padding:12px 13px;overflow:hidden}
+  .inst::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.20) 0 2px,transparent 2px 4px);mix-blend-mode:multiply}
+  .insth{display:flex;align-items:center;gap:8px;margin-bottom:9px;position:relative;z-index:2}
+  .insth .it{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .insth .iu{margin-left:auto;font-family:"DM Mono",monospace;font-size:8.5px;color:#2a8a60;letter-spacing:.06em}
+  .insth .il{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 1.3s steps(2,end) infinite}
+
+  /* DMM digit roll */
+  .dmm{position:relative;z-index:2}
+  .dmm .dlabel{font-size:9px;color:var(--muted);letter-spacing:.04em;margin-bottom:6px}
+  .dmm .dwin{display:flex;align-items:flex-end;gap:1px;font-family:"DM Mono",monospace;
+    background:#020604;border:1px solid #103022;border-radius:6px;padding:8px 10px;
+    box-shadow:inset 0 0 16px rgba(0,0,0,.9)}
+  .dmm .sign{font-size:30px;font-weight:800;color:var(--green);line-height:.9;text-shadow:0 0 8px rgba(57,255,138,.35)}
+  .digit{position:relative;width:.64em;height:1em;overflow:hidden;font-size:34px;line-height:1;
+    color:var(--green);text-shadow:0 0 8px rgba(57,255,138,.35);font-weight:800}
+  .digit .col{position:absolute;left:0;top:0;display:flex;flex-direction:column;will-change:transform}
+  .digit .col span{height:1em;display:flex;align-items:center;justify-content:center}
+  .dmm .unit{font-size:18px;font-weight:800;color:var(--green);margin-left:3px;text-shadow:0 0 8px rgba(57,255,138,.35)}
+  .dmm .drange{display:flex;justify-content:space-between;margin-top:7px;
+    font-family:"DM Mono",monospace;font-size:8.5px;color:var(--muted2);letter-spacing:.04em}
+
+  /* scope */
+  .scope{position:relative;z-index:2}
+  .scopewrap{position:relative;border:1px solid #103022;border-radius:6px;background:#010503;overflow:hidden;
+    box-shadow:inset 0 0 20px rgba(0,0,0,.9)}
+  .scopewrap svg{display:block;width:100%;height:auto}
+  .scopefoot{display:flex;justify-content:space-between;margin-top:7px;
+    font-family:"DM Mono",monospace;font-size:8.5px;color:var(--muted2);letter-spacing:.04em}
+  .scopefoot b{color:var(--green)}
+
+  /* gauge */
+  .gauge{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center}
+  .gauge svg{display:block;width:100%;max-width:200px;height:auto}
+  .gauge .gcap{margin-top:4px;font-family:"DM Mono",monospace;font-size:8.5px;color:var(--muted2);letter-spacing:.05em;text-align:center}
+  .gauge .gcap b{color:var(--green)}
+
   /* ===== footer ===== */
   .footu{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   .chips{display:flex;gap:7px;flex-wrap:wrap}
@@ -358,6 +402,54 @@
             <div class="lt">인원·공수·계획·재고 개선</div>
             <div class="ld">생산계획·인원 운영·재고 관리를 정비해 재고 유지비와 운영 낭비를 축소.</div>
           </div>
+        </div>
+      </section>
+
+      <!-- ===== U4b: instrument readouts (DMM / scope / gauge) ===== -->
+      <section class="u" aria-label="계측 패널 — 측정 readout">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="modtitle">
+          <span class="uno">INSTRUMENTS</span>
+          <h3>계측 패널 — 측정으로 확정한 성과 readout</h3>
+          <span class="sub mono">DMM 절감률 · 원가 스코프 · OPEX 게이지 · live</span>
+        </div>
+        <div class="instgrid">
+
+          <!-- DMM: OPEX 절감률 -->
+          <div class="inst">
+            <div class="insth"><span class="il"></span><span class="it">DMM · 절감률</span><span class="iu">PERCENT · DC</span></div>
+            <div class="dmm">
+              <div class="dlabel">운영경비(OPEX) 절감률 — 실측</div>
+              <div class="dwin" id="dmmWin" aria-label="OPEX 절감률 마이너스 85 퍼센트">
+                <span class="sign">−</span>
+                <span class="digit" data-d="8"></span>
+                <span class="digit" data-d="5"></span>
+                <span class="unit">%</span>
+              </div>
+              <div class="drange"><span>RANGE 0–100%</span><span>HOLD · ENDPOINT</span></div>
+            </div>
+          </div>
+
+          <!-- Scope: 원가 하강 파형 -->
+          <div class="inst">
+            <div class="insth"><span class="il"></span><span class="it">Scope · 원가 트레이스</span><span class="iu" id="scopeUnit">100 → 15</span></div>
+            <div class="scope">
+              <div class="scopewrap">
+                <svg id="scopeSvg" viewBox="0 0 360 150" preserveAspectRatio="none" role="img" aria-label="기준 100에서 15까지 원가 하강 트레이스"></svg>
+              </div>
+              <div class="scopefoot"><span>BASE <b>100</b> idx</span><span>SWEEP · loop</span><span>END <b>15</b> idx</span></div>
+            </div>
+          </div>
+
+          <!-- Gauge: OPEX 게이지 -->
+          <div class="inst">
+            <div class="insth"><span class="il"></span><span class="it">Gauge · 잔여 OPEX</span><span class="iu">INDEX</span></div>
+            <div class="gauge">
+              <svg id="gaugeSvg" viewBox="0 0 200 124" role="img" aria-label="잔여 운영경비 게이지 — 100에서 15로"></svg>
+              <div class="gcap">바늘: 기준 100 → <b>잔여 15</b> · 스윕 반복</div>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -522,6 +614,7 @@
     var plotW = W - padL - padR, plotH = H - padT - padB;
     var maxV = 100;
     function yOf(v){ return padT + plotH * (1 - v/maxV); }
+    var wfBars = []; // collected for the looping fill animation
 
     function el(tag, attrs){
       var e = document.createElementNS(NS, tag);
@@ -573,6 +666,8 @@
       if(s.kind==="baseline"){ rect.setAttribute("stroke","#5a4422"); rect.setAttribute("stroke-width","1"); }
       else { rect.setAttribute("stroke","rgba(57,255,158,0.32)"); rect.setAttribute("stroke-width","1"); rect.setAttribute("filter","url(#wfGlow)"); }
       svg.appendChild(rect);
+      // remember for looping fill animation: bars grow from baseline level (yBot) up to yTop
+      wfBars.push({ rect:rect, yTop:yTop, yBot:yBot, h:h, kind:s.kind });
 
       // connector from previous bar top-of-drop
       if(prevTop !== null){
@@ -628,10 +723,231 @@
     filt.appendChild(blur); filt.appendChild(merge);
     defs.appendChild(filt);
     svg.insertBefore(defs, svg.firstChild);
+
+    /* ---------- looping waterfall fill animation ----------
+       Each bar grows from its baseline (yBot) up to its true top (yTop),
+       staggered left→right; once filled it holds, then the whole chart
+       resets and replays — endless loop. A subtle glow breathes throughout. */
+    var prefersReduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(!prefersReduce && wfBars.length){
+      var FILL = 520;   // ms per bar grow
+      var STAG = 230;   // ms stagger between bars
+      var HOLD = 2600;  // ms hold once fully filled
+      var lastT = wfBars.length*STAG + FILL;
+      var cycle = lastT + HOLD;
+      function ease(t){ return t<0?0 : t>1?1 : (1-Math.pow(1-t,3)); } // easeOutCubic
+
+      function frame(now){
+        var p = now % cycle;
+        for(var i=0;i<wfBars.length;i++){
+          var b = wfBars[i];
+          var local = (p - i*STAG) / FILL;        // 0..1 grow progress
+          var k = ease(local);
+          var curY = b.yBot + (b.yTop - b.yBot)*k; // start collapsed at baseline, rise to top
+          var curH = Math.max(0.5, b.yBot - curY);
+          b.rect.setAttribute("y", curY.toFixed(1));
+          b.rect.setAttribute("height", curH.toFixed(1));
+        }
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
   })();
 
-  /* ---------- gentle ambient pulse on header dot only (no heavy loops) ---------- */
-  // (CSS handles .dot.run blink; nothing else required — final state is static-correct)
+  /* ============================================================
+     INSTRUMENT READOUTS — continuous loops
+     All values are real (OPEX −85%, index 100→15); only the motion
+     loops. Respects prefers-reduced-motion (falls back to final value).
+  ============================================================ */
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- DMM: digit roll columns settling onto −85 ---------- */
+  (function(){
+    var digits = Array.prototype.slice.call(document.querySelectorAll("#dmmWin .digit"));
+    if(!digits.length) return;
+    digits.forEach(function(d){
+      var target = parseInt(d.getAttribute("data-d"),10);
+      var col = document.createElement("div");
+      col.className = "col";
+      // 0..9 then the target again at the bottom so the roll lands on target
+      var seq = [];
+      for(var n=0;n<=9;n++) seq.push(n);
+      seq.push(target);
+      seq.forEach(function(n){ var s=document.createElement("span"); s.textContent=n; col.appendChild(s); });
+      d.appendChild(col);
+      d._col = col; d._target = target;
+    });
+    if(reduce){
+      // park each column on its target digit
+      digits.forEach(function(d){ d._col.style.transform = "translateY(-"+(d._target)+"em)"; });
+      return;
+    }
+    var ROLL = 900;    // ms roll
+    var HOLD = 2200;   // ms hold on −85
+    var cycle = ROLL + HOLD;
+    function easeOut(t){ return 1-Math.pow(1-t,3); }
+    function tick(now){
+      digits.forEach(function(d,idx){
+        var off = idx*120; // slight stagger per digit
+        var p = ((now - off) % cycle + cycle) % cycle;
+        var em;
+        if(p < ROLL){
+          var k = easeOut(p/ROLL);
+          // spin through full 0..9 a couple times, then settle to target
+          var spins = 2;
+          var total = spins*10 + d._target;
+          em = total * k;
+          em = em % (10) ; // keep within the 0..9 visual band while spinning
+          // ensure it lands exactly on target at the end
+          if(p/ROLL > 0.985) em = d._target;
+        } else {
+          em = d._target; // hold
+        }
+        d._col.style.transform = "translateY(-"+em.toFixed(3)+"em)";
+      });
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  /* ---------- Scope: cost trace sweeping 100 → 15, looping ---------- */
+  (function(){
+    var svg = document.getElementById("scopeSvg");
+    if(!svg) return;
+    var NS="http://www.w3.org/2000/svg";
+    var W=360, H=150;
+    function el(tag,a){ var e=document.createElementNS(NS,tag); for(var k in a) e.setAttribute(k,a[k]); return e; }
+    // local glow filter (self-contained so it works regardless of other SVGs)
+    (function(){
+      var defs=el("defs",{}); var f=el("filter",{id:"scGlow",x:"-30%",y:"-30%",width:"160%",height:"160%"});
+      f.appendChild(el("feGaussianBlur",{stdDeviation:"1.4","in":"SourceGraphic",result:"b"}));
+      var m=el("feMerge",{}); m.appendChild(el("feMergeNode",{"in":"b"})); m.appendChild(el("feMergeNode",{"in":"SourceGraphic"}));
+      f.appendChild(m); defs.appendChild(f); svg.appendChild(defs);
+    })();
+    // grid
+    for(var gx=0; gx<=W; gx+=40){ svg.appendChild(el("line",{x1:gx,y1:0,x2:gx,y2:H,stroke:"rgba(57,255,138,0.07)","stroke-width":1})); }
+    for(var gy=0; gy<=H; gy+=30){ svg.appendChild(el("line",{x1:0,y1:gy,x2:W,y2:gy,stroke:"rgba(57,255,138,0.07)","stroke-width":1})); }
+    // center line
+    svg.appendChild(el("line",{x1:0,y1:H/2,x2:W,y2:H/2,stroke:"rgba(57,255,138,0.16)","stroke-width":1}));
+    // value→y mapping: 100 at top (y=18), 15 near bottom (y=128)
+    function yOf(v){ var t=(v-15)/(100-15); return 128 - t*(128-18); }
+    // the descending cost curve: 100 -> step drops -> 15 (matches waterfall levels)
+    var levels = [100,73,51,27,15]; // 100, after each lever, end 15 (illustrative, = STEPS)
+    function curveY(fx){ // fx 0..1 across width
+      var seg = fx*(levels.length-1);
+      var i = Math.min(levels.length-2, Math.floor(seg));
+      var f = seg - i;
+      // ease each step + small ripple so it always reads as "live"
+      var e = 0.5-0.5*Math.cos(Math.PI*Math.min(1,f*1.2));
+      var v = levels[i] + (levels[i+1]-levels[i])*e;
+      return yOf(v);
+    }
+    var trace = el("path",{fill:"none",stroke:"#39ff8a","stroke-width":2,
+      "stroke-linejoin":"round","stroke-linecap":"round",filter:"url(#scGlow)"});
+    svg.appendChild(trace);
+    var dot = el("circle",{r:3.2,fill:"#bfffd9",stroke:"#39ff8a","stroke-width":1});
+    svg.appendChild(dot);
+
+    function buildPath(){
+      var d="", N=72;
+      for(var i=0;i<=N;i++){ var fx=i/N, x=fx*W, y=curveY(fx); d+=(i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1); }
+      return d;
+    }
+    var staticD = buildPath();
+    trace.setAttribute("d", staticD);
+    if(reduce){ dot.setAttribute("cx",W); dot.setAttribute("cy",curveY(1).toFixed(1)); return; }
+
+    // sweeping reveal: a glowing dot runs the trace, leaving the full curve drawn
+    var len = 0;
+    try{ len = trace.getTotalLength(); }catch(e){ len = W*1.4; }
+    trace.setAttribute("stroke-dasharray", len);
+    var SWEEP=2600, GAP=900, cyc=SWEEP+GAP;
+    function tick(now){
+      var p=(now%cyc)/SWEEP; // 0..>1
+      var k=Math.min(1,p);
+      trace.setAttribute("stroke-dashoffset", (len*(1-k)).toFixed(1));
+      var dx=k*W, dy=curveY(k);
+      dot.setAttribute("cx",dx.toFixed(1));
+      dot.setAttribute("cy",dy.toFixed(1));
+      dot.setAttribute("opacity", p<=1 ? "1" : "0.0");
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  /* ---------- Gauge: needle sweeping 100 → 15, looping ---------- */
+  (function(){
+    var svg=document.getElementById("gaugeSvg");
+    if(!svg) return;
+    var NS="http://www.w3.org/2000/svg";
+    function el(tag,a){ var e=document.createElementNS(NS,tag); for(var k in a) e.setAttribute(k,a[k]); return e; }
+    (function(){
+      var defs=el("defs",{}); var f=el("filter",{id:"ggGlow",x:"-40%",y:"-40%",width:"180%",height:"180%"});
+      f.appendChild(el("feGaussianBlur",{stdDeviation:"1.5","in":"SourceGraphic",result:"b"}));
+      var m=el("feMerge",{}); m.appendChild(el("feMergeNode",{"in":"b"})); m.appendChild(el("feMergeNode",{"in":"SourceGraphic"}));
+      f.appendChild(m); defs.appendChild(f); svg.appendChild(defs);
+    })();
+    var cx=100, cy=104, R=82;
+    var A0=180, A1=0; // semicircle, 180°(left)=value 100 region? we map value→angle below
+    // map value 0..100 to angle 180°(left)→0°(right). 100 at left, 0 at right.
+    function angOf(v){ return (180 - (v/100)*180); }
+    function pt(ang,r){ var a=ang*Math.PI/180; return [cx+r*Math.cos(a), cy-r*Math.sin(a)]; }
+    // arc track
+    function arc(rr,a0,a1,stroke,w,extra){
+      var p0=pt(a0,rr), p1=pt(a1,rr);
+      var large=Math.abs(a0-a1)>180?1:0;
+      var sweep=a1<a0?1:0;
+      var path=el("path",Object.assign({d:"M"+p0[0].toFixed(1)+" "+p0[1].toFixed(1)+
+        " A"+rr+" "+rr+" 0 "+large+" "+sweep+" "+p1[0].toFixed(1)+" "+p1[1].toFixed(1),
+        fill:"none",stroke:stroke,"stroke-width":w,"stroke-linecap":"round"}, extra||{}));
+      return path;
+    }
+    // background track (full 100→0)
+    svg.appendChild(arc(R,angOf(100),angOf(0),"rgba(57,255,138,0.12)",10));
+    // amber zone (100→15 = the part we cut) faint
+    svg.appendChild(arc(R,angOf(100),angOf(15),"rgba(255,176,31,0.18)",10));
+    // green endpoint zone (15→0 remaining)
+    svg.appendChild(arc(R,angOf(15),angOf(0),"rgba(57,255,138,0.5)",10,{filter:"url(#ggGlow)"}));
+    // ticks
+    [0,15,25,50,75,100].forEach(function(v){
+      var a=angOf(v), o=pt(a,R+2), inr=pt(a,R-10);
+      svg.appendChild(el("line",{x1:inr[0].toFixed(1),y1:inr[1].toFixed(1),x2:o[0].toFixed(1),y2:o[1].toFixed(1),
+        stroke:(v===15?"#39ff8a":"rgba(170,190,182,0.5)"),"stroke-width":(v===15?2:1)}));
+      var lp=pt(a,R-22);
+      var t=el("text",{x:lp[0].toFixed(1),y:(lp[1]+3).toFixed(1),"text-anchor":"middle",
+        "font-family":"'DM Mono',monospace","font-size":"8","fill":(v===15?"#39ff8a":"#7e8c87")});
+      t.textContent=v; svg.appendChild(t);
+    });
+    // hub + needle
+    var needle=el("line",{x1:cx,y1:cy,x2:pt(angOf(100),R-14)[0].toFixed(1),y2:pt(angOf(100),R-14)[1].toFixed(1),
+      stroke:"#39ff8a","stroke-width":2.4,"stroke-linecap":"round",filter:"url(#ggGlow)"});
+    svg.appendChild(needle);
+    svg.appendChild(el("circle",{cx:cx,cy:cy,r:5,fill:"#0a1410",stroke:"#39ff8a","stroke-width":1.5}));
+    // center value
+    var val=el("text",{x:cx,y:(cy-26).toFixed(1),"text-anchor":"middle",
+      "font-family":"'DM Mono',monospace","font-size":"19","font-weight":"800","fill":"#39ff8a"});
+    val.setAttribute("filter","url(#ggGlow)");
+    svg.appendChild(val);
+    function setNeedle(v){
+      var p=pt(angOf(v),R-14);
+      needle.setAttribute("x2",p[0].toFixed(1)); needle.setAttribute("y2",p[1].toFixed(1));
+      val.textContent=Math.round(v);
+    }
+    if(reduce){ setNeedle(15); return; }
+    var DROP=2200, HOLD=2400, cyc=DROP+HOLD;
+    function easeIO(t){ return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+    function tick(now){
+      var p=now%cyc;
+      var v;
+      if(p<DROP){ v=100-(100-15)*easeIO(p/DROP); }
+      else { v=15; }
+      setNeedle(v);
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  /* ---------- header dot blink handled by CSS (.dot.run) ---------- */
 
 })();
 </script>

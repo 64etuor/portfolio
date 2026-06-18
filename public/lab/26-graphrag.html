@@ -709,6 +709,11 @@ function tick(ts){
   const dtN = dt / (1000/60); // normalise to 60fps units
 
   if(alpha>0.02){ simStep(alpha); alpha*=Math.pow(0.985, dtN); }
+  else {
+    // never fully freeze: a faint perpetual breath keeps nodes micro-settling
+    const breath = 0.012 + 0.006*Math.sin(ts*0.0006);
+    simStep(breath);
+  }
 
   draw();
   requestAnimationFrame(tick);
@@ -892,7 +897,7 @@ function runQuery(animate){
   const Q=QUERIES[trace.mode];
   alpha=Math.max(alpha,0.18);
   // reset reveal
-  if(revealTimer) clearInterval(revealTimer);
+  if(revealTimer){ clearInterval(revealTimer); revealTimer=null; }
   const hops=[...hopsEl.children];
   hops.forEach(h=>{h.classList.remove("live"); h.querySelector(".cite").classList.remove("show");});
   let i=0;
@@ -901,7 +906,7 @@ function runQuery(animate){
       hops[i].classList.add("live");
       hops[i].querySelector(".cite").classList.add("show");
       i++;
-    } else { clearInterval(revealTimer); }
+    } else { clearInterval(revealTimer); revealTimer=null; }
   };
   if(animate){
     step(); revealTimer=setInterval(step, 620);
@@ -910,6 +915,22 @@ function runQuery(animate){
     hops.forEach(h=>{h.classList.add("live"); h.querySelector(".cite").classList.add("show");});
   }
 }
+
+/* ambient trace replay — periodically re-flow the current trace so it never stalls dead */
+let lastInteract=0;
+function markInteract(){ lastInteract=performance.now(); }
+wrap.addEventListener("mousedown", markInteract);
+wrap.addEventListener("wheel", markInteract, {passive:true});
+document.getElementById("modeSeg").addEventListener("click", markInteract);
+document.getElementById("runBtn").addEventListener("click", markInteract);
+function ambientReplay(){
+  // skip if user touched the graph/controls recently or a reveal is mid-flight
+  if(performance.now()-lastInteract < 6000) return;
+  if(revealTimer) return;
+  if(document.hidden) return;
+  runQuery(true);
+}
+setInterval(ambientReplay, 9000);
 
 /* mode segmented control */
 document.getElementById("modeSeg").addEventListener("click",e=>{

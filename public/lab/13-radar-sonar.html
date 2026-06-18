@@ -575,6 +575,7 @@
 
   // ====== DETECTION ON SWEEP ======
   let prevSweep = sweepAngle;
+  let acqHold = 0; // 전 신호 취득 후 리셋까지의 유지 시간 누적
   function updateDetection(){
     CONTACTS.forEach(c=>{
       // detect when sweep passes contact angle
@@ -630,6 +631,7 @@
   }
 
   function verifyContact(c){
+    if(!c._detected) return; // 리셋 후 잔여 타이머 무시
     if(c._verified) return;
     c._verified = true;
     const row=[...document.querySelectorAll('.track-row')].find(r=>+r.dataset.idx===CONTACTS.indexOf(c));
@@ -687,6 +689,20 @@
     document.getElementById('ticker').textContent = t + ' · Work Radar: 지금 무엇을 봐야 하는지를 잃지 않게 하는 local-first 관제 콕핏 · Boule Governance: 자동화 많을수록 인간 가시성 확보';
   }
 
+  // 한 스캔 주기(전 신호 취득)가 끝나면 감지 상태를 비우고 다시 취득하게 해
+  // "신호 잡힘 + 로그"가 무한 반복되도록 한다.
+  function resetAcquisition(){
+    CONTACTS.forEach(c=>{ c._detected=false; c._verified=false; c._glow=0; });
+    acquiredOrder.length = 0;
+    maxPhase = 0;
+    selected = null;
+    trackBody.innerHTML = '';
+    document.querySelectorAll('#ladder .lad').forEach(el=>el.classList.remove('active','reached'));
+    const hp = document.getElementById('hudPhase'); if(hp) hp.textContent = '—';
+    updateHUD();
+    setTicker('스캔 1주기 완료 -- 신호 재취득 시작');
+  }
+
   // ====== DRAW ======
   function draw(now){
     const dt = Math.min((now-last)/1000, 0.05);
@@ -694,6 +710,12 @@
     sweepAngle += SWEEP_SPEED*dt;
     lockPhaseTime += dt;
     updateDetection();
+
+    // 한 바퀴 돌며 전부 취득되면 잠시 유지했다가 리셋 → 취득+로그 무한 반복
+    if(CONTACTS.every(c=>c._detected)){
+      acqHold += dt;
+      if(acqHold > 2.2){ resetAcquisition(); acqHold = 0; }
+    } else { acqHold = 0; }
 
     // update drift + decay glows
     CONTACTS.forEach(c=>{

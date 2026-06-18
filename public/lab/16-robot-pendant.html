@@ -1325,28 +1325,22 @@ function tickAutoPlay(dt){
     if(S.dwellLeft <= 0){
       // advance to next waypoint
       if(S.running >= WAYPOINTS.length-1){
-        // cycle complete
-        $("lt-state").textContent="■ CYCLE DONE";
-        $("lt-state").style.color="var(--cyan)";
-        toast("CYCLE COMPLETE · P[1]→P[4] 용접·취출 완료");
+        // cycle complete -> seamlessly wrap back to P[1] WITHOUT leaving auto-play.
+        // staying in PLAY/autoPlay keeps the arm, I/O and PLC sequence flowing
+        // continuously; the program loops P[1]..P[10] -> P[1] forever.
         S.cycle++; $("mi-cyc").textContent=String(S.cycle).padStart(6,"0");
+        toast("CYCLE COMPLETE · P[1]→P[10] 1주기 완료 · 재순환");
+        pushLog(`CYCLE #${S.cycle} COMPLETE · P[1] 재순환`, "ev-reach");
+        // clear prior "done" marks and re-arm weld re-teach for the new cycle
         WAYPOINTS.forEach((_,idx)=>{
           const el=progScroll.querySelector(`.pline[data-idx="${idx}"]`);
-          if(el) el.classList.add("done");
+          if(el) el.classList.remove("done");
         });
-        pushLog(`CYCLE #${S.cycle} COMPLETE · RESTART`);
-        S.autoPlay = false;
-        // auto-restart
-        setTimeout(()=>{
-          if(S.estop) return;
-          S.weldDone = false;
-          WAYPOINTS.forEach((_,idx)=>{
-            const el=progScroll.querySelector(`.pline[data-idx="${idx}"]`);
-            if(el) el.classList.remove("done");
-          });
-          S.running = -1;
-          play();
-        }, 900);
+        S.weldDone = false;
+        // keep state RUNNING and loop straight back to the first waypoint
+        setMode("PLAY");
+        pushLog(`MOVE → P[${WAYPOINTS[0].id}] ${WAYPOINTS[0].code[0][1]}${WAYPOINTS[0].code[2][1]}`);
+        gotoLine(0);
       } else {
         const next = S.running+1;
         pushLog(`MOVE → P[${WAYPOINTS[next].id}] ${WAYPOINTS[next].code[0][1]}${WAYPOINTS[next].code[2][1]}`);

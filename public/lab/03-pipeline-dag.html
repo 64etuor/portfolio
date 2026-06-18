@@ -852,12 +852,10 @@ function tickRunSweep(dt){
         e.active = true;
         e.targetSpeed = 0.10 + Math.random()*0.13;
       });
-      runBtn.classList.remove('running');
-      runBtn.innerHTML = '<span class="tri">&#10003;</span> RUN AGAIN';
       running = false;
       sweepState = null;
-      // 자동 재시작: 2초 후
-      setTimeout(runPipeline, 2000);
+      // 끊김 없는 루프: 짧은 호흡 후 곧바로 재시작 (정지 화면처럼 보이지 않도록)
+      setTimeout(runPipeline, 650);
     }
     return;
   }
@@ -891,7 +889,7 @@ function runPipeline(){
   if(running) return;
   running = true;
   runBtn.classList.add('running');
-  runBtn.innerHTML = '<span class="tri">&#9632;</span> RUNNING&#8230;';
+  runBtn.innerHTML = '<span class="tri">&#9632;</span> RUNNING&#8230; <span style="opacity:.6">&#8635;</span>';
   NODES.forEach(function(n){ n.status='queued'; n.el.dataset.status='queued'; updatePill(n); });
   edgeEls.forEach(function(e){ e.active=false; e.targetSpeed=e.speed; });
   var order = topoOrder();

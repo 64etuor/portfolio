@@ -333,8 +333,23 @@
   .para-tank .ph .nm{font-size:9px;color:var(--txt-dim);letter-spacing:.06em}
   .para-tank .lvlwrap{height:90px;margin:10px 0 6px;position:relative;border:1px solid var(--line);border-radius:5px;
     background:#0a0f13;overflow:hidden}
-  .para-tank .lvl{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,#1a9ed0,#0c5a82);opacity:.85;transition:height .8s ease}
-  .para-tank .lvl .wave{position:absolute;left:0;right:0;top:0;height:4px;background:#9be8ff;opacity:.5}
+  .para-tank .lvl{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(180deg,#1a9ed0,#0c5a82);opacity:.85;transition:height .8s ease;
+    animation:tankBreathe 4.2s ease-in-out infinite}
+  .para-tank .lvl .wave{position:absolute;left:-30%;right:-30%;top:0;height:6px;
+    background:radial-gradient(60% 200% at 20% 0,#9be8ff 0,rgba(155,232,255,0) 60%),
+      radial-gradient(60% 200% at 70% 0,#9be8ff 0,rgba(155,232,255,0) 60%);
+    opacity:.55;animation:waveDrift 2.6s linear infinite}
+  /* stagger so the SCM tanks circulate out of phase, like a live process */
+  .para-tank:nth-child(2) .lvl{animation-delay:-.8s}
+  .para-tank:nth-child(3) .lvl{animation-delay:-1.6s}
+  .para-tank:nth-child(4) .lvl{animation-delay:-2.4s}
+  .para-tank:nth-child(5) .lvl{animation-delay:-3.2s}
+  .para-tank:nth-child(2) .lvl .wave{animation-delay:-.6s}
+  .para-tank:nth-child(3) .lvl .wave{animation-delay:-1.2s}
+  .para-tank:nth-child(4) .lvl .wave{animation-delay:-1.8s}
+  .para-tank:nth-child(5) .lvl .wave{animation-delay:-2.4s}
+  @keyframes waveDrift{from{transform:translateX(0)}to{transform:translateX(20%)}}
+  @keyframes tankBreathe{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
   .para-tank .cnt{position:absolute;left:0;right:0;top:50%;transform:translateY(-50%);text-align:center;
     font:700 18px 'Share Tech Mono',monospace;color:#fff;text-shadow:0 0 8px rgba(0,0,0,.8)}
   .para-tank .cap{font-size:9px;color:var(--txt-dim);text-align:center}
@@ -876,7 +891,9 @@
   })();
 
   function fmtAlarmRow(a){
-    const op=Math.max(0.25, 1-a.age*0.04);
+    /* fade by POSITION-equivalent age, clamped so the cycling log
+       stays a rolling gradient instead of dimming to the floor over time */
+    const op=Math.max(0.35, 1-Math.min(a.age,12)*0.05);
     return '<div class="alm-item" style="opacity:'+op.toFixed(2)+'">'
       +'<span class="sev" style="background:'+a.sev+'"></span>'
       +'<span class="ts">'+a.ts+'</span>'
@@ -891,6 +908,19 @@
     $('#almFull').innerHTML=full.map(fmtAlarmRow).join('');
   }
   renderAlarms();
+
+  /* ===== Event log flow: cycle the SAME fixed records on a loop =====
+     No new/random telemetry is generated. We rotate the existing fixed
+     records so the improvement event log keeps streaming (newest-first)
+     and the age-based fade gives a continuous "flowing" feel. */
+  setInterval(function(){
+    if(eventLog.length<2)return;
+    const moved=eventLog.pop();   // take the oldest fixed record
+    moved.age=0;                  // it re-enters at the top, freshly lit
+    eventLog.forEach(function(a){a.age++;});
+    eventLog.unshift(moved);      // ...and flows to the front again
+    renderAlarms();
+  },3200);
 
   /* ===== IO / SKILL grids ===== */
   function fillGrid(id,items){

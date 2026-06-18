@@ -497,8 +497,9 @@
   /* per-channel signal value with character + weld anomaly arc */
   let t0=performance.now();
   let weldPhase=0;        // 0..1 progress through anomaly story
-  const WELD_LEN=11000;   // ms: hot ramp
-  const DOE_AT=0.62;      // fraction where DOE marker fires
+  let lastWeldPhase=0;    // track wrap so the DOE beat re-arms every loop
+  const WELD_LEN=6400;    // ms: hot ramp -> DOE lock -> cool, kept short so the loop visibly repeats
+  const DOE_AT=0.58;      // fraction where DOE marker fires
   let doeFired=false, doeRowY=-1;
 
   // smooth noise via summed sines per channel
@@ -676,7 +677,7 @@
 
   // event log auto-fire timer
   let lastEvtMs=0;
-  const EVT_INTERVAL=2200; // ms between auto log entries
+  const EVT_INTERVAL=1400; // ms between auto log entries — keeps the feed visibly flowing in short clips
 
   function frame(now){
     const rawDt=now-last; last=now;
@@ -685,6 +686,9 @@
 
     // advance weld story
     weldPhase=(t%WELD_LEN)/WELD_LEN;
+    // re-arm on every loop wrap (phase falls back to ~0) so the DOE beat keeps firing forever
+    if(weldPhase<lastWeldPhase){ doeFired=false; }
+    lastWeldPhase=weldPhase;
     if(weldPhase>=DOE_AT && !doeFired){
       doeFired=true; doeRowY=TOP+1;   // spawn DOE marker at top
       logEvent("doe");

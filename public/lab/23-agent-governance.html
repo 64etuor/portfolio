@@ -1045,8 +1045,8 @@
   $('#acpDeny').addEventListener('click',denyACP);
 
   function advanceStage(){
-    if(state.stage<STAGES.length-2){ state.stage++; }
-    else { state.stage=0; } // wrap, new pipeline cycle
+    if(state.stage<STAGES.length-1){ state.stage++; } // advance through to handoff (§4)
+    else { state.stage=0; } // reached handoff → wrap, new pipeline cycle (spec→…→handoff loop)
     syncLamps();
   }
 
@@ -1301,7 +1301,10 @@
 
       live.stageAcc+=dt;
       if(live.stageAcc>=IV.stage){ live.stageAcc-=IV.stage;
-        if(state.gateRelease && Math.random()<0.5) advanceStage(); }
+        // keep the spec→…→handoff sequence flowing: if the gate is holding,
+        // release it on this beat; otherwise advance one stage (deterministic loop).
+        if(!state.gateRelease){ state.gateRelease=true; syncLamps(); }
+        else advanceStage(); }
 
       live.gateAcc+=dt;
       if(live.gateAcc>=IV.gate){ live.gateAcc-=IV.gate;

@@ -861,6 +861,7 @@ function maybeShowDefect(){
   }
 }
 
+let autoLoopTimer=null;
 function finish(){
   if(state.done) return;
   state.done=true; state.running=false;
@@ -876,6 +877,9 @@ function finish(){
   st.classList.add("done");
   document.getElementById("statetxt").textContent="BUILD LOGGED — ELENTEC_jig.gcode";
   document.getElementById("p-eta").textContent="빌드 기록 완료 · 100%";
+  // continuous loop: after a brief settle, kick off the next build automatically
+  if(autoLoopTimer) clearTimeout(autoLoopTimer);
+  autoLoopTimer=setTimeout(()=>{ autoLoopTimer=null; reset(); }, 2600);
 }
 
 /* header gcode emitted at start */
@@ -1220,6 +1224,7 @@ function reset(){
   defectShown=false;
   defectAnim={t:0,fixing:false,fixed:false};
   if(autoReprintTimer){clearTimeout(autoReprintTimer);autoReprintTimer=null;}
+  if(autoLoopTimer){clearTimeout(autoLoopTimer);autoLoopTimer=null;}
   // reset DOM
   document.querySelectorAll(".layer-item").forEach(e=>e.classList.remove("solid"));
   document.querySelectorAll(".metric").forEach(e=>{e.classList.remove("solid");const b=e.querySelector(".mbar i");if(b)b.style.width="0";});

@@ -595,6 +595,8 @@ function drawBell(cpk){
   $('#cpkv').textContent=cpk.toFixed(2);
 }
 drawBell(1.67);
+// 주기적 재드로우 — 정지 화면 방지 (곡선 재포물 + 영역 채움 애니 반복)
+setInterval(()=>drawBell(1.67),5200);
 
 /* ============ KPI count-up + dt-based micro-drift ============ */
 const kpis=[
@@ -618,27 +620,38 @@ function buildKpis(){
     (i<4?r1:r2).appendChild(wrap);
     const cv=$('.cv',wrap);
     k._cv=cv;
-    // rAF count-up
-    const dur=1500, delay=300+i*90, start=performance.now();
+    // rAF count-up — 주기적으로 다시 카운트업하도록 재생 가능하게 구성
+    const dur=1500;
     k._displayed=0;
     k._driftTarget=k.v;
     k._driftAcc=0;
     let done=false;
-    function step(now){
-      const e=clamp((now-start-delay)/dur,0,1);
-      const val=k.v*easeCubicOut(e);
-      k._displayed=val;
-      cv.textContent=k.fixed?val.toFixed(k.fixed):Math.round(val).toLocaleString();
-      if(e<1){requestAnimationFrame(step);}
-      else{k._displayed=k.v;done=true;}
+    // 재생 가능한 카운트업: from(현재 표시값) → k.v 로 다시 올라감
+    function runCountup(from,delay){
+      const start=performance.now();
+      done=false;
+      function step(now){
+        const e=clamp((now-start-delay)/dur,0,1);
+        const val=lerp(from,k.v,easeCubicOut(e));
+        k._displayed=val;
+        cv.textContent=k.fixed?val.toFixed(k.fixed):Math.round(val).toLocaleString();
+        if(e<1){requestAnimationFrame(step);}
+        else{k._displayed=k.v;k._live=k.v;k._nextTarget=k.v;done=true;}
+      }
+      requestAnimationFrame(step);
     }
-    requestAnimationFrame(step);
+    runCountup(0,300+i*90);
     k._countupDone=()=>done;
+    k._replayCountup=()=>runCountup(0,0); // 0에서 다시 카운트업
     const sp=makeSpark($('.kspark',wrap),k.spark,k.c==='g'?'#37f08e':k.c==='c'?'#3fd0e0':'#ffb627');
     k._sp=sp;
   });
 }
 buildKpis();
+// 주기적으로 전체 KPI를 0에서 다시 카운트업 — 정지 화면 방지 (스태거 재생)
+setInterval(()=>{
+  kpis.forEach((k,i)=>setTimeout(()=>k._replayCountup&&k._replayCountup(),i*90));
+},9000);
 
 /* ============ GANTT ============ */
 const todayBase=new Date();todayBase.setHours(6,0,0,0);
@@ -670,6 +683,7 @@ function buildGantt(){
   axWrap.style.cssText='display:grid;grid-template-columns:182px 1fr;gap:10px';
   axWrap.appendChild(document.createElement('div'));axWrap.appendChild(ax);
   g.appendChild(axWrap);
+  const ganttBars=[];
   jobs.forEach((j,idx)=>{
     const row=document.createElement('div');row.className='grow';
     const left=((j.s-T0)/ganttSpan)*100, width=((j.e-j.s)/ganttSpan)*100;
@@ -677,12 +691,23 @@ function buildGantt(){
       <div class="gtrack"><div class="gbar ${j.status}" style="left:${left}%;width:0%" title="${j.desc}">${j.status==='run'?'● RUNNING':'■ COMPLETE'}</div></div>`;
     g.appendChild(row);
     const bar=$('.gbar',row);
-    setTimeout(()=>{bar.style.transition='width 1.1s cubic-bezier(.2,.8,.2,1)';bar.style.width=width+'%';},250+idx*160);
+    ganttBars.push({bar,width,idx});
   });
   const nowFrac=((new Date()-T0)/ganttSpan)*100;
   $$('.gtrack',g).forEach(tr=>{
     const nl=document.createElement('div');nl.className='now-line';nl.style.left=nowFrac+'%';tr.appendChild(nl);
   });
+  // 막대 성장 애니를 재생 가능하게 — 0%로 리셋 후 다시 채움 (정지 화면 방지)
+  function playGantt(){
+    ganttBars.forEach(({bar,width,idx})=>{
+      bar.style.transition='none';
+      bar.style.width='0%';
+      void bar.offsetWidth; // reflow
+      setTimeout(()=>{bar.style.transition='width 1.1s cubic-bezier(.2,.8,.2,1)';bar.style.width=width+'%';},250+idx*160);
+    });
+  }
+  playGantt();
+  setInterval(playGantt,6800);
 }
 buildGantt();
 
@@ -730,6 +755,8 @@ function drawPareto(){
       <td><div class="bar-cell"><div class="bf" style="width:${(d.n/defects[0].n*100).toFixed(0)}%"></div></div></td></tr>`).join('');
 }
 drawPareto();
+// 주기적 재드로우 — 막대 상승 + 누적선 그리기 애니 반복
+setInterval(drawPareto,6400);
 
 /* ============ Defect TREND ============ */
 function drawTrend(){
@@ -763,6 +790,8 @@ function drawTrend(){
   [0,6,12,18,23].forEach(w=>svg.append('text').attr('x',x(w)).attr('y',H-8).attr('text-anchor','middle').text('W'+w));
 }
 drawTrend();
+// 주기적 재드로우 — 개선 전/후 라인 그리기 애니 반복
+setInterval(drawTrend,7000);
 
 /* ============ Skills / MES stack health ============ */
 const skillGroups=[

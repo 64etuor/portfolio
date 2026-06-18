@@ -985,14 +985,19 @@ document.getElementById("dtClose").addEventListener("click",()=>{
 let xdSyncT = -1;
 const xdStateEl = document.getElementById("xdState");
 
+// perpetual sync heartbeat (independent of camera auto-cycle / user interaction)
+let syncBeatT = 0;
+let syncBeatIdx = 0;
+const SYNC_BEAT_INTERVAL = 3.0; // seconds between station sync pulses
+
 function triggerCrossDomainPulse(stationIdx){
   rippleT = 0;
   xdSyncT = 0.8;
   xdStateEl.textContent = "SYNCING...";
   xdStateEl.classList.add("pend");
   xdStateEl.classList.remove("ai");
-  // pulse flow lines
-  flowLines.forEach(fl=>{ fl.mat.opacity = 0.28; });
+  // pulse flow lines (boost, then perpetual breathing resumes)
+  flowLines.forEach(fl=>{ fl.mat.opacity = 0.28; fl.pulseBoost = true; });
   // animate layer values
   const labels = ["MES","RPA","AI","API","BI","ML"];
   const flAiEl = document.getElementById("flAi");
@@ -1009,8 +1014,8 @@ function reconcileXD(){
   xdStateEl.textContent = "SYNCED";
   xdStateEl.classList.remove("pend");
   xdStateEl.classList.add("ai");
-  // fade flow lines back
-  flowLines.forEach(fl=>{ fl.mat.opacity = 0.12; });
+  // release boost — perpetual breathing resumes in the loop
+  flowLines.forEach(fl=>{ fl.pulseBoost = false; });
   const flAiEl = document.getElementById("flAi");
   if(flAiEl) flAiEl.textContent = "ON";
 }
@@ -1210,11 +1215,16 @@ function animate(){
     ar.mat.opacity = (1-t)*0.12*(lineOn?1:0.2);
   });
 
-  // inter-domain flow particles (one-way, no ping-pong snap)
+  // inter-domain flow particles (one-way, no ping-pong snap) + continuous pulse
   flowLines.forEach((fl,i)=>{
     fl.t = (fl.t + dt*fl.speed) % 1;
     fl.particle.position.lerpVectors(fl.pa, fl.pb, fl.t);
     fl.particle.scale.setScalar(lineOn?1:0.35);
+    // perpetual line-opacity breathing so flow never reads as "stopped"
+    const wave = 0.5 + 0.5*Math.sin(time*1.6 + i*1.2);
+    fl.mat.opacity = fl.pulseBoost
+      ? fl.mat.opacity + (0.12 - fl.mat.opacity)*Math.min(1, dt*1.4)
+      : (lineOn ? 0.10 + wave*0.10 : 0.05);
   });
 
   // throughput readouts
@@ -1247,6 +1257,15 @@ function animate(){
   if(xdSyncT>0){
     xdSyncT -= dt;
     if(xdSyncT<=0) reconcileXD();
+  }
+
+  // perpetual sync heartbeat — station pulse + ripple keep looping forever,
+  // even after user interaction stops the camera auto-cycle
+  syncBeatT += dt;
+  if(syncBeatT >= SYNC_BEAT_INTERVAL){
+    syncBeatT = 0;
+    syncBeatIdx = (syncBeatIdx+1) % STATIONS.length;
+    triggerCrossDomainPulse(syncBeatIdx);
   }
 
   // KPI lerp update

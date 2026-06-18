@@ -2049,20 +2049,44 @@ function smUpdateInfo(){
   const due = (smCur==='HOLD'||smCur==='CANCELLED')? '+'+Math.pow(2,smRetry)+'s' : '&#8212;';
   document.getElementById('smNext').innerHTML=due;
 }
-document.getElementById('smStep').onclick=()=>{
+function smManualStep(){
   if(smCur==='HOLD'||smCur==='CANCELLED'){smCur='OPEN';}
   else{
     const i=smOrder.indexOf(smCur);
     if(i>=0 && i<smOrder.length-1) smCur=smOrder[i+1];
   }
   drawSM();smUpdateInfo();
-};
+}
+document.getElementById('smStep').onclick=()=>{smManualStep();smPauseAndResume();};
 document.getElementById('smFail').onclick=()=>{
   if(smCur==='OPEN'){smCur='HOLD';smRetry++;}
   else if(smCur==='IN_PROGRESS'){smCur='CANCELLED';smRetry++;}
   drawSM();smUpdateInfo();
+  smPauseAndResume();
 };
-document.getElementById('smReset').onclick=()=>{smCur='OPEN';smRetry=0;drawSM();smUpdateInfo();};
+document.getElementById('smReset').onclick=()=>{smCur='OPEN';smRetry=0;drawSM();smUpdateInfo();smPauseAndResume();};
+
+/* ── 상태머신 자동 순회 (끊김 없이 계속 반복) ──
+   정상 흐름을 따라가다 가끔 failure→retry 분기를 끼워넣고, 끝에 도달하면 재시작 */
+let smAutoTimer=null, smAutoResumeTimer=null, smAutoTick=0;
+function smAutoAdvance(){
+  smAutoTick++;
+  // CLOSED(종료) 도달 → 잠시 머문 뒤 처음으로 되감기(loop)
+  if(smCur==='CLOSED'){smCur='OPEN';smRetry=0;drawSM();smUpdateInfo();return;}
+  // OPEN/IN_PROGRESS 단계에서 주기적으로 HOLD/CANCELLED 분기 시연
+  if(smCur==='OPEN' && smAutoTick%5===0){smCur='HOLD';smRetry++;drawSM();smUpdateInfo();return;}
+  if(smCur==='IN_PROGRESS' && smAutoTick%7===0){smCur='CANCELLED';smRetry++;drawSM();smUpdateInfo();return;}
+  smManualStep();
+}
+function startSmAuto(){
+  if(smAutoTimer) clearInterval(smAutoTimer);
+  smAutoTimer=setInterval(smAutoAdvance,1600);
+}
+function smPauseAndResume(){
+  if(smAutoTimer){clearInterval(smAutoTimer);smAutoTimer=null;}
+  clearTimeout(smAutoResumeTimer);
+  smAutoResumeTimer=setTimeout(startSmAuto,5000);
+}
 
 /* ============================================================
    VIEW 3b: RECURSIVE CTE TREE (카테고리 계층)
@@ -2119,17 +2143,32 @@ function drawRec(){
   recSvg.innerHTML=s;
   document.getElementById('recDepth').textContent=recShown;
 }
-let recTimer=null;
+/* ── BOM 재귀 전개 자동 반복 ──
+   depth 0→3 으로 한 레벨씩 펼친 뒤, 전체 전개 상태로 잠시 머물고,
+   다시 anchor(depth 0)로 되감아 끊김 없이 계속 반복 */
+let recTimer=null, recResumeTimer=null, recHold=0;
+function recAutoTick(){
+  if(recHold>0){recHold--;if(recHold===0){recShown=0;drawRec();}return;}
+  recShown++;
+  if(recShown>3){recShown=3;drawRec();recHold=3;return;} // 완전 전개 후 hold
+  drawRec();
+}
+function startRecAuto(){
+  if(recTimer) clearInterval(recTimer);
+  recShown=0;recHold=0;drawRec();
+  recTimer=setInterval(recAutoTick,650);
+}
+function recPauseAndResume(){
+  if(recTimer){clearInterval(recTimer);recTimer=null;}
+  clearTimeout(recResumeTimer);
+  recResumeTimer=setTimeout(startRecAuto,5000);
+}
 document.getElementById('recRun').onclick=()=>{
   if(recTimer) clearInterval(recTimer);
-  recShown=0;drawRec();
-  recTimer=setInterval(()=>{
-    recShown++;
-    if(recShown>3){clearInterval(recTimer);recShown=3;drawRec();return;}
-    drawRec();
-  },650);
+  recShown=0;recHold=0;drawRec();
+  recTimer=setInterval(recAutoTick,650);
 };
-document.getElementById('recReset').onclick=()=>{if(recTimer)clearInterval(recTimer);recShown=0;drawRec();};
+document.getElementById('recReset').onclick=()=>{if(recTimer)clearInterval(recTimer);recShown=0;recHold=0;drawRec();recPauseAndResume();};
 
 /* ============================================================
    INIT
@@ -2138,7 +2177,7 @@ function init(){
   buildModelSwitch();
   loadModel();
   drawSM();smUpdateInfo();
-  recShown=3;drawRec();
+  drawRec();
   /* ERD 라이브 스탯 시작 */
   startErdStats();
   /* ERD 자동 하이라이트 순회 시작 (loadModel 후 tableEls 준비 완료 타이밍) */
@@ -2147,6 +2186,9 @@ function init(){
   setTimeout(function(){
     startFlow();
   }, 200);
+  /* 상태머신 전이 · BOM 재귀 전개 자동 반복 시작 (View 3) */
+  startSmAuto();
+  startRecAuto();
 }
 if(document.fonts && document.fonts.ready){
   document.fonts.ready.then(function(){init();}).catch(function(){init();});

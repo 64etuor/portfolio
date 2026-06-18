@@ -15,14 +15,14 @@ export const COMPOSITIONS: Composition[] = [
     title: '전체 투어 (4관점)',
     audience: '처음 보는 사람',
     blurb: '프로젝트+경력 → 스킬 → 철학 → 지식관리. 한 사람을 보는 네 각도.',
-    scenes: ['13', '02', '22', '06', '23'],
+    scenes: ['13', '22', '06', '23'],
   },
   {
     slug: 'project-career',
     title: '프로젝트 + 경력',
     audience: '채용·리더',
     blurb: '미러리스/개인 제품과 제조 3社 경력 — 실제로 성과를 낸 것.',
-    scenes: ['03', '13', '20', '02', '18', '15', '17'],
+    scenes: ['03', '13', '20', '18', '15', '17'],
   },
   {
     slug: 'skill',
@@ -36,7 +36,7 @@ export const COMPOSITIONS: Composition[] = [
     title: '철학',
     audience: '문화 적합성',
     blurb: '크로스도메인·품질·위임 — 왜 그렇게 일하는가.',
-    scenes: ['06', '08', '09', '24'],
+    scenes: ['06', '09'],
   },
   {
     slug: 'knowledge',

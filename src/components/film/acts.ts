@@ -28,9 +28,9 @@ export const ACTS: Act[] = [
     version: 'v1',
     label: '은성 · 2020',
     color: '#e0704e',
-    scenes: ['20-instrument-rack.html', '08-living-spreadsheet.html'],
-    durationMs: 14000,
-    subtitles: ['원가를 숫자로 세운다', '엑셀 자동화 = 코딩의 출발'],
+    scenes: ['20-instrument-rack.html'],
+    durationMs: 8000,
+    subtitles: ['원가를 숫자로 세운다'],
   },
   {
     id: 'elentec',
@@ -38,7 +38,6 @@ export const ACTS: Act[] = [
     label: '이랜텍 · 2022',
     color: '#3fa8c0',
     scenes: [
-      '02-assembly-line.html',
       '18-sonar-waterfall.html',
       '11-weld-thermal.html',
       '09-oscilloscope.html',
@@ -47,7 +46,7 @@ export const ACTS: Act[] = [
       '07-gcode-printer.html',
     ],
     durationMs: 20000,
-    subtitles: ['병목을 측정 가능한 제약으로', '세 가지로 붙인다', '없으면 Jig를 직접 만든다'],
+    subtitles: ['세 가지로 붙인다', '없으면 Jig를 직접 만든다'],
   },
   {
     id: 'solaredge',

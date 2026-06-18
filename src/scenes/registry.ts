@@ -42,7 +42,6 @@ export const SCENES: Scene[] = [
 
   // 프로젝트 + 경력 — 경력(제조 3社)
   { id: '20', slug: 'instrument-rack', file: '20-instrument-rack.html', title: '은성 — 생산관리·원가', domain: '경력·은성', perspective: 'project-career', cluster: 'career', bg: '#0b0d0f', owns: '운영경비 −85%', blurb: '배터리팩 생산관리. 운영경비 −85%·불량 0건의 단독 무대.' },
-  { id: '02', slug: 'assembly-line', file: '02-assembly-line.html', title: '이랜텍 — 라인 생산성', domain: '경력·이랜텍', perspective: 'project-career', cluster: 'career', bg: '#0d0d0d', featured: true, owns: 'C/T −49% · 생산성 +24%', blurb: 'LOB·C/T 분석 기반 라인 개선. C/T −49%·생산성 +24%의 단독 무대.' },
   { id: '18', slug: 'sonar-waterfall', file: '18-sonar-waterfall.html', title: '이랜텍 — 초음파 용착 DOE', domain: '경력·이랜텍', perspective: 'project-career', cluster: 'career', bg: '#060a10', owns: '용착 15%→0%', blurb: '스팟·레이저·초음파 용착 DOE. 용착 15%→0%의 단독 무대.' },
   { id: '15', slug: 'scada-hmi', file: '15-scada-hmi.html', title: '이랜텍/삼성 — SCM·재고', domain: '경력·SCM', perspective: 'project-career', cluster: 'career', bg: '#0e1217', owns: '재고회전율 +17%', blurb: '삼성 상생아카데미 SCM 개선. 재고회전율 +17%의 단독 무대.' },
   { id: '17', slug: 'gantt-cpm', file: '17-gantt-cpm.html', title: '커리어 타임라인 — 경력 + 프로젝트', domain: '경력 종합', perspective: 'project-career', cluster: 'career', bg: '#0c0f14', featured: true, owns: '사무공수 −451분 · ST −50%', blurb: '회사 5社를 크리티컬 패스로, 자기주도 프로젝트 16건을 병렬로 묶은 커리어 간트·임팩트 보드.' },
@@ -57,9 +56,7 @@ export const SCENES: Scene[] = [
 
   // 철학
   { id: '06', slug: 'digital-twin', file: '06-digital-twin.html', title: '도메인 지식의 미래 유용성', domain: '크로스도메인', perspective: 'philosophy', bg: '#0b0b0d', featured: true, blurb: '제조+개발+AI 이해도 — 다가올 시대에 크로스도메인이 갖는 가치.' },
-  { id: '08', slug: 'living-spreadsheet', file: '08-living-spreadsheet.html', title: '코딩의 기원', domain: '크로스도메인', perspective: 'philosophy', bg: '#e9eef0', blurb: '엑셀 자동화에서 시작된 코딩 — 현장에서 도구로 건너간 길.' },
   { id: '09', slug: 'oscilloscope', file: '09-oscilloscope.html', title: '품질에 철저한 성격', domain: '품질', perspective: 'philosophy', bg: '#0a0e0c', blurb: '스팟 용접 검사 — 품질과 타협하지 않는 검사 기준.' },
-  { id: '24', slug: 'delegation-cost', file: '24-delegation-cost.html', title: '위임 = 비용 이동', domain: '사상', perspective: 'philosophy', bg: '#0c0d10', blurb: '"위임은 비용을 옮길 뿐" — 하네스 사고(포카요케).' },
 
   // 지식관리
   { id: '04', slug: 'ai-latent', file: '04-ai-latent.html', title: '볼트 semantic map', domain: '지식·AI', perspective: 'knowledge', bg: '#07080d', blurb: 'BGE-M3→UMAP→HDBSCAN 볼트 임베딩 의미맵. 그대로 유지.' },
@@ -69,9 +66,7 @@ export const SCENES: Scene[] = [
 
   // 보류 (parked) — 홈/릴 제외, 콘텐츠 작업 안 함
   { id: '07', slug: 'gcode-printer', file: '07-gcode-printer.html', title: 'G-code 3D 프린터 빌드', domain: '적층제조', perspective: 'project-career', cluster: 'project', status: 'parked', bg: '#0e1116', blurb: '하드웨어 개발 후보 — 보류.' },
-  { id: '10', slug: 'pcb-board', file: '10-pcb-board.html', title: 'PCB 회로기판', domain: '하드웨어', perspective: 'project-career', cluster: 'project', status: 'parked', bg: '#07140d', blurb: '하드웨어 개발 후보 — 보류.' },
   { id: '14', slug: 'fluid-power', file: '14-fluid-power.html', title: '유압 / 공압 회로도', domain: '설비', perspective: 'skill', status: 'parked', bg: '#0a1426', blurb: '추후 제거 예정 — 보류.' },
-  { id: '21', slug: 'windtunnel-cfd', file: '21-windtunnel-cfd.html', title: '풍동 / CFD 유동해석', domain: '기구설계', perspective: 'skill', status: 'parked', bg: '#07101c', blurb: '쓸 곳 미정 — 보류.' },
   { id: '27', slug: 'writer-philosophy', file: '27-writer-philosophy.html', title: '(구) 작가', domain: '인문', perspective: 'philosophy', status: 'parked', bg: '#f1ede3', blurb: '폐기 예정 — 보류.' },
 ]
 

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>MES 실시간 운영 콘솔 · 박양하 솔라엣지</title>
+<title>MES 실시간 운영 콘솔</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -155,7 +155,7 @@ body::after{
 .now-line::before{content:"NOW";position:absolute;top:-14px;left:-12px;font-size:8px;color:var(--red);letter-spacing:.1em;font-family:'JetBrains Mono'}
 
 /* ===== alarm feed ===== */
-.feed{display:flex;flex-direction:column;gap:0;font-family:'JetBrains Mono';font-size:11px;max-height:300px;overflow:hidden}
+.feed{display:flex;flex-direction:column;gap:0;font-family:'JetBrains Mono';font-size:11px;height:264px;overflow:hidden}
 .fr{display:grid;grid-template-columns:62px 54px 1fr;gap:8px;padding:5px 4px;border-bottom:1px solid rgba(255,255,255,.03);align-items:baseline;transition:opacity .6s ease}
 .fr.fading{opacity:0}
 .fr .ft{color:var(--txt-faint);font-size:10px}
@@ -251,12 +251,12 @@ svg text{fill:var(--txt-dim);font-family:'JetBrains Mono';font-size:9px}
   <div class="tb-brand">
     <div class="logo-led"></div>
     <div>
-      <div class="title">PARK&nbsp;YANGHA&nbsp;//&nbsp;MES</div>
-      <div class="sub">실시간 운영 콘솔 · SolarEdge 신제품 라인</div>
+      <div class="title">MES&nbsp;//&nbsp;CONSOLE</div>
+      <div class="sub">실시간 운영 콘솔 · 신제품 양산 라인</div>
     </div>
   </div>
   <div class="tb-meta">
-    <div class="tb-cell"><span class="k">Line</span><span class="v a">SOLAREDGE-L01</span></div>
+    <div class="tb-cell"><span class="k">Line</span><span class="v a">LINE-01</span></div>
     <div class="tb-cell"><span class="k">Shift</span><span class="v">DAY / A조</span></div>
     <div class="tb-cell"><span class="k">Stack</span><span class="v">Django · React · Electron · OPC UA · PostgreSQL</span></div>
     <div class="tb-cell"><span class="k">System Clock</span><span class="v g" id="clock">--:--:--</span></div>
@@ -271,12 +271,12 @@ svg text{fill:var(--txt-dim);font-family:'JetBrains Mono';font-size:9px}
 <div class="wrap">
 
   <!-- MES 자체개발 맥락 — 이 콘솔이 자체 개발된 시스템임을 알림 -->
-  <div class="section-tag">// ABOUT THIS CONSOLE — 자체개발 MES · 솔라엣지테크놀로지스코리아 2024.10–12</div>
-  <div class="philo" title="자동화 설비 예산 30만불 초과 상황에서 MES 외주비 누락을 발견, 직접 기획·개발을 리딩했습니다.">
+  <div class="section-tag">// ABOUT THIS CONSOLE — 자체개발 MES 아키텍처 · 인-하우스 설계 원칙</div>
+  <div class="philo">
     <div class="philo-cell">
       <div class="pname"><span class="pj">$</span> 자체개발 배경 · WHY IN-HOUSE</div>
-      <div class="ptag">공정기술 엔지니어 · MES 기획·리딩</div>
-      <div class="pdesc">자동화 설비 예산 <em>30만 달러 초과</em> 상황에서 MES 외주 개발비 누락 확인. 추가 발주 대신 <em>직접 기획·개발 리딩</em>을 선택.</div>
+      <div class="ptag">MES 인-하우스 개발 · 비용 절감 설계</div>
+      <div class="pdesc">자동화 설비 예산 <em>30만 달러 초과</em> 상황에서 MES 외주 개발비 누락 확인. 추가 발주 대신 <em>인-하우스 기획·개발</em>을 선택.</div>
     </div>
     <div class="philo-cell">
       <div class="pname"><span class="pj">⚙</span> 데이터 수집 · ETL LAYER</div>
@@ -286,7 +286,7 @@ svg text{fill:var(--txt-dim);font-family:'JetBrains Mono';font-size:9px}
     <div class="philo-cell">
       <div class="pname"><span class="pj">⬡</span> 풀스택 아키텍처 · FULL-STACK</div>
       <div class="ptag">Django REST · React · TypeScript · Electron · PostgreSQL · Dash</div>
-      <div class="pdesc">Backend DRF API · Frontend React/TS/Electron · DB PostgreSQL · 실시간 대시보드 Python Dash. 계층형 S/N 바코드 체계 자체 설계. <em>기획·개발 리딩 (자체 개발).</em></div>
+      <div class="pdesc">Backend DRF API · Frontend React/TS/Electron · DB PostgreSQL · 실시간 대시보드 Python Dash. <em>계층형 S/N 바코드 체계 자체 설계.</em></div>
     </div>
   </div>
 
@@ -433,8 +433,8 @@ svg text{fill:var(--txt-dim);font-family:'JetBrains Mono';font-size:9px}
 
   <!-- footer / contact -->
   <div class="footer">
-    <div class="fcell"><div class="fk">Operator</div><div class="fv">박양하 (Park Yangha)</div></div>
-    <div class="fcell"><div class="fk">Console Build</div><div class="fv" style="color:var(--txt-faint)">MES-SOLAREDGE v1.0 · DAQ@1Hz · 자체개발</div></div>
+    <div class="fcell"><div class="fk">System</div><div class="fv">MES 실시간 운영 콘솔 · DAY SHIFT</div></div>
+    <div class="fcell"><div class="fk">Console Build</div><div class="fv" style="color:var(--txt-faint)">MES-CONSOLE v1.0 · DAQ@1Hz · 자체개발</div></div>
   </div>
 
 </div>
@@ -853,7 +853,7 @@ const livePool=[
   {sev:'info', msg:'Python Dash KPI 대시보드 갱신 @1Hz 정상'},
   {sev:'warn', msg:'IR 측정 편차 상한 근접 · 교정 요청'},
   {sev:'ok',   msg:'생산 달성률 94% 달성 · 계획 대비 정상 궤도'},
-  {sev:'info', msg:'OPC UA 태그 수집 @1Hz 정상 — SOLAREDGE-L01'},
+  {sev:'info', msg:'OPC UA 태그 수집 @1Hz 정상 — LINE-01'},
   {sev:'warn', msg:'B라인 사이클타임 13.1s — Takt 근접 모니터링'},
   {sev:'ok',   msg:'WO-2404 비전검사 단계 완료 · 불량 0건'},
   {sev:'info', msg:'Django REST API 응답 정상 — avg 12ms'},
@@ -867,7 +867,7 @@ const livePool=[
 
 const seedEvents=[
   {sev:'ok',  msg:'SHIFT START · DAY A조 가동 — OEE 모니터링 시작'},
-  {sev:'info',msg:'OPC UA · 설비 태그 수집 정상 @1Hz — SOLAREDGE-L01'},
+  {sev:'info',msg:'OPC UA · 설비 태그 수집 정상 @1Hz — LINE-01'},
   {sev:'ok',  msg:'WO-2401 완료 · OCV 검사 1호 라인 — FPY 99.8%'},
   {sev:'ok',  msg:'WO-2402 완료 · IR 검사 2호 라인 — 불량 2건 분류'},
   {sev:'info',msg:'Django REST · 생산 실적 API 업데이트 완료'},

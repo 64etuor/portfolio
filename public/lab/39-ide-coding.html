@@ -1,0 +1,762 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>source.editor — Live Build / Workspace</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+  @font-face{
+    font-family:'JetBrains Mono';font-display:swap;font-weight:400;
+    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff2') format('woff2');
+  }
+  @font-face{
+    font-family:'JetBrains Mono';font-display:swap;font-weight:600;
+    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-600-normal.woff2') format('woff2');
+  }
+  @font-face{
+    font-family:'JetBrains Mono';font-display:swap;font-weight:700;
+    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-700-normal.woff2') format('woff2');
+  }
+
+  :root{
+    --bg:#0c0d10;
+    --bg2:#090a0d;
+    --panel:#0f1116;
+    --panel2:#12141b;
+    --side:#0d0e12;
+    --line:#1b1e26;
+    --line2:#262a35;
+    --txt:#c3cad3;
+    --dim:#717a87;
+    --faint:#454c58;
+    --teal:#5fa8a2;       /* keyword */
+    --teal-dim:#4d8782;
+    --amber:#c4a062;      /* string / literal */
+    --green:#6fae87;      /* pass */
+    --blue:#86a7b8;       /* type */
+    --fn:#cdd5de;         /* function */
+    --num:#9bb6ac;        /* number */
+    --pu:#6d7682;         /* punctuation */
+    --cm:#4d545d;         /* comment */
+    --warn:#c4a062;
+    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
+    --lh:22px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);color:var(--txt);font-family:var(--mono);
+    overflow:hidden;word-break:keep-all;-webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+  }
+  .kr{font-family:'Pretendard',var(--mono)}
+
+  /* ===== full-bleed 16:9 CRT shell ===== */
+  #shell{position:fixed;inset:0;overflow:hidden;background:
+    radial-gradient(ellipse 130% 120% at 50% 42%, #101218 0%, var(--bg) 60%, #050608 100%);}
+  #shell::before{ /* scanlines */
+    content:"";position:absolute;inset:0;z-index:90;pointer-events:none;
+    background:repeating-linear-gradient(0deg,
+      rgba(0,0,0,0) 0px,rgba(0,0,0,0) 2px,
+      rgba(0,0,0,.06) 3px,rgba(0,0,0,.06) 4px);
+    mix-blend-mode:multiply;
+  }
+  #shell::after{ /* vignette */
+    content:"";position:absolute;inset:0;z-index:91;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 48%, transparent 60%, rgba(0,0,0,.55) 100%);
+  }
+
+  #app{position:absolute;inset:0;display:flex;flex-direction:column;z-index:10}
+
+  /* ===== title bar ===== */
+  #titlebar{height:32px;flex:none;display:flex;align-items:center;gap:0;
+    background:linear-gradient(180deg,#13151b,#0e1014);border-bottom:1px solid var(--line);
+    font-size:11.5px;color:var(--dim);position:relative}
+  .traffic{display:flex;gap:8px;padding:0 14px}
+  .traffic i{width:11px;height:11px;border-radius:50%;background:#23262f;border:1px solid #2c303b}
+  .menu{display:flex;gap:18px;padding:0 6px}
+  .menu span{cursor:default}
+  .menu span:hover{color:var(--txt)}
+  .titlecenter{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    color:var(--dim);font-size:11.5px;letter-spacing:.2px}
+  .titlecenter b{color:var(--txt);font-weight:600}
+  .titleright{margin-left:auto;display:flex;align-items:center;gap:14px;padding:0 14px}
+  .livedot{display:inline-flex;align-items:center;gap:6px;color:var(--green)}
+  .livedot i{width:6px;height:6px;border-radius:50%;background:var(--green);
+    box-shadow:0 0 7px var(--green);animation:pulse 2.2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+  /* ===== body row ===== */
+  #body{flex:1;display:flex;min-height:0}
+
+  /* activity bar */
+  #activity{width:48px;flex:none;background:var(--bg2);border-right:1px solid var(--line);
+    display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:4px}
+  .act{width:34px;height:34px;display:flex;align-items:center;justify-content:center;
+    color:var(--faint);font-size:17px;border-left:2px solid transparent;cursor:default;
+    transition:.15s;border-radius:5px}
+  .act:hover{color:var(--dim)}
+  .act.on{color:var(--txt);border-left-color:var(--teal)}
+  .act.bottom{margin-top:auto}
+
+  /* sidebar / explorer */
+  #sidebar{width:236px;flex:none;background:var(--side);border-right:1px solid var(--line);
+    display:flex;flex-direction:column;min-height:0}
+  .sb-head{padding:11px 16px 8px;font-size:10.5px;letter-spacing:1.2px;color:var(--faint);
+    text-transform:uppercase;display:flex;justify-content:space-between;align-items:center}
+  .sb-head .dots{letter-spacing:2px}
+  .tree{flex:1;overflow:hidden;padding:0 6px;font-size:12.5px;line-height:1.1}
+  .tr{display:flex;align-items:center;gap:6px;padding:3px 8px;border-radius:4px;color:var(--dim);
+    white-space:nowrap;cursor:default}
+  .tr:hover{background:rgba(255,255,255,.03)}
+  .tr .tw{color:var(--faint);width:10px;display:inline-block;text-align:center;flex:none}
+  .tr .ico{width:14px;text-align:center;flex:none;font-size:11px}
+  .tr.dir{color:var(--txt)}
+  .tr.dir .ico{color:var(--teal-dim)}
+  .tr.file .ico{color:var(--blue)}
+  .tr.active{background:rgba(95,168,162,.10);color:var(--txt)}
+  .tr.active::after{content:'';position:absolute}
+  .tr .mod{margin-left:auto;color:var(--amber);font-size:10px}
+  .tr .add{margin-left:auto;color:var(--green);font-size:10px}
+  .ind1{padding-left:18px}.ind2{padding-left:32px}
+
+  .sb-foot{border-top:1px solid var(--line);padding:9px 16px;font-size:11px;color:var(--faint);
+    display:flex;flex-direction:column;gap:5px}
+  .sb-foot .row{display:flex;justify-content:space-between}
+  .sb-foot b{color:var(--dim);font-weight:400}
+
+  /* center column */
+  #center{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--bg)}
+
+  /* tab bar */
+  #tabs{height:36px;flex:none;display:flex;align-items:stretch;background:var(--bg2);
+    border-bottom:1px solid var(--line);overflow:hidden}
+  .tab{display:flex;align-items:center;gap:8px;padding:0 16px;font-size:12px;color:var(--dim);
+    border-right:1px solid var(--line);background:transparent;cursor:default;position:relative;white-space:nowrap}
+  .tab .ico{color:var(--blue);font-size:11px}
+  .tab.on{background:var(--bg);color:var(--txt)}
+  .tab.on::before{content:'';position:absolute;left:0;right:0;top:0;height:2px;background:var(--teal)}
+  .tab .st{width:8px;height:8px;display:inline-flex;align-items:center;justify-content:center}
+  .tab .st .dot{width:7px;height:7px;border-radius:50%;background:var(--amber);display:none}
+  .tab .st .x{color:var(--faint);font-size:13px;display:none}
+  .tab.on.dirty .st .dot{display:block}
+  .tab.on:not(.dirty) .st .x{display:block}
+
+  /* breadcrumb */
+  #crumb{height:26px;flex:none;display:flex;align-items:center;gap:7px;padding:0 18px;
+    font-size:11.5px;color:var(--faint);border-bottom:1px solid var(--line);background:var(--bg)}
+  #crumb .sep{color:var(--faint)}
+  #crumb .cur{color:var(--dim)}
+  #crumb .sym{color:var(--teal-dim)}
+
+  /* editor area */
+  #edwrap{flex:1;position:relative;overflow:hidden;min-height:0;background:var(--bg)}
+  #codeflow{position:absolute;left:0;right:118px;top:0;padding:10px 0;
+    transition:transform .25s cubic-bezier(.4,0,.2,1);will-change:transform}
+  .row{display:flex;height:var(--lh);line-height:var(--lh);font-size:13px}
+  .gut{width:58px;flex:none;text-align:right;padding-right:18px;color:var(--faint);
+    user-select:none;font-variant-numeric:tabular-nums;position:relative}
+  .row.active .gut{color:var(--dim)}
+  .row.active{background:rgba(255,255,255,.022)}
+  .row.active .gut::before{content:'';position:absolute;left:0;top:3px;bottom:3px;width:2px;background:var(--teal);opacity:.8}
+  .code{white-space:pre;flex:1;letter-spacing:.1px}
+  .caret{display:inline-block;width:2px;height:15px;background:var(--teal);
+    vertical-align:-3px;margin-left:1px;box-shadow:0 0 6px var(--teal);animation:blink 1.05s steps(2) infinite}
+  @keyframes blink{50%{opacity:0}}
+
+  /* syntax */
+  .t-kw{color:var(--teal);font-weight:600}
+  .t-st{color:var(--amber)}
+  .t-fn{color:var(--fn)}
+  .t-ty{color:var(--blue)}
+  .t-nm{color:var(--num)}
+  .t-pu{color:var(--pu)}
+  .t-cm{color:var(--cm);font-style:italic}
+  .t-id{color:var(--txt)}
+
+  /* minimap */
+  #minimap{position:absolute;top:0;right:0;width:118px;bottom:0;
+    background:var(--bg2);border-left:1px solid var(--line);overflow:hidden}
+  #mmcanvas{display:block;width:100%;height:100%}
+  #mmview{position:absolute;left:0;right:0;background:rgba(255,255,255,.045);
+    border-top:1px solid rgba(95,168,162,.3);border-bottom:1px solid rgba(95,168,162,.3);
+    pointer-events:none;transition:top .25s,height .25s}
+
+  /* ===== bottom panel (terminal) ===== */
+  #panel{height:212px;flex:none;display:flex;flex-direction:column;background:var(--bg2);
+    border-top:1px solid var(--line2)}
+  #ptabs{height:30px;flex:none;display:flex;align-items:stretch;gap:0;
+    border-bottom:1px solid var(--line);padding:0 8px}
+  .ptab{display:flex;align-items:center;padding:0 14px;font-size:11px;letter-spacing:.4px;
+    color:var(--faint);text-transform:uppercase;cursor:default;border-bottom:2px solid transparent}
+  .ptab.on{color:var(--txt);border-bottom-color:var(--teal)}
+  .ptab .badge{margin-left:7px;background:var(--line2);color:var(--dim);font-size:9.5px;
+    padding:0 5px;border-radius:8px;line-height:15px}
+  .ptab.on .badge.err{background:rgba(196,160,98,.16);color:var(--amber)}
+  .pright{margin-left:auto;display:flex;align-items:center;gap:14px;color:var(--faint);font-size:11px}
+  .pright .sh{color:var(--dim)}
+  #termbody{flex:1;overflow:hidden;padding:8px 16px;font-size:12.5px;line-height:1.62;position:relative}
+  #termbody .tl{white-space:pre-wrap}
+  .tdim{color:var(--dim)} .tfaint{color:var(--faint)}
+  .trun{color:var(--blue)}
+  .tpass{color:var(--green);font-weight:600}
+  .tok{color:var(--green)} .tok .g{color:var(--green)}
+  .tprompt-sym{color:var(--teal);font-weight:700}
+  .tcmd{color:var(--txt)}
+  .tcaret{display:inline-block;width:7px;height:13px;background:var(--teal);vertical-align:-2px;
+    margin-left:2px;animation:blink 1.05s steps(2) infinite}
+  .tsummary{color:var(--txt)}
+
+  /* ===== status bar ===== */
+  #status{height:24px;flex:none;display:flex;align-items:center;font-size:11px;
+    background:linear-gradient(180deg,#11141a,#0d0f14);border-top:1px solid var(--line);color:var(--dim)}
+  .st-l,.st-r{display:flex;align-items:center;height:100%}
+  .st-r{margin-left:auto}
+  .si{display:flex;align-items:center;gap:5px;padding:0 11px;height:100%;border-right:1px solid var(--line)}
+  .st-r .si{border-right:none;border-left:1px solid var(--line)}
+  .si.acc{background:rgba(95,168,162,.12);color:var(--teal)}
+  .si.acc .g{color:var(--teal)}
+  .si .g{color:var(--faint)}
+  .si .err{color:var(--amber)}
+  .si .ok{color:var(--green)}
+  .lspdot{width:6px;height:6px;border-radius:50%;background:var(--green);
+    box-shadow:0 0 6px var(--green);animation:pulse 2.4s infinite}
+  .spin{display:inline-block;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* fade transition for loop reset */
+  #center.dim-out{opacity:.18;transition:opacity .6s}
+  #center{transition:opacity .5s}
+
+  @media (max-width:1100px){
+    #sidebar{width:190px}#minimap{display:none}#codeflow{right:0}
+  }
+</style>
+</head>
+<body>
+<div id="shell">
+  <div id="app">
+
+    <!-- title bar -->
+    <div id="titlebar">
+      <div class="traffic"><i></i><i></i><i></i></div>
+      <div class="menu">
+        <span>File</span><span>Edit</span><span>View</span><span>Go</span><span>Run</span><span>Terminal</span>
+      </div>
+      <div class="titlecenter"><b>useAnomalyGuard.ts</b> &nbsp;—&nbsp; workspace</div>
+      <div class="titleright">
+        <span class="livedot"><i></i>LIVE BUILD</span>
+        <span id="uptime">00:00</span>
+      </div>
+    </div>
+
+    <!-- body -->
+    <div id="body">
+
+      <!-- activity bar -->
+      <div id="activity">
+        <div class="act on" title="Explorer">&#9783;</div>
+        <div class="act" title="Search">&#9906;</div>
+        <div class="act" title="Source Control">&#9881;</div>
+        <div class="act" title="Run &amp; Debug">&#9655;</div>
+        <div class="act" title="Extensions">&#9638;</div>
+        <div class="act bottom" title="Account">&#9737;</div>
+        <div class="act" title="Settings">&#9881;</div>
+      </div>
+
+      <!-- explorer -->
+      <div id="sidebar">
+        <div class="sb-head"><span>Explorer</span><span class="dots">&#8943;</span></div>
+        <div class="tree">
+          <div class="tr dir"><span class="tw">&#9662;</span><span class="ico">&#9698;</span>workspace</div>
+          <div class="tr dir ind1"><span class="tw">&#9662;</span><span class="ico">&#9698;</span>src</div>
+          <div class="tr dir ind2"><span class="tw">&#9662;</span><span class="ico">&#9698;</span>hooks</div>
+          <div class="tr file active ind2" style="padding-left:46px"><span class="ico">&#9670;</span>useAnomalyGuard.ts<span class="mod">&#9679;</span></div>
+          <div class="tr file ind2" style="padding-left:46px"><span class="ico">&#9670;</span>useTelemetry.ts</div>
+          <div class="tr dir ind1"><span class="tw">&#9656;</span><span class="ico">&#9697;</span>components</div>
+          <div class="tr dir ind1"><span class="tw">&#9662;</span><span class="ico">&#9698;</span>lib</div>
+          <div class="tr file ind2" style="padding-left:46px"><span class="ico">&#9670;</span>stream.ts</div>
+          <div class="tr file ind2" style="padding-left:46px"><span class="ico">&#9670;</span>schema.ts</div>
+          <div class="tr file ind1"><span class="ico">&#9670;</span>app.tsx</div>
+          <div class="tr dir"><span class="tw">&#9662;</span><span class="ico">&#9698;</span>tests</div>
+          <div class="tr file ind1"><span class="ico">&#9670;</span>anomaly.test.ts<span class="add">+</span></div>
+          <div class="tr file"><span class="ico">&#9671;</span>package.json</div>
+          <div class="tr file"><span class="ico">&#9671;</span>tsconfig.json</div>
+          <div class="tr file"><span class="ico">&#9671;</span>vitest.config.ts</div>
+        </div>
+        <div class="sb-foot">
+          <div class="row"><span>OUTLINE</span><span class="dots">&#8943;</span></div>
+          <div class="row"><b>&#402; useAnomalyGuard</b><span>hook</span></div>
+          <div class="row"><b>&nbsp;&nbsp;&#9656; WINDOW · SIGMA</b><span>const</span></div>
+        </div>
+      </div>
+
+      <!-- center -->
+      <div id="center">
+        <!-- tabs -->
+        <div id="tabs">
+          <div class="tab on dirty" id="tab-active"><span class="ico">&#9670;</span>useAnomalyGuard.ts
+            <span class="st"><span class="dot"></span><span class="x">&#10005;</span></span></div>
+          <div class="tab"><span class="ico">&#9670;</span>stream.ts<span class="st"><span class="x" style="display:block">&#10005;</span></span></div>
+          <div class="tab"><span class="ico">&#9670;</span>anomaly.test.ts<span class="st"><span class="x" style="display:block">&#10005;</span></span></div>
+          <div class="tab"><span class="ico">&#9671;</span>schema.ts<span class="st"><span class="x" style="display:block">&#10005;</span></span></div>
+        </div>
+        <!-- breadcrumb -->
+        <div id="crumb">
+          <span class="sym">&#9698;</span><span>src</span><span class="sep">&#8250;</span>
+          <span>hooks</span><span class="sep">&#8250;</span>
+          <span class="sym">&#9670;</span><span>useAnomalyGuard.ts</span><span class="sep">&#8250;</span>
+          <span class="cur">&#402; useAnomalyGuard</span>
+        </div>
+        <!-- editor -->
+        <div id="edwrap">
+          <div id="codeflow"></div>
+          <div id="minimap">
+            <canvas id="mmcanvas"></canvas>
+            <div id="mmview"></div>
+          </div>
+        </div>
+
+        <!-- panel -->
+        <div id="panel">
+          <div id="ptabs">
+            <div class="ptab" id="pt-prob">Problems <span class="badge err" id="probBadge">0</span></div>
+            <div class="ptab on">Terminal</div>
+            <div class="ptab">Output</div>
+            <div class="ptab">Debug Console</div>
+            <div class="pright"><span class="sh">zsh</span><span>—</span><span>workspace</span><span>&#9633;</span></div>
+          </div>
+          <div id="termbody"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- status bar -->
+    <div id="status">
+      <div class="st-l">
+        <div class="si acc"><span class="g">&#9095;</span><span id="branch">main</span><span id="branchMod">*</span></div>
+        <div class="si"><span class="g">&#8645;</span><span>2</span>&nbsp;<span>0</span></div>
+        <div class="si"><span class="err">&#9679;</span><span id="errCount">0</span>&nbsp;&nbsp;<span class="g">&#9888;</span><span id="warnCount">0</span></div>
+        <div class="si" id="buildState"><span class="spin" id="buildSpin" style="display:none">&#9696;</span><span id="buildLabel">tsserver ready</span></div>
+      </div>
+      <div class="st-r">
+        <div class="si" id="lncol">Ln 1, Col 1</div>
+        <div class="si">Spaces: 2</div>
+        <div class="si">UTF-8</div>
+        <div class="si">LF</div>
+        <div class="si">TypeScript React</div>
+        <div class="si"><span class="lspdot"></span>&nbsp;tsserver</div>
+        <div class="si">&#9209; Prettier</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+"use strict";
+//==================================================================
+//  39 · IDE / Source Editor — deterministic live-coding loop
+//  타이핑·터미널 출력은 전부 고정 시퀀스에서 파생 (난수 0)
+//==================================================================
+
+/* ---- the file being written (TS / React hook) ---- */
+var SRC = [
+  'import { useEffect, useRef, useState } from "react";',
+  'import { openStream } from "../lib/stream";',
+  'import type { Sample, Anomaly } from "../lib/schema";',
+  '',
+  'const WINDOW = 32;',
+  'const SIGMA = 3.0;',
+  '',
+  '// 이동 표준편차 기반 실시간 이상치 감지 훅',
+  'export function useAnomalyGuard(channel: string) {',
+  '  const [anomalies, setAnomalies] = useState<Anomaly[]>([]);',
+  '  const buffer = useRef<number[]>([]);',
+  '',
+  '  useEffect(() => {',
+  '    const stream = openStream(channel);',
+  '',
+  '    stream.on("sample", (s: Sample) => {',
+  '      const buf = buffer.current;',
+  '      buf.push(s.value);',
+  '      if (buf.length > WINDOW) buf.shift();',
+  '',
+  '      const mean = buf.reduce((a, b) => a + b, 0) / buf.length;',
+  '      const dev = buf.reduce((a, b) => a + (b - mean) ** 2, 0) / buf.length;',
+  '      const sigma = Math.sqrt(dev);',
+  '',
+  '      if (Math.abs(s.value - mean) > SIGMA * sigma) {',
+  '        const hit = { ts: s.ts, value: s.value, mean };',
+  '        setAnomalies((prev) => [...prev, hit]);',
+  '      }',
+  '    });',
+  '',
+  '    return () => stream.close();',
+  '  }, [channel]);',
+  '',
+  '  return anomalies;',
+  '}'
+];
+var FLAT = SRC.join('\n');
+var TOTAL = FLAT.length;
+
+/* ---- tokenizer (deterministic, run once) ---- */
+var KEYWORDS = {'import':1,'from':1,'export':1,'const':1,'let':1,'var':1,'function':1,
+  'return':1,'if':1,'else':1,'for':1,'of':1,'in':1,'new':1,'type':1,'as':1,'await':1,
+  'async':1,'void':1,'null':1,'undefined':1,'true':1,'false':1,'this':1};
+
+function tokenizeLine(src){
+  var toks=[], i=0, n=src.length;
+  while(i<n){
+    var ch=src[i];
+    if(ch==='/'&&src[i+1]==='/'){ toks.push({c:'cm',s:src.slice(i)}); break; }
+    if(ch===' '||ch==='\t'){ var j=i; while(j<n&&(src[j]===' '||src[j]==='\t'))j++; toks.push({c:'ws',s:src.slice(i,j)}); i=j; continue; }
+    if(ch==='"'||ch==="'"||ch==='`'){ var k=i+1; while(k<n&&src[k]!==ch){ if(src[k]==='\\')k++; k++; } k++; if(k>n)k=n; toks.push({c:'st',s:src.slice(i,k)}); i=k; continue; }
+    if(ch>='0'&&ch<='9'){ var m=i; while(m<n&&((src[m]>='0'&&src[m]<='9')||src[m]==='.'))m++; toks.push({c:'nm',s:src.slice(i,m)}); i=m; continue; }
+    if(/[A-Za-z_$]/.test(ch)){ var p=i; while(p<n&&/[A-Za-z0-9_$]/.test(src[p]))p++; var w=src.slice(i,p);
+      var cls='id';
+      if(KEYWORDS[w]) cls='kw';
+      else if(/^[A-Z]/.test(w)) cls='ty';
+      else if(src[p]==='(') cls='fn';
+      toks.push({c:cls,s:w}); i=p; continue; }
+    toks.push({c:'pu',s:ch}); i++;
+  }
+  return toks;
+}
+var LINES = SRC.map(tokenizeLine);
+function lineLen(line){ var t=0; for(var i=0;i<line.length;i++)t+=line[i].s.length; return t; }
+var LLEN = LINES.map(lineLen);
+
+/* ---- escaping ---- */
+function esc(t){ return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+/* ---- render helpers ---- */
+function tokHTML(toks){
+  var h='';
+  for(var i=0;i<toks.length;i++){
+    var t=toks[i];
+    if(t.c==='ws') h+=t.s; else h+='<span class="t-'+t.c+'">'+esc(t.s)+'</span>';
+  }
+  return h;
+}
+function partialToks(line,k){
+  var out=[],rem=k;
+  for(var i=0;i<line.length;i++){
+    if(rem<=0) break;
+    var t=line[i];
+    if(t.s.length<=rem){ out.push(t); rem-=t.s.length; }
+    else { out.push({c:t.c,s:t.s.slice(0,rem)}); rem=0; break; }
+  }
+  return out;
+}
+
+var codeflow = document.getElementById('codeflow');
+var LH = 22;
+var lastTypedInt = -1;
+var curLine = 0, curCol = 1;
+
+function renderEditor(nChars){
+  var ni = Math.floor(nChars);
+  if(ni === lastTypedInt) return;
+  lastTypedInt = ni;
+  var remaining = ni, html='', cursorPlaced=false;
+  curLine=0; curCol=1;
+  for(var li=0; li<LINES.length; li++){
+    var llen = LLEN[li];
+    var isLast = (li===LINES.length-1);
+    var withNl = llen + (isLast?0:1);
+    if(remaining >= withNl){
+      html += rowHTML(li, tokHTML(LINES[li]), false);
+      remaining -= withNl;
+      curLine = li+1; curCol = 1;
+    } else {
+      // partial / current line
+      var rev = Math.min(remaining, llen);
+      html += rowHTML(li, tokHTML(partialToks(LINES[li],rev)) + '<span class="caret"></span>', true);
+      cursorPlaced=true; curLine=li; curCol=rev+1;
+      break;
+    }
+  }
+  if(!cursorPlaced){
+    // fully typed: cursor at end of last rendered row — re-render last with caret
+    curLine = LINES.length-1; curCol = LLEN[curLine]+1;
+  }
+  codeflow.innerHTML = html;
+  updateScroll();
+  drawMinimap(curLine);
+}
+
+function rowHTML(li, inner, active){
+  return '<div class="row'+(active?' active':'')+'"><span class="gut">'+(li+1)+'</span><span class="code">'+inner+'</span></div>';
+}
+
+/* auto-scroll to keep caret in view */
+var edwrap = document.getElementById('edwrap');
+function updateScroll(){
+  var vh = edwrap.clientHeight;
+  var visLines = Math.floor(vh/LH);
+  var off = 0;
+  if(curLine > visLines-5){ off = (curLine-(visLines-5))*LH; }
+  codeflow.style.transform = 'translateY('+(-off)+'px)';
+}
+
+/* ---- minimap ---- */
+var mmCanvas = document.getElementById('mmcanvas');
+var mmView = document.getElementById('mmview');
+var mmCtx=null, mmW=0, mmH=0, mmLineH=0;
+var SYN_COL = {kw:'#5fa8a2',st:'#c4a062',fn:'#cdd5de',ty:'#86a7b8',nm:'#9bb6ac',
+  pu:'#5b636e',cm:'#3f454e',id:'#8a92a0',ws:null};
+function initMinimap(){
+  var dpr = Math.min(2, window.devicePixelRatio||1);
+  mmW = mmCanvas.clientWidth; mmH = mmCanvas.clientHeight;
+  mmCanvas.width = mmW*dpr; mmCanvas.height = mmH*dpr;
+  mmCtx = mmCanvas.getContext('2d'); mmCtx.scale(dpr,dpr);
+  mmLineH = 3.0;
+}
+function drawMinimap(upto){
+  if(!mmCtx) return;
+  mmCtx.clearRect(0,0,mmW,mmH);
+  var pad=6, cw=0.82, x0=pad;
+  for(var li=0; li<=upto && li<LINES.length; li++){
+    var y = pad + li*mmLineH;
+    if(y>mmH-pad) break;
+    var x = x0;
+    var toks = LINES[li];
+    for(var ti=0; ti<toks.length; ti++){
+      var t=toks[ti];
+      var wpx = t.s.length*cw;
+      if(t.c!=='ws'){
+        mmCtx.fillStyle = SYN_COL[t.c]||'#7a828d';
+        mmCtx.globalAlpha = (li===upto)?0.95:0.6;
+        mmCtx.fillRect(x, y, wpx, 1.6);
+      }
+      x += wpx;
+      if(x>mmW-pad) break;
+    }
+  }
+  mmCtx.globalAlpha=1;
+  // viewport box reflects editor scroll
+  var vh = edwrap.clientHeight, visLines=Math.floor(vh/LH);
+  var topLine = Math.max(0, curLine-(visLines-5));
+  var vy = pad + topLine*mmLineH;
+  var vh2 = visLines*mmLineH;
+  mmView.style.top = vy+'px';
+  mmView.style.height = Math.min(vh2, mmH-vy)+'px';
+}
+
+/* ====================================================================
+   TERMINAL sequence — fixed, runs after typing completes
+   ==================================================================== */
+var TERM = [
+  {cmd:'pnpm test -- tests/anomaly.test.ts', after:520},
+  {cls:'tfaint', t:'> workspace@1.0.0 test', after:120},
+  {cls:'tfaint', t:'> vitest run tests/anomaly.test.ts', after:90},
+  {cls:'', t:'', after:160},
+  {cls:'trun', t:' RUN  v1.6.0  /workspace', after:420},
+  {cls:'', t:'', after:140},
+  {cls:'tpass', t:' ✓ tests/anomaly.test.ts  (6)  41ms', after:340},
+  {cls:'tok', t:'   ✓ flags 3-sigma excursion              2ms', after:150},
+  {cls:'tok', t:'   ✓ ignores in-band sensor noise          1ms', after:140},
+  {cls:'tok', t:'   ✓ holds rolling window at 32 samples    1ms', after:140},
+  {cls:'tok', t:'   ✓ recovers mean after a spike           2ms', after:140},
+  {cls:'tok', t:'   ✓ closes stream on unmount              1ms', after:140},
+  {cls:'tok', t:'   ✓ emits anomaly payload shape           1ms', after:140},
+  {cls:'', t:'', after:240},
+  {cls:'tdim',     t:' Test Files  1 passed (1)', after:220},
+  {cls:'tsummary', t:'      Tests  6 passed (6)', after:110},
+  {cls:'tdim',     t:'   Start at  09:24:11', after:90},
+  {cls:'tdim',     t:'   Duration  412 ms', after:110},
+  {cls:'', t:'', after:320},
+  {cls:'tpass', t:' PASS  typecheck · lint · build   ✓  0 errors', after:360}
+];
+
+var termbody = document.getElementById('termbody');
+function termClear(){ termbody.innerHTML=''; }
+function termAppend(html){
+  var d=document.createElement('div'); d.className='tl'; d.innerHTML=html;
+  termbody.appendChild(d);
+  // keep last ~13 lines visible
+  while(termbody.children.length>13){ termbody.removeChild(termbody.firstChild); }
+}
+function termUpdateLast(html){
+  var last = termbody.lastChild;
+  if(last) last.innerHTML = html;
+}
+
+/* ====================================================================
+   PHASE MACHINE  (rAF + dt, deterministic)
+   ==================================================================== */
+var CPS = 70;            // chars/sec typing speed
+var typed = 0;
+var pause = 0;
+var lastFlatIdx = 0;
+var phase = 'type';      // type | save | term | hold | reset
+var pTimer = 0;
+
+// terminal sub-state
+var ti=0, tWait=0, tCmdChars=0, tCmdLineMade=false;
+
+var els = {
+  branchMod: document.getElementById('branchMod'),
+  errCount: document.getElementById('errCount'),
+  warnCount: document.getElementById('warnCount'),
+  buildSpin: document.getElementById('buildSpin'),
+  buildLabel: document.getElementById('buildLabel'),
+  lncol: document.getElementById('lncol'),
+  probBadge: document.getElementById('probBadge'),
+  tab: document.getElementById('tab-active'),
+  center: document.getElementById('center'),
+  uptime: document.getElementById('uptime')
+};
+
+function setTyping(){
+  els.buildSpin.style.display='inline-block';
+  els.buildLabel.textContent='checking · tsserver';
+  els.errCount.textContent='2'; els.warnCount.textContent='1';
+  els.probBadge.textContent='3';
+  els.tab.classList.add('dirty');
+  els.branchMod.style.display='';
+}
+function setPassed(){
+  els.buildSpin.style.display='none';
+  els.buildLabel.textContent='no problems';
+  els.errCount.textContent='0'; els.warnCount.textContent='0';
+  els.probBadge.textContent='0';
+  els.tab.classList.remove('dirty');     // saved
+}
+
+function resetLoop(){
+  typed=0; pause=0; lastFlatIdx=0; lastTypedInt=-1;
+  ti=0; tWait=0; tCmdChars=0; tCmdLineMade=false;
+  termClear();
+  renderEditor(0);
+  setTyping();
+}
+
+/* uptime counter (deterministic, derived from elapsed frames) */
+var elapsed=0;
+function fmtUp(s){
+  var m=Math.floor(s/60), ss=Math.floor(s%60);
+  return String(m).padStart(2,'0')+':'+String(ss).padStart(2,'0');
+}
+
+var lastT=0;
+function frame(t){
+  if(!lastT) lastT=t;
+  var dt = Math.min(0.05,(t-lastT)/1000); lastT=t;
+  elapsed += dt;
+  els.uptime.textContent = fmtUp(elapsed);
+
+  if(phase==='type'){
+    if(pause>0){ pause-=dt; }
+    else {
+      typed += dt*CPS;
+      var idx=Math.floor(typed);
+      if(idx>lastFlatIdx){
+        var c = FLAT[idx-1];
+        lastFlatIdx=idx;
+        if(c==='\n') pause=0.062;
+        else if(c===';'||c==='{') pause=0.038;
+        else if(c==='}'||c===')') pause=0.02;
+        else if(c===','||c==='=') pause=0.012;
+      }
+      if(typed>=TOTAL){
+        typed=TOTAL;
+        renderEditor(TOTAL);
+        phase='save'; pTimer=0;
+      } else {
+        renderEditor(typed);
+        updateLnCol();
+      }
+    }
+  }
+  else if(phase==='save'){
+    pTimer+=dt;
+    // brief "formatting / saving" beat
+    if(pTimer>0.20 && els.buildLabel.textContent.indexOf('format')<0){
+      els.buildLabel.textContent='formatting · saving';
+    }
+    if(pTimer>0.85){
+      setPassed();
+      phase='term'; tWait=0; ti=0; tCmdChars=0; tCmdLineMade=false;
+    }
+  }
+  else if(phase==='term'){
+    tickTerm(dt);
+  }
+  else if(phase==='hold'){
+    pTimer+=dt;
+    if(pTimer>2.4){ phase='reset'; pTimer=0; els.center.classList.add('dim-out'); }
+  }
+  else if(phase==='reset'){
+    pTimer+=dt;
+    if(pTimer>0.75){
+      resetLoop();
+      els.center.classList.remove('dim-out');
+      phase='type';
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+function updateLnCol(){
+  els.lncol.textContent = 'Ln '+(curLine+1)+', Col '+curCol;
+}
+
+function tickTerm(dt){
+  if(ti>=TERM.length){
+    phase='hold'; pTimer=0; return;
+  }
+  var ev = TERM[ti];
+  if(ev.cmd!==undefined){
+    if(!tCmdLineMade){
+      tCmdLineMade=true; tCmdChars=0;
+      termAppend('<span class="tprompt-sym">$</span> <span class="tcmd"></span><span class="tcaret"></span>');
+    }
+    tCmdChars += dt*40;
+    var shown=Math.min(ev.cmd.length, Math.floor(tCmdChars));
+    termUpdateLast('<span class="tprompt-sym">$</span> <span class="tcmd">'+esc(ev.cmd.slice(0,shown))+'</span><span class="tcaret"></span>');
+    if(shown>=ev.cmd.length){
+      tWait += dt*1000;
+      if(tWait>=ev.after){
+        termUpdateLast('<span class="tprompt-sym">$</span> <span class="tcmd">'+esc(ev.cmd)+'</span>');
+        ti++; tWait=0; tCmdLineMade=false;
+        // show running state
+        els.buildSpin.style.display='inline-block';
+        els.buildLabel.textContent='vitest · running';
+      }
+    }
+    return;
+  }
+  // output line
+  tWait += dt*1000;
+  if(tWait>=ev.after){
+    var cls = ev.cls? ev.cls : 'tdim';
+    termAppend('<span class="'+cls+'">'+esc(ev.t)+'</span>');
+    tWait=0; ti++;
+    if(ti>=TERM.length){
+      els.buildSpin.style.display='none';
+      els.buildLabel.textContent='build passed · 0 errors';
+    }
+  }
+}
+
+/* ---- boot ---- */
+function boot(){
+  initMinimap();
+  resetLoop();
+  requestAnimationFrame(frame);
+}
+window.addEventListener('resize', function(){ initMinimap(); drawMinimap(curLine); updateScroll(); });
+
+if(document.fonts && document.fonts.ready){
+  var started=false;
+  var go=function(){ if(!started){ started=true; boot(); } };
+  document.fonts.ready.then(go);
+  setTimeout(go, 600);
+} else { boot(); }
+</script>
+</body>
+</html>

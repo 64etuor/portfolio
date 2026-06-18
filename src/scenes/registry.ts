@@ -41,12 +41,12 @@ export const SCENES: Scene[] = [
   { id: '13', slug: 'radar-sonar', file: '13-radar-sonar.html', title: 'Work Radar — AI 워크플로우 콕핏', domain: '프로젝트', perspective: 'project-career', cluster: 'project', bg: '#060a08', featured: true, blurb: 'local-first AI 콕핏 11 서피스. 신호 수집·시간 배치·agent 거버넌스.' },
 
   // 프로젝트 + 경력 — 경력(제조 3社)
-  { id: '20', slug: 'instrument-rack', file: '20-instrument-rack.html', title: '은성 — 생산관리·원가', domain: '경력·은성', perspective: 'project-career', cluster: 'career', bg: '#0b0d0f', owns: '운영경비 −85%', blurb: '배터리팩 생산관리. 운영경비 −85%·불량 0건의 단독 무대.' },
-  { id: '18', slug: 'sonar-waterfall', file: '18-sonar-waterfall.html', title: '이랜텍 — 초음파 용착 DOE', domain: '경력·이랜텍', perspective: 'project-career', cluster: 'career', bg: '#060a10', owns: '용착 15%→0%', blurb: '스팟·레이저·초음파 용착 DOE. 용착 15%→0%의 단독 무대.' },
-  { id: '15', slug: 'scada-hmi', file: '15-scada-hmi.html', title: '이랜텍/삼성 — SCM·재고', domain: '경력·SCM', perspective: 'project-career', cluster: 'career', bg: '#0e1217', owns: '재고회전율 +17%', blurb: '삼성 상생아카데미 SCM 개선. 재고회전율 +17%의 단독 무대.' },
+  { id: '20', slug: 'instrument-rack', file: '20-instrument-rack.html', title: '생산관리 · 원가 제1원칙', domain: '제조·원가', perspective: 'project-career', cluster: 'career', bg: '#0b0d0f', owns: '운영경비 −85%', blurb: '배터리팩 생산관리. 운영경비 −85%·불량 0건의 단독 무대.' },
+  { id: '18', slug: 'sonar-waterfall', file: '18-sonar-waterfall.html', title: '초음파 용착 DOE', domain: '제조·용착', perspective: 'project-career', cluster: 'career', bg: '#060a10', owns: '용착 15%→0%', blurb: '스팟·레이저·초음파 용착 DOE. 용착 15%→0%의 단독 무대.' },
+  { id: '15', slug: 'scada-hmi', file: '15-scada-hmi.html', title: 'SCM · 재고 최적화', domain: '물류·SCM', perspective: 'project-career', cluster: 'career', bg: '#0e1217', owns: '재고회전율 +17%', blurb: '창고물류 SCM 개선. 재고회전율 +17%의 단독 무대.' },
   { id: '17', slug: 'gantt-cpm', file: '17-gantt-cpm.html', title: '커리어 타임라인 — 경력 + 프로젝트', domain: '경력 종합', perspective: 'project-career', cluster: 'career', bg: '#0c0f14', featured: true, owns: '사무공수 −451분 · ST −50%', blurb: '회사 5社를 크리티컬 패스로, 자기주도 프로젝트 16건을 병렬로 묶은 커리어 간트·임팩트 보드.' },
-  { id: '01', slug: 'mes-console', file: '01-mes-console.html', title: '솔라엣지 — MES 구축', domain: '경력·솔라엣지', perspective: 'project-career', cluster: 'career', bg: '#0a0a0c', featured: true, blurb: '신제품 라인 MES 자체 개발·운영 체계 구축.' },
-  { id: '12', slug: 'cmm-metrology', file: '12-cmm-metrology.html', title: '솔라엣지 — 추적성·검사', domain: '경력·솔라엣지', perspective: 'project-career', cluster: 'career', bg: '#0a0e14', owns: 'S/N 추적성', blurb: 'S/N 추적성·검사성적서 자동발행. 추적성의 단독 무대.' },
+  { id: '01', slug: 'mes-console', file: '01-mes-console.html', title: 'MES 구축', domain: '제조·MES', perspective: 'project-career', cluster: 'career', bg: '#0a0a0c', featured: true, blurb: '신제품 라인 MES 자체 개발·운영 체계 구축.' },
+  { id: '12', slug: 'cmm-metrology', file: '12-cmm-metrology.html', title: 'CMM 정밀 측정 · GD&T 검사', domain: '계측·CMM', perspective: 'project-career', cluster: 'career', bg: '#0a0e14', owns: 'GD&T 검사성적서', blurb: 'CMM 3D 좌표측정·GD&T 검사성적서 자동발행.' },
 
   // 스킬
   { id: '11', slug: 'weld-thermal', file: '11-weld-thermal.html', title: '산업 용접 기술', domain: '공정기술', perspective: 'skill', bg: '#0a0410', blurb: '스팟·레이저 용접 공정 기술과 조건 설계.' },
@@ -66,8 +66,6 @@ export const SCENES: Scene[] = [
 
   // 보류 (parked) — 홈/릴 제외, 콘텐츠 작업 안 함
   { id: '07', slug: 'gcode-printer', file: '07-gcode-printer.html', title: 'G-code 3D 프린터 빌드', domain: '적층제조', perspective: 'project-career', cluster: 'project', status: 'parked', bg: '#0e1116', blurb: '하드웨어 개발 후보 — 보류.' },
-  { id: '14', slug: 'fluid-power', file: '14-fluid-power.html', title: '유압 / 공압 회로도', domain: '설비', perspective: 'skill', status: 'parked', bg: '#0a1426', blurb: '추후 제거 예정 — 보류.' },
-  { id: '27', slug: 'writer-philosophy', file: '27-writer-philosophy.html', title: '(구) 작가', domain: '인문', perspective: 'philosophy', status: 'parked', bg: '#f1ede3', blurb: '폐기 예정 — 보류.' },
 ]
 
 export const sceneById = (id: string) => SCENES.find((s) => s.id === id || s.slug === id)

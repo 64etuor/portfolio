@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>박양하 · 볼트 의미지도 — 학습을 구조로 (BGE-M3 → UMAP → HDBSCAN)</title>
+<title>지식 볼트 의미지도 — 지식을 구조로 (BGE-M3 → UMAP → HDBSCAN)</title>
 <style>
 /* ───────────────────────── reset / tokens ───────────────────────── */
 :root{
@@ -261,8 +261,8 @@ footer .links{display:flex;gap:20px;flex-wrap:wrap}
     <div class="brand">
       <div class="logo"></div>
       <div class="meta">
-        <b>박양하 · Park Yangha</b>
-        <span>생산운영 PM · 공정기술 엔지니어 · 총괄본부장</span>
+        <b>Knowledge Vault</b>
+        <span>obsidian · 지식 그래프 · 의미 군집</span>
       </div>
     </div>
     <div class="toprite">
@@ -287,14 +287,11 @@ footer .links{display:flex;gap:20px;flex-wrap:wrap}
         <div class="axis-note">UMAP dim_0 →<br/>↑ UMAP dim_1<br/><span style="color:var(--ink-2)">hover · 노트 탐색</span><br/><span class="axmode" id="axmode" style="color:var(--signal)">vector view</span></div>
         <button id="vsToggle" title="분산 표상(vector) ↔ 기호 표상(symbol) 전환">vector ↔ symbol</button>
         <div class="legend">
-          <div class="row" data-dom="제조/공정"><span class="chip" style="background:var(--c-mfg)"></span> 제조/공정 <small>manufacturing</small></div>
-          <div class="row" data-dom="데이터/SQL"><span class="chip" style="background:var(--c-data)"></span> 데이터/SQL <small>data</small></div>
-          <div class="row" data-dom="AI Agent"><span class="chip" style="background:var(--c-ai)"></span> AI Agent <small>LLM·GraphRAG·MCP</small></div>
-          <div class="row" data-dom="철학"><span class="chip" style="background:var(--c-phil)"></span> 철학 <small>Wittgenstein·Deleuze·Quine</small></div>
-          <div class="row" data-dom="심리학"><span class="chip" style="background:var(--c-psy)"></span> 심리학 <small>Jung 개성화</small></div>
-          <div class="row" data-dom="경영전략"><span class="chip" style="background:var(--c-biz)"></span> 경영전략 <small>strategy</small></div>
-          <div class="row" data-dom="지식공학"><span class="chip" style="background:var(--c-dev)"></span> 지식공학 <small>ontology·표상비용</small></div>
-          <div class="row" data-dom="의사결정"><span class="chip" style="background:var(--c-dec)"></span> 의사결정 <small>문제분석</small></div>
+          <div class="row" data-dom="프론트엔드"><span class="chip" style="background:var(--c-data)"></span> 프론트엔드 <small>TypeScript·React·Next</small></div>
+          <div class="row" data-dom="데이터/AI"><span class="chip" style="background:var(--c-ai)"></span> 데이터/AI <small>RAG·GraphRAG·에이전트</small></div>
+          <div class="row" data-dom="백엔드/인프라"><span class="chip" style="background:var(--c-dev)"></span> 백엔드/인프라 <small>PostgreSQL·MCP</small></div>
+          <div class="row" data-dom="제조/도메인"><span class="chip" style="background:var(--c-mfg)"></span> 제조/도메인 <small>MES·계측·공정제어</small></div>
+          <div class="row" data-dom="철학/원칙"><span class="chip" style="background:var(--c-phil)"></span> 철학/원칙 <small>제1원칙·크로스도메인</small></div>
         </div>
         <div id="tip">
           <div class="tip-dom"></div>
@@ -354,57 +351,89 @@ footer .links{display:flex;gap:20px;flex-wrap:wrap}
 
   <!-- ───────── footer ───────── -->
   <footer>
-    <div class="who"><b>박양하</b> — 관성에 따라 일하지 않는다 · 품질과 타협하지 않는다 · 불합리를 방치하지 않는다</div>
+    <div class="who"><b>원칙</b> — 제1원칙으로 사고한다 · 지식을 구조로 만든다 · 도메인을 가로질러 연결한다</div>
   </footer>
 </div>
 
 <script>
 /* ════════════════════════════════════════════════════════════════
-   DATA — latent points (real skills/projects, 4 clusters)
+   DATA — vault knowledge graph (테크스택 + 철학/원칙, 5 clusters)
    ════════════════════════════════════════════════════════════════ */
-/* DOMS = HDBSCAN 클러스터 = 박양하의 실제 지식 도메인 (Obsidian vault).
+/* DOMS = HDBSCAN 클러스터 = 지식 볼트(Obsidian)의 도메인 구조.
+   철학/원칙 클러스터를 중앙에 두어, 모든 기술 도메인을 가로질러 잇는 허브로 둔다.
    cx/cy = UMAP 2d 좌표(정규화).  sx/sy = 기호(symbol) 뷰의 격자형 배치 좌표. */
 const DOMS = {
-  "제조/공정":{c:"#ff7a8a", cx:-0.66, cy:0.42, sx:-0.72, sy:0.62},
-  "데이터/SQL":{c:"#6fb4ff", cx:0.40, cy:0.62, sx:-0.24, sy:0.62},
-  "AI Agent":{c:"#46e6b0", cx:-0.40, cy:-0.50, sx:0.24, sy:0.62},
-  "철학":{c:"#f6c177", cx:0.66, cy:-0.30, sx:0.72, sy:0.62},
-  "심리학":{c:"#b48ead", cx:0.58, cy:0.20, sx:-0.72, sy:-0.18},
-  "경영전략":{c:"#7fd1c4", cx:-0.10, cy:0.05, sx:-0.24, sy:-0.18},
-  "지식공학":{c:"#c9a3ff", cx:0.05, cy:-0.55, sx:0.24, sy:-0.18},
-  "의사결정":{c:"#e0a3a3", cx:-0.55, cy:-0.05, sx:0.72, sy:-0.18},
+  "프론트엔드":{c:"#6fb4ff", cx:-0.62, cy:0.46, sx:-0.70, sy:0.55},
+  "데이터/AI":{c:"#46e6b0", cx:0.34, cy:-0.42, sx:0.70, sy:0.55},
+  "백엔드/인프라":{c:"#c9a3ff", cx:0.60, cy:0.40, sx:0.70, sy:-0.40},
+  "제조/도메인":{c:"#ff7a8a", cx:-0.58, cy:-0.40, sx:-0.70, sy:-0.40},
+  "철학/원칙":{c:"#f6c177", cx:0.0, cy:0.06, sx:0.0, sy:0.08},
 };
+/* 초기 노드 — 부팅 시 빠르게 돋아나며 연결된다 */
 const POINTS = [
-  // 제조/공정
-  ["제조/공정","PFMEA·CP·PFD·SOP"],["제조/공정","산업용접 (스팟·레이저·초음파)"],["제조/공정","LOB 분석"],
-  ["제조/공정","비전검사"],["제조/공정","로봇 티칭"],["제조/공정","ERP·MES"],["제조/공정","IATF16949"],
-  // 데이터/SQL
-  ["데이터/SQL","SQL"],["데이터/SQL","BI 대시보드"],["데이터/SQL","데이터 모델링"],
-  ["데이터/SQL","KPI / 원가 분석"],["데이터/SQL","Machine Learning"],
-  // AI Agent
-  ["AI Agent","LLM Wiki"],["AI Agent","GraphRAG"],["AI Agent","MCP 서버"],
-  ["AI Agent","RPA·AX 업무시스템"],["AI Agent","neuro-symbolic"],["AI Agent","BGE-M3 임베딩"],
-  // 철학
-  ["철학","비트겐슈타인 · 의미는 사용"],["철학","들뢰즈 · 차이와 반복"],["철학","콰인 · 번역 불확정성"],
-  ["철학","검증가능성 ≠ 설명가능성"],
-  // 심리학
-  ["심리학","융 · 개성화(individuation)"],["심리학","원형 · 그림자"],
-  // 경영전략
-  ["경영전략","경영전략 프레임"],["경영전략","조직·운영 설계"],
-  // 지식공학
-  ["지식공학","온톨로지"],["지식공학","표상비용(representation cost)"],["지식공학","vector ↔ symbol"],
-  // 의사결정
-  ["의사결정","문제분석"],["의사결정","의사결정 트리"],
+  // 프론트엔드
+  ["프론트엔드","TypeScript"],["프론트엔드","React"],["프론트엔드","Next.js"],
+  ["프론트엔드","상태관리·React Query"],["프론트엔드","디자인 시스템"],
+  // 데이터/AI
+  ["데이터/AI","Python"],["데이터/AI","BGE-M3 임베딩"],["데이터/AI","RAG"],
+  ["데이터/AI","벡터DB"],["데이터/AI","GraphRAG"],["데이터/AI","에이전트"],
+  ["데이터/AI","neuro-symbolic"],["데이터/AI","UMAP·HDBSCAN"],
+  // 백엔드/인프라
+  ["백엔드/인프라","PostgreSQL"],["백엔드/인프라","MCP 서버"],["백엔드/인프라","control plane"],
+  ["백엔드/인프라","API 설계"],["백엔드/인프라","관측가능성(observability)"],
+  // 제조/도메인
+  ["제조/도메인","MES"],["제조/도메인","계측(metrology)"],["제조/도메인","공정제어(SPC)"],
+  ["제조/도메인","치공구 설계"],["제조/도메인","PFMEA·CP"],["제조/도메인","IATF16949"],
+  // 철학/원칙 (중앙 허브)
+  ["철학/원칙","제1원칙 사고"],["철학/원칙","크로스도메인 (현장↔기술)"],["철학/원칙","지식을 구조로"],
+  ["철학/원칙","도메인 연결"],["철학/원칙","의미는 사용이다"],["철학/원칙","검증가능성 ≠ 설명가능성"],
 ];
+/* 위성 노드 — 인트로 후 시간차로 하나씩 돋아나며 그래프를 풍성하게 확장한다 */
+const SATELLITES = [
+  ["프론트엔드","Tailwind"],["프론트엔드","Vite"],
+  ["데이터/AI","임베딩 재랭킹(rerank)"],["데이터/AI","평가셋(eval harness)"],["데이터/AI","pydantic 스키마"],
+  ["백엔드/인프라","Docker"],["백엔드/인프라","메시지 큐"],
+  ["제조/도메인","비전검사"],["제조/도메인","로봇 티칭"],
+  ["철학/원칙","온톨로지"],["철학/원칙","표상비용(representation cost)"],
+];
+/* 클러스터를 가로지르는 강조 연결 — "지식 간 연결 = 경쟁력".
+   제조↔AI, 현장↔기술, 프론트↔백엔드 등. 굵고 밝게 그려 메시지를 시각화한다. */
+const CROSS_LINKS = [
+  ["MES","에이전트"],                          // 제조 ↔ AI
+  ["계측(metrology)","BGE-M3 임베딩"],          // 현장 계측 ↔ 임베딩
+  ["공정제어(SPC)","RAG"],                      // 공정 ↔ 검색
+  ["제1원칙 사고","GraphRAG"],                  // 원칙 ↔ AI
+  ["크로스도메인 (현장↔기술)","MCP 서버"],       // 현장↔기술 ↔ 인프라
+  ["지식을 구조로","벡터DB"],
+  ["지식을 구조로","TypeScript"],
+  ["도메인 연결","React"],
+  ["도메인 연결","MES"],
+  ["TypeScript","API 설계"],                    // 프론트 ↔ 백엔드
+  ["Next.js","control plane"],
+  ["PostgreSQL","벡터DB"],                       // 백엔드 ↔ AI
+  ["검증가능성 ≠ 설명가능성","neuro-symbolic"],
+  ["IATF16949","검증가능성 ≠ 설명가능성"],        // 제조품질 ↔ 원칙
+];
+/* 페이즈(캡션)별로 다시 그려지며 강조되는 크로스 연결.
+   캡션이 넘어가는 순간 해당 엣지의 draw-in이 0→1로 재생(re-trigger)되어,
+   그 캡션 주제에 맞는 지식 연결이 매번 새로 살아난다. (전부 실재하는 엣지) */
+const PHASE_EMPH = {
+  who:     [["지식을 구조로","벡터DB"],["지식을 구조로","TypeScript"],["도메인 연결","React"],["도메인 연결","MES"],["제1원칙 사고","GraphRAG"]],
+  meaning: [["제1원칙 사고","GraphRAG"],["검증가능성 ≠ 설명가능성","neuro-symbolic"],["지식을 구조로","벡터DB"]],
+  vecsym:  [["검증가능성 ≠ 설명가능성","neuro-symbolic"],["지식을 구조로","벡터DB"],["PostgreSQL","벡터DB"]],
+  verify:  [["IATF16949","검증가능성 ≠ 설명가능성"],["검증가능성 ≠ 설명가능성","neuro-symbolic"],["공정제어(SPC)","RAG"]],
+  pipeline:[["계측(metrology)","BGE-M3 임베딩"],["PostgreSQL","벡터DB"],["제1원칙 사고","GraphRAG"]],
+  mfgai:   [["MES","에이전트"],["계측(metrology)","BGE-M3 임베딩"],["크로스도메인 (현장↔기술)","MCP 서버"],["도메인 연결","MES"]],
+};
 
 /* keyword → which point labels light up while the agent answers */
 const RETRIEVE = {
-  who:["BGE-M3 임베딩","MCP 서버","SQL","비트겐슈타인 · 의미는 사용","융 · 개성화(individuation)","PFMEA·CP·PFD·SOP","온톨로지"],
-  meaning:["비트겐슈타인 · 의미는 사용","LLM Wiki","GraphRAG","콰인 · 번역 불확정성","검증가능성 ≠ 설명가능성"],
-  vecsym:["vector ↔ symbol","neuro-symbolic","표상비용(representation cost)","온톨로지","검증가능성 ≠ 설명가능성","GraphRAG"],
-  verify:["검증가능성 ≠ 설명가능성","neuro-symbolic","온톨로지","IATF16949","문제분석"],
-  pipeline:["BGE-M3 임베딩","GraphRAG","MCP 서버","데이터 모델링","온톨로지","Machine Learning"],
-  mfgai:["ERP·MES","RPA·AX 업무시스템","MCP 서버","비전검사","로봇 티칭","SQL"],
+  who:["BGE-M3 임베딩","MCP 서버","PostgreSQL","TypeScript","제1원칙 사고","MES","지식을 구조로"],
+  meaning:["의미는 사용이다","RAG","GraphRAG","에이전트","검증가능성 ≠ 설명가능성"],
+  vecsym:["neuro-symbolic","벡터DB","온톨로지","검증가능성 ≠ 설명가능성","GraphRAG","에이전트"],
+  verify:["검증가능성 ≠ 설명가능성","neuro-symbolic","IATF16949","PFMEA·CP","공정제어(SPC)"],
+  pipeline:["BGE-M3 임베딩","UMAP·HDBSCAN","GraphRAG","벡터DB","Python"],
+  mfgai:["MES","계측(metrology)","공정제어(SPC)","에이전트","MCP 서버","크로스도메인 (현장↔기술)"],
 };
 
 /* ════════════════════════════════════════════════════════════════
@@ -413,18 +442,18 @@ const RETRIEVE = {
    ════════════════════════════════════════════════════════════════ */
 const ANSWERS = {
   who:
-`이 지도는 비유가 아니다. 박양하가 데이터분석·SW 부트캠프 기간(2024) 축적한 학습 노트를 **Obsidian vault** 에 모아, [[000_System/scripts/semantic_map.py|실제 스크립트]] 로 돌린 출력이다 — **BGE-M3** 임베딩(1024d) → **UMAP** 차원축소(2d) → **HDBSCAN** 클러스터링.
+`이 지도는 비유가 아니다. 학습 노트를 **Obsidian vault** 에 모아, [[000_System/scripts/semantic_map.py|실제 스크립트]] 로 돌린 출력이다 — **BGE-M3** 임베딩(1024d) → **UMAP** 차원축소(2d) → **HDBSCAN** 클러스터링.
 
-클러스터는 그 학습의 실제 도메인 구조다 — **제조/공정**(PFMEA·MES·IATF16949)을 기반으로 **데이터/SQL**, **AI Agent**(LLM Wiki·GraphRAG·MCP)로 확장하며, 동시에 **철학**(비트겐슈타인·들뢰즈·콰인)·**심리학**(융 개성화)·**경영전략**·**지식공학**(온톨로지·표상비용)·**의사결정**을 한 벡터공간 안에서 잇는다.
+클러스터는 지식의 실제 도메인 구조다 — **프론트엔드**(TypeScript·React·Next.js), **데이터/AI**(BGE-M3·RAG·GraphRAG·에이전트), **백엔드/인프라**(PostgreSQL·MCP·control plane), **제조/도메인**(MES·계측·공정제어)을 **철학/원칙**(제1원칙·크로스도메인·"지식을 구조로")이 한 벡터공간 안에서 잇는다.
 
-학습을 흘려보내지 않고 **의미 군집으로 구조화**한 것 — 지식의 운영화다.`,
+학습을 흘려보내지 않고 **의미 군집으로 구조화**한 것 — 지식의 운영화다. 그리고 진짜 경쟁력은 노드가 아니라 **노드 사이의 연결**에서 나온다.`,
 
   meaning:
 `핵심 렌즈는 비트겐슈타인의 명제다 — [[의미는 사용이다|Philosophical Investigations §43]]. 단어의 의미는 정의가 아니라 **언어게임 안의 쓰임**에서 나온다.
 
 그래서 묻는다 — **LLM이 의미를 "이해"하는가?** 분산 표상(embedding)은 사용의 통계를 포착하지만, 그 자체가 이해의 충분조건인지는 열려 있다. [[콰인 · 번역 불확정성|Quine, indeterminacy of translation]] 은 같은 행동을 낳는 의미가 여럿일 수 있음을 경고한다.
 
-이것이 그가 **LLM Wiki·GraphRAG** 를 단순 검색이 아니라 *의미의 사용 맥락*을 보존하는 구조로 설계하는 이유다. 임베딩은 쓰임의 그림자이지, 쓰임 자체가 아니다.`,
+이것이 **LLM Wiki·GraphRAG** 를 단순 검색이 아니라 *의미의 사용 맥락*을 보존하는 구조로 설계하는 이유다. 임베딩은 쓰임의 그림자이지, 쓰임 자체가 아니다.`,
 
   vecsym:
 `**vector ↔ symbol** 의 비대칭이 이 vault의 중심 긴장이다.
@@ -439,7 +468,7 @@ const ANSWERS = {
 · **검증가능성(verifiability)** — *제3자가 도출 과정을 재추적*할 수 있는가. 감사·규제·재현의 축이다.
 · **설명가능성(explainability)** — *사람이 그 결과를 이해*할 수 있는가. 직관·납득의 축이다.
 
-분산 표상은 종종 설명은 그럴듯해도 [[검증가능성 ≠ 설명가능성|representation cost note]] 재추적이 어렵다. 박양하가 제조 현장(IATF16949·PFMEA)에서 배운 원칙이 여기 그대로 들어온다 — **숫자와 절차로 닫지 못한 결론은 아직 닫힌 게 아니다.** AI에도 같은 잣대를 댄다.`,
+분산 표상은 종종 설명은 그럴듯해도 [[검증가능성 ≠ 설명가능성|representation cost note]] 재추적이 어렵다. 제조 현장(IATF16949·PFMEA)에서 온 원칙이 여기 그대로 들어온다 — **숫자와 절차로 닫지 못한 결론은 아직 닫힌 게 아니다.** AI에도 같은 잣대를 댄다.`,
 
   pipeline:
 `파이프라인은 한 줄로 요약된다 — **BGE-M3 → UMAP → HDBSCAN**.
@@ -448,14 +477,14 @@ const ANSWERS = {
 · **UMAP** — 고차원 구조를 보존하며 2d로 축소, 이 화면의 좌표가 된다.
 · **HDBSCAN** — 밀도 기반 클러스터링으로 **임의 개수의 도메인**을 자동 발견(미리 k를 정하지 않는다).
 
-이 [[semantic_map.py|000_System/scripts]] 가 만드는 클러스터가 곧 위 범례의 도메인이다. 즉 이 그림은 데모가 아니라 **그의 사고 구조의 측정값**이다.`,
+이 [[semantic_map.py|000_System/scripts]] 가 만드는 클러스터가 곧 위 범례의 도메인이다. 즉 이 그림은 데모가 아니라 **이 vault의 사고 구조의 측정값**이다.`,
 
   mfgai:
 `제조와 AI는 vault 안에서 가장 가까운 두 이웃이다 — 둘 다 *자동화·검증·표준화*라는 공통 축을 공유하기 때문이다.
 
-[[ERP·MES|솔라엣지 공정기술]] 에서 데이터 DB·대시보드를 세우고 LOB 분석으로 표준시간을 <<ST -50%>> 줄인 경험은, 그대로 **RPA·AX 업무시스템**과 **MCP 서버** 설계로 이어졌다. 비전검사·로봇 티칭의 "물리 자동화" 감각이 "소프트웨어 자동화"로 옮겨온 셈이다.
+**MES·공정제어**에서 데이터를 구조화하고 표준을 세운 감각은, 그대로 **에이전트**와 **MCP 서버** 설계로 이어진다. 비전검사·계측의 "물리 자동화" 사고가 "소프트웨어 자동화"로 옮겨오는 셈이다.
 
-그리고 제조 품질의 **검증가능성** 요구가, AI에 대한 그의 [[neuro-symbolic|기호 통합]] 주장의 뿌리다 — 현장에서 통하지 않는 자동화는 코드에서도 통하지 않는다.`,
+그리고 제조 품질의 **검증가능성** 요구가, AI에 대한 [[neuro-symbolic|기호 통합]] 주장의 뿌리다 — 현장에서 통하지 않는 자동화는 코드에서도 통하지 않는다. 이 **크로스도메인 연결**이 지도에서 가장 굵은 선이다.`,
 };
 
 const QTEXT = {
@@ -476,13 +505,16 @@ let W=0,H=0,DPR=Math.min(window.devicePixelRatio||1,2);
 function rnd(seed){ // deterministic pseudo-random for stable layout
   let s=seed*9301+49297; return ((s%233280)/233280);
 }
-const nodes = POINTS.map((p,i)=>{
+const baseCount = POINTS.length;
+const ALL = POINTS.concat(SATELLITES);
+const nodes = ALL.map((p,i)=>{
   const d = DOMS[p[0]];
   const a = rnd(i*7.13)*Math.PI*2;
   const r = 0.10 + rnd(i*3.7)*0.20;     // scatter radius within cluster
   const ox=Math.cos(a)*r, oy=Math.sin(a)*r;          // scatter offset
   // symbol view: tight, near-grid placement around each cluster's symbol anchor
   const sox=(rnd(i*2.3)-0.5)*0.14, soy=(rnd(i*6.1)-0.5)*0.10;
+  const isSat = i>=baseCount;
   return {
     dom:p[0], label:p[1], color:d.c,
     // vector (UMAP) layout
@@ -493,8 +525,75 @@ const nodes = POINTS.map((p,i)=>{
     phase:rnd(i*1.9)*Math.PI*2, spd:0.5+rnd(i*5.1)*0.7,
     rad:2.6+rnd(i*2.2)*1.8,
     x:0,y:0, lit:0, vx:rnd(i*4)*100|0, vy:rnd(i*8)*100|0,
+    // intro grow-in (initial nodes first, satellites sprout later over time)
+    appear:0, sat:isSat,
+    appearAt: isSat ? 1.30 + (i-baseCount)*0.50 : 0.05 + i*0.012,
   };
 });
+
+/* build the knowledge edges ONCE: intra-cluster nearest-neighbour mesh +
+   the emphasized cross-domain links. Edges draw in during the intro and then
+   HOLD for the rest of the scene (they never disappear / re-form). */
+function buildLinks(){
+  const out=[];
+  const has=(a,b)=>out.some(l=>l.a===a&&l.b===b);
+  Object.keys(DOMS).forEach(dom=>{
+    const grp = nodes.map((n,i)=>({n,i})).filter(o=>o.n.dom===dom);
+    grp.forEach(o=>{
+      const near = grp.filter(p=>p.i!==o.i)
+        .map(p=>({i:p.i,d:Math.hypot(o.n.vbx-p.n.vbx,o.n.vby-p.n.vby)}))
+        .sort((a,b)=>a.d-b.d).slice(0,2);
+      near.forEach(p=>{
+        const a=Math.min(o.i,p.i), b=Math.max(o.i,p.i);
+        if(!has(a,b)) out.push({a,b,cross:false,lp:0,emph:0,emphTarget:0});
+      });
+    });
+  });
+  CROSS_LINKS.forEach(pair=>{
+    const ai=nodes.findIndex(n=>n.label===pair[0]);
+    const bi=nodes.findIndex(n=>n.label===pair[1]);
+    if(ai<0||bi<0) return;
+    const a=Math.min(ai,bi), b=Math.max(ai,bi);
+    const ex=out.find(l=>l.a===a&&l.b===b);
+    if(ex) ex.cross=true; else out.push({a,b,cross:true,lp:0,emph:0,emphTarget:0});
+  });
+  return out;
+}
+const links = buildLinks();
+
+/* find a link by its two endpoint labels (either order) */
+function findLink(a,b){
+  return links.find(L=>{
+    const la=nodes[L.a].label, lb=nodes[L.b].label;
+    return (la===a&&lb===b)||(la===b&&lb===a);
+  });
+}
+/* PHASE TRANSITION HOOK — called every time the caption/question advances.
+   Re-draws this phase's connections: emphasized cross-edges reset lp→0 (so the
+   line re-forms), the involved clusters' intra-edges also re-draw, and prior
+   emphasis fades. Connections HOLD between transitions, then re-form on the
+   next caption. Fully deterministic (no RNG). */
+function triggerPhaseEdges(key){
+  links.forEach(l=>{ l.emphTarget = 0; });        // fade previous phase
+  const star = new Set();
+  (PHASE_EMPH[key]||[]).forEach(([a,b])=>{
+    const l = findLink(a,b);
+    if(l){ l.emphTarget = 1; l.lp = 0; star.add(l); }   // re-form + spotlight
+  });
+  // which clusters does this phase touch? re-form their intra-cluster mesh too
+  const clusters = new Set();
+  (RETRIEVE[key]||[]).forEach(lab=>{
+    const n = nodes.find(x=>x.label.includes(lab)||lab.includes(x.label.split(" ")[0]));
+    if(n) clusters.add(n.dom);
+  });
+  links.forEach(l=>{
+    if(star.has(l)) return;
+    if(!l.cross && clusters.has(nodes[l.a].dom)){
+      l.lp = 0;                                   // re-draw supporting edges
+      l.emphTarget = Math.max(l.emphTarget, 0.5);
+    }
+  });
+}
 let hoverNode=null, dimFilter=null, litSet=new Set();
 let symMix=0;            // 0 = vector view, 1 = symbol view
 let symTarget=0;         // toggle target
@@ -529,6 +628,11 @@ function draw(now){
 
   // ease symMix toward target (vector ↔ symbol transition) — dt-based
   symMix += (symTarget - symMix) * (1 - Math.pow(0.92, dt));
+  // node appearance: intro grow-in for initial nodes, then satellites sprout
+  nodes.forEach(n=>{
+    const want = t>=n.appearAt ? 1 : 0;
+    n.appear += (want - n.appear) * (1 - Math.pow(0.86, dt));
+  });
   // compute positions w/ gentle drift (drift suppressed in symbol view)
   const driftAmt = 0.022*(1-symMix*0.85);
   nodes.forEach(n=>{
@@ -539,40 +643,62 @@ function draw(now){
     [n.x,n.y]=norm2px(n.bx+dx,n.by+dy);
   });
 
-  // cluster hulls (soft glow per domain)
+  // cluster hulls (soft glow per domain — only over nodes that have appeared)
   Object.keys(DOMS).forEach(dom=>{
-    const grp=nodes.filter(n=>n.dom===dom);
+    const grp=nodes.filter(n=>n.dom===dom && n.appear>0.3);
+    if(!grp.length) return;
     let cx=0,cy=0;grp.forEach(n=>{cx+=n.x;cy+=n.y});cx/=grp.length;cy/=grp.length;
     const faded = dimFilter && dimFilter!==dom;
-    const g=ctx.createRadialGradient(cx,cy,4,cx,cy,120);
+    const g=ctx.createRadialGradient(cx,cy,4,cx,cy,130);
     const col=DOMS[dom].c;
-    g.addColorStop(0, hex(col, faded?0.04:0.11));
+    g.addColorStop(0, hex(col, faded?0.04:0.12));
     g.addColorStop(1, hex(col,0));
-    ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,120,0,7);ctx.fill();
+    ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,130,0,7);ctx.fill();
     // domain label
     ctx.font="10px ui-monospace, monospace";
-    ctx.fillStyle=hex(col, faded?0.25:0.8);
-    ctx.fillText(dom.toUpperCase(), cx-14, cy-96);
+    ctx.fillStyle=hex(col, faded?0.22:0.78);
+    ctx.fillText(dom, cx-16, cy-104);
   });
 
-  // connection lines: intra-cluster faint + hover/lit links
-  ctx.lineWidth=1;
-  nodes.forEach((n,i)=>{
-    nodes.forEach((m,j)=>{
-      if(j<=i||n.dom!==m.dom)return;
-      const dd=Math.hypot(n.x-m.x,n.y-m.y);
-      if(dd<92){
-        const faded=dimFilter&&dimFilter!==n.dom;
-        ctx.strokeStyle=hex(n.color, faded?0.015:0.05*(1-dd/92));
-        ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(m.x,m.y);ctx.stroke();
+  // ── KNOWLEDGE EDGES ───────────────────────────────────────────────
+  // intro draws each edge in once, then HOLDS it (want stays 1 forever once
+  // both endpoints are born). cross-domain edges are thicker + brighter — the
+  // vault's value is the connections between domains, not the nodes.
+  links.forEach(l=>{
+    const A=nodes[l.a], B=nodes[l.b];
+    const present = Math.min(A.appear, B.appear);
+    const want = present>0.55 ? 1 : 0;
+    l.lp += (want - l.lp) * (1 - Math.pow(0.90, dt));   // draw-in → hold until re-triggered
+    l.emph += (l.emphTarget - l.emph) * (1 - Math.pow(0.88, dt)); // phase spotlight ease
+    if(l.lp<0.012) return;
+    const faded = dimFilter && dimFilter!==A.dom && dimFilter!==B.dom;
+    const breathe = 0.84 + Math.sin(t*1.25 + l.a*0.7)*0.16;  // alive, never frozen
+    const em = l.emph;
+    const ex = A.x + (B.x-A.x)*l.lp, ey = A.y + (B.y-A.y)*l.lp; // line grows A→B
+    if(l.cross){
+      const a=(faded?0.05:(0.13 + 0.27*em))*l.lp*breathe;     // emphasized edge pops
+      const grad=ctx.createLinearGradient(A.x,A.y,B.x,B.y);
+      grad.addColorStop(0,hex(A.color,a)); grad.addColorStop(1,hex(B.color,a));
+      ctx.strokeStyle=grad; ctx.lineWidth=faded?1:(1.1 + 1.0*em);
+      ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(ex,ey);ctx.stroke();
+      // signal travelling along an emphasized, fully-formed cross-edge
+      if(l.lp>0.97 && em>0.4 && !faded){
+        const tp=(t*0.45 + l.a*0.17)%1;
+        const px=A.x+(B.x-A.x)*tp, py=A.y+(B.y-A.y)*tp;
+        const gg=ctx.createRadialGradient(px,py,0,px,py,5);
+        gg.addColorStop(0,hex("#ffffff",0.55*em*breathe));gg.addColorStop(1,hex("#ffffff",0));
+        ctx.fillStyle=gg;ctx.beginPath();ctx.arc(px,py,5,0,7);ctx.fill();
       }
-    });
+    } else {
+      const a=(faded?0.02:(0.06 + 0.11*em))*l.lp*breathe;
+      ctx.strokeStyle=hex(A.color,a); ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(A.x,A.y);ctx.lineTo(ex,ey);ctx.stroke();
+    }
   });
 
   // lit retrieval links to console (animated dash toward right edge)
-  litSet.forEach(()=>{});
   nodes.forEach(n=>{
-    if(n.lit>0.01){
+    if(n.lit>0.01 && n.appear>0.5){
       ctx.strokeStyle=hex(n.color, 0.5*n.lit);
       ctx.lineWidth=1.3;
       ctx.setLineDash([4,6]);ctx.lineDashOffset=-t*40;
@@ -583,7 +709,7 @@ function draw(now){
 
   // hover connection: link hovered node to its cluster mates
   if(hoverNode){
-    nodes.filter(n=>n.dom===hoverNode.dom).forEach(m=>{
+    nodes.filter(n=>n.dom===hoverNode.dom && n.appear>0.5).forEach(m=>{
       ctx.strokeStyle=hex(hoverNode.color,0.4);ctx.lineWidth=1;
       ctx.beginPath();ctx.moveTo(hoverNode.x,hoverNode.y);ctx.lineTo(m.x,m.y);ctx.stroke();
     });
@@ -591,18 +717,26 @@ function draw(now){
 
   // points
   nodes.forEach(n=>{
+    if(n.appear<0.012) return;
     const faded = dimFilter && dimFilter!==n.dom;
     n.lit *= Math.pow(0.96, dt); // dt-based decay
     const isHover = n===hoverNode;
     const glow = Math.max(n.lit, isHover?1:0);
-    let r=n.rad*(1+glow*0.9);
+    const pop = n.appear<1 ? n.appear*(2-n.appear) : 1;   // easeOut pop-in
+    let r=n.rad*(1+glow*0.9)*pop;
+    // freshly sprouted satellite ring (a new bit of knowledge taking root)
+    if(n.sat && n.appear>0.04 && n.appear<0.985){
+      ctx.strokeStyle=hex(n.color,(1-n.appear)*0.6);
+      ctx.lineWidth=1;ctx.beginPath();
+      ctx.arc(n.x,n.y, r+(1-n.appear)*14, 0, 7);ctx.stroke();
+    }
     // halo
     if(glow>0.05){
       const gg=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,r*5);
       gg.addColorStop(0,hex(n.color,0.5*glow));gg.addColorStop(1,hex(n.color,0));
       ctx.fillStyle=gg;ctx.beginPath();ctx.arc(n.x,n.y,r*5,0,7);ctx.fill();
     }
-    ctx.fillStyle = faded ? hex(n.color,0.18) : hex(n.color, 0.85);
+    ctx.fillStyle = faded ? hex(n.color,0.18) : hex(n.color, 0.85*Math.min(1,n.appear+0.15));
     ctx.beginPath();ctx.arc(n.x,n.y,r,0,7);ctx.fill();
     // core highlight
     ctx.fillStyle=hex("#ffffff",faded?0.1:0.5);
@@ -630,7 +764,7 @@ wrap.addEventListener("mousemove",e=>{
   const r=wrap.getBoundingClientRect();
   const mx=e.clientX-r.left,my=e.clientY-r.top;
   let best=null,bd=18;
-  nodes.forEach(n=>{const d=Math.hypot(n.x-mx,n.y-my);if(d<bd){bd=d;best=n;}});
+  nodes.forEach(n=>{if(n.appear<0.5)return;const d=Math.hypot(n.x-mx,n.y-my);if(d<bd){bd=d;best=n;}});
   hoverNode=best;
   if(best){
     tip.classList.add("on");
@@ -798,33 +932,33 @@ tempInput.addEventListener("input",()=>{
    FAKE LIVE LOG — continuous embedding / query log stream
    ════════════════════════════════════════════════════════════════ */
 const LOG_LINES = [
-  "[embed] PFMEA·CP·PFD·SOP            dim=1024  norm=0.9821",
-  "[embed] 비트겐슈타인 · 의미는 사용  dim=1024  norm=0.9743",
+  "[embed] TypeScript·React·Next.js     dim=1024  norm=0.9821",
+  "[embed] 제1원칙 사고                 dim=1024  norm=0.9743",
   "[embed] GraphRAG                     dim=1024  norm=0.9867",
-  "[umap]  projecting 34 notes → 2d    n_neighbors=15  min_dist=0.08",
-  "[hdbscan] 8 clusters found           min_cluster_size=3",
-  "[query] q='의미는 사용이다'          cos_sim top-1=0.927 (비트겐슈타인)",
-  "[embed] ERP·MES                      dim=1024  norm=0.9611",
-  "[embed] 들뢰즈 · 차이와 반복        dim=1024  norm=0.9755",
+  "[umap]  projecting 41 notes → 2d    n_neighbors=15  min_dist=0.08",
+  "[hdbscan] 5 clusters found           min_cluster_size=3",
+  "[query] q='지식을 구조로'            cos_sim top-1=0.927 (지식을 구조로)",
+  "[embed] MES·공정제어                 dim=1024  norm=0.9611",
+  "[embed] 벡터DB                       dim=1024  norm=0.9755",
   "[umap]  epoch 180/200               loss=0.0431",
-  "[query] q='제조 자동화'              cos_sim top-1=0.912 (RPA·AX 업무시스템)",
-  "[embed] vector ↔ symbol              dim=1024  norm=0.9802",
-  "[hdbscan] cluster 제조/공정 n=7     persistence=0.74",
-  "[query] q='neuro-symbolic 통합'      cos_sim top-1=0.944 (neuro-symbolic)",
-  "[embed] 융 · 개성화(individuation)  dim=1024  norm=0.9688",
-  "[umap]  projecting 34 notes → 2d    n_neighbors=15  min_dist=0.08",
-  "[embed] Machine Learning             dim=1024  norm=0.9734",
+  "[query] q='제조와 AI'                cos_sim top-1=0.912 (에이전트)",
+  "[embed] neuro-symbolic               dim=1024  norm=0.9802",
+  "[hdbscan] cluster 제조/도메인 n=6   persistence=0.74",
+  "[link]  cross-domain edge 제조↔AI   weight=0.91  reinforced",
+  "[embed] PostgreSQL · MCP             dim=1024  norm=0.9688",
+  "[query] q='크로스도메인 연결'        cos_sim top-1=0.944 (크로스도메인)",
+  "[embed] RAG · 리랭킹                 dim=1024  norm=0.9734",
   "[query] q='BGE-M3 파이프라인'        cos_sim top-1=0.956 (BGE-M3 임베딩)",
   "[embed] 검증가능성 ≠ 설명가능성     dim=1024  norm=0.9799",
-  "[hdbscan] cluster AI Agent n=6      persistence=0.81",
-  "[embed] 표상비용(representation cost) dim=1024 norm=0.9712",
+  "[hdbscan] cluster 데이터/AI n=8     persistence=0.81",
+  "[grow]  satellite sprouted           cluster=프론트엔드 (Tailwind)",
+  "[embed] 계측(metrology)              dim=1024  norm=0.9712",
   "[query] q='온톨로지 표상'            cos_sim top-1=0.938 (온톨로지)",
-  "[embed] 비전검사                      dim=1024  norm=0.9651",
   "[umap]  converged at epoch 200      stress=0.0389",
   "[query] q='GraphRAG 구조'            cos_sim top-1=0.961 (GraphRAG)",
-  "[embed] 의사결정 트리                 dim=1024  norm=0.9623",
-  "[hdbscan] cluster 철학 n=4          persistence=0.69",
-  "[embed] MCP 서버                      dim=1024  norm=0.9841",
+  "[link]  cross-domain edge 원칙↔AI   weight=0.88  held",
+  "[hdbscan] cluster 철학/원칙 n=6     persistence=0.69",
+  "[embed] Next.js · control plane      dim=1024  norm=0.9841",
   "[query] q='vault 의미지도'            cos_sim top-1=0.949 (BGE-M3 임베딩)",
 ];
 let logIdx = 0;
@@ -876,6 +1010,8 @@ function tickLog() {
     else if (raw.startsWith("[umap]")) colored = '<span style="color:var(--c-data)">[umap] </span>' + esc(raw.slice(6));
     else if (raw.startsWith("[hdbscan]")) colored = '<span style="color:var(--c-ai)">[hdbscan]</span>' + esc(raw.slice(9));
     else if (raw.startsWith("[query]")) colored = '<span style="color:var(--amber)">[query]</span>' + esc(raw.slice(7));
+    else if (raw.startsWith("[link]")) colored = '<span style="color:var(--signal)">[link] </span>' + esc(raw.slice(6));
+    else if (raw.startsWith("[grow]")) colored = '<span style="color:var(--c-mfg)">[grow] </span>' + esc(raw.slice(6));
     liveLogEl.innerHTML = colored;
     liveLogEl.style.opacity = "1";
   }, 260);
@@ -895,7 +1031,9 @@ let autoCycleTimer = null;
 let streaming = false;
 let ambientGlowTimer = setInterval(() => {
   if (streaming || !nodes.length) return;
-  const n = nodes[(Math.random() * nodes.length) | 0];
+  const live = nodes.filter(n => n.appear > 0.6);
+  if (!live.length) return;
+  const n = live[(Math.random() * live.length) | 0];
   n.lit = Math.max(n.lit, 0.55 + Math.random() * 0.35);
 }, 520);
 
@@ -919,6 +1057,7 @@ async function runStreamAuto(key) {
   stream.innerHTML = ""; caret.classList.remove("off");
   qtextEl.textContent = QTEXT[key];
   attnq.textContent = "q: " + QTEXT[key];
+  triggerPhaseEdges(key);        // caption advanced → re-form this phase's connections
   totalTokens = 0; tcountEl.textContent = "0"; tpsEl.textContent = "0.0";
   latEl.textContent = "--"; rcountEl.textContent = "0";
 

@@ -1,8 +1,7 @@
-import { Film } from '@/components/film/Film'
+import { Landing } from '@/components/landing/Landing'
 
-// Home = the autoplay portfolio "film". It plays acts in order, then hands off
-// to the interactive gantt finale. Scene gallery routes (/s/[scene], /c/[comp])
-// remain intact and reachable directly.
+// Home = the landing page (Spline robot + actions). "Projects Portfolio" plays
+// the autoplay film at /film; the film returns here when it ends.
 export default function Home() {
-  return <Film />
+  return <Landing />
 }

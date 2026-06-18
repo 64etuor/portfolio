@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>박양하 · 적층제조 치공구 빌드</title>
+<title>적층제조 치공구 빌드</title>
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <style>
@@ -52,14 +52,14 @@ body::after{
 }
 
 /* ─────────────────────────── shell ─────────────────────────── */
-.shell{max-width:1640px;margin:0 auto;padding:18px clamp(14px,2.4vw,30px) 40px;display:flex;flex-direction:column;gap:14px;min-height:100vh}
+.shell{max-width:1640px;margin:0 auto;padding:10px clamp(10px,1.6vw,20px) 12px;display:flex;flex-direction:column;gap:8px;min-height:100vh}
 
 /* topbar */
 header.topbar{
   display:flex;align-items:center;justify-content:space-between;gap:18px;
   border:1px solid var(--line);border-radius:14px;
   background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(0,0,0,0));
-  padding:11px 16px;backdrop-filter:blur(6px);flex-wrap:wrap;
+  padding:7px 14px;backdrop-filter:blur(6px);flex-wrap:wrap;
 }
 .brand{display:flex;align-items:center;gap:13px}
 .logo{
@@ -93,7 +93,7 @@ header.topbar{
 .statetag.done{color:var(--solid);border-color:rgba(61,220,151,.45);background:rgba(61,220,151,.08)}
 
 /* ─────────────────────────── main grid ─────────────────────────── */
-.stage{display:grid;grid-template-columns:1.55fr .92fr;gap:14px;align-items:stretch}
+.stage{display:grid;grid-template-columns:1.55fr .92fr;gap:8px;align-items:stretch}
 @media(max-width:1080px){.stage{grid-template-columns:1fr}}
 
 .panel{
@@ -102,7 +102,7 @@ header.topbar{
 }
 .panel .head{
   display:flex;align-items:center;justify-content:space-between;gap:10px;
-  padding:9px 14px;border-bottom:1px solid var(--line-soft);
+  padding:6px 12px;border-bottom:1px solid var(--line-soft);
   background:linear-gradient(180deg,rgba(255,255,255,.02),transparent);
 }
 .panel .head .t{font-size:12.5px;font-weight:700;letter-spacing:.2px;display:flex;align-items:center;gap:9px}
@@ -110,7 +110,7 @@ header.topbar{
 .panel .head .meta{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.4px}
 
 /* ── printer viewport (canvas) ── */
-.viewport{position:relative;aspect-ratio:16/10.2;background:
+.viewport{position:relative;aspect-ratio:16/9;background:
   radial-gradient(620px 420px at 50% 18%, rgba(47,129,247,.05), transparent 65%),
   linear-gradient(180deg,#070809,#0c0e12);}
 #print{position:absolute;inset:0;width:100%;height:100%;display:block}
@@ -144,8 +144,8 @@ header.topbar{
 #tempcv{display:block;width:100%;height:34px}
 
 /* progress bar (under viewport) */
-.progress{padding:11px 14px;border-top:1px solid var(--line-soft);background:linear-gradient(180deg,transparent,rgba(255,255,255,.012))}
-.progress .row{display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--ink-2);margin-bottom:7px;letter-spacing:.3px}
+.progress{padding:7px 12px;border-top:1px solid var(--line-soft);background:linear-gradient(180deg,transparent,rgba(255,255,255,.012))}
+.progress .row{display:flex;align-items:center;justify-content:space-between;font-family:var(--mono);font-size:11px;color:var(--ink-2);margin-bottom:4px;letter-spacing:.3px}
 .progress .row b{color:var(--ink);font-weight:600}
 .progress .row .pct{color:var(--filament);font-size:13px}
 .bar{height:8px;border-radius:6px;background:#0a0c10;border:1px solid var(--line-soft);overflow:hidden;position:relative}
@@ -157,8 +157,8 @@ header.topbar{
 .console{display:flex;flex-direction:column;min-height:0}
 .gwrap{flex:1;min-height:0;position:relative;background:linear-gradient(180deg,#08090c,#0a0c10)}
 #gcode{
-  position:absolute;inset:0;overflow:hidden;padding:10px 14px 12px;font-family:var(--mono);
-  font-size:11.5px;line-height:1.66;color:var(--ink-2);letter-spacing:.2px;
+  position:absolute;inset:0;overflow:hidden;padding:8px 12px 8px;font-family:var(--mono);
+  font-size:11.5px;line-height:1.52;color:var(--ink-2);letter-spacing:.2px;
   mask-image:linear-gradient(180deg,transparent,#000 22px,#000 calc(100% - 30px),transparent);
 }
 .gline{white-space:pre;opacity:.5;transition:opacity .2s}
@@ -172,7 +172,7 @@ header.topbar{
 .console .head .meta .ln{color:var(--filament)}
 
 /* spool / material rail */
-.spools{padding:10px 12px;border-top:1px solid var(--line-soft);display:flex;flex-wrap:wrap;gap:5px;background:rgba(0,0,0,.18);max-height:120px;overflow:hidden}
+.spools{padding:6px 10px;border-top:1px solid var(--line-soft);display:flex;flex-wrap:wrap;gap:4px;background:rgba(0,0,0,.18);max-height:72px;overflow:hidden}
 .spool{
   font-family:var(--mono);font-size:10px;color:var(--ink-2);letter-spacing:.2px;
   border:1px solid var(--line);border-radius:6px;padding:3px 8px 3px 6px;display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.015);
@@ -180,14 +180,14 @@ header.topbar{
 .spool .s{width:8px;height:8px;border-radius:50%;flex:none;box-shadow:0 0 6px currentColor}
 
 /* ─────────────────────────── lower sections ─────────────────────────── */
-.layersgrid{display:grid;grid-template-columns:repeat(12,1fr);gap:14px}
+.layersgrid{display:grid;grid-template-columns:repeat(12,1fr);gap:8px}
 .career{grid-column:span 8}
 .metrics{grid-column:span 4}
 @media(max-width:1080px){.career{grid-column:span 12}.metrics{grid-column:span 12}}
 
 /* career = printed layers, solidify on reveal */
 .layer-item{
-  border-bottom:1px solid var(--line-soft);padding:13px 16px;position:relative;
+  border-bottom:1px solid var(--line-soft);padding:9px 12px;position:relative;
   opacity:0;transform:translateY(14px);filter:blur(4px);
   transition:opacity .6s ease, transform .6s cubic-bezier(.2,.7,.2,1), filter .6s ease;
 }
@@ -199,19 +199,19 @@ header.topbar{
 }
 .layer-item.solid::before{transform:scaleY(1)}
 .li-top{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.li-org{font-size:14.5px;font-weight:700;letter-spacing:-.01em}
+.li-org{font-size:13px;font-weight:700;letter-spacing:-.01em}
 .li-role{font-size:11.5px;color:var(--filament-2);font-weight:600;margin-left:8px}
 .li-date{font-family:var(--mono);font-size:10.5px;color:var(--ink-3);letter-spacing:.3px;white-space:nowrap}
-.li-body{font-size:12.5px;color:var(--ink-2);margin-top:6px;line-height:1.6}
-.li-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:9px}
+.li-body{font-size:11.5px;color:var(--ink-2);margin-top:4px;line-height:1.5}
+.li-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:5px}
 .li-tag{font-family:var(--mono);font-size:10px;color:var(--ink-2);border:1px solid var(--line);border-radius:5px;padding:2px 7px;background:rgba(255,255,255,.015)}
 .li-tag.hi{color:var(--solid);border-color:rgba(61,220,151,.4);background:rgba(61,220,151,.07)}
-.li-layerno{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.4px;margin-top:8px;opacity:.7}
+.li-layerno{font-family:var(--mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.4px;margin-top:4px;opacity:.7}
 
 /* metrics = print quality report */
-.metric-list{padding:8px 14px 14px}
+.metric-list{padding:5px 12px 8px}
 .metric{
-  display:flex;align-items:center;gap:12px;padding:9px 2px;border-bottom:1px dashed var(--line-soft);
+  display:flex;align-items:center;gap:10px;padding:6px 2px;border-bottom:1px dashed var(--line-soft);
   opacity:0;transform:translateX(-10px);transition:opacity .5s,transform .5s;
 }
 .metric.solid{opacity:1;transform:none}
@@ -225,7 +225,7 @@ header.topbar{
 
 /* DEFECT delight card */
 .defect{
-  margin:0 14px 14px;border:1px solid rgba(255,77,77,.35);border-radius:11px;overflow:hidden;
+  margin:0 10px 10px;border:1px solid rgba(255,77,77,.35);border-radius:11px;overflow:hidden;
   background:linear-gradient(180deg,rgba(255,77,77,.05),transparent);
 }
 .defect .dh{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border-bottom:1px solid rgba(255,77,77,.2);font-family:var(--mono);font-size:10.5px;letter-spacing:.3px}
@@ -233,29 +233,29 @@ header.topbar{
 .defect .dh .lbl .dot{width:7px;height:7px;border-radius:50%;background:var(--hot);box-shadow:0 0 8px var(--hot);animation:pulse 1s ease-in-out infinite}
 .defect.fixed .dh{border-color:rgba(61,220,151,.2)} .defect.fixed{border-color:rgba(61,220,151,.35);background:linear-gradient(180deg,rgba(61,220,151,.05),transparent)}
 .defect.fixed .dh .lbl{color:var(--solid)} .defect.fixed .dh .lbl .dot{background:var(--solid);box-shadow:0 0 8px var(--solid);animation:none}
-.defect .db{padding:11px 12px;position:relative}
-.defect .dcanvaswrap{position:relative;height:62px;border:1px solid var(--line-soft);border-radius:7px;background:#08090c;overflow:hidden;margin-bottom:9px}
+.defect .db{padding:7px 10px;position:relative}
+.defect .dcanvaswrap{position:relative;height:46px;border:1px solid var(--line-soft);border-radius:7px;background:#08090c;overflow:hidden;margin-bottom:6px}
 #defectcv{position:absolute;inset:0;width:100%;height:100%}
 .defect .dtxt{font-size:11.5px;color:var(--ink-2);line-height:1.55}
 .defect .dtxt b{color:var(--ink)}
 .defect .reprint{
-  margin-top:9px;font-family:var(--mono);font-size:11px;letter-spacing:.4px;cursor:pointer;
+  margin-top:5px;font-family:var(--mono);font-size:11px;letter-spacing:.4px;cursor:pointer;
   border:1px solid rgba(255,122,24,.4);color:var(--filament-2);background:rgba(255,122,24,.07);
-  border-radius:8px;padding:7px 12px;width:100%;transition:.15s;
+  border-radius:8px;padding:5px 12px;width:100%;transition:.15s;
 }
 .defect .reprint:hover{background:rgba(255,122,24,.16);color:#fff}
 .defect.fixed .reprint{border-color:rgba(61,220,151,.4);color:var(--solid);background:rgba(61,220,151,.07);cursor:default}
 
 /* skills strip */
 .skillstrip{border:1px solid var(--line);border-radius:14px;background:var(--panel);overflow:hidden}
-.skillstrip .head{display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-bottom:1px solid var(--line-soft);background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
+.skillstrip .head{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;border-bottom:1px solid var(--line-soft);background:linear-gradient(180deg,rgba(255,255,255,.02),transparent)}
 .skillstrip .head .t{font-size:12.5px;font-weight:700;display:flex;gap:9px;align-items:center}
 .skillstrip .head .t .k{width:5px;height:14px;border-radius:2px;background:var(--filament-2)}
 .skillstrip .head .meta{font-family:var(--mono);font-size:10.5px;color:var(--ink-3)}
-.skillwrap{padding:12px 14px;display:flex;flex-wrap:wrap;gap:7px}
+.skillwrap{padding:7px 12px;display:flex;flex-wrap:wrap;gap:5px}
 .matspool{
   font-family:var(--mono);font-size:11px;color:var(--ink-2);letter-spacing:.2px;
-  border:1px solid var(--line);border-radius:7px;padding:5px 10px 5px 8px;display:flex;align-items:center;gap:8px;
+  border:1px solid var(--line);border-radius:7px;padding:4px 8px 4px 7px;display:flex;align-items:center;gap:6px;
   background:rgba(255,255,255,.015);opacity:0;transform:translateY(8px);transition:opacity .4s,transform .4s,border-color .15s;
 }
 .matspool.solid{opacity:1;transform:none}
@@ -267,7 +267,7 @@ header.topbar{
   border:1px solid var(--line);border-radius:14px;overflow:hidden;background:
    linear-gradient(180deg,rgba(61,220,151,.04),transparent),var(--panel);position:relative;
 }
-.complete .cbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 18px;flex-wrap:wrap}
+.complete .cbar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 14px;flex-wrap:wrap}
 .complete .cl{display:flex;align-items:center;gap:14px}
 .complete .stamp{
   font-family:var(--mono);font-weight:700;font-size:12px;letter-spacing:1px;color:var(--solid);
@@ -303,8 +303,8 @@ footnote,.foot{display:block;text-align:center;font-family:var(--mono);font-size
     <div class="brand">
       <div class="logo" aria-hidden="true"></div>
       <div class="meta">
-        <b>박양하 · Park Yangha</b>
-        <span>생산운영 PM · 공정기술 엔지니어 · 총괄본부장</span>
+        <b>적층제조 치공구 빌드</b>
+        <span>FDM 파라미터 시뮬레이션</span>
       </div>
     </div>
     <div class="mid">
@@ -314,7 +314,7 @@ footnote,.foot{display:block;text-align:center;font-family:var(--mono);font-size
       <div class="chip">인필 <b>35%</b></div>
       <div class="chip">속도 <b id="t-spd">60mm/s</b></div>
     </div>
-    <div class="statetag" id="statetag"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor"></span><span id="statetxt">PRINTING — ELENTEC_jig.gcode</span></div>
+    <div class="statetag" id="statetag"><span class="dot" style="width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 8px currentColor"></span><span id="statetxt">PRINTING — cartridge_press_jig.gcode</span></div>
   </header>
 
   <!-- ───────── stage: viewport + console ───────── -->
@@ -368,8 +368,8 @@ footnote,.foot{display:block;text-align:center;font-family:var(--mono);font-size
 
     <div class="panel career">
       <div class="head">
-        <div class="t"><span class="k"></span>적층된 경력 레이어 · CAREER BUILD</div>
-        <div class="meta">외주 제작 → 사내 적층 전환 → 현장 적용</div>
+        <div class="t"><span class="k"></span>슬라이싱 파라미터 · SLICER CONFIG</div>
+        <div class="meta">빌드 진행에 따라 파라미터 블록 순서 고정</div>
       </div>
       <div id="careerlist"></div>
     </div>
@@ -411,8 +411,8 @@ footnote,.foot{display:block;text-align:center;font-family:var(--mono);font-size
       <div class="cl">
         <div class="stamp" id="stamp">BUILD LOGGED</div>
         <div class="ci">
-          <b>이랜텍 치공구 내재화 빌드</b>
-          <span>외주 제작 검토 → 사내 적층 전환 → 현장 적용 기준 정리</span>
+          <b>치공구 빌드 완료 · 88 레이어</b>
+          <span>PETG-CF · 노즐 215°C · 베드 60°C · 인필 35% Gyroid</span>
         </div>
       </div>
       <div class="cc">
@@ -421,32 +421,32 @@ footnote,.foot{display:block;text-align:center;font-family:var(--mono);font-size
     </div>
   </section>
 
-  <div class="foot">적층제조 치공구 시안 · 노즐 모션은 G-code 스트림과 동기화됩니다 · 외주 제작품을 사내 출력 기준으로 재설계</div>
+  <div class="foot">적층제조 치공구 시안 · 노즐 모션은 G-code 스트림과 동기화됩니다 · FDM 파라미터 실시간 반영</div>
 </div>
 
 <script>
 "use strict";
 /* ════════════════════════════════════════════════════════════════════
-   박양하 — 적층제조 치공구 빌드 포트폴리오
+   적층제조 치공구 빌드 — FDM 파라미터 시뮬레이션
    2D Canvas additive-fab simulation. Nozzle motion is driven by the
    SAME generated G-code that streams into the console. As layers of the
-   fixture part complete, career sections solidify.
+   fixture part complete, parameter blocks solidify progressively.
    ════════════════════════════════════════════════════════════════════ */
 
-/* ───────────── REAL DATA ───────────── */
+/* ───────────── PRINT PARAMETERS ───────────── */
 const CAREER = [
-  { org:"미러리스 (Mirrorless)", role:"총괄본부장", date:"2025.08–현재", layerNo:"LAYER 067–088 · top solid",
-    body:"CRM·키오스크·앱 통합 운영, FastAPI 백엔드 설계, AWS/GCP 인프라, CI/CD 파이프라인, RPA·AI MCP 기반 AX(자동화 혁신) 추진. 키오스크 하드웨어 프로토타입 기구 설계 및 외주 제작 총괄.",
-    tags:[["FastAPI",1],["AWS/GCP",0],["CI/CD",0],["RPA·AI MCP",1],["기구설계",1]] },
-  { org:"솔라엣지 (SolarEdge)", role:"공정기술 엔지니어", date:"2023.09–2024.12", layerNo:"LAYER 045–066",
-    body:"생산 데이터 DB·대시보드 구축, LOB 분석. 표준시간(ST) −50% 단축, 검사성적서 자동발행 시스템, MES 구축으로 사무공수 −451분/일 절감.",
-    tags:[["MES구축",1],["ST −50%",1],["LOB분석",0],["자동발행",0],["BI",0]] },
-  { org:"이랜텍 (ELENTEC)", role:"생산라인 PM / 파트장", date:"2022.11–2023.09", layerNo:"LAYER 023–044",
-    body:"외주 제작하던 카트리지형 컷팅/누름 JIG와 Insert 자동화 JIG를 현장 조건에 맞게 재설계. 사내 적층제조로 시제품을 직접 출력하고, 조립·작업성 확인 후 라인 적용 기준을 정리.",
-    tags:[["외주→사내",1],["카트리지 JIG",1],["Insert 자동화",1],["적층제조",1],["현장적용",0]] },
-  { org:"은성에스아이티", role:"생산관리과장 · 2차전지 배터리팩 총괄", date:"2020.08–2022.11", layerNo:"LAYER 001–022 · base",
-    body:"단가 30%+ 재협상, 운영경비 85%+ 절감. 비전검사 도입으로 불량 0건 달성, IATF16949 품질시스템 운영. 2차전지 배터리팩 생산 총괄.",
-    tags:[["단가 +30%",1],["운영경비 −85%",1],["비전검사",0],["불량 0건",1],["IATF16949",0]] },
+  { org:"인필 / 팬 / 재료", role:"INFILL · FAN · MATERIAL", date:"LAYER 067–088 · top solid", layerNo:"LAYER 067–088 · top solid",
+    body:"인필 밀도 35% · Gyroid 패턴 / 솔리드 레이어 상단 4 / 하단 4 · 완전 밀폐 / 팬 속도 60% · 초기 3레이어 OFF / 재료: PETG-CF 1.75mm · 노즐 0.4mm(강화형) / ABS·Nylon 혼용 가능",
+    tags:[["인필 35%",1],["Gyroid",1],["팬 60%",0],["PETG-CF",1],["ABS/Nylon",0]] },
+  { org:"속도 / 리트랙션", role:"SPEED · RETRACTION · TRAVEL", date:"LAYER 045–066", layerNo:"LAYER 045–066",
+    body:"출력 속도 60mm/s · 외벽 45mm/s / 이동 속도(travel) 180mm/s · 오징 최소화 / 리트랙션 거리 1.0mm(직결) · 4–5mm(Bowden) / 리트랙션 속도 45mm/s · 코너 감속 활성화",
+    tags:[["60mm/s",1],["travel 180",0],["리트랙션 1.0mm",1],["코너 감속",1],["외벽 우선",0]] },
+  { org:"레이어 / 압출", role:"LAYER · EXTRUSION · WALLS", date:"LAYER 023–044", layerNo:"LAYER 023–044",
+    body:"레이어 높이 0.20mm · 초기 레이어 0.30mm(베드 접착 강화) / 벽 두께(perimeters) 3겹 1.2mm · 외벽 우선 출력 / 플로우율(flow) 97% · PETG 오버 압출 보정 / 상단·하단 솔리드 4레이어씩",
+    tags:[["0.20mm",1],["초기 0.30mm",0],["3겹 벽",1],["flow 97%",1],["솔리드 4L",0]] },
+  { org:"온도 설정", role:"TEMPERATURE · HEATING", date:"LAYER 001–022 · base", layerNo:"LAYER 001–022 · base",
+    body:"노즐 온도 215°C · PETG-CF 권장 범위 / 베드 온도 60°C · PEI 코팅 베드 최적 / 챔버 온도 35°C · 열수축 방지 / 히팅 대기 M109(노즐) + M190(베드) 동시 예열 / PLA 195–220°C · ABS 240–260°C",
+    tags:[["노즐 215°C",1],["베드 60°C",1],["M109/M190",0],["PLA 200°C",0],["ABS 250°C",0]] },
 ];
 
 // QC = print-quality report (dimensional/surface readouts), not career KPIs.
@@ -462,9 +462,9 @@ const METRICS = [
 ];
 
 const SKILLS = [
-  ["적층제조","#ff7a18"],["Jig개발","#ff7a18"],["기구설계","#ff7a18"],["PFMEA","#ff7a18"],["CP/PFD","#ff7a18"],
-  ["SOP","#ff7a18"],["비전검사","#2f81f7"],["Draftsight","#9aa2b1"],["로봇티칭","#c9a3ff"],["IATF16949","#3ddc97"],
-  ["PETG-CF","#ffb454"],["PLA","#ffb454"],["노즐 0.4mm","#ffb454"],["레이어 0.2mm","#ffb454"],["인필 35%","#ffb454"],
+  ["적층제조 FDM","#ff7a18"],["치공구 설계","#ff7a18"],["기구설계","#ff7a18"],["카트리지 JIG","#ff7a18"],["인서트 JIG","#ff7a18"],
+  ["PETG-CF","#ffb454"],["PLA","#ffb454"],["ABS","#ffb454"],["Nylon","#ffb454"],["TPU","#ffb454"],
+  ["노즐 0.4mm","#9aa2b1"],["레이어 0.2mm","#9aa2b1"],["인필 35%","#9aa2b1"],["Cura","#3ddc97"],["PrusaSlicer","#3ddc97"],
 ];
 
 /* ═════════════════ G-CODE GENERATION (cartridge / insert JIG) ═════════════════
@@ -875,7 +875,7 @@ function finish(){
   document.getElementById("complete").classList.add("done");
   const st=document.getElementById("statetag");
   st.classList.add("done");
-  document.getElementById("statetxt").textContent="BUILD LOGGED — ELENTEC_jig.gcode";
+  document.getElementById("statetxt").textContent="BUILD LOGGED — cartridge_press_jig.gcode";
   document.getElementById("p-eta").textContent="빌드 기록 완료 · 100%";
   // continuous loop: after a brief settle, kick off the next build automatically
   if(autoLoopTimer) clearTimeout(autoLoopTimer);
@@ -884,7 +884,7 @@ function finish(){
 
 /* header gcode emitted at start */
 function emitHeader(){
-  pushG(`<span class="cmt">; ELENTEC_jig.gcode · cartridge_press_insert_jig · PETG-CF</span>`);
+  pushG(`<span class="cmt">; cartridge_press_jig.gcode · cartridge_press_insert_jig · PETG-CF</span>`);
   pushG(`<span class="mc">M104 S215</span> <span class="cmt">; 노즐 가열 215°C</span>`);
   pushG(`<span class="mc">M140 S60</span> <span class="cmt">; 베드 가열 60°C</span>`);
   pushG(`<span class="cmd">G28</span> <span class="cmt">; home all axes</span>`);
@@ -1231,7 +1231,7 @@ function reset(){
   document.querySelectorAll(".matspool").forEach(e=>e.classList.remove("solid"));
   document.getElementById("complete").classList.remove("done");
   document.getElementById("statetag").classList.remove("done");
-  document.getElementById("statetxt").textContent="PRINTING — ELENTEC_jig.gcode";
+  document.getElementById("statetxt").textContent="PRINTING — cartridge_press_jig.gcode";
   document.getElementById("defect").classList.remove("fixed");
   document.getElementById("def-lbl").textContent="PROCESS NOTE · 코너 비드 관찰";
   document.getElementById("def-tag").textContent="layer 042";

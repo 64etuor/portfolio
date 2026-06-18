@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /**
  * Transition — inter-act match-cut overlay.
@@ -26,14 +26,21 @@ type Seam = { from: string; to: string }
 export function Transition({ from, to, color, onDone }: Seam & { color: string; onDone: () => void }) {
   const [phase, setPhase] = useState<'in' | 'out'>('in')
 
+  // onDone via ref: Film re-renders ~60fps, so a non-memoized onDone in the deps
+  // would reset the self-destruct timer every frame and this match-cut overlay
+  // (opaque #05070a) would never clear, covering the scene permanently.
+  const doneRef = useRef(onDone)
+  doneRef.current = onDone
+
   useEffect(() => {
+    setPhase('in')
     const t1 = setTimeout(() => setPhase('out'), DUR_MS * 0.5)
-    const t2 = setTimeout(onDone, DUR_MS)
+    const t2 = setTimeout(() => doneRef.current(), DUR_MS)
     return () => {
       clearTimeout(t1)
       clearTimeout(t2)
     }
-  }, [from, to, onDone])
+  }, [from, to])
 
   const shapes = seamShapes(from, to, color)
 

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /**
  * BootSlate — restrained "projector / slate ignition" for the opening boot act.
@@ -21,14 +21,21 @@ import { useEffect, useState } from 'react'
 export function BootSlate({ color, onDone }: { color: string; onDone: () => void }) {
   const [gone, setGone] = useState(false)
 
+  // Keep onDone in a ref so the self-destruct timers run exactly once on mount.
+  // (Film re-renders ~60fps via setProgress; a non-memoized onDone in the deps
+  // would reset these timers every frame and the slate would never unmount,
+  // leaving its opaque #05070a layer covering every scene.)
+  const doneRef = useRef(onDone)
+  doneRef.current = onDone
+
   useEffect(() => {
     const t1 = setTimeout(() => setGone(true), 1200) // begin settle
-    const t2 = setTimeout(onDone, 1500) // unmount
+    const t2 = setTimeout(() => doneRef.current(), 1500) // unmount
     return () => {
       clearTimeout(t1)
       clearTimeout(t2)
     }
-  }, [onDone])
+  }, [])
 
   return (
     <div

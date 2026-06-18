@@ -38,6 +38,17 @@ export function Film() {
   const [paused, setPaused] = useState(false)
   const [progress, setProgress] = useState(0)
 
+  // Double-buffered scene iframes: two stable <iframe> slots. The next scene is
+  // loaded into the HIDDEN slot and we cross-fade to it only after it fires
+  // `load` — so heavy self-contained scenes never show a black loading frame
+  // (the prior scene stays up until the next one has painted). Fixes the
+  // "black + datum line" autoplay caused by per-scene iframe remount/reload.
+  const [slotFiles, setSlotFiles] = useState<[string | null, string | null]>(() => [
+    ACTS[0].scenes[0],
+    null,
+  ])
+  const [visibleSlot, setVisibleSlot] = useState(0)
+
   // Phase 2 (purely visual — never touches the rAF clock / paused / act state):
   //  - seam: the active match-cut overlay (from→to act ids), self-expiring.
   //  - showBootSlate: the one-shot projector ignition over the boot act.
@@ -147,6 +158,23 @@ export function Film() {
     setProgress(0)
   }, [actIdx, sceneIdx])
 
+  // Buffer: load the current scene into the hidden slot whenever it changes.
+  // We never overwrite the visible slot (keeps the prior scene painted) and skip
+  // if the hidden slot is already loading the target.
+  useEffect(() => {
+    if (reduced || showFinale || !ready) return
+    const cur = ACTS[actIdx]?.scenes[sceneIdx]
+    if (!cur) return
+    setSlotFiles((prev) => {
+      if (prev[visibleSlot] === cur) return prev
+      const hidden = visibleSlot ^ 1
+      if (prev[hidden] === cur) return prev
+      const next: [string | null, string | null] = [prev[0], prev[1]]
+      next[hidden] = cur
+      return next
+    })
+  }, [actIdx, sceneIdx, reduced, showFinale, ready, visibleSlot])
+
   const rewindAct = useCallback(() => {
     setShowFinale(false)
     elapsedAtPauseRef.current = 0
@@ -181,27 +209,43 @@ export function Film() {
   const totalActs = ACTS.length
   const actProgress = (actIdx + (sceneIdx + progress) / act.scenes.length) / totalActs
 
+  // Reveal a buffer slot once its scene has finished loading. The 0.5s opacity
+  // cross-fade (below) doubles as warm-up time for the scene's first canvas paint.
+  const revealOnLoad = (i: number) => {
+    if (slotFiles[i] && slotFiles[i] === currentFile && i !== visibleSlot) {
+      setVisibleSlot(i)
+    }
+  }
+
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
-      {/* Letterboxed scene viewport — fixed area, iframe loads self-contained HTML. */}
+      {/* Letterboxed scene viewport — two stable buffered iframes that cross-fade.
+          The hidden slot pre-loads the next scene; we only fade it in on `load`,
+          so a heavy scene's blank/loading frame is never shown. */}
       <div style={{ position: 'absolute', inset: 0 }}>
-        {/* One iframe per scene index within the act; we key by act+scene so a
-            new scene mounts fresh. Gentle fade within an act; cut between acts is
-            implicit because the whole stack swaps on act change. */}
-        <iframe
-          key={`${act.id}-${sceneIdx}`}
-          src={`/lab/${currentFile}`}
-          title={`${act.id}-${sceneIdx}`}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            border: 0,
-            pointerEvents: 'none',
-            animation: 'pf-film-scene-in 0.55s ease',
-          }}
-        />
+        {[0, 1].map((i) => {
+          const f = slotFiles[i]
+          const isVisible = visibleSlot === i
+          return (
+            <iframe
+              key={`slot-${i}`}
+              src={f ? `/lab/${f}` : 'about:blank'}
+              title={`scene-slot-${i}`}
+              onLoad={() => revealOnLoad(i)}
+              style={{
+                position: 'absolute',
+                inset: 0,
+                width: '100%',
+                height: '100%',
+                border: 0,
+                pointerEvents: 'none',
+                opacity: isVisible ? 1 : 0,
+                transition: 'opacity 0.5s ease',
+                zIndex: isVisible ? 2 : 1,
+              }}
+            />
+          )
+        })}
       </div>
 
       {/* Cinematic letterbox + vignette */}

@@ -35,6 +35,10 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
+/* page entrance — reveal from black so it doesn't pop in after the landing transition */
+@keyframes gantt-enter{from{opacity:0}to{opacity:1}}
+body{animation:gantt-enter 600ms ease both}
+@media (prefers-reduced-motion:reduce){body{animation:none}}
 body{
   background:
     radial-gradient(1400px 700px at 12% -8%, #1a2030 0%, transparent 55%),
@@ -1163,7 +1167,9 @@ function startVerificationReplay(){
         if(section) section.classList.toggle('replay-active', s.id===step.id);
       });
       const active=document.getElementById(step.id);
-      if(active) active.scrollIntoView({block:'nearest',behavior:'smooth'});
+      // Only page-scroll when standalone; inside a gallery iframe this would yank
+      // the parent page to this embed.
+      if(active && window.self===window.top) active.scrollIntoView({block:'nearest',behavior:'smooth'});
     },elapsed));
     elapsed+=step.ms;
     if(idx===REPLAY_STEPS.length-1){

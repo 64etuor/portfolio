@@ -1,6 +1,8 @@
-// Lazy gallery: only mount a scene's <iframe> when its card nears the viewport,
-// and scale the 1600×1000 virtual viewport down to the card width. Keeps heavy
-// canvas scenes from all running at once (fixes the jank of loading them eagerly).
+// Lazy gallery: mount a scene's <iframe> when its card nears the viewport, scale
+// the 1600×1000 virtual viewport down to the card width, and — crucially — PAUSE
+// (display:none) any scene that scrolls out of view so they don't all animate at
+// once. Many heavy canvas scenes running together blocks the main thread and
+// makes scrolling stutter; keeping only the on-screen ones live fixes that.
 (function () {
   function fitOne(w) {
     var f = w.querySelector('iframe');
@@ -26,13 +28,26 @@
     w.appendChild(f);
     fitOne(w);
   }
+  // On-screen (incl. a small margin) → mount + run. Off-screen → display:none,
+  // which stops the embedded scene's rendering loop until it scrolls back in.
   var io = new IntersectionObserver(
     function (entries) {
       entries.forEach(function (e) {
-        if (e.isIntersecting) mount(e.target);
+        var w = e.target;
+        if (e.isIntersecting) {
+          mount(w);
+          var f = w.querySelector('iframe');
+          if (f) {
+            f.style.display = '';
+            fitOne(w);
+          }
+        } else {
+          var f2 = w.querySelector('iframe');
+          if (f2) f2.style.display = 'none';
+        }
       });
     },
-    { rootMargin: '400px 0px' }
+    { rootMargin: '150px 0px' }
   );
   document.querySelectorAll('.frame-wrap[data-src]').forEach(function (w) {
     io.observe(w);

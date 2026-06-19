@@ -1,13 +1,16 @@
-import Link from 'next/link'
-import type { ReactNode } from 'react'
+'use client'
+
+import { useRef, useState, type ReactNode } from 'react'
+import { useRouter } from 'next/navigation'
+import Spline from '@splinetool/react-spline'
+import type { Application } from '@splinetool/runtime'
 import { PROFILE } from '@content/index'
 import { PretextText } from './PretextText'
 import { LandingAmbientWords } from './LandingAmbientWords'
 
-// Interactive 3D robot background (Spline embed). Overlay layers are
-// pointer-events:none so the scene stays interactive; only buttons capture clicks.
-const SPLINE_SRC =
-  'https://my.spline.design/nexbotrobotcharacterconceptcopy-FULyqbxK0F9M52CamX0Tac2U/'
+// Runtime scene (.splinecode) — replaces the old cross-origin iframe embed, so we
+// can drive the camera on navigation.
+const SPLINE_SCENE = 'https://prod.spline.design/7zWwWxRuaxqIZXDE/scene.splinecode'
 
 // Thin line icons that match the film's technical HUD aesthetic.
 const ICON: Record<string, ReactNode> = {
@@ -52,21 +55,90 @@ const ICON: Record<string, ReactNode> = {
   ),
 }
 
+type NavItem = { href: string; label: string; icon: ReactNode; primary?: boolean; external?: boolean; mail?: boolean }
+
+const NAV: NavItem[] = [
+  { href: '/lab/17-gantt-cpm.html', label: 'Projects', icon: ICON.projects, external: true },
+  { href: '/film', label: 'Portfolio', icon: ICON.portfolio, primary: true },
+  { href: '/lab/scenes.html', label: 'Scenes', icon: ICON.scenes, external: true },
+  { href: '/lab/skills.html', label: 'Skills', icon: ICON.skills, external: true },
+  { href: '/resume', label: 'Resume', icon: ICON.resume },
+  { href: `mailto:${PROFILE.contact.email}`, label: 'Contact', icon: ICON.contact, mail: true },
+]
+
+const TX_MS = 720
+
 /**
- * Landing — the portfolio home. A full-screen Spline robot under the film's dark
- * CRT-noir tone, with the catchphrase and a row of icon actions just below center
- * (so the robot, which renders around the upper-middle, stays the hero).
+ * Landing — the portfolio home. A full-screen Spline robot (runtime) under the
+ * film's dark CRT-noir tone. Pressing a nav button fires a transition: the robot
+ * camera warps toward the scene while a glitch/bloom overlay sweeps, then we
+ * navigate. The pretext title/tagline and ambient words sit over the scene.
  */
 export function Landing() {
+  const router = useRouter()
+  const splineRef = useRef<Application | null>(null)
+  const navigatingRef = useRef(false)
+  const [leaving, setLeaving] = useState(false)
+
+  function onLoad(app: Application) {
+    splineRef.current = app
+    // expose for scene inspection (objects / variables / events) during dev
+    ;(window as unknown as { __spline?: Application }).__spline = app
+  }
+
+  // Scene warp on navigation: dolly the camera ("Camera 2", z≈1000) in toward the
+  // robot while the robot leans/bows forward — so it feels like the robot pulls us
+  // into the page. pauseGameControls() stops the look-at from fighting the lean.
+  function cameraWarp() {
+    const app = splineRef.current
+    if (!app) return
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return
+    try {
+      ;(app as { pauseGameControls?: () => void }).pauseGameControls?.()
+      const cam = app.findObjectByName('Camera 2')
+      const torso = app.findObjectByName('Top part')
+      const head = app.findObjectByName('Head')
+      const z0 = cam ? cam.position.z : 1000
+      const z1 = z0 * 0.55 // dive in
+      const tx0 = torso ? torso.rotation.x : 0
+      const hx0 = head ? head.rotation.x : 0
+      const t0 = performance.now()
+      const tick = (now: number) => {
+        const k = Math.min(1, (now - t0) / TX_MS)
+        const e = k * k // ease-in: accelerate into the scene
+        if (cam) cam.position.z = z0 + (z1 - z0) * e
+        if (torso) torso.rotation.x = tx0 + 0.42 * e // lean the upper body in
+        if (head) head.rotation.x = hx0 + 0.34 * e // bow the head
+        if (k < 1) requestAnimationFrame(tick)
+      }
+      requestAnimationFrame(tick)
+    } catch {
+      /* never block navigation on a camera hiccup */
+    }
+  }
+
+  function handleNav(e: React.MouseEvent, item: NavItem) {
+    if (item.mail) return // let mailto open the mail client normally
+    e.preventDefault()
+    if (navigatingRef.current) return
+    navigatingRef.current = true
+    setLeaving(true)
+    cameraWarp()
+    window.setTimeout(() => {
+      if (item.external) window.location.href = item.href
+      else router.push(item.href)
+    }, TX_MS)
+  }
+
   return (
     <main className="lp-root">
-      <iframe className="lp-spline" src={SPLINE_SRC} title="3D robot" loading="eager" />
+      <Spline scene={SPLINE_SCENE} onLoad={onLoad} className="lp-spline" />
 
       {/* vignette + bottom fade for legibility + faint scanlines over the scene */}
       <div className="lp-veil" aria-hidden />
       <div className="lp-scan" aria-hidden />
 
-      {/* mask the embed's "Built with Spline" badge (bottom-right, inside the iframe) */}
+      {/* mask the runtime's "Built with Spline" badge (bottom-right) */}
       <div className="lp-mask" aria-hidden />
 
       {/* descriptor words flickering at random spots behind the scene */}
@@ -111,30 +183,28 @@ export function Landing() {
           style={{ margin: '0 0 28px', maxWidth: '92vw' }}
         />
         <nav className="lp-actions" aria-label="primary">
-          {/* Projects → interactive gantt / impact board */}
-          <a href="/lab/17-gantt-cpm.html" className="lp-btn">
-            <span className="lp-ic">{ICON.projects}</span>Projects
-          </a>
-          {/* Portfolio → the autoplay narrative film */}
-          <Link href="/film" className="lp-btn lp-btn-primary">
-            <span className="lp-ic">{ICON.portfolio}</span>Portfolio
-          </Link>
-          {/* Scenes → film scene gallery (12 beats) */}
-          <a href="/lab/scenes.html" className="lp-btn">
-            <span className="lp-ic">{ICON.scenes}</span>Scenes
-          </a>
-          {/* Skills → skill demos by area (PM/공정/개발/인프라/PKM) */}
-          <a href="/lab/skills.html" className="lp-btn">
-            <span className="lp-ic">{ICON.skills}</span>Skills
-          </a>
-          {/* Resume → pretext-rendered résumé in our dark CRT-noir tone */}
-          <Link href="/resume" className="lp-btn">
-            <span className="lp-ic">{ICON.resume}</span>Resume
-          </Link>
-          <a href={`mailto:${PROFILE.contact.email}`} className="lp-btn">
-            <span className="lp-ic">{ICON.contact}</span>Contact
-          </a>
+          {NAV.map((item) => (
+            <a
+              key={item.label}
+              href={item.href}
+              className={`lp-btn${item.primary ? ' lp-btn-primary' : ''}`}
+              onClick={(e) => handleNav(e, item)}
+            >
+              <span className="lp-ic">{item.icon}</span>
+              {item.label}
+            </a>
+          ))}
         </nav>
+      </div>
+
+      {/* navigation transition — glitch slash + bloom sweep (synced with cameraWarp) */}
+      <div className={`lp-tx${leaving ? ' lp-tx--on' : ''}`} aria-hidden>
+        <div className="lp-tx-slash" />
+        <div className="lp-tx-bloom" />
+        <div className="lp-tx-noise" />
+        {/* dark cover that rises at the end → navigation happens under black,
+            then the destination page reveals from black (no abrupt pop) */}
+        <div className="lp-tx-fade" />
       </div>
     </main>
   )

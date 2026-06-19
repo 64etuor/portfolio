@@ -50,6 +50,13 @@ type Letter = {
   burnTimer: number
   scaleMul: number
   gravity: number
+  isEcho: boolean
+  // For body-copy echoes: the live DOM <span> for this glyph. While the letter
+  // is displaced we hide the span (opacity:0) and paint the canvas echo in its
+  // place, so the glyph "moves" instead of doubling. `hidden` tracks the span's
+  // current state so we only write to the DOM on a transition.
+  span: HTMLElement | null
+  hidden: boolean
 }
 
 export function ResumeDragonHero({ nameEn, nameKr, title }: { nameEn: string; nameKr: string; title: string }) {
@@ -100,6 +107,11 @@ export function ResumeDragonHero({ nameEn, nameKr, title }: { nameEn: string; na
     let rectLeft = 0
     let rectTop = 0
     let breathing = false
+    // Click-and-hold fire: true while the pointer is pressed (mouse/touch/pen),
+    // wired on `window` because the canvas is pointer-events:none. The dragon
+    // breathes fire for as long as the button is held, in addition to the
+    // occasional autonomous breath.
+    let held = false
     // Autonomous fire: a brief breath every ~9–13s keeps the embers/particles
     // alive. It only visibly burns letters when the head happens to be near the
     // name; over body text the blast finds nothing, so it stays unobtrusive.
@@ -202,15 +214,118 @@ export function ResumeDragonHero({ nameEn, nameKr, title }: { nameEn: string; na
               burnTimer: 0,
               scaleMul: 1,
               gravity: 0,
+              isEcho: false,
+              span: null,
+              hidden: false,
             })
           }
           cy += lh
         }
         cy += b.gap
       }
+
+      // Body text echoes: give the live DOM prose (cover letter + summary) a
+      // physics twin so the dragon actually stirs it.
+      buildEchoLetters()
     }
 
-    // ── Embers + fire particles (pooled) ──
+    // ── Body-text echoes ──────────────────────────────────────────────────
+    // The cover letter / summary stay as crisp, selectable, print-friendly DOM
+    // text. To let the dragon actually *move* that text (not double it), each
+    // glyph is wrapped once in an inline <span> (layout-neutral — spaces and the
+    // **bold** structure are preserved). Each span gets a physics "echo" twin on
+    // the canvas, homed exactly on it. While an echo sits home, the DOM span is
+    // visible and nothing is painted. The instant the dragon pushes the echo off
+    // home, we hide that one span (opacity:0) and paint the moving canvas glyph
+    // in its place — so the letter travels with NO ghost left behind — then the
+    // span reappears the moment the echo springs back. Selection/print/AT keep
+    // the real DOM text (print forces every span visible via CSS).
+
+    // Wrap each glyph of the target prose in a layout-neutral inline span. Runs
+    // once per container (guarded), so resize/font re-measures reuse the spans.
+    function wrapEchoSpans() {
+      if (!canvas) return
+      const root = canvas.parentElement
+      if (!root) return
+      const targets = root.querySelectorAll('.rz-summary, .rz-cover')
+      targets.forEach((elNode) => {
+        const el = elNode as HTMLElement
+        if (el.dataset.echoWrapped) return
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT)
+        const textNodes: Text[] = []
+        let n = walker.nextNode()
+        while (n) {
+          textNodes.push(n as Text)
+          n = walker.nextNode()
+        }
+        for (const tn of textNodes) {
+          const text = tn.nodeValue || ''
+          if (!text) continue
+          if ((tn.parentElement as HTMLElement | null)?.classList.contains('rz-echo-ch')) continue
+          const frag = document.createDocumentFragment()
+          for (const ch of text) {
+            if (ch === ' ' || ch === '\n' || ch === '\t' || ch === '　') {
+              frag.appendChild(document.createTextNode(ch))
+            } else {
+              const s = document.createElement('span')
+              s.className = 'rz-echo-ch'
+              s.textContent = ch
+              frag.appendChild(s)
+            }
+          }
+          tn.parentNode?.replaceChild(frag, tn)
+        }
+        el.dataset.echoWrapped = '1'
+      })
+    }
+
+    function buildEchoLetters() {
+      if (!canvas) return
+      const root = canvas.parentElement
+      if (!root) return
+      wrapEchoSpans()
+      const crect = canvas.getBoundingClientRect()
+      const spans = root.querySelectorAll('.rz-summary .rz-echo-ch, .rz-cover .rz-echo-ch')
+      let pushed = 0
+      const MAX_ECHO = 3200
+      spans.forEach((spanNode) => {
+        if (pushed >= MAX_ECHO) return
+        const span = spanNode as HTMLElement
+        // Reset any stale hidden state so the rebuilt field starts fully visible.
+        span.style.opacity = ''
+        const r = span.getBoundingClientRect()
+        if (r.width < 0.5 || r.height < 0.5) return
+        const hx = r.left - crect.left + r.width / 2
+        const hy = r.top - crect.top + r.height / 2
+        if (hy < -40 || hy > crect.height + 40) return
+        const pcs = window.getComputedStyle(span)
+        const font = `${pcs.fontWeight} ${pcs.fontSize} ${pcs.fontFamily}`
+        const isEm = !!span.parentElement?.classList.contains('rz-cl-em')
+        letters.push({
+          ch: span.textContent || '',
+          hx,
+          hy,
+          x: hx,
+          y: hy,
+          vx: 0,
+          vy: 0,
+          angle: 0,
+          angVel: 0,
+          charW: r.width,
+          baseAlpha: isEm ? 0.98 : 0.86,
+          color: isEm ? '#eef1f4' : '#cfd3d9',
+          font,
+          burnTimer: 0,
+          scaleMul: 1,
+          gravity: 0,
+          isEcho: true,
+          span,
+          hidden: false,
+        })
+        pushed++
+      })
+    }
+
     const MAX_EMBERS = 50
     let emberCount = 0
     const emX = new Float32Array(MAX_EMBERS)
@@ -269,6 +384,16 @@ export function ResumeDragonHero({ nameEn, nameKr, title }: { nameEn: string; na
     // ── Sizing ──
     function build() {
       if (!canvas || !ctx) return
+      // Extend the playfield to span the masthead AND the full cover letter, so
+      // the serpent can roam over the body prose it disturbs (not just the name).
+      const rootEl = canvas.parentElement
+      const coverEl = rootEl?.querySelector('.rz-cover') as HTMLElement | null
+      if (rootEl && coverEl) {
+        const rr = rootEl.getBoundingClientRect()
+        const cb = coverEl.getBoundingClientRect()
+        const desired = Math.min(2600, Math.max(820, cb.bottom - rr.top + 96))
+        canvas.style.height = `${Math.round(desired)}px`
+      }
       const rect = canvas.getBoundingClientRect()
       W = rect.width
       H = rect.height
@@ -344,7 +469,33 @@ export function ResumeDragonHero({ nameEn, nameKr, title }: { nameEn: string; na
     function interactLetters(dt: number) {
       const checkSegs = Math.min(Math.round(chainN * 0.4), chainN)
       const { damping, spring, push, burnGravity } = CFG
+
+      // Broad-phase: a padded bounding box of the colliding head segments. A
+      // settled letter outside it feels no dragon and is already home, so it
+      // can be skipped entirely — this keeps the (now thousands-strong) echo
+      // field cheap, only simulating letters near the serpent or still in motion.
+      let minX = Infinity
+      let minY = Infinity
+      let maxX = -Infinity
+      let maxY = -Infinity
+      for (let si = 0; si < checkSegs; si++) {
+        if (chX[si] < minX) minX = chX[si]
+        if (chX[si] > maxX) maxX = chX[si]
+        if (chY[si] < minY) minY = chY[si]
+        if (chY[si] > maxY) maxY = chY[si]
+      }
+      const pad = 48
+      minX -= pad
+      minY -= pad
+      maxX += pad
+      maxY += pad
+
       for (const L of letters) {
+        const hdx0 = L.x - L.hx
+        const hdy0 = L.y - L.hy
+        const settled = hdx0 * hdx0 + hdy0 * hdy0 < 0.4 && L.vx * L.vx + L.vy * L.vy < 0.02 && L.burnTimer <= 0
+        if (settled && (L.x < minX || L.x > maxX || L.y < minY || L.y > maxY)) continue
+
         let vx = L.vx
         let vy = L.vy
         let av = L.angVel
@@ -570,6 +721,29 @@ export function ResumeDragonHero({ nameEn, nameKr, title }: { nameEn: string; na
         const burning = L.burnTimer > 0
         let alpha = L.baseAlpha
         let color = L.color
+        if (L.isEcho) {
+          // The crux of the no-ghost fix: while this echo sits home, show the
+          // real DOM glyph and paint nothing. The instant it's displaced (or
+          // burning), HIDE the DOM glyph and paint the moving canvas letter in
+          // its place — so the glyph travels with no duplicate left behind. DOM
+          // writes happen only on the home<->moved transition (tracked by hidden).
+          const ddx = L.x - L.hx
+          const ddy = L.y - L.hy
+          const disp = Math.sqrt(ddx * ddx + ddy * ddy)
+          const atHome = disp < 1.5 && !burning
+          if (atHome) {
+            if (L.hidden && L.span) {
+              L.span.style.opacity = ''
+              L.hidden = false
+            }
+            continue // DOM glyph shows here; draw no canvas echo
+          }
+          if (!L.hidden && L.span) {
+            L.span.style.opacity = '0'
+            L.hidden = true
+          }
+          alpha = Math.max(Math.min(1, disp / 16), burning ? 0.6 : 0.35) * L.baseAlpha
+        }
         if (burning) {
           color = fireColor(1 - Math.min(1, L.burnTimer))
           alpha = Math.min(1, alpha + 0.4)
@@ -735,7 +909,8 @@ export function ResumeDragonHero({ nameEn, nameKr, title }: { nameEn: string; na
         breathUntil = time + 0.9 + Math.random() * 0.5
         nextFireAt = time + 9 + Math.random() * 4
       }
-      breathing = time < breathUntil
+      // Held pointer breathes fire immediately; autonomous breath still fires.
+      breathing = held || time < breathUntil
 
       updateShake()
       updateChain()
@@ -776,6 +951,21 @@ export function ResumeDragonHero({ nameEn, nameKr, title }: { nameEn: string; na
       rectLeft = r.left
       rectTop = r.top
     }
+    // Click & hold anywhere (that isn't an interactive control) → breathe fire,
+    // aimed wherever the pointer is. The dragon leads to the press point first.
+    const isInteractive = (t: EventTarget | null) =>
+      t instanceof Element && !!t.closest('a, button, input, textarea, select, label, [role="button"]')
+    const onDown = (e: PointerEvent) => {
+      if (isInteractive(e.target)) return
+      pointer.x = e.clientX - rectLeft
+      pointer.y = e.clientY - rectTop
+      pointer.active = true
+      pointerIdleT = 0
+      held = true
+    }
+    const onUp = () => {
+      held = false
+    }
 
     let resizeRaf = 0
     const onResize = () => {
@@ -792,6 +982,9 @@ export function ResumeDragonHero({ nameEn, nameKr, title }: { nameEn: string; na
     } else {
       raf = requestAnimationFrame(frame)
       window.addEventListener('pointermove', onMove)
+      window.addEventListener('pointerdown', onDown)
+      window.addEventListener('pointerup', onUp)
+      window.addEventListener('pointercancel', onUp)
       window.addEventListener('scroll', onScroll, { passive: true })
     }
 
@@ -799,7 +992,9 @@ export function ResumeDragonHero({ nameEn, nameKr, title }: { nameEn: string; na
     if (document.fonts?.ready) {
       document.fonts.ready.then(() => {
         resetPretextCache()
-        buildLetters()
+        // Re-measure everything: glyph widths (name) and DOM Range rects (echoes)
+        // both shift once Pretendard swaps in, and the cover letter reflows.
+        build()
         if (reduced) staticFrame()
       })
     }
@@ -809,8 +1004,16 @@ export function ResumeDragonHero({ nameEn, nameKr, title }: { nameEn: string; na
       cancelAnimationFrame(raf)
       cancelAnimationFrame(resizeRaf)
       window.removeEventListener('pointermove', onMove)
+      window.removeEventListener('pointerdown', onDown)
+      window.removeEventListener('pointerup', onUp)
+      window.removeEventListener('pointercancel', onUp)
       window.removeEventListener('scroll', onScroll)
       window.removeEventListener('resize', onResize)
+      // Restore any glyph the dragon happened to have hidden mid-flight, so the
+      // DOM text is never left with a missing letter after unmount.
+      for (const L of letters) {
+        if (L.span) L.span.style.opacity = ''
+      }
     }
   }, [nameEn, nameKr, title])
 

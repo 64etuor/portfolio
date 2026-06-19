@@ -1145,12 +1145,29 @@ function plcRowsHtml(){
     `<div class="plcrow${i===plcActStep?" act":""}" data-step="${i}">`+
     `<span class="stp">S${p.s}</span><span class="cond">${p.c}</span><span class="out">${p.o}</span></div>`).join("");
 }
+/* Scroll an element into view WITHIN its nearest scrollable ancestor only.
+   scrollIntoView() propagates across the iframe boundary and yanks the parent
+   gallery page to this embed (repeatedly, from the PLC loop) — this stays local. */
+function scrollLocal(el){
+  if(!el) return;
+  let p = el.parentElement;
+  while(p){
+    const oy = getComputedStyle(p).overflowY;
+    if((oy==="auto"||oy==="scroll") && p.scrollHeight > p.clientHeight+1){
+      const er = el.getBoundingClientRect(), pr = p.getBoundingClientRect();
+      if(er.top < pr.top) p.scrollTop -= (pr.top - er.top);
+      else if(er.bottom > pr.bottom) p.scrollTop += (er.bottom - pr.bottom);
+      return;
+    }
+    p = p.parentElement;
+  }
+}
 function setPlcStep(i){
   plcActStep = ((i%PLC_SEQ.length)+PLC_SEQ.length)%PLC_SEQ.length;
   document.querySelectorAll(".plcrow").forEach(r=>{
     const act = (+r.dataset.step===plcActStep);
     r.classList.toggle("act", act);
-    if(act) r.scrollIntoView({block:"nearest"});
+    if(act) scrollLocal(r);
   });
 }
 /* per-waypoint I/O + PLC step state (illustrative of the live sequence) */
@@ -1220,7 +1237,7 @@ function selectLine(i, fromUser){
   // highlight
   document.querySelectorAll(".pline").forEach(p=>p.classList.remove("sel"));
   const el = progScroll.querySelector(`.pline[data-idx="${i}"]`);
-  if(el){ el.classList.add("sel"); el.scrollIntoView({block:"nearest"}); }
+  if(el){ el.classList.add("sel"); scrollLocal(el); }
   // detail pane
   const c = COMPANY[wp.co];
   const w = wp.world, jt = wp.joint;

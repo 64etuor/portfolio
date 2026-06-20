@@ -273,22 +273,10 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       dReplay.removeEventListener('click', startVerificationReplay)
     })
 
-    /* ---------- critical-path toggle / dim ---------- */
+    /* ---------- critical-path / dim — 단일 소스: svg 의 cp·dim 클래스 (나머지 전부 CSS) ---------- */
     function applyCP() {
       svg!.classList.toggle(s.cp, cpOn)
-      root!.classList.toggle(s.dimOthers, cpOn && dimOn)
-      svg!.querySelectorAll<SVGElement>('.' + s.critline).forEach((e) => (e.style.opacity = cpOn ? '1' : '0'))
-      svg!.querySelectorAll<SVGElement>('.' + s.critdep).forEach((e) => {
-        e.setAttribute('stroke', cpOn ? '#f05555' : '#3e4e62')
-        e.setAttribute('stroke-width', cpOn ? '2' : '1.3')
-        e.setAttribute('marker-end', cpOn ? 'url(#arrCrit)' : 'url(#arrNorm)')
-        e.setAttribute('stroke-opacity', cpOn ? '.95' : '.7')
-      })
-      if (!(cpOn && dimOn)) {
-        svg!.querySelectorAll<SVGElement>('.' + s.nc).forEach((e) => (e.style.opacity = '1'))
-      } else {
-        svg!.querySelectorAll<SVGElement>(`.${s.task}.${s.nc}, .${s.dep}.${s.nc}`).forEach((e) => (e.style.opacity = ''))
-      }
+      svg!.classList.toggle(s.dim, dimOn)
     }
     function setTog(elm: HTMLElement, on: boolean) {
       elm.classList.toggle(s.on, on)
@@ -526,19 +514,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
             ex = b.x,
             ey = b.cy
           const d = `M ${sx} ${sy} L ${sx + 12} ${sy} L ${sx + 12} ${ey} L ${ex - 7} ${ey}`
-          el(
-            'path',
-            {
-              d,
-              fill: 'none',
-              stroke: isCrit ? '#f05555' : '#3e4e62',
-              'stroke-width': isCrit ? 2 : 1.3,
-              'stroke-opacity': isCrit ? 0.95 : 0.7,
-              'marker-end': isCrit ? 'url(#arrCrit)' : 'url(#arrNorm)',
-              class: isCrit ? `${s.dep} ${s.critdep}` : `${s.dep} ${s.nc}`,
-            },
-            depG
-          )
+          // 색/굵기/마커는 .dep(기본) + .gantt.cp .critdep(CSS)로 제어 — inline 상태 없음
+          el('path', { d, class: isCrit ? `${s.dep} ${s.critdep}` : `${s.dep} ${s.nc}` }, depG)
         })
       })
 

@@ -508,11 +508,11 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         <b>SCENE 10</b> · 핵심 — CROSS-DOMAIN
       </div>
 
-      {/* hero typography */}
-      <h1 ref={l1Ref} className={`${s.l1} ${s.kr}`}>
+      {/* hero typography — 인라인 opacity:0 로 CSS 모듈 로드 전 FOUC 플래시 방지(draw 가 매 프레임 덮어씀) */}
+      <h1 ref={l1Ref} className={`${s.l1} ${s.kr}`} style={{ opacity: 0 }}>
         크로스 도메인 지식이 <em>경쟁력</em>이 되는 시대.
       </h1>
-      <h2 ref={l2Ref} className={`${s.l2} ${s.kr}`}>
+      <h2 ref={l2Ref} className={`${s.l2} ${s.kr}`} style={{ opacity: 0 }}>
         제조와 IT의 <em>경계</em>를 이해하는 사람이 <em>변화</em>를 만듭니다.
       </h2>
 

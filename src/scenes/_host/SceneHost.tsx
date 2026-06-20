@@ -39,7 +39,9 @@ export function SceneHost({
       }}
     >
       {children}
-      {film && (
+      {/* 필름 오버레이(그레인)는 평평한 스크롤 대시보드에선 끔 — 다크 플랫 배경 위에서
+         애니메이션 그레인이 "중앙 회색 움직임"으로 거슬리고, 그 씬들은 원래 클린 설계였음. */}
+      {film && !scroll && (
         <div className={host.film} aria-hidden>
           <div className={host.grain} />
         </div>

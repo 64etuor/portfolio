@@ -30,7 +30,8 @@ export const ACTS: Act[] = [
   // 3. 문제 제기 — 소통의 문제 (arc 19s, longest)
   { id: 's3-problem', scenes: [{ file: '29-lost-in-translation.html', ms: 15000 }] },
   // 4+5. 관점 — 현장↔시스템 통합 랙포커스 (arc 22s, 컷 ~20s). 씬4(34)·씬5(35) 통합.
-  { id: 's4-perspectives', scenes: [{ file: '41-perspectives.html', ms: 16000 }] },
+  // 16s는 씬5(랙포커스 후반)가 너무 빨리 잘려 20s로 — 하위 데모 로드 시간도 확보.
+  { id: 's4-perspectives', scenes: [{ file: '41-perspectives.html', ms: 20000 }] },
   // 6. 충돌 — LEXICAL COLLISION (루프 12s). 페이로드 = IMPACT→DRIFT APART
   // ('프로젝트는 멀어집니다', ~10.3s). 그 뒤 RESET(0.86~1.0)은 토큰 재조립=루프 봉합용
   // 이라 컷 전에 끝냄 — 11s는 리셋 되감기가 보여서 살짝 늦게 넘어갔음.
@@ -55,8 +56,8 @@ export const ACTS: Act[] = [
   {
     id: 's10-crossdomain',
     scenes: [
-      // 하이라이트(핵심) 직전: 디지털 트윈을 잠깐 — 크로스도메인 증거 예고
-      { file: 'digital-twin.html', ms: 4500 },
+      // (digital-twin 프리뷰 제거: three.js CDN 로드 WebGL 씬이라 4.5s 컷에선 "초기화 중"
+      //  부팅 화면만 깜빡여 하이라이트 직전 이상한 화면이 됨. 단독 /s/digital-twin 으로는 정상.)
       { file: '37-cross-domain.html', ms: 12000 },
       { file: 'mes-console.html', ms: 6500 },
       { file: 'instrument-rack.html', ms: 6500 },

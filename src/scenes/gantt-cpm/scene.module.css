@@ -913,37 +913,54 @@
   color: var(--crit);
 }
 
-/* critical-path 훅 클래스 — CSS Module export 보장.
-   없으면 s.crit/s.critdep/s.critline 이 undefined → class "...task undefined" 가 되고
-   applyCP 의 `.${s.critdep}`(=`.undefined`) 셀렉터가 크리티컬 그룹을 잡아 group-stroke 를
-   걸어 레인 전체폭 투명 rect 가 빨갛게 상속되는 버그가 남. 시각 스타일은 el() inline + applyCP 담당.
-   (빈 규칙은 prod 에서 prune 될 수 있어 무해한 선언 1개씩 둠.) */
+/* ════ critical-path / dim — 단일 소스 ════
+   JS(applyCP)는 svg 에 .cp(크리티컬 강조)·.dim(비크리티컬 디밍) 두 클래스만 토글하고,
+   색·굵기·가시성·디밍은 전부 아래 CSS 가 선언한다(inline 상태/JS opacity 조작 없음).
+   .crit 은 task 그룹 식별용 export 훅. */
 .crit {
   --cp-hook: 1;
 }
+
+/* 의존성 화살표 — 기본 중립, cp 켜지면 크리티컬만 빨강으로 */
+.dep {
+  fill: none;
+  stroke: #3e4e62;
+  stroke-width: 1.3;
+  stroke-opacity: 0.7;
+  marker-end: url(#arrNorm);
+  transition: stroke 0.35s, stroke-width 0.35s, stroke-opacity 0.35s;
+}
+.gantt.cp .critdep {
+  stroke: #f05555;
+  stroke-width: 2;
+  stroke-opacity: 0.95;
+  marker-end: url(#arrCrit);
+}
+
+/* 크리티컬 바 외곽선 — cp 켜질 때만 표시 */
 .critline {
+  opacity: 0;
   pointer-events: none;
+  transition: opacity 0.35s;
+}
+.gantt.cp .critline {
+  opacity: 1;
 }
 .critdep {
   pointer-events: none;
 }
 
-/* ---- critical-path dim (folded from runtime-injected <style>) ---- */
-.gantt.cp .nc {
-  opacity: 0.16;
-  transition: opacity 0.35s;
-}
-.dimOthers .gantt.cp .task.nc {
-  opacity: 0.34;
-  transition: opacity 0.4s;
-}
-.dimOthers .gantt.cp .dep.nc {
-  opacity: 0.3;
-  transition: opacity 0.4s;
-}
-.root:not(.dimOthers) .gantt .task.nc,
-.root:not(.dimOthers) .gantt .dep.nc {
+/* 비크리티컬 디밍 — cp 와 dim 이 모두 켜질 때만 */
+.gantt .task.nc,
+.gantt .dep.nc {
   opacity: 1;
+  transition: opacity 0.4s;
+}
+.gantt.cp.dim .task.nc {
+  opacity: 0.34;
+}
+.gantt.cp.dim .dep.nc {
+  opacity: 0.3;
 }
 
 /* ---- sustained motion ---- */

@@ -1,0 +1,186 @@
+/* SCENE 06 · 충돌 — LEXICAL COLLISION. 30-collision.html 인라인 <style> 이식.
+   폰트 @import/@font-face 제거(전역 제공). */
+
+.root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: radial-gradient(ellipse 120% 120% at 50% 50%, #0e0e0e 0%, #050505 60%, #000 100%);
+  color: #e2e2e2;
+  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  word-break: keep-all;
+  -webkit-font-smoothing: antialiased;
+}
+
+.c {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ===== CRT shell ===== */
+.shell {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+.shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.16) 3px,
+    rgba(0, 0, 0, 0.16) 4px
+  );
+  mix-blend-mode: multiply;
+}
+.shell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 41;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, transparent 56%, rgba(0, 0, 0, 0.74) 100%);
+  opacity: 0.9;
+}
+
+/* flicker */
+.flicker {
+  position: absolute;
+  inset: 0;
+  z-index: 42;
+  pointer-events: none;
+  background: rgba(255, 255, 255, 0.012);
+  animation: flick 5.5s steps(2) infinite;
+}
+@keyframes flick {
+  0%, 96% { opacity: 0; }
+  97% { opacity: 0.5; }
+  98% { opacity: 0; }
+  99% { opacity: 0.35; }
+  100% { opacity: 0; }
+}
+
+/* ===== HUD overlay (noir) ===== */
+.hud {
+  position: absolute;
+  z-index: 45;
+  pointer-events: none;
+  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  letter-spacing: 1.5px;
+  text-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
+}
+.hudTr {
+  top: 26px;
+  right: 34px;
+  text-align: right;
+}
+.hudBl {
+  bottom: 24px;
+  left: 34px;
+}
+.hudBr {
+  bottom: 24px;
+  right: 34px;
+  text-align: right;
+}
+.hudK {
+  font-size: 10px;
+  color: #8d8d8d;
+}
+.hudV {
+  font-size: 13px;
+  color: #e2e2e2;
+  margin-top: 3px;
+}
+
+/* canonical scene eyebrow */
+.eyebrow {
+  position: absolute;
+  z-index: 45;
+  left: 5.4%;
+  top: 12.2%;
+  pointer-events: none;
+  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-size: clamp(10px, 0.82vw, 15px);
+  letter-spacing: 0.42em;
+  color: #8d8d8d;
+  text-shadow: none;
+}
+.eyebrow b {
+  color: #4ab3cc;
+  text-shadow: 0 0 8px rgba(74, 179, 204, 0.4);
+  font-weight: 700;
+}
+
+/* side banners */
+.side {
+  position: absolute;
+  z-index: 45;
+  pointer-events: none;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Pretendard', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 2px;
+  opacity: 0.85;
+}
+.sideL {
+  left: 34px;
+  color: #d98a3d;
+  text-shadow: 0 0 12px rgba(217, 138, 61, 0.3);
+}
+.sideR {
+  right: 34px;
+  color: #4ab3cc;
+  text-align: right;
+  text-shadow: 0 0 12px rgba(74, 179, 204, 0.3);
+}
+.sideEn {
+  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-weight: 400;
+  font-size: 9px;
+  letter-spacing: 2px;
+  color: #8d8d8d;
+  margin-top: 4px;
+}
+
+/* phase readout bottom-center */
+.phasebar {
+  position: absolute;
+  z-index: 45;
+  pointer-events: none;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: #8d8d8d;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+.phasebar b {
+  color: #e2e2e2;
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #3a3a3a;
+  display: inline-block;
+}
+.dotOn {
+  background: #e2e2e2;
+  box-shadow: 0 0 8px #e2e2e2;
+}

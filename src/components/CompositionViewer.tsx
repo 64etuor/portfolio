@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { SceneFrame } from './SceneFrame'
+import { SceneMount } from '@/scenes/_host/SceneMount'
 import type { Scene } from '@/scenes/registry'
 
 export function CompositionViewer({
@@ -52,8 +52,8 @@ export function CompositionViewer({
         <span className="text-xs" style={{ color: 'var(--accent)' }}>{s.domain}</span>
         <Link href={`/s/${s.slug}`} className="ml-auto text-xs hover:opacity-80" style={{ color: 'var(--muted)' }}>단독 보기 ↗</Link>
       </div>
-      <div style={{ flex: 1, minHeight: 0 }}>
-        <SceneFrame key={s.id} file={s.file} title={s.title} bg={s.bg} />
+      <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
+        <SceneMount key={s.id} name={s.file} title={s.title} bg={s.bg} />
       </div>
     </div>
   )

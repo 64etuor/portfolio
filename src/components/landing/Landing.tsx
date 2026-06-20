@@ -58,9 +58,9 @@ type NavItem = { href: string; label: string; icon: ReactNode; primary?: boolean
 
 const NAV: NavItem[] = [
   { href: '/film', label: 'Portfolio', icon: ICON.portfolio, primary: true },
-  { href: '/lab/gantt-cpm.html', label: 'Projects', icon: ICON.projects, external: true },
-  { href: '/lab/scenes.html', label: 'Scenes', icon: ICON.scenes, external: true },
-  { href: '/lab/skills.html', label: 'Skills', icon: ICON.skills, external: true },
+  { href: '/s/gantt-cpm', label: 'Projects', icon: ICON.projects, external: false },
+  { href: '/scenes', label: 'Scenes', icon: ICON.scenes, external: false },
+  { href: '/skills', label: 'Skills', icon: ICON.skills, external: false },
   { href: '/resume', label: 'Resume', icon: ICON.resume },
 ]
 

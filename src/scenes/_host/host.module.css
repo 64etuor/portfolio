@@ -1,0 +1,56 @@
+/* SceneHost 공유 필름 오버레이 — 전 씬 일관 low-fi.
+   원본은 씬마다 grain/scan/vignette 유무가 제각각이라(대시보드는 0) 느낌이 들쭉날쭉했음.
+   여기 한 겹을 공통으로 깔아 baseline 을 통일. 데이터 가독성 위해 subtle 하게.
+   pointer-events:none 으로 인터랙션은 통과. */
+
+.film {
+  position: absolute;
+  inset: 0;
+  z-index: 9990;
+  pointer-events: none;
+}
+
+/* 스캔라인 (CRT) */
+.film::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.09) 3px 4px);
+  mix-blend-mode: multiply;
+}
+
+/* 비네팅 */
+.film::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 50%, transparent 56%, rgba(0, 0, 0, 0.5) 100%);
+}
+
+/* 필름 그레인 */
+.grain {
+  position: absolute;
+  inset: -50%;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.07;
+  mix-blend-mode: overlay;
+  animation: hostGrain 1.15s steps(3) infinite;
+}
+
+@keyframes hostGrain {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-3%, 2%);
+  }
+  100% {
+    transform: translate(2%, -2%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grain {
+    animation: none;
+  }
+}

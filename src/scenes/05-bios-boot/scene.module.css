@@ -1,0 +1,240 @@
+/* SCENE · SYS-BIOS // POWER-ON SELF-TEST. 05-bios-boot.html 인라인 <style> 이식.
+   폰트 @import / @font-face 제거(전역 제공). */
+
+.root {
+  --phos: #d7d7d7;
+  --phos-dim: #8d8d8d;
+  --phos-deep: #3a3a3a;
+  --accent: #c8c8c8;
+  --bg: #050505;
+  --bg2: #101010;
+  --mono: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: #d7d7d7;
+  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  font-size: 15px;
+  line-height: 1.55;
+  word-break: keep-all;
+  -webkit-font-smoothing: none;
+}
+
+/* ===== CRT shell ===== */
+.crt {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 130% 130% at 50% 50%, #101010 0%, #050505 62%, #000 100%);
+  overflow: hidden;
+}
+.crt::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  pointer-events: none;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(0, 0, 0, 0) 0px,
+    rgba(0, 0, 0, 0) 2px,
+    rgba(0, 0, 0, 0.14) 3px,
+    rgba(0, 0, 0, 0.14) 4px
+  );
+  mix-blend-mode: multiply;
+}
+.crt::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 51;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.72) 100%);
+  opacity: 0.86;
+}
+
+/* power-on flash */
+.flash {
+  position: absolute;
+  inset: 0;
+  z-index: 55;
+  pointer-events: none;
+  background: #fff;
+  opacity: 0;
+}
+.flashPoweron {
+  animation: poweron 1.05s ease-out forwards;
+}
+@keyframes poweron {
+  0%   { opacity: 0;   transform: scaleY(0.004); filter: brightness(3); }
+  6%   { opacity: 0.9; transform: scaleY(0.012); }
+  14%  { opacity: 0.5; transform: scaleY(0.5); }
+  30%  { opacity: 0.12; transform: scaleY(1); }
+  100% { opacity: 0;   transform: scaleY(1); }
+}
+.flashReady {
+  animation: readyflash 0.5s ease-out forwards;
+}
+@keyframes readyflash {
+  0%   { opacity: 0.42; }
+  100% { opacity: 0; }
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  padding: 34px 48px 70px;
+  overflow: hidden;
+  text-shadow: 0 0 3px rgba(255, 255, 255, 0.18);
+  z-index: 10;
+  opacity: 0;
+}
+.screenLit {
+  animation: screenin 0.9s ease-out 0.18s forwards;
+}
+@keyframes screenin {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ===== BOOT layer ===== */
+.boot {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  border-bottom: 1px solid #3a3a3a;
+  padding-bottom: 10px;
+  margin-bottom: 14px;
+}
+.vend {
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+.vend b {
+  color: #c8c8c8;
+  text-shadow: none;
+}
+.meta {
+  text-align: right;
+  color: #8d8d8d;
+  font-size: 12.5px;
+}
+
+/* ASCII logo */
+.asciiLogo {
+  color: #d7d7d7;
+  font-size: 11px;
+  line-height: 1.05;
+  white-space: pre;
+  margin: 2px 0 10px;
+  text-shadow: none;
+  min-height: 0;
+}
+
+.bootlog {
+  flex: 1;
+  overflow: hidden;
+  font-size: 14px;
+}
+.line {
+  white-space: pre-wrap;
+}
+.ok {
+  color: #d7d7d7;
+}
+.dim {
+  color: #8d8d8d;
+}
+.tagOk {
+  color: #000;
+  background: #d7d7d7;
+  padding: 0 5px;
+  font-weight: 700;
+  border-radius: 1px;
+}
+
+.membar {
+  color: #8d8d8d;
+}
+.membarFill {
+  color: #d7d7d7;
+}
+
+/* final READY banner */
+.readyline {
+  margin-top: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  color: #d7d7d7;
+  opacity: 0;
+}
+.readylineOn {
+  animation: rfade 0.4s ease forwards;
+}
+@keyframes rfade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.bootfoot {
+  position: absolute;
+  left: 48px;
+  right: 48px;
+  bottom: 26px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #3a3a3a;
+  padding-top: 10px;
+  font-size: 12.5px;
+  color: #8d8d8d;
+}
+.stat {
+  letter-spacing: 1px;
+}
+.prog {
+  flex: 1;
+  margin: 0 24px;
+  height: 9px;
+  border: 1px solid #3a3a3a;
+  position: relative;
+}
+.progInner {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background: #d7d7d7;
+  box-shadow: none;
+  transition: width 0.15s linear;
+  display: block;
+}
+
+.cur {
+  display: inline-block;
+  width: 9px;
+  height: 15px;
+  background: #d7d7d7;
+  vertical-align: -2px;
+  margin-left: 6px;
+  animation: blink 1.05s steps(2) infinite;
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+
+@media (max-width: 980px) {
+  .screen {
+    padding: 24px 22px 60px;
+  }
+  .bootfoot {
+    left: 22px;
+    right: 22px;
+  }
+}

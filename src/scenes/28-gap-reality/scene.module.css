@@ -1,0 +1,162 @@
+/* SCENE 03 · 현실 — THE DIVERGENCE. 28-gap-reality.html 인라인 <style> 이식.
+   폰트 @import 는 제거(전역 제공). JetBrains Mono 는 가용 시 사용, 폴백 mono. */
+
+.crt {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  color: #d7d7d7;
+  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  word-break: keep-all;
+  -webkit-font-smoothing: none;
+  background: radial-gradient(ellipse 135% 135% at 60% 46%, #101010 0%, #050505 60%, #000 100%);
+}
+
+.c {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.kr {
+  font-family: 'Pretendard', 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+}
+
+/* scanlines + vignette overlay */
+.shell {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  pointer-events: none;
+}
+.shell::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0.13) 3px, rgba(0, 0, 0, 0.13) 4px);
+  mix-blend-mode: multiply;
+}
+.shell::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 52% 48%, transparent 56%, rgba(0, 0, 0, 0.78) 100%);
+  opacity: 0.9;
+}
+
+/* big typography */
+.type {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+  text-shadow: 0 0 4px rgba(255, 255, 255, 0.14);
+}
+
+.eyebrow {
+  position: absolute;
+  left: 5.4%;
+  top: 12.2%;
+  font-size: clamp(10px, 0.82vw, 15px);
+  letter-spacing: 0.42em;
+  color: #8d8d8d;
+  text-shadow: none;
+}
+.eyebrow b {
+  color: #5fb5c2;
+  text-shadow: 0 0 8px rgba(95, 181, 194, 0.4);
+}
+
+.s1 {
+  position: absolute;
+  left: 5.2%;
+  top: 16.4%;
+  max-width: 42%;
+  font-weight: 600;
+  font-size: clamp(20px, 2.36vw, 48px);
+  line-height: 1.34;
+  color: #d7d7d7;
+  letter-spacing: -0.01em;
+}
+.s1 em {
+  font-style: normal;
+  color: #fff;
+  border-bottom: 2px solid #3a3a3a;
+  padding-bottom: 1px;
+}
+
+.s2 {
+  position: absolute;
+  left: 5.2%;
+  bottom: 13.5%;
+  max-width: 46%;
+  font-weight: 700;
+  font-size: clamp(26px, 3.42vw, 70px);
+  line-height: 1.22;
+  color: #d7d7d7;
+  letter-spacing: -0.02em;
+}
+.s2 em {
+  font-style: normal;
+  position: relative;
+  color: #fff;
+}
+.s2 em::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.08em;
+  height: 2px;
+  background: linear-gradient(90deg, #5fb5c2, transparent);
+  box-shadow: 0 0 10px rgba(95, 181, 194, 0.5);
+}
+.s2 .void {
+  color: #5fb5c2;
+  text-shadow: 0 0 14px rgba(95, 181, 194, 0.45);
+}
+
+/* legend */
+.legend {
+  position: absolute;
+  z-index: 20;
+  right: 4.5%;
+  bottom: 6.2%;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  pointer-events: none;
+  font-size: clamp(9px, 0.74vw, 12.5px);
+  color: #8d8d8d;
+  letter-spacing: 0.06em;
+}
+.legend .it {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.legend .dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+.legend .exp {
+  background: #d7d7d7;
+  box-shadow: 0 0 7px rgba(215, 215, 215, 0.6);
+}
+.legend .real {
+  background: #5fb5c2;
+  box-shadow: 0 0 8px rgba(95, 181, 194, 0.7);
+}
+.legend .bar {
+  width: 3px;
+  height: 13px;
+  background: #5fb5c2;
+  opacity: 0.8;
+}
+.legend small {
+  color: #3a3a3a;
+  margin-left: 3px;
+}

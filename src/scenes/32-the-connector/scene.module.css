@@ -1,0 +1,210 @@
+.root {
+  --bg: #050505;
+  --phos: #d7d7d7;
+  --phos-dim: #8d8d8d;
+  --phos-deep: #3a3a3a;
+  --link: #4fe0c4;
+  --kr: 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
+  --mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  color: var(--phos);
+  font-family: var(--kr);
+  -webkit-font-smoothing: antialiased;
+  background: radial-gradient(130% 90% at 50% 42%, #0c0c0c 0%, #070707 48%, #030303 100%);
+}
+
+.kr {
+  word-break: keep-all;
+}
+
+.c {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.scan {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0.22) 3px, rgba(0, 0, 0, 0) 4px);
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+
+.vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 61;
+  pointer-events: none;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 52%, rgba(0, 0, 0, 0.62) 100%);
+}
+
+.grain {
+  position: absolute;
+  inset: -50%;
+  z-index: 59;
+  pointer-events: none;
+  opacity: 0.04;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain 1.1s steps(3) infinite;
+}
+
+@keyframes grain {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-3%, 2%);
+  }
+  100% {
+    transform: translate(2%, -2%);
+  }
+}
+
+.kicker {
+  position: absolute;
+  top: 5.2vh;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 18px;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 5px;
+  color: var(--phos-dim);
+  text-transform: uppercase;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--link);
+  box-shadow: 0 0 10px var(--link);
+  animation: beat 2.4s ease-in-out infinite;
+}
+
+@keyframes beat {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.status {
+  color: var(--link);
+  min-width: 120px;
+  text-align: left;
+  letter-spacing: 3px;
+  text-shadow: 0 0 12px rgba(79, 224, 196, 0.4);
+  transition: color 0.5s;
+}
+
+.sceneId {
+  position: absolute;
+  z-index: 65;
+  left: 5.4%;
+  top: 12.2%;
+  pointer-events: none;
+  font-family: var(--mono);
+  font-size: clamp(10px, 0.82vw, 15px);
+  letter-spacing: 0.42em;
+  color: var(--phos-dim);
+  text-shadow: none;
+}
+
+.sceneId b {
+  color: var(--link);
+  text-shadow: 0 0 8px rgba(79, 224, 196, 0.4);
+  font-weight: 700;
+}
+
+.footer {
+  position: absolute;
+  bottom: 4.6vh;
+  left: 0;
+  right: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 3px;
+  color: var(--phos-deep);
+}
+
+.footer b {
+  color: var(--phos-dim);
+  font-weight: 500;
+}
+
+.hero {
+  position: absolute;
+  top: 21%;
+  left: 0;
+  right: 0;
+  z-index: 25;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.6vh;
+  text-align: center;
+  pointer-events: none;
+  padding: 0 6vw;
+}
+
+.line1 {
+  font-family: var(--kr);
+  font-weight: 600;
+  font-size: clamp(20px, 3vw, 42px);
+  letter-spacing: -0.5px;
+  line-height: 1.32;
+  color: var(--phos-dim);
+}
+
+.neg {
+  color: var(--phos);
+  font-weight: 700;
+  position: relative;
+}
+
+.neg::after {
+  content: '';
+  position: absolute;
+  left: -4%;
+  right: -4%;
+  top: 54%;
+  height: 2px;
+  background: var(--phos-deep);
+  transform: scaleX(var(--strike, 0));
+  transform-origin: left;
+  transition: transform 0.1s linear;
+}
+
+.line2 {
+  font-family: var(--kr);
+  font-weight: 800;
+  font-size: clamp(30px, 5vw, 78px);
+  letter-spacing: -1.2px;
+  line-height: 1.22;
+  color: var(--phos);
+  opacity: 0;
+  transform: translateY(14px);
+}
+
+.acc {
+  color: var(--link);
+  text-shadow: 0 0 22px rgba(79, 224, 196, 0.55), 0 0 60px rgba(79, 224, 196, 0.25);
+}

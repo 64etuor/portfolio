@@ -1,0 +1,236 @@
+/* SCENE 01 · 시대 — THE ACCELERATION. 42-era-shift.html 인라인 <style> 이식.
+   폰트 @import/@font-face 는 제거(전역 제공). */
+
+.stage {
+  --bg: #050505;
+  --phos: #e8e8e8;
+  --phos-dim: #8d8d8d;
+  --phos-deep: #3a3a3a;
+  --accent: #6fb6ff;
+  --mono: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace;
+  --s: min(1vw, 1.778vh);
+
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--phos);
+  font-family: var(--mono);
+  word-break: keep-all;
+  -webkit-font-smoothing: none;
+}
+
+.stage,
+.stage * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.kr {
+  font-family: 'Pretendard', var(--mono);
+}
+
+.c {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.slide {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  background-repeat: no-repeat;
+  opacity: 0;
+  will-change: opacity, transform;
+  /* 의도적 로우파이 필름 룩 — 미세 소프트닝 + 톤 강화(예전 iframe 스케일 느낌 복원) */
+  filter: grayscale(0.5) contrast(1.07) brightness(0.92) sepia(0.16) blur(0.6px);
+  transform: scale(1.06);
+}
+
+.ph {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  will-change: opacity, transform;
+  transform: scale(1.06);
+  background:
+    radial-gradient(60% 80% at 32% 32%, rgba(255, 255, 255, 0.05), transparent 70%),
+    linear-gradient(135deg, #0a0c10, #070708 60%, #0b0d12);
+}
+
+.ph .pn {
+  position: absolute;
+  left: 6%;
+  bottom: 14%;
+  font-size: calc(var(--s) * 8);
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.05);
+  letter-spacing: 0.04em;
+  font-family: var(--mono);
+}
+
+.wash {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  background: radial-gradient(ellipse 130% 130% at 50% 46%, #6a6f78 0%, #2a2d34 64%, #0a0b0e 100%);
+}
+
+.washacc {
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  opacity: 0.16;
+  background: linear-gradient(180deg, rgba(111, 182, 255, 0), rgba(111, 182, 255, 0.1) 60%, rgba(111, 182, 255, 0));
+}
+
+.scan {
+  position: absolute;
+  inset: 0;
+  z-index: 30;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.26) 3px 4px);
+}
+
+.vig {
+  position: absolute;
+  inset: 0;
+  z-index: 31;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.72) 100%);
+  opacity: 0.7;
+}
+
+.grain {
+  position: absolute;
+  inset: -50%;
+  z-index: 32;
+  pointer-events: none;
+  opacity: 0.12;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: grain 1.1s steps(3) infinite;
+}
+
+@keyframes grain {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(-3%, 2%);
+  }
+  100% {
+    transform: translate(2%, -2%);
+  }
+}
+
+.flash {
+  position: absolute;
+  inset: 0;
+  z-index: 33;
+  pointer-events: none;
+  background: #fff;
+  opacity: 0;
+  mix-blend-mode: screen;
+}
+
+.eyebrow {
+  position: absolute;
+  top: 7vh;
+  left: 5.4%;
+  z-index: 40;
+  font-family: var(--mono);
+  font-size: clamp(10px, 0.82vw, 15px);
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--phos-dim);
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+.eyebrow b {
+  color: var(--accent);
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(111, 182, 255, 0.4);
+}
+
+.center {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+  padding: 0 6vw;
+}
+
+.headline {
+  font-family: 'Pretendard', var(--mono);
+  font-weight: 800;
+  font-size: calc(var(--s) * 6.4);
+  line-height: 1.16;
+  color: #fff;
+  letter-spacing: -0.01em;
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.7);
+  will-change: opacity, transform, filter;
+  opacity: 0;
+  filter: blur(7px);
+  transform: scale(1.1);
+}
+
+.headline .fast {
+  color: var(--accent);
+  text-shadow: 0 0 26px rgba(111, 182, 255, 0.55);
+}
+
+.sub {
+  margin-top: calc(var(--s) * 1.6);
+  font-family: var(--mono);
+  font-size: calc(var(--s) * 1.15);
+  letter-spacing: 0.34em;
+  text-transform: uppercase;
+  color: var(--phos-dim);
+  will-change: opacity;
+  opacity: 0;
+}
+
+.sub b {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.rate {
+  position: absolute;
+  left: 5.4%;
+  bottom: 7vh;
+  z-index: 36;
+  font-family: var(--mono);
+  font-size: calc(var(--s) * 0.78);
+  letter-spacing: 0.26em;
+  color: var(--phos-deep);
+  text-transform: uppercase;
+}
+
+.rate b {
+  color: var(--phos-dim);
+  font-weight: 400;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .grain {
+    animation: none;
+  }
+}

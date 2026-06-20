@@ -400,10 +400,13 @@ export function Film() {
           left: 0,
           top: 0,
           height: 2,
-          width: `${overall * 100}%`,
+          width: '100%',
+          transform: `scaleX(${overall})`,
+          transformOrigin: 'left',
           background: ACCENT,
           opacity: 0.55,
-          transition: 'width 120ms linear',
+          transition: 'transform 120ms linear',
+          willChange: 'transform',
           zIndex: 41,
         }}
       />

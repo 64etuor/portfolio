@@ -8,7 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "gen:resume": "tsx scripts/gen-resume.ts"
+    "gen:resume": "tsx scripts/gen-resume.ts",
+    "audit:react": "react-doctor ./src",
+    "audit:lh": "lighthouse http://localhost:3000 --only-categories=performance,accessibility,best-practices,seo --preset=desktop --view"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.2.11",
@@ -38,6 +40,8 @@
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "babel-plugin-react-compiler": "^1.0.0",
+    "lighthouse": "^13.4.0",
+    "react-doctor": "^0.5.8",
     "tailwindcss": "^4.3.1",
     "tsx": "^4.19.2",
     "typescript": "~6.0.2"

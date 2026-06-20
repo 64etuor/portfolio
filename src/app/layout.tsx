@@ -39,6 +39,8 @@ import '@fontsource/playfair-display/700.css'
 import '@fontsource/playfair-display/500-italic.css'
 import '@fontsource/playfair-display/600-italic.css'
 import './globals.css'
+import './cinematic.css' // 랜딩/필름/전환 (globals 에서 분리)
+import './resume.css' // /resume 전용 (globals 에서 분리)
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { SiteHeader } from '@/components/SiteHeader'
 import { PROFILE } from '@content/index'

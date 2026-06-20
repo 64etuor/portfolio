@@ -1,0 +1,376 @@
+/* Résumé (/resume) 전용 스타일. globals.css 에서 분리. */
+
+/* ===== Résumé (/resume) — pretext canvas masthead + dark CRT-noir document ===== */
+/* ── resume chrome bar — slim sticky nav, CRT-acc tone ── */
+
+.rz-root {
+  --rz-bg: #050505;
+  --rz-bg2: #0c0d10;
+  --rz-phos: #d7d7d7;
+  --rz-dim: #8d8d8d;
+  --rz-deep: #3a3a3a;
+  --rz-line: rgba(215, 215, 215, 0.1);
+  --rz-acc: #5fb5c2;
+  position: relative;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 130% 120% at 50% 0%, var(--rz-bg2) 0%, var(--rz-bg) 58%, #000 100%);
+  color: var(--rz-phos);
+  font-family: var(--font-mono);
+  -webkit-font-smoothing: antialiased;
+  padding: clamp(28px, 5vw, 72px) 20px 80px;
+  overflow-x: hidden;
+}
+.rz-scan {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.5;
+  mix-blend-mode: multiply;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.14) 3px, rgba(0, 0, 0, 0.14) 4px);
+}
+.rz-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 42%, transparent 55%, rgba(0, 0, 0, 0.7) 100%);
+}
+.rz-sheet {
+  position: relative;
+  z-index: 3;
+  max-width: 880px;
+  margin: 0 auto;
+}
+.rz-root .kr {
+  font-family: var(--font-sans);
+  word-break: keep-all;
+}
+
+/* ── masthead ── */
+.rz-masthead {
+  border-bottom: 1px solid var(--rz-line);
+  padding-bottom: 26px;
+  margin-bottom: 8px;
+}
+.rz-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.42em;
+  color: var(--rz-dim);
+  margin: 0 0 14px;
+}
+.rz-eyebrow .rz-acc,
+.rz-acc { color: var(--rz-acc); }
+/* Dragon playfield: an absolute layer that spans the masthead AND reaches
+   down into the body, so the serpent roams behind the content. It sits above
+   the page background but below the vignette/scanlines and all text (z-index
+   0 < vignette 1 < scan 2 < sheet 3), and never intercepts pointer events —
+   text stays selectable and the dragon merely ghosts behind it. */
+.rz-hero-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  width: 100%;
+  height: clamp(820px, 128vh, 1480px);
+  z-index: 0;
+  pointer-events: none;
+}
+/* Reserves the masthead's title area in normal flow; the dragon canvas draws
+   the name into this exact box. */
+.rz-hero-spacer {
+  height: clamp(172px, 21vw, 232px);
+  margin: 0 0 2px;
+  pointer-events: none;
+}
+.rz-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.rz-summary {
+  font-size: clamp(13px, 1.5vw, 15.5px);
+  line-height: 1.7;
+  color: #c2c6cc;
+  max-width: 62ch;
+  margin: 0 0 22px;
+}
+.rz-contact {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 26px;
+  margin: 0;
+  padding: 0;
+}
+.rz-contact li {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  font-size: 13px;
+}
+.rz-contact .rz-k {
+  font-size: 9.5px;
+  letter-spacing: 0.2em;
+  color: var(--rz-deep);
+}
+.rz-contact a {
+  color: var(--rz-phos);
+  border-bottom: 1px solid transparent;
+  transition: color 0.16s, border-color 0.16s;
+}
+.rz-contact a:hover {
+  color: var(--rz-acc);
+  border-color: var(--rz-acc);
+}
+
+/* ── sections ── */
+/* ── cover letter ── */
+/* Fill the full sheet column (not a narrow 66ch measure): a tight column made
+   Korean prose wrap early and left the right side empty. `text-wrap: pretty`
+   on the paragraphs still keeps line lengths balanced. */
+.rz-cover {
+  max-width: 100%;
+}
+.rz-cl-to {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.12em;
+  color: var(--rz-acc);
+  margin: 0 0 18px;
+}
+/* Paragraphs flow freely: no hard breaks in the source, Korean wraps at word
+   (eojeol) boundaries, and `text-wrap: pretty` avoids orphan/awkward breaks. */
+.rz-cl-body p {
+  font-size: clamp(13px, 1.45vw, 15px);
+  line-height: 1.85;
+  color: #c4c8ce;
+  margin: 0 0 16px;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+.rz-cl-body p:last-child { margin-bottom: 0; }
+/* Emphasis. The underline is a text-decoration (not a border) so it follows the
+   glyphs and skips ink cleanly; `box-decoration-break: clone` keeps it intact
+   when a bold phrase wraps across lines, instead of leaving a dangling rule. */
+.rz-cl-em {
+  color: #eef1f4;
+  font-weight: 600;
+  word-break: keep-all;
+  text-decoration: underline;
+  text-decoration-color: rgba(95, 181, 194, 0.45);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  text-decoration-skip-ink: auto;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.rz-cl-signoff {
+  margin: 26px 0 0;
+  font-size: 13.5px;
+  color: var(--rz-dim);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 10px;
+}
+.rz-cl-sign {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  color: #d8dce1;
+}
+
+.rz-section { margin-top: 44px; }
+.rz-h2 {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.34em;
+  color: var(--rz-dim);
+  margin: 0 0 22px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--rz-line);
+}
+.rz-h2-mark { color: var(--rz-acc); }
+/* pretext-measured heading: SSR/no-JS shows the real text; once the client
+   canvas is live, the text is moved off-screen (still read by AT) and the
+   canvas paints the same label with a scroll-in assembly + hover ripple. */
+.rz-h2-canvas {
+  display: none;
+  width: 100%;
+  height: 24px;
+}
+.rz-h2--canvas .rz-h2-mark,
+.rz-h2--canvas .rz-h2-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.rz-h2--canvas .rz-h2-canvas { display: block; }
+
+/* ── experience timeline ── */
+.rz-timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 30px; }
+.rz-entry { position: relative; padding-left: 20px; }
+.rz-entry::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--rz-acc);
+  box-shadow: 0 0 9px rgba(95, 181, 194, 0.6);
+}
+.rz-entry::after {
+  content: "";
+  position: absolute;
+  left: 3px;
+  top: 18px;
+  bottom: -30px;
+  width: 1px;
+  background: var(--rz-line);
+}
+.rz-entry:last-child::after { display: none; }
+.rz-entry-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+.rz-entry-title { font-family: var(--font-sans); font-size: clamp(16px, 2vw, 19px); font-weight: 700; color: #eef1f4; margin: 0; }
+.rz-entry-role { font-size: 13px; color: var(--rz-acc); margin: 3px 0 0; }
+.rz-period {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--rz-dim);
+  white-space: nowrap;
+}
+.rz-entry-sum { font-size: 13.5px; line-height: 1.65; color: #b9bdc4; margin: 11px 0 9px; }
+.rz-bullets { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.rz-bullets li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #c2c6cc;
+}
+.rz-bullets li::before { content: "▸"; position: absolute; left: 0; color: var(--rz-deep); font-size: 10px; top: 2px; }
+.rz-bullets-sm li { font-size: 12.5px; color: #b2b6bd; }
+
+/* ── projects ── */
+.rz-projects { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.rz-card {
+  border: 1px solid var(--rz-line);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.012);
+  padding: 18px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+.rz-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.rz-card-title { font-family: var(--font-sans); font-size: 15px; font-weight: 700; color: #eaedf0; margin: 0; line-height: 1.35; }
+.rz-card-org { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; color: var(--rz-dim); white-space: nowrap; }
+.rz-card-role { font-size: 12px; color: var(--rz-acc); margin: 0; }
+.rz-card-desc { font-size: 12.5px; line-height: 1.6; color: #aeb2b9; margin: 0; }
+.rz-chips { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 0; padding: 0; }
+.rz-chips li {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  color: #c8ccd2;
+  border: 1px solid var(--rz-line);
+  border-radius: 5px;
+  padding: 3px 8px;
+  background: rgba(95, 181, 194, 0.05);
+}
+.rz-chips-quiet li { background: transparent; color: var(--rz-dim); }
+
+/* ── skills ── */
+.rz-skills { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px; }
+.rz-skill-name { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--rz-acc); margin: 0 0 11px; text-transform: uppercase; }
+
+/* ── education + certs ── */
+.rz-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 44px; }
+.rz-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
+.rz-list-row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
+.rz-list-title { font-family: var(--font-sans); font-size: 14px; font-weight: 600; color: #e6e9ec; margin: 0; }
+.rz-list-sub { font-size: 12px; color: var(--rz-dim); margin: 3px 0 0; }
+
+/* ── footer ── */
+.rz-foot {
+  margin-top: 56px;
+  padding-top: 18px;
+  border-top: 1px solid var(--rz-line);
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--rz-deep);
+}
+
+@media (max-width: 720px) {
+  .rz-projects, .rz-skills, .rz-two-col { grid-template-columns: 1fr; }
+}
+
+/* ── print: clean light document ── */
+@media print {
+  .rz-scan, .rz-vignette { display: none !important; }
+  .rz-root {
+    background: #fff !important;
+    color: #16181c !important;
+    padding: 0 !important;
+  }
+  /* drop the dragon playfield in print; reveal the real text name instead */
+  .rz-hero-canvas { display: none !important; }
+  .rz-hero-spacer { display: none !important; }
+  .rz-sr-only {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 0 14px !important;
+    clip: auto !important;
+    overflow: visible !important;
+    font-family: var(--font-sans);
+    font-size: 26px;
+    font-weight: 800;
+    color: #000 !important;
+  }
+  /* headings: show the accessible text, hide the canvas effect */
+  .rz-h2--canvas .rz-h2-mark,
+  .rz-h2--canvas .rz-h2-text {
+    position: static !important;
+    width: auto !important;
+    height: auto !important;
+    margin: 0 !important;
+    clip: auto !important;
+    overflow: visible !important;
+  }
+  .rz-h2-canvas { display: none !important; }
+  .rz-sheet { max-width: 100%; }
+  .rz-summary, .rz-entry-sum, .rz-bullets li, .rz-card-desc, .rz-list-title, .rz-cl-body p { color: #2a2d33 !important; }
+  .rz-entry-title, .rz-card-title, .rz-cl-em { color: #000 !important; }
+  .rz-cl-em { text-decoration-color: #9bbfc6 !important; }
+  /* Per-glyph echo spans may be momentarily hidden on screen while the dragon
+     scatters them; print must always show every glyph. */
+  .rz-echo-ch { opacity: 1 !important; }
+  .rz-card { break-inside: avoid; border-color: #d6d8dc !important; background: #fafafa !important; }
+  .rz-entry { break-inside: avoid; }
+  .rz-chips li { color: #333 !important; background: #f2f5f6 !important; border-color: #dadde0 !important; }
+  .rz-h2, .rz-eyebrow, .rz-period { color: #6a6e74 !important; }
+}
+

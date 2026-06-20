@@ -69,9 +69,14 @@
 
   .cap{position:absolute;z-index:14;font-size:calc(var(--s)*0.92);letter-spacing:.18em;
     color:var(--phos-dim);text-shadow:none;}
-  .cap.tl{top:calc(var(--s)*3.6);left:calc(var(--s)*4);}
   .cap.tr{top:calc(var(--s)*3.6);right:calc(var(--s)*4);text-align:right;}
   .cap b{color:var(--phos);font-weight:700}
+
+  /* canonical scene eyebrow (matches 28) */
+  .eyebrow{position:absolute;z-index:14;left:5.4%;top:12.2%;
+    font-family:var(--mono);font-size:clamp(10px,.82vw,15px);
+    letter-spacing:.42em;color:var(--phos-dim);text-shadow:none;}
+  .eyebrow b{color:var(--accent);text-shadow:0 0 8px rgba(205,163,95,.4);font-weight:700;}
   #phase{color:var(--accent);text-shadow:none}
 
   /* central axis the translation head rides on */
@@ -154,7 +159,7 @@
       <span class="tick bl"></span><span class="tick br"></span>
     </div>
 
-    <div class="cap tl"><span class="kr">SCENE 03 · <b>문제 제기</b></span></div>
+    <div class="eyebrow kr"><b>SCENE 04</b> · 소통 — LOST IN TRANSLATION</div>
     <div class="cap tr">STATUS · <span id="phase" class="kr">QUESTION</span></div>
 
     <div id="axis"></div>
@@ -218,7 +223,7 @@ const DRIFT = [-1.0, 1.7, -2.4, 2.9, -3.6];
 /* ---------- build DOM ---------- */
 const srcEl=$('#source'), glsEl=$('#gloss'), ansEl=$('#answer'),
       lyrWrap=$('#layers'), headEl=$('#head'), axisEl=$('#axis'),
-      fillEl=$('#fill'), phaseEl=$('#phase'), stageEl=$('#stage');
+      fillEl=$('#fill'), phaseEl=$('#phase'), flickEl=$('#flick');
 
 const srcW=[], glsW=[], ansW=[], lyrEls=[];
 
@@ -388,7 +393,7 @@ function render(t, time){
   fillEl.style.opacity = (0.4+0.6*align).toFixed(2);
 
   /* ---- film flicker ---- */
-  $('#flick').style.opacity = (0.5+0.5*Math.sin(time/55)).toFixed(2);
+  flickEl.style.opacity = (0.5+0.5*Math.sin(time/55)).toFixed(2);
 }
 
 /* start after fonts (safe fallback for headless) */

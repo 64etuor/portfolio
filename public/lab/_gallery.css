@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap');
 * { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
   --bg: #0c0d10;
@@ -16,13 +17,30 @@ body {
   padding: 28px clamp(16px, 4vw, 48px) 64px;
 }
 a { color: inherit; text-decoration: none; }
-.top { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
-.top .back {
-  font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted);
-  border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px;
-  transition: border-color .15s, color .15s;
+/* Unified site header bar — centered HOME + optional right-end action. */
+.top {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  min-height: 44px;
+  margin: -28px calc(-1 * clamp(16px, 4vw, 48px)) 24px;
+  padding: 8px clamp(16px, 4vw, 40px);
+  background: color-mix(in oklab, var(--bg) 82%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
 }
-.top .back:hover { border-color: var(--accent); color: var(--accent); }
+.top .brand {
+  font-family: 'Playfair Display', Georgia, serif; font-size: clamp(15px,1.5vw,19px);
+  font-weight: 600; letter-spacing: 0.01em; color: var(--ink); transition: opacity .16s;
+}
+.top .brand:hover { opacity: 0.72; }
+.top .home { position: absolute; left: 50%; transform: translateX(-50%); }
+.top .back {
+  font-family: ui-monospace, monospace; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 7px; padding: 7px 13px;
+  transition: border-color .16s, color .16s, background .16s, box-shadow .16s;
+}
+.top .back:hover { border-color: rgba(224,122,95,.5); color: var(--ink); background: rgba(255,255,255,.06); box-shadow: 0 0 14px rgba(224,122,95,.2); }
 h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
 .sub { margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.6; max-width: 920px; }
 

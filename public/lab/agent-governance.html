@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Boule Control Room — AI 에이전트 거버넌스</title>
+<style>
+  :root{
+    --bg:#06080c;
+    --bg2:#0a0e15;
+    --panel:#0c1119;
+    --panel2:#10161f;
+    --line:#1a2330;
+    --line2:#232f40;
+    --ink:#e8eef6;
+    --ink2:#9fb0c4;
+    --ink3:#5f7287;
+    --signal:#36e0a4;       /* the ONE restrained signal color */
+    --signal-dim:#1c7a5c;
+    --amber:#e6a64b;        /* attention / awaiting */
+    --rust:#d96b5a;         /* failure / blocked */
+    --hue-a:#5aa9e6;        /* soft data hue */
+    --hue-b:#b07fd6;        /* soft data hue (community) */
+    --hue-c:#e6cf6a;        /* soft data hue (community) */
+    --grid: rgba(255,255,255,.025);
+    --mono:'JetBrains Mono','SF Mono',ui-monospace,'Cascadia Code',Menlo,Consolas,monospace;
+    --sans:'Inter',-apple-system,BlinkMacSystemFont,'Pretendard','Apple SD Gothic Neo',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:var(--sans);word-break:keep-all;-webkit-font-smoothing:antialiased;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 78% -10%, rgba(54,224,164,.06), transparent 60%),
+      radial-gradient(900px 500px at 10% 110%, rgba(90,169,230,.05), transparent 60%),
+      linear-gradient(var(--bg2),var(--bg));
+    background-attachment:fixed;
+    min-height:100vh;
+  }
+  /* faint engineering grid */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:linear-gradient(var(--grid) 1px,transparent 1px),
+                     linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+    background-size:40px 40px;
+    mask:radial-gradient(1400px 900px at 60% 30%,#000 30%,transparent 90%);
+  }
+  .wrap{position:relative;z-index:1;max-width:1880px;margin:0 auto;padding:12px 18px 18px;}
+
+  /* ===== TOP BAR ===== */
+  .topbar{display:flex;align-items:center;gap:18px;padding:9px 16px;
+    border:1px solid var(--line);border-radius:14px;background:linear-gradient(180deg,var(--panel2),var(--panel));
+    box-shadow:0 1px 0 rgba(255,255,255,.02) inset, 0 18px 40px -28px #000;}
+  .brand{display:flex;align-items:center;gap:13px;}
+  .logo{width:34px;height:34px;border-radius:9px;position:relative;flex:0 0 auto;
+    background:radial-gradient(circle at 30% 28%, #14342a, #07120e);
+    border:1px solid #1f5a45;box-shadow:0 0 0 1px #0a221b, 0 0 22px -4px var(--signal-dim);}
+  .logo::after{content:"";position:absolute;inset:0;border-radius:9px;
+    background:
+      radial-gradient(7px 7px at 50% 50%, var(--signal), transparent 60%);
+    animation:beat 1.5s ease-in-out infinite;}
+  @keyframes beat{0%,100%{opacity:.35;transform:scale(.85)}45%{opacity:1;transform:scale(1.15)}}
+  .brand h1{font-size:15px;margin:0;letter-spacing:.2px;font-weight:650;}
+  .brand .sub{font:500 11px/1.2 var(--mono);color:var(--ink3);letter-spacing:.5px;margin-top:2px;}
+  .topbar .spacer{flex:1}
+  .stat-strip{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .chip{font:600 11px/1 var(--mono);color:var(--ink2);background:var(--panel);
+    border:1px solid var(--line2);border-radius:999px;padding:7px 11px;display:flex;align-items:center;gap:7px;}
+  .chip b{color:var(--signal);font-weight:700}
+  .chip .dot{width:7px;height:7px;border-radius:50%;background:var(--signal);
+    box-shadow:0 0 8px var(--signal)}
+  .chip.warn b{color:var(--amber)} .chip.warn .dot{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+  .clock{font:600 12px/1 var(--mono);color:var(--ink2);border:1px solid var(--line2);
+    border-radius:8px;padding:8px 12px;background:var(--panel);min-width:96px;text-align:center}
+
+  /* ===== GRID LAYOUT ===== */
+  .grid{display:grid;gap:10px;margin-top:10px;
+    grid-template-columns: 1.1fr 2.3fr 1.1fr;
+    grid-template-rows:auto auto auto;
+    grid-template-areas:
+      "fleet  pipe   know"
+      "human  log    guards"
+      "vault  vault  vault";
+  }
+  @media (max-width:1320px){
+    .grid{grid-template-columns:1fr 1fr;grid-template-areas:
+      "pipe pipe" "fleet know" "human log" "guards guards" "vault vault";}
+  }
+  .panel{position:relative;border:1px solid var(--line);border-radius:13px;
+    background:linear-gradient(180deg,var(--panel2),var(--panel));
+    box-shadow:0 18px 40px -34px #000, 0 1px 0 rgba(255,255,255,.02) inset;
+    padding:11px 12px 12px;overflow:hidden}
+  .panel > .ph{display:flex;align-items:center;gap:9px;margin-bottom:10px}
+  .ph .tag{font:700 10px/1 var(--mono);letter-spacing:1.4px;color:var(--ink3);text-transform:uppercase}
+  .ph h2{font-size:13px;margin:0;font-weight:640;letter-spacing:.2px}
+  .ph .pin{margin-left:auto;font:600 10px/1 var(--mono);color:var(--signal);
+    border:1px solid var(--signal-dim);border-radius:6px;padding:5px 8px;background:rgba(54,224,164,.06)}
+  .corner{position:absolute;top:0;right:0;width:34px;height:34px;
+    background:linear-gradient(225deg,rgba(54,224,164,.10),transparent 70%);pointer-events:none}
+
+  /* ===== CENTER PIPELINE ===== */
+  #pipe{grid-area:pipe;display:flex;flex-direction:column}
+  .pipe-canvas-wrap{position:relative;flex:1;min-height:272px}
+  #pipeCanvas{width:100%;height:272px;display:block}
+  .pipe-controls{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .btn{font:600 11px/1 var(--mono);color:var(--ink);background:var(--panel);
+    border:1px solid var(--line2);border-radius:8px;padding:9px 13px;cursor:pointer;
+    display:flex;align-items:center;gap:8px;transition:.15s;user-select:none}
+  .btn:hover{border-color:var(--signal-dim);background:rgba(54,224,164,.05)}
+  .btn .led{width:8px;height:8px;border-radius:50%;background:var(--signal);box-shadow:0 0 8px var(--signal)}
+  .btn.killed .led{background:var(--rust);box-shadow:0 0 8px var(--rust)}
+  .lamp-row{display:flex;gap:10px;align-items:stretch;margin-top:10px}
+  .lamp{flex:1;border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:var(--panel);
+    display:flex;flex-direction:column;gap:5px}
+  .lamp .lab{font:700 9px/1.2 var(--mono);letter-spacing:.8px;color:var(--ink3);text-transform:uppercase}
+  .lamp .val{font:650 12px/1.1 var(--mono);display:flex;align-items:center;gap:7px}
+  .lamp .led{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+  .led.ok{background:var(--signal);box-shadow:0 0 9px var(--signal)}
+  .led.amber{background:var(--amber);box-shadow:0 0 9px var(--amber)}
+  .led.rust{background:var(--rust);box-shadow:0 0 9px var(--rust)}
+  .led.dim{background:#33414f}
+  .ticker-mini{font:600 10px/1 var(--mono);color:var(--ink3)}
+
+  /* heartbeat bar */
+  .hb-wrap{display:flex;align-items:center;gap:9px;margin-top:10px}
+  .hb-canvas{flex:1;height:34px;border:1px solid var(--line);border-radius:8px;background:#070b11;display:block}
+  .hb-bpm{font:700 12px/1 var(--mono);color:var(--signal);min-width:74px;text-align:right}
+
+  /* ===== FLEET ===== */
+  #fleet{grid-area:fleet}
+  .agent{display:flex;align-items:center;gap:10px;padding:9px 10px;border:1px solid var(--line);
+    border-radius:10px;background:var(--panel);margin-bottom:6px;position:relative;overflow:hidden}
+  .agent .glyph{width:30px;height:30px;border-radius:8px;flex:0 0 auto;display:grid;place-items:center;
+    font:700 12px/1 var(--mono);color:#06120d;background:var(--ink3)}
+  .agent .meta{flex:1;min-width:0}
+  .agent .name{font:650 12px/1.1 var(--sans);display:flex;align-items:center;gap:6px}
+  .agent .scope{font:500 10px/1.3 var(--mono);color:var(--ink3);margin-top:2px}
+  .pill{font:700 9px/1 var(--mono);letter-spacing:.5px;padding:5px 7px;border-radius:6px;
+    text-transform:uppercase;white-space:nowrap;border:1px solid transparent}
+  .pill.idle{color:var(--ink3);background:#0e141d;border-color:var(--line2)}
+  .pill.run{color:var(--signal);background:rgba(54,224,164,.08);border-color:var(--signal-dim)}
+  .pill.run::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;
+    background:var(--signal);margin-right:5px;box-shadow:0 0 6px var(--signal);
+    animation:beat 1s infinite;vertical-align:middle}
+  .pill.await{color:var(--amber);background:rgba(230,166,75,.08);border-color:#6b4f22;animation:blink 1.1s steps(2) infinite}
+  .pill.done{color:var(--hue-a);background:rgba(90,169,230,.08);border-color:#2a4a66}
+  @keyframes blink{50%{opacity:.35}}
+  .agent .runline{position:absolute;left:0;bottom:0;height:2px;background:var(--signal);width:0;opacity:.7}
+  .registry{margin-top:10px;border-top:1px dashed var(--line2);padding-top:10px}
+  .reg-head{font:700 9px/1 var(--mono);letter-spacing:1px;color:var(--ink3);text-transform:uppercase;margin-bottom:8px}
+  .reg-row{display:flex;align-items:center;gap:8px;font:600 11px/1.4 var(--mono);color:var(--ink2);margin-bottom:5px}
+  .reg-row .led{width:7px;height:7px;border-radius:50%}
+  .reg-row .h{margin-left:auto;color:var(--ink3);font-size:10px}
+
+  /* Codex job card */
+  .job{margin-top:10px;border:1px solid var(--line2);border-radius:10px;background:#070b11;padding:10px 11px}
+  .job .jh{display:flex;align-items:center;gap:8px;font:700 11px/1 var(--mono)}
+  .job .jh .badge{margin-left:auto;font:600 9px/1 var(--mono);color:var(--amber);
+    border:1px solid #6b4f22;border-radius:5px;padding:4px 6px;background:rgba(230,166,75,.07)}
+  .job .row{display:flex;justify-content:space-between;font:600 10px/1.8 var(--mono);color:var(--ink3)}
+  .job .row b{color:var(--ink2)}
+  .job .prog{height:5px;border-radius:3px;background:#10161f;margin:7px 0 9px;overflow:hidden}
+  .job .prog i{display:block;height:100%;background:linear-gradient(90deg,var(--signal-dim),var(--signal));width:0}
+  .job .acts{display:flex;gap:7px}
+  .mini{font:700 10px/1 var(--mono);padding:7px 10px;border-radius:7px;cursor:pointer;border:1px solid var(--line2);
+    background:var(--panel);color:var(--ink2);flex:1;text-align:center;transition:.15s}
+  .mini.accept:hover{border-color:var(--signal-dim);color:var(--signal);background:rgba(54,224,164,.06)}
+  .mini.reject:hover{border-color:#6b3530;color:var(--rust);background:rgba(217,107,90,.06)}
+
+  /* ===== HUMAN IN THE LOOP / ACP ===== */
+  #human{grid-area:human}
+  .acp{border:1px solid #6b4f22;border-radius:12px;background:
+    linear-gradient(180deg,rgba(230,166,75,.05),rgba(230,166,75,.01));padding:13px 13px 12px;position:relative}
+  .acp.pending{animation:acpglow 1.4s ease-in-out infinite}
+  @keyframes acpglow{0%,100%{box-shadow:0 0 0 0 rgba(230,166,75,.0)}50%{box-shadow:0 0 0 3px rgba(230,166,75,.12)}}
+  .acp .ah{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .acp .ah .ic{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;
+    background:rgba(230,166,75,.12);border:1px solid #6b4f22;color:var(--amber);font:700 12px/1 var(--mono)}
+  .acp .ah .t{font:650 12px/1.1 var(--sans)}
+  .acp .ah .t small{display:block;font:500 10px/1.3 var(--mono);color:var(--ink3);margin-top:2px}
+  .acp .ah .state{margin-left:auto;font:700 9px/1 var(--mono);color:var(--amber);
+    border:1px solid #6b4f22;border-radius:5px;padding:5px 7px;animation:blink 1.1s steps(2) infinite}
+  .acp .q{font:500 12px/1.55 var(--sans);color:var(--ink);background:#070b11;border:1px solid var(--line);
+    border-radius:9px;padding:10px 11px;margin-bottom:10px}
+  .acp .q .k{font-family:var(--mono);color:var(--amber);font-size:11px}
+  .acp .acts{display:flex;gap:8px}
+  .acp .acts .mini{flex:1;padding:10px}
+  .acp.opened{border-color:var(--signal-dim);background:linear-gradient(180deg,rgba(54,224,164,.05),transparent);animation:none}
+  .acp.opened .state{color:var(--signal);border-color:var(--signal-dim);animation:none}
+  .acp.opened .ic{color:var(--signal);border-color:var(--signal-dim);background:rgba(54,224,164,.1)}
+  .envelope{margin-top:11px;border-top:1px dashed var(--line2);padding-top:11px}
+  .env-row{display:flex;align-items:center;gap:9px;font:600 11px/1.5 var(--mono);color:var(--ink2);margin-bottom:6px}
+  .env-row .led{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+  .env-row .tail{margin-left:auto;font-size:9px;color:var(--ink3)}
+
+  /* ===== KNOWLEDGE ===== */
+  #know{grid-area:know;display:flex;flex-direction:column}
+  .wiki-stack{display:flex;flex-direction:column;gap:6px;margin-bottom:12px}
+  .layer{border:1px solid var(--line2);border-radius:8px;padding:8px 10px;background:#070b11;
+    display:flex;align-items:center;gap:9px;position:relative;overflow:hidden}
+  .layer .ln{font:700 10px/1 var(--mono);color:var(--ink3);width:54px}
+  .layer .desc{font:500 11px/1.3 var(--sans);color:var(--ink2);flex:1}
+  .layer .ct{font:700 10px/1 var(--mono);color:var(--hue-a)}
+  .layer .flow{position:absolute;left:0;top:0;bottom:0;width:30px;
+    background:linear-gradient(90deg,transparent,rgba(90,169,230,.25),transparent);transform:translateX(-40px)}
+  .know-sub{font:700 9px/1 var(--mono);letter-spacing:1px;color:var(--ink3);text-transform:uppercase;margin:4px 0 7px}
+  #graphCanvas{width:100%;height:188px;display:block;border:1px solid var(--line);border-radius:9px;background:#070b11}
+  .graph-trace{font:600 10px/1.5 var(--mono);color:var(--ink3);margin-top:7px}
+  .graph-trace b{color:var(--signal)}
+
+  /* ===== EVENT LOG ===== */
+  #log{grid-area:log;display:flex;flex-direction:column}
+  .logbody{flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0}
+  .stream{display:flex;flex-direction:column;min-height:0}
+  .stream .sh{font:700 9px/1 var(--mono);letter-spacing:1px;color:var(--ink3);text-transform:uppercase;
+    margin-bottom:7px;display:flex;align-items:center;gap:6px}
+  .stream .sh .ct{margin-left:auto;color:var(--signal)}
+  .feed{flex:1;overflow:hidden;border:1px solid var(--line);border-radius:9px;background:#070b11;
+    padding:6px 4px 6px 8px;position:relative;height:226px}
+  .feed::after{content:"";position:absolute;left:0;right:0;bottom:0;height:42px;
+    background:linear-gradient(transparent,#070b11);pointer-events:none}
+  .ev{font:600 10.5px/1.5 var(--mono);color:var(--ink2);display:flex;gap:8px;padding:1px 0;white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
+  .ev .id{color:var(--ink3);flex:0 0 auto}
+  .ev .ty{flex:0 0 auto;font-weight:700}
+  .ev .ty.emit{color:var(--signal)} .ev .ty.gate{color:var(--amber)}
+  .ev .ty.tool{color:var(--hue-a)} .ev .ty.deny{color:var(--rust)} .ev .ty.ok{color:var(--hue-c)}
+  .ev .msg{color:var(--ink2);overflow:hidden;text-overflow:ellipsis}
+  .ev.new{animation:slidein .35s ease}
+  @keyframes slidein{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
+  /* ===== GUARDS ===== */
+  #guards{grid-area:guards}
+  .guard{border:1px solid var(--signal-dim);border-radius:10px;background:rgba(54,224,164,.035);
+    padding:9px 11px;margin-bottom:7px;position:relative}
+  .guard .gh{display:flex;align-items:center;gap:8px;font:650 12px/1.1 var(--sans)}
+  .guard .gh .led{width:8px;height:8px;border-radius:50%;background:var(--signal);box-shadow:0 0 8px var(--signal)}
+  .guard .gh .st{margin-left:auto;font:700 9px/1 var(--mono);color:var(--signal);
+    border:1px solid var(--signal-dim);border-radius:5px;padding:4px 6px}
+  .guard .gd{font:500 11px/1.45 var(--sans);color:var(--ink3);margin-top:6px}
+  .guard .meter{height:4px;border-radius:2px;background:#10161f;margin-top:8px;overflow:hidden}
+  .guard .meter i{display:block;height:100%;background:linear-gradient(90deg,var(--signal-dim),var(--signal))}
+
+  /* ===== VAULT GOVERNANCE / 자가통치 ===== */
+  #vault{grid-area:vault}
+  .vault-grid{display:grid;gap:10px;grid-template-columns:repeat(4,1fr);}
+  @media (max-width:1320px){.vault-grid{grid-template-columns:1fr 1fr}}
+  @media (max-width:680px){.vault-grid{grid-template-columns:1fr}}
+  .vcard{border:1px solid var(--line);border-radius:11px;background:#070b11;padding:11px 12px;
+    display:flex;flex-direction:column;gap:9px;position:relative;overflow:hidden}
+  .vcard .vch{display:flex;align-items:center;gap:8px}
+  .vcard .vch .vt{font:700 9px/1 var(--mono);letter-spacing:1px;color:var(--ink3);text-transform:uppercase}
+  .vcard .vch .vp{margin-left:auto;font:700 9px/1 var(--mono);color:var(--signal);
+    border:1px solid var(--signal-dim);border-radius:5px;padding:4px 6px;background:rgba(54,224,164,.06)}
+  .vcard .vch .vp.amber{color:var(--amber);border-color:#6b4f22;background:rgba(230,166,75,.06)}
+  /* constitution */
+  .const-row{display:flex;align-items:center;gap:9px;font:600 11px/1.4 var(--mono);color:var(--ink2)}
+  .const-row .led{width:8px;height:8px;border-radius:50%;flex:0 0 auto;background:var(--signal);box-shadow:0 0 8px var(--signal)}
+  .const-row .h{margin-left:auto;color:var(--ink3);font-size:9px}
+  .const-note{font:500 10px/1.5 var(--sans);color:var(--ink3);border-top:1px dashed var(--line2);padding-top:8px}
+  .const-note b{color:var(--hue-c)}
+  /* lint gauge */
+  .gauge-wrap{display:flex;align-items:center;gap:11px}
+  .gauge{position:relative;width:62px;height:62px;flex:0 0 auto}
+  .gauge canvas{width:62px;height:62px;display:block}
+  .gauge .gnum{position:absolute;inset:0;display:grid;place-items:center;
+    font:700 14px/1 var(--mono);color:var(--signal)}
+  .gauge-meta{flex:1;min-width:0}
+  .gauge-meta .gl{font:600 10px/1.6 var(--mono);color:var(--ink3);display:flex;justify-content:space-between}
+  .gauge-meta .gl b{color:var(--ink2)}
+  .gauge-meta .gl b.ok{color:var(--signal)}
+  /* net-zero ledger */
+  .nz-row{display:flex;align-items:center;gap:8px;font:600 10.5px/1.5 var(--mono)}
+  .nz-row .tag{font:700 9px/1 var(--mono);width:18px;height:18px;border-radius:4px;display:grid;place-items:center;flex:0 0 auto}
+  .nz-row .tag.a{color:var(--signal);border:1px solid var(--signal-dim);background:rgba(54,224,164,.06)}
+  .nz-row .tag.r{color:var(--rust);border:1px solid #6b3530;background:rgba(217,107,90,.06)}
+  .nz-row .txt{color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .nz-bal{margin-top:2px;font:700 9px/1 var(--mono);color:var(--signal);border:1px solid var(--signal-dim);
+    border-radius:5px;padding:5px 7px;text-align:center;background:rgba(54,224,164,.05)}
+  /* telemetry 5-signal */
+  .sig-row{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .sig{border:1px solid var(--line2);border-radius:8px;background:var(--panel);padding:7px 5px;text-align:center;
+    display:flex;flex-direction:column;gap:4px;align-items:center}
+  .sig .sled{width:7px;height:7px;border-radius:50%;background:var(--hue-a);box-shadow:0 0 7px var(--hue-a)}
+  .sig .sn{font:700 8px/1.2 var(--mono);color:var(--ink2);letter-spacing:.2px}
+  .sig .sv{font:700 11px/1 var(--mono);color:var(--hue-a)}
+  .sig.flash .sled{background:var(--signal);box-shadow:0 0 9px var(--signal)}
+  .sig-note{font:500 10px/1.5 var(--sans);color:var(--ink3);border-top:1px dashed var(--line2);padding-top:8px}
+  .sig-note b{color:var(--signal)}
+  /* instruction-audit feed */
+  .audit-feed{display:flex;flex-direction:column;gap:5px;max-height:120px;overflow:hidden}
+  .audit-row{font:600 10px/1.4 var(--mono);color:var(--ink2);display:flex;gap:7px;align-items:baseline}
+  .audit-row .src{flex:0 0 auto;font-weight:700}
+  .audit-row .src.llm{color:var(--hue-b)} .audit-row .src.auto{color:var(--hue-a)}
+  .audit-row .am{color:var(--ink3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .audit-row.new{animation:slidein .35s ease}
+  /* maintenance cron freshness */
+  .cron-row{display:flex;align-items:center;gap:8px;font:600 10px/1.5 var(--mono);color:var(--ink2)}
+  .cron-row .cn{flex:0 0 110px}
+  .cron-row .bar{flex:1;height:5px;border-radius:3px;background:#10161f;overflow:hidden}
+  .cron-row .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--signal-dim),var(--signal))}
+  .cron-row .bar i.due{background:linear-gradient(90deg,#6b4f22,var(--amber))}
+  .cron-row .age{flex:0 0 auto;color:var(--ink3);font-size:9px;width:42px;text-align:right}
+  .cron-foot{font:500 10px/1.5 var(--sans);color:var(--ink3);border-top:1px dashed var(--line2);padding-top:8px}
+  .cron-foot b{color:var(--signal)}
+
+  /* ===== FOOTER / CONTACT ===== */
+  .footer{margin-top:10px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+    border:1px solid var(--line);border-radius:13px;padding:11px 16px;
+    background:linear-gradient(180deg,var(--panel2),var(--panel))}
+  .footer .who{font:650 13px/1.3 var(--sans)}
+  .footer .who small{display:block;font:500 11px/1.4 var(--mono);color:var(--ink3);margin-top:3px}
+  .footer .impact{display:flex;gap:10px;flex-wrap:wrap;margin-left:auto}
+  .imp{border:1px solid var(--line2);border-radius:9px;padding:8px 11px;background:var(--panel);text-align:center}
+  .imp b{display:block;font:700 16px/1 var(--mono);color:var(--signal)}
+  .imp span{font:500 9px/1.3 var(--mono);color:var(--ink3);letter-spacing:.4px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ===================== TOP BAR ===================== -->
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo"></div>
+      <div>
+        <h1>Boule Control Room</h1>
+        <div class="sub">BOUNDARIES BEFORE EXECUTION · BOUNDED TICKER · EVENT-SOURCED · v2.3</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <div class="stat-strip">
+      <div class="chip"><span class="dot"></span>SESSION <b id="sStat">LIVE</b></div>
+      <div class="chip">SSOT <b>AGENTS.md</b></div>
+      <div class="chip">LINT <b id="lintChip">48/48</b></div>
+      <div class="chip">JOBS <b id="jobOk">0</b>✓ / <b id="jobFail" style="color:var(--rust)">0</b>✗</div>
+      <div class="chip warn"><span class="dot"></span>LATCH <b id="latchCt">0</b></div>
+      <div class="chip">CAPTURE <b id="capCt">0</b>/d</div>
+    </div>
+    <div class="clock" id="clock">--:--:--</div>
+  </div>
+
+  <!-- ===================== GRID ===================== -->
+  <div class="grid">
+
+    <!-- ===== FLEET ===== -->
+    <section class="panel" id="fleet">
+      <div class="corner"></div>
+      <div class="ph"><span class="tag">FLEET</span><h2>Agent Fleet · Orchestration</h2><span class="pin" id="fleetActive">5 types</span></div>
+      <div id="agentList"></div>
+
+      <div class="registry">
+        <div class="reg-head">ServiceRegistry · lifecycle</div>
+        <div id="regList"></div>
+      </div>
+
+      <div class="job">
+        <div class="jh">⌬ Codex Job <span id="jobId" style="color:var(--ink3)">job#0481</span><span class="badge" id="jobBadge">RUNNING</span></div>
+        <div class="prog"><i id="jobProg"></i></div>
+        <div class="row"><span>timeout</span><b>900s</b></div>
+        <div class="row"><span>maxTurns</span><b>24</b></div>
+        <div class="row"><span>costCap</span><b id="jobCost">$2.40 / $5.00</b></div>
+        <div class="row" style="margin-bottom:8px"><span>turns used</span><b id="jobTurns">7 / 24</b></div>
+        <div class="acts">
+          <div class="mini accept" id="jobAccept">ACCEPT proposal</div>
+          <div class="mini reject" id="jobReject">REJECT · kill</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== CENTER PIPELINE ===== -->
+    <section class="panel" id="pipe">
+      <div class="corner"></div>
+      <div class="ph"><span class="tag">CORE</span><h2>Boule Pipeline · 경계 설계 후 실행</h2>
+        <span class="pin" id="evHead">e0000</span></div>
+
+      <div class="pipe-canvas-wrap">
+        <canvas id="pipeCanvas"></canvas>
+      </div>
+
+      <div class="lamp-row">
+        <div class="lamp">
+          <div class="lab">readiness gate</div>
+          <div class="val"><span class="led ok" id="gateLed"></span><span id="gateTxt">RELEASE</span></div>
+        </div>
+        <div class="lamp">
+          <div class="lab">ticker · heartbeat</div>
+          <div class="val"><span class="led ok" id="tickLed"></span><span id="tickTxt">RUNNING</span></div>
+        </div>
+        <div class="lamp">
+          <div class="lab">autonomy · bounded envelope</div>
+          <div class="val"><span class="led ok" id="autLed"></span><span id="autTxt" style="color:var(--signal)">FAIL-CLOSED</span></div>
+        </div>
+        <div class="lamp">
+          <div class="lab">attention latch</div>
+          <div class="val"><span class="led dim" id="latchLed"></span><span id="latchTxt">armed</span></div>
+        </div>
+      </div>
+
+      <div class="hb-wrap">
+        <canvas class="hb-canvas" id="hbCanvas"></canvas>
+        <div class="hb-bpm" id="bpm">72 bpm</div>
+      </div>
+
+      <div class="pipe-controls">
+        <div class="btn" id="killTicker"><span class="led"></span>KILL TICKER</div>
+        <span class="ticker-mini" id="killNote">ticker 정지해도 권한 봉투는 닫힌 채 유지 — 경계는 하트비트와 무관</span>
+      </div>
+    </section>
+
+    <!-- ===== KNOWLEDGE ===== -->
+    <section class="panel" id="know">
+      <div class="corner"></div>
+      <div class="ph"><span class="tag">KNOWLEDGE</span><h2>LLM Wiki · Lineage Graph</h2><span class="pin">3-layer</span></div>
+
+      <div class="wiki-stack">
+        <div class="layer"><span class="ln">raw</span><span class="desc">원천 캡처 — 미가공 노트/대화</span><span class="ct" id="rawCt">1,284</span><span class="flow" data-d="0"></span></div>
+        <div class="layer"><span class="ln">wiki</span><span class="desc">정제 위키 — ingest · query · lint</span><span class="ct" id="wikiCt">412</span><span class="flow" data-d="1"></span></div>
+        <div class="layer"><span class="ln">schema</span><span class="desc">강제 스키마 — 구조화된 진실</span><span class="ct" id="schCt">96</span><span class="flow" data-d="2"></span></div>
+      </div>
+
+      <div class="know-sub">GraphRAG · Leiden community · multi-hop</div>
+      <canvas id="graphCanvas"></canvas>
+      <div class="graph-trace" id="gtrace">query → multi-hop trace 대기…</div>
+    </section>
+
+    <!-- ===== HUMAN IN THE LOOP ===== -->
+    <section class="panel" id="human">
+      <div class="corner"></div>
+      <div class="ph"><span class="tag">HUMAN-IN-THE-LOOP</span><h2>Hermes ACP · human approval gate</h2></div>
+
+      <div class="acp pending" id="acp">
+        <div class="ah">
+          <div class="ic">!</div>
+          <div class="t">권한 승인 요청<small>Hermes ACP · permission gate</small></div>
+          <div class="state" id="acpState">AWAITING</div>
+        </div>
+        <div class="q" id="acpQ">에이전트가 외부 쓰기를 요청합니다 — <span class="k">git push origin main</span><br/>
+          autonomy 봉투 밖의 작업. 사람 승인 없이는 실행되지 않습니다.</div>
+        <div class="acts">
+          <div class="mini accept" id="acpApprove">APPROVE · 게이트 개방</div>
+          <div class="mini reject" id="acpDeny">DENY · 유지</div>
+        </div>
+      </div>
+
+      <div class="envelope">
+        <div class="reg-head" style="margin-bottom:9px">permission envelope · 권한 봉투</div>
+        <div class="env-row"><span class="led ok"></span>read · 코드/이벤트 관측<span class="tail">자율 허용</span></div>
+        <div class="env-row"><span class="led ok"></span>plan · 제안 생성<span class="tail">자율 허용</span></div>
+        <div class="env-row"><span class="led amber" id="envWrite"></span>external write · push/배포<span class="tail" id="envWriteTail">사람 게이트</span></div>
+        <div class="env-row"><span class="led amber" id="envPrio"></span>priority 변경<span class="tail" id="envPrioTail">사람 게이트</span></div>
+      </div>
+    </section>
+
+    <!-- ===== EVENT LOG ===== -->
+    <section class="panel" id="log">
+      <div class="corner"></div>
+      <div class="ph"><span class="tag">OBSERVABILITY</span><h2>Append-only Event Store</h2>
+        <span class="pin">SQLite · 50+ migrations</span></div>
+      <div class="logbody">
+        <div class="stream">
+          <div class="sh">EVENT LOG <span class="ct" id="evTotal">e0000</span></div>
+          <div class="feed" id="evFeed"></div>
+        </div>
+        <div class="stream">
+          <div class="sh">TOOL / MCP STREAM <span class="ct" id="toolTotal">0</span></div>
+          <div class="feed" id="toolFeed"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== GUARDS ===== -->
+    <section class="panel" id="guards">
+      <div class="corner"></div>
+      <div class="ph"><span class="tag">GOVERNANCE</span><h2>Named Failure-modes · stop conditions</h2><span class="pin">contained</span></div>
+      <div class="guard">
+        <div class="gh"><span class="led"></span>Schema 비대화<span class="st">CONTAINED</span></div>
+        <div class="gd">SSOT가 모든 규칙 종착지로 비대해짐 — Hyrum's Law. net-zero 레저로 차단. <b style="color:var(--ink2)">최소주의 = 비대화 면역력.</b></div>
+        <div class="meter"><i style="width:22%"></i></div>
+      </div>
+      <div class="guard">
+        <div class="gh"><span class="led"></span>사문화 드리프트<span class="st">CONTAINED</span></div>
+        <div class="gd">정형화됐지만 아무도 안 읽음 = 공동묘지. read_log · dead_notes 텔레메트리로 사문화를 관측.</div>
+        <div class="meter"><i style="width:14%"></i></div>
+      </div>
+      <div class="guard">
+        <div class="gh"><span class="led"></span>행동적 부패<span class="st">CONTAINED</span></div>
+        <div class="gd">형식은 살았으나 의미가 죽음 — lint로 못 잡는 부패. Instruction Review Protocol + 텔레메트리 read-side 신호로 검출, 처분은 수동.</div>
+        <div class="meter"><i style="width:9%"></i></div>
+      </div>
+    </section>
+
+    <!-- ===== VAULT GOVERNANCE / 자가통치 ===== -->
+    <section class="panel" id="vault">
+      <div class="corner"></div>
+      <div class="ph"><span class="tag">SELF-GOVERNING VAULT OS</span><h2>Vault Governance · 자가통치</h2>
+        <span class="pin">running infra</span></div>
+
+      <div class="vault-grid">
+
+        <!-- constitution -->
+        <div class="vcard">
+          <div class="vch"><span class="vt">CONSTITUTION · SSOT</span><span class="vp">AUTHORITATIVE</span></div>
+          <div class="const-row"><span class="led"></span>AGENTS.md<span class="h">30KB · English-only</span></div>
+          <div class="const-row"><span class="led"></span>CLAUDE.md<span class="h">1-line · @AGENTS.md import</span></div>
+          <div class="const-note">모든 볼트-쓰기 규칙의 단일 진실원천. <b>충돌 시 이 파일이 이김</b> — 권한·중단조건·인간 게이트를 여기서 선언 후 실행.</div>
+        </div>
+
+        <!-- vault-lint gauge -->
+        <div class="vcard">
+          <div class="vch"><span class="vt">COMPILER · vault-lint.py</span><span class="vp" id="lintPin">GATE PASS</span></div>
+          <div class="gauge-wrap">
+            <div class="gauge"><canvas id="lintGauge"></canvas><div class="gnum" id="lintNum">48/48</div></div>
+            <div class="gauge-meta">
+              <div class="gl">frontmatter 7-field<b class="ok">ok</b></div>
+              <div class="gl">wikilink · tag taxonomy<b class="ok">ok</b></div>
+              <div class="gl">AUTOGEN drift <span style="color:var(--ink3)">#34</span><b class="ok">ok</b></div>
+              <div class="gl">매 편집 턴 후 통과해야 <b class="ok">done</b></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- net-zero ledger -->
+        <div class="vcard">
+          <div class="vch"><span class="vt">NET-ZERO LEDGER · CHANGELOG</span><span class="vp" id="nzPin">BALANCED</span></div>
+          <div id="nzList" style="display:flex;flex-direction:column;gap:5px"></div>
+          <div class="nz-bal" id="nzBal">slug: changelog-net-zero · [A]==[R] · 비대화 거버너</div>
+        </div>
+
+        <!-- maintenance cron freshness -->
+        <div class="vcard">
+          <div class="vch"><span class="vt">MAINTENANCE CRON</span><span class="vp" id="cronPin">FRESH</span></div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="cron-row"><span class="cn">read_log</span><span class="bar"><i style="width:88%"></i></span><span class="age">1d</span></div>
+            <div class="cron-row"><span class="cn">graph_health</span><span class="bar"><i style="width:62%"></i></span><span class="age">3d</span></div>
+            <div class="cron-row"><span class="cn">dead_notes</span><span class="bar"><i class="due" style="width:24%"></i></span><span class="age">due</span></div>
+            <div class="cron-row"><span class="cn">status_aging</span><span class="bar"><i style="width:71%"></i></span><span class="age">2d</span></div>
+          </div>
+          <div class="cron-foot">run_due_maintenance.py · CADENCE_DAYS+state · 의존성 순서 · 매주 월 <b>06:00 cron</b></div>
+        </div>
+
+        <!-- telemetry 5-signal -->
+        <div class="vcard" style="grid-column:span 2">
+          <div class="vch"><span class="vt">TELEMETRY · read-side 5-signal</span><span class="vp">MEASURED</span></div>
+          <div class="sig-row">
+            <div class="sig" data-sig="0"><span class="sled"></span><span class="sn">read_log</span><span class="sv" id="sig0">1.2k</span></div>
+            <div class="sig" data-sig="1"><span class="sled"></span><span class="sn">dead_notes</span><span class="sv" id="sig1">7</span></div>
+            <div class="sig" data-sig="2"><span class="sled"></span><span class="sn">status_aging</span><span class="sv" id="sig2">3</span></div>
+            <div class="sig" data-sig="3"><span class="sled"></span><span class="sn">graph_health</span><span class="sv" id="sig3">94</span></div>
+            <div class="sig" data-sig="4"><span class="sled"></span><span class="sn">knowledge_gap</span><span class="sv" id="sig4">12</span></div>
+          </div>
+          <div class="sig-note">graph_health = god-notes · hub-overload · echo-chambers / knowledge_gap = 끊긴 wikilink 랭킹 → <b>다음에 쓸 것</b>. 측정은 자동, 판결은 아님.</div>
+        </div>
+
+        <!-- instruction-audit feed -->
+        <div class="vcard" style="grid-column:span 2">
+          <div class="vch"><span class="vt">INSTRUCTION REVIEW PROTOCOL · audit append-only</span><span class="vp amber" id="auditPin">HUMAN-REVIEW</span></div>
+          <div class="audit-feed" id="auditFeed"></div>
+          <div class="sig-note">stale 규칙은 <b>절대 조용히 수정 안 함</b> → 000_System/audits/instruction-review.md 에 append. [llm] 제안 vs [auto] 감지 — 처분은 사람이.</div>
+        </div>
+
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ===================== FOOTER ===================== -->
+  <div class="footer">
+    <div class="who">Boule Governance Doctrine
+      <small>경계 설계 → 인간 게이트 → fail-closed 복귀 · 이벤트 소싱 단일 진실원천</small></div>
+    <div class="impact">
+      <div class="imp"><b>FAIL-CLOSED</b><span>autonomy 기본값</span></div>
+      <div class="imp"><b>48/48</b><span>vault-lint 게이트</span></div>
+      <div class="imp"><b>1-SSOT</b><span>AGENTS.md 단일원천</span></div>
+      <div class="imp"><b>append-only</b><span>이벤트 · 감사 로그</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+"use strict";
+(function(){
+  const $=s=>document.querySelector(s);
+  const DPR=Math.min(window.devicePixelRatio||1,2);
+  const C={signal:'#36e0a4',signalDim:'#1c7a5c',amber:'#e6a64b',rust:'#d96b5a',
+    hueA:'#5aa9e6',hueB:'#b07fd6',hueC:'#e6cf6a',ink2:'#9fb0c4',ink3:'#5f7287',
+    line:'#1a2330',line2:'#232f40',bg:'#070b11'};
+
+  // ===== shared state =====
+  const state={
+    evId:0, toolId:0, jobOk:0, jobFail:0, latch:0, capture:0,
+    tickerOn:true, gateRelease:true, autonomyClosed:true, acp:'awaiting',
+    stage:0, bpm:72, killed:false
+  };
+  const STAGES=['spec','plan','task','session','handoff'];
+
+  // ============ canvas setup helper ============
+  function fit(canvas){
+    const r=canvas.getBoundingClientRect();
+    canvas.width=Math.max(2,r.width*DPR); canvas.height=Math.max(2,r.height*DPR);
+    const ctx=canvas.getContext('2d'); ctx.setTransform(DPR,0,0,DPR,0,0);
+    return {ctx,w:r.width,h:r.height};
+  }
+
+  // ===================================================================
+  //  PIPELINE CANVAS — spec→plan→task→session→handoff with streaming events
+  // ===================================================================
+  const pipeCv=$('#pipeCanvas');
+  let pipe=fit(pipeCv);
+  const nodes=[]; // computed in layout
+  const events=[]; // {x along path, stage, t}
+  function layoutPipe(){
+    pipe=fit(pipeCv);
+    nodes.length=0;
+    const n=STAGES.length, pad=58, usable=pipe.w-pad*2;
+    const y=pipe.h*0.40;
+    for(let i=0;i<n;i++){
+      nodes.push({x:pad+ (usable*(i/(n-1))), y, r:23, name:STAGES[i]});
+    }
+  }
+  layoutPipe();
+
+  function spawnEvent(){
+    // event enters at node 0, flows to readiness gate (between stage and stage+1)
+    events.push({seg:0, p:0, color:C.signal, born:performance.now()});
+  }
+
+  function drawPipe(now,dt){
+    const {ctx,w,h}=pipe;
+    ctx.clearRect(0,0,w,h);
+    // connecting rails
+    for(let i=0;i<nodes.length-1;i++){
+      const a=nodes[i],b=nodes[i+1];
+      ctx.strokeStyle=C.line2; ctx.lineWidth=2;
+      ctx.beginPath();ctx.moveTo(a.x+a.r,a.y);ctx.lineTo(b.x-b.r,b.y);ctx.stroke();
+      // gate marker on the rail between current stage and next
+      const mx=(a.x+b.x)/2;
+      if(i===state.stage){
+        // readiness gate visual
+        const open=state.gateRelease;
+        ctx.strokeStyle=open?C.signal:C.amber;
+        ctx.lineWidth=2.5;
+        ctx.beginPath();
+        if(open){ ctx.moveTo(mx,a.y-15);ctx.lineTo(mx,a.y-7);ctx.moveTo(mx,a.y+7);ctx.lineTo(mx,a.y+15);}
+        else { ctx.moveTo(mx,a.y-15);ctx.lineTo(mx,a.y+15);}
+        ctx.stroke();
+        ctx.fillStyle=open?C.signal:C.amber;
+        ctx.font='700 8px ui-monospace,monospace';ctx.textAlign='center';
+        ctx.fillText(open?'GATE↑':'GATE✕',mx,a.y-22);
+      }
+    }
+    // moving events along rails — dt-based speed (pixels/sec normalized)
+    const speedPerSec=state.tickerOn?0.55:0.0;
+    for(let k=events.length-1;k>=0;k--){
+      const e=events[k];
+      // dt in ms passed as `now`, but we have it from outer scope
+      // use outer `dt` (seconds) captured via closure — injected below
+      e.p+=speedPerSec*dt*(1+Math.sin(now/400)*0.04);
+      // segment is current stage segment; if gate closed and at gate, hold
+      const seg=Math.min(e.seg, nodes.length-2);
+      const a=nodes[seg],b=nodes[seg+1];
+      let p=e.p;
+      // hold at gate midpoint if this seg is the active gate and gate closed
+      if(seg===state.stage && !state.gateRelease && p>0.5){p=0.5;e.p=0.5;}
+      if(p>=1){ // move to next seg
+        if(e.seg<nodes.length-2){e.seg++;e.p=0;}
+        else { events.splice(k,1); continue; }
+      }
+      const x=a.x+(b.x-a.x)*p, y=a.y;
+      const grd=ctx.createRadialGradient(x,y,0,x,y,8);
+      grd.addColorStop(0,e.color);grd.addColorStop(1,'rgba(54,224,164,0)');
+      ctx.fillStyle=grd;ctx.beginPath();ctx.arc(x,y,8,0,7);ctx.fill();
+      ctx.fillStyle=e.color;ctx.beginPath();ctx.arc(x,y,2.4,0,7);ctx.fill();
+    }
+    // nodes
+    nodes.forEach((nd,i)=>{
+      const active=i<=state.stage;
+      const isCur=i===state.stage;
+      ctx.save();
+      // outer ring
+      ctx.beginPath();ctx.arc(nd.x,nd.y,nd.r,0,7);
+      ctx.fillStyle='#070b11';ctx.fill();
+      ctx.lineWidth=2;
+      ctx.strokeStyle= isCur? C.signal : (active? C.signalDim : C.line2);
+      if(isCur){ctx.shadowColor=C.signal;ctx.shadowBlur=14;}
+      ctx.stroke();ctx.shadowBlur=0;
+      // inner pulse for current
+      if(isCur){
+        const pr=4+Math.sin(now/220)*2;
+        ctx.fillStyle=C.signal;ctx.globalAlpha=.85;
+        ctx.beginPath();ctx.arc(nd.x,nd.y,pr,0,7);ctx.fill();ctx.globalAlpha=1;
+      } else if(active){
+        ctx.fillStyle=C.signalDim;ctx.beginPath();ctx.arc(nd.x,nd.y,3,0,7);ctx.fill();
+      }
+      // label
+      ctx.fillStyle= isCur? C.signal : (active?C.ink2:C.ink3);
+      ctx.font='700 11px ui-monospace,monospace';ctx.textAlign='center';
+      ctx.fillText(nd.name, nd.x, nd.y+nd.r+15);
+      ctx.font='600 8px ui-monospace,monospace';ctx.fillStyle=C.ink3;
+      ctx.fillText('§'+i, nd.x, nd.y+nd.r+26);
+      ctx.restore();
+    });
+    // header label
+    ctx.fillStyle=C.ink3;ctx.font='600 9px ui-monospace,monospace';ctx.textAlign='left';
+    ctx.fillText('event flow → readiness gate → next stage', 6, 16);
+  }
+
+  // ===================================================================
+  //  HEARTBEAT (ticker) CANVAS
+  // ===================================================================
+  const hbCv=$('#hbCanvas'); let hb=fit(hbCv);
+  const hbData=new Array(160).fill(0);
+  let hbPhase=0;
+  function drawHB(now){
+    const {ctx,w,h}=hb;
+    ctx.clearRect(0,0,w,h);
+    // baseline
+    ctx.strokeStyle=C.line2;ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,h/2);ctx.lineTo(w,h/2);ctx.stroke();
+    // shift data, add ECG-like spike based on bpm
+    if(state.tickerOn){
+      const beatPeriod=60000/live.bpm; // ms — lerped, no jump
+      hbPhase=(now % beatPeriod)/beatPeriod;
+      let v=0;
+      if(hbPhase<0.06) v=Math.sin(hbPhase/0.06*Math.PI)*0.9;
+      else if(hbPhase<0.10) v=-Math.sin((hbPhase-0.06)/0.04*Math.PI)*0.35;
+      hbData.push(v);
+    } else { hbData.push(0); }
+    hbData.shift();
+    ctx.strokeStyle=state.tickerOn?C.signal:C.rust;ctx.lineWidth=1.6;
+    ctx.shadowColor=state.tickerOn?C.signal:C.rust;ctx.shadowBlur=6;
+    ctx.beginPath();
+    for(let i=0;i<hbData.length;i++){
+      const x=(i/(hbData.length-1))*w;
+      const y=h/2 - hbData[i]*(h/2-4);
+      i?ctx.lineTo(x,y):ctx.moveTo(x,y);
+    }
+    ctx.stroke();ctx.shadowBlur=0;
+  }
+
+  // ===================================================================
+  //  GRAPHRAG CANVAS — entity graph, Leiden communities, multi-hop trace
+  // ===================================================================
+  const gCv=$('#graphCanvas'); let g=fit(gCv);
+  const COMM=[C.hueA,C.hueB,C.hueC];
+  const gNodes=[], gEdges=[];
+  const gLabels=['LLM Wiki','GraphRAG','Leiden','ticker','envelope','fail-closed',
+    'spec','handoff','Decision OS','MCP','Tauri','SQLite','ACP','Codex'];
+  function buildGraph(){
+    g=fit(gCv);
+    gNodes.length=0;gEdges.length=0;
+    const N=14;
+    // three community centers
+    const centers=[[g.w*0.26,g.h*0.34],[g.w*0.72,g.h*0.30],[g.w*0.50,g.h*0.74]];
+    for(let i=0;i<N;i++){
+      const c=i%3; const cx=centers[c][0],cy=centers[c][1];
+      const ang=Math.random()*7, rad=14+Math.random()*34;
+      gNodes.push({x:cx+Math.cos(ang)*rad,y:cy+Math.sin(ang)*rad,
+        vx:(Math.random()-.5)*.12,vy:(Math.random()-.5)*.12,
+        c, r:3.4+Math.random()*2.2, label:gLabels[i]||('n'+i),
+        cx,cy, lit:0});
+    }
+    // edges: intra-community dense, few inter-community bridges
+    for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){
+      const same=gNodes[i].c===gNodes[j].c;
+      if(same && Math.random()<0.5) gEdges.push([i,j,0]);
+      else if(!same && Math.random()<0.10) gEdges.push([i,j,1]); // bridge
+    }
+    buildTrace();
+  }
+  // a multi-hop path across communities
+  let trace=[], traceProg=0, traceTimer=0;
+  function buildTrace(){
+    // pick a path of 4 hops touching at least 2 communities
+    const start=gNodes.findIndex(n=>n.label==='LLM Wiki');
+    trace=[start<0?0:start];
+    for(let h=0;h<3;h++){
+      const last=trace[trace.length-1];
+      const cands=gEdges.filter(e=>(e[0]===last||e[1]===last))
+        .map(e=>e[0]===last?e[1]:e[0]).filter(n=>!trace.includes(n));
+      if(!cands.length)break;
+      trace.push(cands[Math.floor(Math.random()*cands.length)]);
+    }
+    traceProg=0;
+  }
+  function drawGraph(now,dt){
+    const {ctx,w,h}=g;
+    ctx.clearRect(0,0,w,h);
+    // gentle community drift (springs to center)
+    gNodes.forEach(n=>{
+      n.x+=n.vx;n.y+=n.vy;
+      n.vx+=(n.cx-n.x)*0.0009; n.vy+=(n.cy-n.y)*0.0009;
+      n.vx*=0.985;n.vy*=0.985;
+      n.lit*=0.94;
+    });
+    // edges
+    gEdges.forEach(e=>{
+      const a=gNodes[e[0]],b=gNodes[e[1]];
+      const bridge=e[2]===1;
+      ctx.strokeStyle= bridge? 'rgba(159,176,196,.22)':'rgba(90,120,150,.16)';
+      ctx.lineWidth=bridge?1:0.8;
+      if(bridge){ctx.setLineDash([3,3]);}else{ctx.setLineDash([]);}
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    });
+    ctx.setLineDash([]);
+    // multi-hop trace animation
+    traceTimer+=dt;
+    if(traceTimer>2600){traceTimer=0;buildTrace();fireTrace();}
+    const litHops=Math.min(trace.length, Math.floor(traceProg)+1);
+    traceProg+=dt/520;
+    for(let i=0;i<litHops-1;i++){
+      const a=gNodes[trace[i]],b=gNodes[trace[i+1]];
+      ctx.strokeStyle=C.signal;ctx.lineWidth=1.8;
+      ctx.shadowColor=C.signal;ctx.shadowBlur=8;
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+      ctx.shadowBlur=0;
+    }
+    trace.slice(0,litHops).forEach(idx=>{gNodes[idx].lit=1;});
+    // nodes
+    gNodes.forEach(n=>{
+      ctx.beginPath();ctx.arc(n.x,n.y,n.r+(n.lit*2),0,7);
+      ctx.fillStyle=COMM[n.c];
+      ctx.globalAlpha=0.55+n.lit*0.45;
+      if(n.lit>0.3){ctx.shadowColor=C.signal;ctx.shadowBlur=10*n.lit;}
+      ctx.fill();ctx.shadowBlur=0;ctx.globalAlpha=1;
+      if(n.lit>0.4){
+        ctx.fillStyle=C.signal;ctx.font='700 8px ui-monospace,monospace';ctx.textAlign='center';
+        ctx.fillText(n.label,n.x,n.y-n.r-4);
+      }
+    });
+  }
+  function fireTrace(){
+    const labels=trace.map(i=>gNodes[i].label);
+    $('#gtrace').innerHTML='multi-hop: '+labels.map(l=>'<b>'+l+'</b>').join(' → ')+
+      ' · cite: LLM Wiki schema-layer';
+  }
+
+  // ===================================================================
+  //  FLEET
+  // ===================================================================
+  const AGENTS=[
+    {g:'P',name:'planner',scope:'autonomy: low · read+plan',status:'run'},
+    {g:'E',name:'executor',scope:'autonomy: scoped · code write',status:'run'},
+    {g:'C',name:'codex-runner',scope:'autonomy: gated · job spawn',status:'await'},
+    {g:'R',name:'researcher',scope:'autonomy: low · insane-search',status:'run'},
+    {g:'V',name:'verifier',scope:'autonomy: read-only · review',status:'idle'},
+  ];
+  const STATUS_LABEL={idle:'IDLE',run:'RUNNING',await:'AWAITING-PERM',done:'DONE'};
+  function renderFleet(){
+    const el=$('#agentList');el.innerHTML='';
+    AGENTS.forEach((a,i)=>{
+      const row=document.createElement('div');row.className='agent';
+      const col= a.status==='run'?C.signal:a.status==='await'?C.amber:a.status==='done'?C.hueA:C.ink3;
+      row.innerHTML=`<div class="glyph" style="background:${col};">${a.g}</div>
+        <div class="meta"><div class="name">${a.name}</div><div class="scope">${a.scope}</div></div>
+        <div class="pill ${a.status}">${STATUS_LABEL[a.status]}</div>
+        <div class="runline" data-i="${i}"></div>`;
+      el.appendChild(row);
+    });
+  }
+  renderFleet();
+  const REG=[
+    {n:'EventStore',h:'healthy'},{n:'TickerService',h:'healthy'},
+    {n:'AutonomyGate',h:'healthy'},{n:'AttentionLatch',h:'armed'},
+    {n:'HermesACP',h:'awaiting'},{n:'GraphRAGIndex',h:'healthy'},
+  ];
+  function renderReg(){
+    const el=$('#regList');el.innerHTML='';
+    REG.forEach(r=>{
+      const ok=r.h==='healthy';const col=ok?C.signal:r.h==='awaiting'?C.amber:C.hueA;
+      const row=document.createElement('div');row.className='reg-row';
+      row.innerHTML=`<span class="led" style="background:${col};box-shadow:0 0 7px ${col}"></span>${r.n}<span class="h">${r.h}</span>`;
+      el.appendChild(row);
+    });
+  }
+  renderReg();
+
+  // ===================================================================
+  //  EVENT LOG + TOOL STREAM
+  // ===================================================================
+  const evFeed=$('#evFeed'), toolFeed=$('#toolFeed');
+
+  // timestamp helper — HH:MM:SS.mmm
+  function nowTs(){
+    const d=new Date();
+    const p=n=>String(n).padStart(2,'0');
+    const ms=String(d.getMilliseconds()).padStart(3,'0');
+    return p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds())+'.'+ms;
+  }
+
+  const EV_TYPES=[
+    ['emit','spec.captured · §0 readiness eval'],
+    ['emit','plan.proposed · executor draft'],
+    ['gate','readiness.gate · hold §%s pending'],
+    ['emit','task.materialized · 3 subtasks'],
+    ['ok','session.handoff · upcast v%s→v%s'],
+    ['tool','mcp.insane-search · adaptive fetch'],
+    ['emit','ticker.tick · heartbeat observe'],
+  ];
+  // build an event object (no DOM touch yet)
+  function buildEvent(type,msg,counterKey){
+    const id = counterKey==='ev' ? ('e'+String(++state.evId).padStart(4,'0'))
+                                 : ('t'+String(++state.toolId).padStart(4,'0'));
+    return {id,type,msg,counterKey,ts:nowTs()};
+  }
+  // flush one pre-built event object into the DOM
+  function flushEvent(ev,feed,counterKey){
+    const row=document.createElement('div');row.className='ev new';
+    row.innerHTML=`<span class="id">${ev.id}</span>`+
+      `<span class="ts" style="color:var(--ink3);font-size:9px;flex:0 0 auto">${ev.ts}</span>`+
+      `<span class="ty ${ev.type}">${ev.type.toUpperCase()}</span>`+
+      `<span class="msg">${ev.msg}</span>`;
+    feed.insertBefore(row,feed.firstChild);
+    // fade out oldest entries
+    const rows=feed.querySelectorAll('.ev');
+    rows.forEach((r,i)=>{ r.style.opacity=Math.max(0.25,1-i*0.072).toFixed(2); });
+    while(feed.childNodes.length>22) feed.removeChild(feed.lastChild);
+    if(counterKey==='ev'){ $('#evTotal').textContent='e'+String(state.evId).padStart(4,'0');
+      $('#evHead').textContent='e'+String(state.evId).padStart(4,'0'); }
+    else { $('#toolTotal').textContent=state.toolId; }
+  }
+  // legacy direct push (used by click handlers / prepaint where instant display is fine)
+  function pushEvent(type,msg,feed,counterKey){
+    flushEvent(buildEvent(type,msg,counterKey),feed,counterKey);
+  }
+
+  function buildRandEvent(){
+    const t=EV_TYPES[Math.floor(Math.random()*EV_TYPES.length)];
+    let msg=t[1].replace('%s',state.stage).replace('%s',(state.evId%9)).replace('%s',(state.evId%9)+1);
+    return buildEvent(t[0],msg,'ev');
+  }
+  const TOOLS=[
+    ['tool','fs.read · src/store/migrations'],
+    ['tool','graphrag.query · multi-hop k=4'],
+    ['tool','vault-lint.py · 48 deterministic checks'],
+    ['tool','codex.runner · turn advance'],
+    ['deny','external.write · BLOCKED (envelope)'],
+    ['tool','AGENTS.md · SSOT resolve (conflict→win)'],
+    ['ok','changelog · net-zero [A]↔[R] enforced'],
+    ['tool','run_due_maintenance.py · CADENCE check'],
+    ['ok','instruction-review.md · append [llm]'],
+    ['tool','mcp.server · neuro-symbolic eval'],
+  ];
+  function buildRandTool(){
+    const t=TOOLS[Math.floor(Math.random()*TOOLS.length)];
+    if(t[0]==='deny' && !state.autonomyClosed){
+      return buildEvent('tool','external.write · ALLOWED (gate open)','tool');
+    }
+    return buildEvent(t[0],t[1],'tool');
+  }
+
+  // ===================================================================
+  //  LAMPS + STATUS SYNC
+  // ===================================================================
+  function syncLamps(){
+    const gl=$('#gateLed'),gt=$('#gateTxt');
+    gl.className='led '+(state.gateRelease?'ok':'amber');
+    gt.textContent=state.gateRelease?'RELEASE':'HOLD';
+    gt.style.color=state.gateRelease?'':'var(--amber)';
+
+    const tl=$('#tickLed'),tt=$('#tickTxt');
+    tl.className='led '+(state.tickerOn?'ok':'rust');
+    tt.textContent=state.tickerOn?'RUNNING':'STOPPED';
+    tt.style.color=state.tickerOn?'':'var(--rust)';
+
+    const al=$('#autLed'),at=$('#autTxt');
+    al.className='led '+(state.autonomyClosed?'ok':'amber');
+    at.textContent=state.autonomyClosed?'FAIL-CLOSED':'OPENED';
+    at.style.color=state.autonomyClosed?'var(--signal)':'var(--amber)';
+
+    // bpm display is handled by rAF loop (lerped); skip here to avoid jump
+    // envelope rows reflect autonomy
+    const ew=$('#envWrite'),ep=$('#envPrio');
+    if(state.autonomyClosed){
+      ew.className='led amber';ep.className='led amber';
+      $('#envWriteTail').textContent='사람 게이트';$('#envPrioTail').textContent='사람 게이트';
+    }else{
+      ew.className='led ok';ep.className='led ok';
+      $('#envWriteTail').textContent='개방됨 (승인)';$('#envPrioTail').textContent='개방됨 (승인)';
+    }
+  }
+  syncLamps();
+
+  // ===================================================================
+  //  KILL TICKER — proves fail-closed
+  // ===================================================================
+  $('#killTicker').addEventListener('click',()=>{
+    state.tickerOn=!state.tickerOn;
+    const btn=$('#killTicker');
+    btn.classList.toggle('killed',!state.tickerOn);
+    btn.innerHTML=`<span class="led"></span>${state.tickerOn?'KILL TICKER':'RESTART TICKER'}`;
+    if(!state.tickerOn){
+      $('#killNote').innerHTML='⏻ 시계 정지 — 권한은 <b style="color:var(--signal)">새지 않음</b> (fail-closed 증명)';
+      $('#killNote').style.color='var(--ink2)';
+      pushEvent('gate','ticker.killed · autonomy STAYS gated',evFeed,'ev');
+    }else{
+      $('#killNote').innerHTML='ticker·autonomy 분리 → fail-closed 증명';
+      $('#killNote').style.color='';
+      pushEvent('emit','ticker.restart · heartbeat resumed',evFeed,'ev');
+    }
+    // CRITICAL: killing ticker does NOT change autonomy envelope
+    syncLamps();
+  });
+
+  // ===================================================================
+  //  ACP approve/deny — advances pipeline
+  // ===================================================================
+  function approveACP(){
+    if(state.acp==='approved')return;
+    state.acp='approved';
+    const acp=$('#acp');acp.classList.remove('pending');acp.classList.add('opened');
+    $('#acpState').textContent='APPROVED';
+    $('#acpQ').innerHTML='승인됨 — <span class="k">git push origin main</span> 1회 실행 허용. '+
+      'autonomy 봉투가 <b style="color:var(--signal)">일시 개방 → fail-closed 복귀</b>.';
+    // temporarily open autonomy, advance pipeline, then re-close (fail-closed default)
+    state.autonomyClosed=false; syncLamps();
+    pushEvent('ok','acp.approved · external.write granted (1×)',evFeed,'ev');
+    pushEvent('tool','external.write · git push (approved)',toolFeed,'tool');
+    // advance pipeline one stage
+    advanceStage();
+    // mark codex agent done
+    AGENTS[2].status='done'; renderFleet();
+    REG[4].h='healthy'; renderReg();
+    state.jobOk++; $('#jobOk').textContent=state.jobOk;
+    // re-close after a beat to demonstrate fail-closed default
+    setTimeout(()=>{
+      state.autonomyClosed=true; syncLamps();
+      pushEvent('gate','envelope.reclosed · fail-closed default restored',evFeed,'ev');
+    },2600);
+  }
+  function denyACP(){
+    state.acp='denied';
+    const acp=$('#acp');acp.classList.remove('pending');
+    $('#acpState').textContent='DENIED';$('#acpState').style.color='var(--rust)';
+    $('#acpState').style.borderColor='#6b3530';$('#acpState').style.animation='none';
+    $('#acpQ').innerHTML='거부됨 — 외부 쓰기 차단 유지. autonomy 봉투 <b style="color:var(--signal)">fail-closed</b>.';
+    pushEvent('deny','acp.denied · external.write blocked',evFeed,'ev');
+  }
+  $('#acpApprove').addEventListener('click',approveACP);
+  $('#acpDeny').addEventListener('click',denyACP);
+
+  function advanceStage(){
+    if(state.stage<STAGES.length-1){ state.stage++; } // advance through to handoff (§4)
+    else { state.stage=0; } // reached handoff → wrap, new pipeline cycle (spec→…→handoff loop)
+    syncLamps();
+  }
+
+  // ===================================================================
+  //  Codex job accept/reject
+  // ===================================================================
+  $('#jobAccept').addEventListener('click',()=>{
+    $('#jobBadge').textContent='ACCEPTED';$('#jobBadge').style.color='var(--signal)';
+    $('#jobBadge').style.borderColor='var(--signal-dim)';
+    state.jobOk++;$('#jobOk').textContent=state.jobOk;
+    pushEvent('ok','codex.proposal · accepted · merged',evFeed,'ev');
+    AGENTS[2].status='done';renderFleet();
+  });
+  $('#jobReject').addEventListener('click',()=>{
+    $('#jobBadge').textContent='KILLED';$('#jobBadge').style.color='var(--rust)';
+    $('#jobBadge').style.borderColor='#6b3530';
+    state.jobFail++;$('#jobFail').textContent=state.jobFail;
+    pushEvent('deny','codex.runner · kill · proposal rejected',evFeed,'ev');
+    AGENTS[2].status='idle';renderFleet();
+  });
+
+  // ===================================================================
+  //  ATTENTION LATCH — fires periodically, pins an item
+  // ===================================================================
+  function fireLatch(){
+    state.latch++; $('#latchCt').textContent=state.latch;
+    const ll=$('#latchLed'),lt=$('#latchTxt');
+    ll.className='led amber';lt.textContent='PINNED · 확인필요';lt.style.color='var(--amber)';
+    REG[3].h='fired';renderReg();
+    pushEvent('gate','attention.latch · fired · pin for human',evFeed,'ev');
+    $('#latchCt').parentElement.style.transform='scale(1.06)';
+    setTimeout(()=>{$('#latchCt').parentElement.style.transform='';},220);
+    // auto-release after observation
+    setTimeout(()=>{
+      ll.className='led dim';lt.textContent='armed';lt.style.color='';
+      REG[3].h='armed';renderReg();
+    },3400);
+  }
+
+  // ===================================================================
+  //  JOB progress + counters drift — dt-smooth
+  // ===================================================================
+  let jobP=0.30, turns=7;
+  // called from rAF loop; jobP updated here, smooth bar in loop()
+  function jobTickSmooth(){
+    if(AGENTS[2].status==='done')return;
+    jobP=Math.min(0.95, jobP+0.018+Math.random()*0.012);
+    if(Math.random()<0.4 && turns<24){turns++;$('#jobTurns').textContent=turns+' / 24';
+      const cost=(turns*0.34).toFixed(2);$('#jobCost').textContent='$'+cost+' / $5.00';}
+  }
+
+  // ===================================================================
+  //  LINT CYCLE — called from rAF loop accumulator
+  // ===================================================================
+  let lintFailActive=false;
+  function lintCycleTick(){
+    if(lintFailActive || !state.tickerOn) return;
+    if(Math.random()<0.35){
+      lintFailActive=true;
+      lintState.pass=46+Math.floor(Math.random()*2);
+      const pin=$('#lintPin'); if(pin){pin.textContent='LINT FAIL';pin.classList.add('amber');}
+      const chip=$('#lintChip'); if(chip){chip.textContent=lintState.pass+'/48';chip.style.color='var(--amber)';}
+      drawLintGauge();
+      pushEvent('gate','vault-lint · '+(48-lintState.pass)+' check fail · turn blocked',evFeed,'ev');
+      setTimeout(()=>{
+        lintState.pass=48; lintFailActive=false;
+        const pin2=$('#lintPin'); if(pin2){pin2.textContent='GATE PASS';pin2.classList.remove('amber');}
+        const chip2=$('#lintChip'); if(chip2){chip2.textContent='48/48';chip2.style.color='';}
+        drawLintGauge();
+        pushEvent('ok','vault-lint · 48/48 pass · turn done',evFeed,'ev');
+      },1700);
+    }
+  }
+
+  // runline animation on running agents
+  function runlines(now){
+    document.querySelectorAll('.runline').forEach(el=>{
+      const i=+el.dataset.i;
+      if(AGENTS[i] && AGENTS[i].status==='run'){
+        const w=((now/14)+(i*60))%100;
+        el.style.width=w+'%'; el.style.opacity=.6;
+      } else el.style.width='0';
+    });
+  }
+
+  // wiki flow shimmer
+  function wikiFlow(now){
+    document.querySelectorAll('.layer .flow').forEach(f=>{
+      const d=+f.dataset.d;
+      const t=((now/1400)+(d*0.33))%1;
+      const wparent=f.parentElement.clientWidth;
+      f.style.transform='translateX('+(t*(wparent+40)-40)+'px)';
+    });
+  }
+
+  // ===================================================================
+  //  VAULT GOVERNANCE / 자가통치
+  // ===================================================================
+  // --- vault-lint gauge (deterministic checks, draws a ring) ---
+  const lintCv=$('#lintGauge');
+  let lintState={pass:48,total:48};
+  function drawLintGauge(){
+    if(!lintCv) return;
+    const ctx=lintCv.getContext('2d');
+    const sz=62; lintCv.width=sz*DPR; lintCv.height=sz*DPR;
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    ctx.clearRect(0,0,sz,sz);
+    const cx=sz/2,cy=sz/2,r=24;
+    const frac=lintState.pass/lintState.total;
+    ctx.lineWidth=5;
+    ctx.strokeStyle=C.line2;
+    ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);ctx.stroke();
+    const col=frac>=1?C.signal:(frac>=0.9?C.amber:C.rust);
+    ctx.strokeStyle=col;ctx.shadowColor=col;ctx.shadowBlur=8;
+    ctx.beginPath();ctx.arc(cx,cy,r,-Math.PI/2,-Math.PI/2+Math.PI*2*frac);ctx.stroke();
+    ctx.shadowBlur=0;
+    const num=$('#lintNum');
+    if(num){num.textContent=lintState.pass+'/'+lintState.total;num.style.color=col;}
+  }
+
+  // --- net-zero ledger ([A] add must pair with [R] remove) ---
+  const NZ_PAIRS=[
+    ['changelog 체크 추가: ISO-date strict','오래된 date-format 경고 제거'],
+    ['lint #34 AUTOGEN drift 추가','중복 frontmatter rule 제거'],
+    ['tag taxonomy 항목 추가','stale class 별칭 제거'],
+    ['wikilink 해석 규칙 강화','중복 link-check 제거'],
+  ];
+  let nzIdx=0;
+  function renderNetZero(){
+    const el=$('#nzList'); if(!el) return;
+    el.innerHTML='';
+    const pair=NZ_PAIRS[nzIdx%NZ_PAIRS.length];
+    [['a','A',pair[0]],['r','R',pair[1]]].forEach(p=>{
+      const row=document.createElement('div');row.className='nz-row';
+      row.innerHTML='<span class="tag '+p[0]+'">['+p[1]+']</span><span class="txt">'+p[2]+'</span>';
+      el.appendChild(row);
+    });
+  }
+  function cycleNetZero(){ nzIdx++; renderNetZero(); }
+
+  // --- telemetry 5-signal drift (measured, not a verdict) ---
+  function driftSignals(){
+    const ids=['sig0','sig1','sig2','sig3','sig4'];
+    const i=Math.floor(Math.random()*5);
+    const sig=document.querySelector('.sig[data-sig="'+i+'"]');
+    if(sig){ sig.classList.add('flash'); setTimeout(()=>sig.classList.remove('flash'),600); }
+    const el=$('#'+ids[i]); if(!el) return;
+    if(i===0){ el.textContent=(1.2+Math.random()*0.4).toFixed(1)+'k'; }
+    else if(i===3){ el.textContent=String(90+Math.floor(Math.random()*9)); }
+    else { el.textContent=String(Math.max(0,parseInt(el.textContent||'0')+(Math.random()<0.5?1:-1))); }
+  }
+
+  // --- instruction-audit append-only feed ---
+  const auditFeed=$('#auditFeed');
+  const AUDITS=[
+    ['llm','규칙 §frontmatter-7 재검토 제안 — 5개월 미참조'],
+    ['auto','dead_notes 임계 초과 감지 → 검토 트리거'],
+    ['llm','net-zero 위반 후보: [A] 단독 커밋 발견'],
+    ['auto','AUTOGEN 블록 드리프트(#34) — append 기록'],
+    ['llm','status_aging 규칙 cadence 갱신 제안'],
+    ['auto','knowledge_gap 상위 wikilink 끊김 랭킹'],
+  ];
+  let auditIdx=0;
+  function pushAudit(src,msg,seed){
+    if(!auditFeed) return;
+    const row=document.createElement('div');row.className='audit-row'+(seed?'':' new');
+    row.innerHTML='<span class="src '+src+'">['+src+']</span><span class="am">'+msg+'</span>';
+    auditFeed.insertBefore(row,auditFeed.firstChild);
+    while(auditFeed.childNodes.length>5) auditFeed.removeChild(auditFeed.lastChild);
+  }
+  function cycleAudit(){
+    const a=AUDITS[auditIdx%AUDITS.length]; auditIdx++;
+    pushAudit(a[0],a[1],false);
+  }
+
+  // ===================================================================
+  //  CLOCK
+  // ===================================================================
+  function tickClock(){
+    const d=new Date();
+    const p=n=>String(n).padStart(2,'0');
+    $('#clock').textContent=p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  }
+
+  // ===================================================================
+  //  SMOOTH LIVE-DATA STATE — lerped values, dt-driven accumulators
+  // ===================================================================
+  const live={
+    bpm:72, bpmTarget:72,           // lerp toward target
+    lintPass:48, lintPassTarget:48, // lerp (display rounds)
+    capture:37, captureTarget:37,   // lerp fractional
+    jobPSmooth:0.30,                // lerp job progress
+    // per-stream accumulators (seconds)
+    evAcc:0, toolAcc:0, spawnAcc:0, jobAcc:0,
+    stageAcc:0, gateAcc:0, latchAcc:0, capAcc:0,
+    sigAcc:0, nzAcc:0, auditAcc:0, lintAcc:0,
+    clockAcc:0,
+    // event stagger — queue for drip-feed
+    evQueue:[], toolQueue:[],
+  };
+  // intervals in seconds
+  const IV={ev:0.9,tool:1.3,spawn:1.4,job:1.1,stage:4.2,gate:3.0,latch:5.2,cap:1.7,
+            sig:2.1,nz:4.8,audit:5.6,lint:6.4,clock:1.0};
+
+  // ===================================================================
+  //  MAIN LOOP — single rAF, dt-driven everything
+  // ===================================================================
+  let last=performance.now();
+  function loop(now){
+    const dt=Math.min(50, now-last)*0.001; // seconds, clamped
+    last=now;
+
+    // --- lerp smooth values ---
+    const k=1-Math.pow(0.01, dt*4); // ~smooth over 250ms
+    live.bpm += (live.bpmTarget - live.bpm)*k;
+    live.captureTarget += 0; // updated by accumulator below
+    live.capture += (live.captureTarget - live.capture)*k;
+    live.jobPSmooth += (jobP - live.jobPSmooth)*(1-Math.pow(0.01,dt*3));
+
+    // job progress bar — smooth
+    if(AGENTS[2].status!=='done'){
+      $('#jobProg').style.width=(live.jobPSmooth*100).toFixed(2)+'%';
+    }
+
+    // bpm display — lerped, no jump
+    const bpmRound=Math.round(live.bpm);
+    $('#bpm').textContent=state.tickerOn?(bpmRound+' bpm'):'-- bpm';
+    $('#bpm').style.color=state.tickerOn?'var(--signal)':'var(--rust)';
+
+    // capture display — lerped fractional
+    $('#capCt').textContent=Math.floor(live.capture);
+
+    // --- dt-driven accumulators replace setInterval ---
+    live.clockAcc+=dt;
+    if(live.clockAcc>=IV.clock){ live.clockAcc-=IV.clock; tickClock(); }
+
+    if(state.tickerOn){
+      live.evAcc+=dt;
+      if(live.evAcc>=IV.ev){ live.evAcc-=IV.ev;
+        // stagger: push to queue, drip one per frame
+        live.evQueue.push(buildRandEvent()); }
+
+      live.toolAcc+=dt;
+      if(live.toolAcc>=IV.tool){ live.toolAcc-=IV.tool;
+        live.toolQueue.push(buildRandTool()); }
+
+      live.spawnAcc+=dt;
+      if(live.spawnAcc>=IV.spawn){ live.spawnAcc-=IV.spawn; spawnEvent(); }
+
+      live.jobAcc+=dt;
+      if(live.jobAcc>=IV.job){ live.jobAcc-=IV.job; jobTickSmooth(); }
+
+      live.stageAcc+=dt;
+      if(live.stageAcc>=IV.stage){ live.stageAcc-=IV.stage;
+        // keep the spec→…→handoff sequence flowing: if the gate is holding,
+        // release it on this beat; otherwise advance one stage (deterministic loop).
+        if(!state.gateRelease){ state.gateRelease=true; syncLamps(); }
+        else advanceStage(); }
+
+      live.gateAcc+=dt;
+      if(live.gateAcc>=IV.gate){ live.gateAcc-=IV.gate;
+        state.gateRelease=Math.random()<0.7; syncLamps(); }
+
+      live.latchAcc+=dt;
+      if(live.latchAcc>=IV.latch){ live.latchAcc-=IV.latch;
+        if(Math.random()<0.6) fireLatch(); }
+
+      live.capAcc+=dt;
+      if(live.capAcc>=IV.cap){ live.capAcc-=IV.cap;
+        live.captureTarget+=Math.random()*3.5; }
+
+      live.lintAcc+=dt;
+      if(live.lintAcc>=IV.lint){ live.lintAcc-=IV.lint; lintCycleTick(); }
+
+      // bpm micro-variation (~every 2s)
+      live.bpm += (Math.random()-0.5)*0.08;
+      // clamp bpm wander
+      live.bpmTarget = 68 + Math.sin(now/9000)*6 + Math.random()*2;
+    }
+
+    live.sigAcc+=dt;
+    if(live.sigAcc>=IV.sig){ live.sigAcc-=IV.sig; driftSignals(); }
+    live.nzAcc+=dt;
+    if(live.nzAcc>=IV.nz){ live.nzAcc-=IV.nz; cycleNetZero(); }
+    live.auditAcc+=dt;
+    if(live.auditAcc>=IV.audit){ live.auditAcc-=IV.audit; cycleAudit(); }
+
+    // drip one queued event/tool per frame (stagger, no burst)
+    if(live.evQueue.length){ const e=live.evQueue.shift(); flushEvent(e,evFeed,'ev'); }
+    if(live.toolQueue.length){ const t=live.toolQueue.shift(); flushEvent(t,toolFeed,'tool'); }
+
+    // canvas draws
+    drawPipe(now,dt);
+    drawHB(now);
+    drawGraph(now,dt*1000); // drawGraph expects ms
+    runlines(now);
+    wikiFlow(now);
+
+    requestAnimationFrame(loop);
+  }
+
+  // ===================================================================
+  //  TIMERS (event-driven feel) — now empty; loop() handles everything
+  // ===================================================================
+  function startTimers(){
+    tickClock(); // initial paint
+  }
+
+  // ===================================================================
+  //  FIRST PAINT — populate so headless screenshot shows it ALIVE
+  // ===================================================================
+  function prepaint(){
+    // seed event log
+    const seedEv=[
+      ['emit','spec.captured · §0 readiness eval'],
+      ['ok','plan.proposed · executor draft v2'],
+      ['gate','readiness.gate · release §0→§1'],
+      ['emit','task.materialized · 3 subtasks'],
+      ['ok','session.handoff · upcast v7→v8'],
+      ['emit','ticker.tick · heartbeat observe'],
+      ['gate','attention.latch · armed'],
+    ];
+    seedEv.forEach(e=>pushEvent(e[0],e[1],evFeed,'ev'));
+    const seedTool=[
+      ['tool','graphrag.query · multi-hop k=4'],
+      ['deny','external.write · BLOCKED (envelope)'],
+      ['ok','decision.ledger · append (non-overwrite)'],
+      ['tool','wiki.lint · schema 비대화 check'],
+      ['tool','codex.runner · turn advance'],
+      ['tool','mcp.server · neuro-symbolic eval'],
+    ];
+    seedTool.forEach(e=>pushEvent(e[0],e[1],toolFeed,'tool'));
+    // seed counters
+    state.jobOk=3;$('#jobOk').textContent=3;
+    state.jobFail=1;$('#jobFail').textContent=1;
+    state.capture=37;$('#capCt').textContent=37;
+    state.latch=2;$('#latchCt').textContent=2;
+    state.stage=2; // mid-pipeline at task
+    $('#jobProg').style.width='30%';
+    syncLamps();
+    // seed several flowing events so first paint shows motion-state
+    for(let i=0;i<5;i++){ events.push({seg:i%4,p:Math.random(),color:C.signal,born:0}); }
+    fireTrace();
+    // --- vault governance first paint ---
+    drawLintGauge();
+    renderNetZero();
+    [['auto','AUTOGEN 블록 드리프트(#34) — append 기록'],
+     ['llm','규칙 §frontmatter-7 재검토 제안 — 5개월 미참조'],
+     ['auto','dead_notes 임계 초과 감지 → 검토 트리거']
+    ].forEach(a=>pushAudit(a[0],a[1],true));
+  }
+
+  // ===================================================================
+  //  BOOT — await fonts for clean headless first paint
+  // ===================================================================
+  function boot(){
+    layoutPipe(); hb=fit(hbCv); buildGraph();
+    prepaint();
+    requestAnimationFrame(loop);
+    startTimers();
+  }
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(boot);
+    // safety fallback in case fonts.ready never resolves in some headless envs
+    setTimeout(()=>{ if(state.evId===0) boot(); },600);
+  } else { boot(); }
+
+  // resize
+  let rt;
+  window.addEventListener('resize',()=>{
+    clearTimeout(rt);
+    rt=setTimeout(()=>{ layoutPipe(); hb=fit(hbCv); buildGraph(); },150);
+  });
+})();
+</script>
+</body>
+</html>

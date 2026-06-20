@@ -46,7 +46,6 @@ export function PretextHeading({ label, id }: { label: string; id?: string }) {
     const BASE_Y = 13
 
     let glyphs: Glyph[] = []
-    let totalW = 0
     let cssW = 0
     let cssH = 0
     let raf = 0
@@ -76,7 +75,6 @@ export function PretextHeading({ label, id }: { label: string; id?: string }) {
           idx++
         }
       }
-      totalW = x - TRACK
     }
 
     function draw() {

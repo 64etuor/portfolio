@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>씬6 · 충돌 — LEXICAL COLLISION</title>
+<title>SCENE 06 · 충돌 — LEXICAL COLLISION</title>
 <style>
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
@@ -14,9 +14,7 @@
     --phos-dim:#8d8d8d;
     --phos-deep:#3a3a3a;
     --warm:#d98a3d;        /* 현업 · 제조 */
-    --warm-dim:#7a5226;
     --cold:#4ab3cc;        /* 개발 · 시스템 */
-    --cold-dim:#2a6072;
     --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
   }
   @font-face{
@@ -38,7 +36,6 @@
     word-break:keep-all;
     -webkit-font-smoothing:antialiased;
   }
-  .kr{font-family:'Pretendard',var(--mono);}
 
   /* ===== full-bleed stage ===== */
   #stage{position:fixed;inset:0;overflow:hidden;background:
@@ -71,9 +68,12 @@
   .hud.br{bottom:24px;right:34px;text-align:right;}
   .hud .k{font-size:10px;color:var(--phos-dim);}
   .hud .v{font-size:13px;color:var(--phos);margin-top:3px;}
-  .hud .v.warm{color:var(--warm);text-shadow:0 0 10px rgba(217,138,61,.35);}
-  .hud .v.cold{color:var(--cold);text-shadow:0 0 10px rgba(74,179,204,.35);}
-  .hud .kr2{font-family:'Pretendard';font-size:14px;font-weight:600;letter-spacing:.5px;}
+
+  /* canonical scene eyebrow (matches 28) */
+  .eyebrow{position:absolute;z-index:45;left:5.4%;top:12.2%;pointer-events:none;
+    font-family:var(--mono);font-size:clamp(10px,.82vw,15px);
+    letter-spacing:.42em;color:var(--phos-dim);text-shadow:none;}
+  .eyebrow b{color:var(--cold);text-shadow:0 0 8px rgba(74,179,204,.4);font-weight:700;}
 
   /* side banners */
   .side{position:absolute;z-index:45;pointer-events:none;top:50%;transform:translateY(-50%);
@@ -97,10 +97,7 @@
   <canvas id="scene"></canvas>
   <div id="flicker"></div>
 
-  <div class="hud tl">
-    <div class="k">SCENE 06 · 충돌</div>
-    <div class="v">LEXICAL COLLISION</div>
-  </div>
+  <div class="eyebrow kr"><b>SCENE 06</b> · 충돌 — LEXICAL COLLISION</div>
   <div class="hud tr">
     <div class="k">요구사항 무결성</div>
     <div class="v">REQUIREMENT INTEGRITY</div>
@@ -158,7 +155,6 @@
   const eIn =t=>t*t*t;
   const eOut=t=>1-Math.pow(1-t,3);
   const eInOut=t=>t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-  const smooth=t=>t*t*(3-2*t);
 
   // ---------- phase timeline (normalized p∈[0,1)) ----------
   // A standoff  0.00-0.24 | B charge 0.24-0.40 | C impact 0.40-0.47
@@ -226,7 +222,6 @@
     line1Font=Math.max(15, fpx*0.34);
     let x=CX-tw/2;
     const cx=CX;
-    let idx=0;
     for(const ch of LINE2){
       const w=ctx.measureText(ch).width;
       const hx=x+w/2, hy=CY;
@@ -243,7 +238,7 @@
         scl:(Math.random()-0.5)*0.8
       };
       glyphs.push(g);
-      x+=w; idx++;
+      x+=w;
     }
   }
 
@@ -321,18 +316,18 @@
     ctx.save();
     ctx.translate(shx,shy);
 
-    drawField(p,S,now);
-    drawArmies(p,S,now);
+    drawField(S);
+    drawArmies(S,now);
     drawShock(p);
-    drawHero(p,S,now);
-    drawSeam(p,S,now);
+    drawHero(S,now);
+    drawSeam(S,now);
 
     ctx.restore();
     requestAnimationFrame(draw);
   }
 
   // background field: faint grid + breathing core
-  function drawField(p,S,now){
+  function drawField(S){
     // central horizon band glow
     const g=ctx.createRadialGradient(CX,CY,0,CX,CY,W*0.5);
     const heat=0.10+S.flash*0.35;
@@ -353,7 +348,7 @@
   }
 
   // two token armies charging
-  function drawArmies(p,S,now){
+  function drawArmies(S,now){
     const fpx=Math.max(13,Math.min(20,W*0.013));
     ctx.textAlign='center'; ctx.textBaseline='middle';
     tokens.forEach(tk=>{
@@ -425,7 +420,7 @@
   }
 
   // hero message: line1 caption + line2 shattering glyphs
-  function drawHero(p,S,now){
+  function drawHero(S,now){
     // line1 caption (above)
     if(S.l1>0.01){
       ctx.save();
@@ -473,7 +468,7 @@
   }
 
   // seam: tension line (standoff) + chromatic flash (impact)
-  function drawSeam(p,S,now){
+  function drawSeam(S,now){
     ctx.save();
     // standoff/charge tension: pulsing seam + flickering arcs
     if(S.charge<0.98 && S.shatter<0.02){

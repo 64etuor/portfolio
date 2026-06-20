@@ -45,7 +45,7 @@ const resume = {
   skills: p.skills.map((s) => ({ name: s.name, keywords: s.keywords })),
   education: p.education.map((e) => ({ institution: e.institution, area: e.area, studyType: e.note, startDate: e.period })),
   certificates: (p.training ?? []).map((t) => ({ name: t.name, issuer: t.org, summary: t.summary, date: t.period })),
-  meta: { canonical: p.contact.githubPage, generatedFrom: 'content/ (SSOT)', version: 'v1.0.0' },
+  meta: { canonical: p.contact.url ?? p.contact.githubPage, generatedFrom: 'content/ (SSOT)', version: 'v1.0.0' },
 }
 
 mkdirSync(dirname(out), { recursive: true })

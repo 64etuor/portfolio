@@ -58,9 +58,31 @@ export function Film() {
   const [visibleSlot, setVisibleSlot] = useState(0)
   const [txId, setTxId] = useState(0) // bumps on each cut → replays the transition overlay
 
+  // Scene→film handshake. A scene may postMessage {type:'film-scene', file, ms?, ready?}
+  // to (a) DECLARE its own playtime (dynamic, overrides acts.ts) and (b) signal when it's
+  // actually ready to be watched (fonts + first content loaded). The per-scene clock only
+  // starts once the scene is ready, so loading delay never eats into its on-screen arc.
+  // Scenes that don't post fall back to load-based timing (current behavior).
+  const readyRef = useRef<Set<string>>(new Set())
+  const declaredRef = useRef<Map<string, number>>(new Map())
+  const [signalTick, setSignalTick] = useState(0)
+  const [armed, setArmed] = useState(false)
+
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setReduced(true)
     setReady(true)
+  }, [])
+
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      const d = e.data as { type?: string; file?: string; ms?: number; ready?: boolean } | null
+      if (!d || d.type !== 'film-scene' || typeof d.file !== 'string') return
+      if (typeof d.ms === 'number' && d.ms > 0) declaredRef.current.set(d.file, d.ms)
+      if (d.ready) readyRef.current.add(d.file)
+      setSignalTick((n) => n + 1)
+    }
+    window.addEventListener('message', onMsg)
+    return () => window.removeEventListener('message', onMsg)
   }, [])
 
   const shot = ACTS[actIdx].scenes[sceneIdx]
@@ -68,10 +90,39 @@ export function Film() {
   const currentMs = shot.ms
   // The current scene is "visible" only once the visible slot actually holds it.
   const visible = slotFiles[visibleSlot] === currentFile
+  // Playtime is dynamic: a scene that declared its own arc length drives the duration;
+  // otherwise the static acts.ts value applies. (signalTick re-renders on each message.)
+  void signalTick
+  const declaredMs = declaredRef.current.get(currentFile)
+  const effectiveMs = declaredMs && declaredMs > 0 ? declaredMs : currentMs
 
   const onFilmEnd = useCallback(() => setEnded(true), [])
+
+  // Film outro → landing: on the final beat the whole frame collapses into a single
+  // point at center (iris-out), then we navigate. The landing reveals from black, so
+  // the film hands off to the home page as one continuous shot (no abrupt cut).
+  const irisRef = useRef<HTMLDivElement>(null)
   useEffect(() => {
-    if (ended) router.push('/')
+    if (!ended) return
+    const el = irisRef.current
+    const DUR = 860
+    const t0 = performance.now()
+    let raf = 0
+    const tick = (now: number) => {
+      const k = Math.min(1, (now - t0) / DUR)
+      if (el) {
+        const e = k * k // ease-in: accelerate as the image is sucked into the point
+        const size = (1 - e) * 170 // vmax — transparent aperture shrinking toward 0
+        el.style.width = `${size}vmax`
+        el.style.height = `${size}vmax`
+        const glow = k > 0.78 ? 1 - (k - 0.78) / 0.22 : 0 // bright pinpoint near the end
+        el.style.boxShadow = `0 0 ${(26 * glow).toFixed(1)}px ${(7 * glow).toFixed(1)}px rgba(255,255,255,${(glow * 0.9).toFixed(2)}), 0 0 0 100vmax #000`
+      }
+      if (k < 1) raf = requestAnimationFrame(tick)
+      else router.push('/')
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
   }, [ended, router])
 
   // Reveal the current scene: show whichever slot has it (prefetched → instant);
@@ -92,6 +143,52 @@ export function Film() {
       return n
     })
   }, [currentFile, slotFiles, visibleSlot, reduced, ready])
+
+  // Safety: if a scene's iframe `load` never fires (network stall), force-reveal after a
+  // cap so the film can't hang waiting for a frame that never paints.
+  useEffect(() => {
+    if (reduced || !ready || visible) return
+    const at = slotFiles.indexOf(currentFile)
+    if (at < 0) return
+    const t = setTimeout(() => setVisibleSlot(at), 5000)
+    return () => clearTimeout(t)
+  }, [reduced, ready, visible, currentFile, slotFiles])
+
+  // Optimization: once a cut has settled, blank the now-hidden slot so the OUTGOING
+  // scene stops rendering. Otherwise its iframe keeps a full rAF loop alive — invisibly —
+  // for the entire duration of the next scene (the double-buffer always retains the
+  // previous file). Blanking it after the cross-fade halves steady-state canvas load
+  // with zero visual change (it's already faded out), and the slot reloads on the next
+  // cut exactly as before (load-on-cut).
+  useEffect(() => {
+    if (reduced || !ready) return
+    const hidden = visibleSlot ^ 1
+    if (slotFiles[hidden] == null) return
+    const t = setTimeout(() => {
+      setSlotFiles((prev) => {
+        const h = visibleSlot ^ 1
+        if (prev[h] == null || prev[h] === currentFile) return prev
+        const n: [string | null, string | null] = [prev[0], prev[1]]
+        n[h] = null
+        return n
+      })
+    }, 1100) // after the 720ms cross-fade has fully settled
+    return () => clearTimeout(t)
+  }, [visibleSlot, currentFile, reduced, ready, slotFiles])
+
+  // Arm the clock once the scene is ready to watch. A scene that uses the handshake
+  // (declared a duration) waits for its `ready` signal — with a hard cap so a missing or
+  // late signal can never stall the film. Other scenes arm as soon as they're visible.
+  useEffect(() => {
+    if (reduced || !ready || !visible || armed) return
+    const usesHandshake = declaredRef.current.has(currentFile)
+    if (!usesHandshake || readyRef.current.has(currentFile)) {
+      setArmed(true)
+      return
+    }
+    const cap = setTimeout(() => setArmed(true), 6000)
+    return () => clearTimeout(cap)
+  }, [reduced, ready, visible, armed, currentFile, signalTick])
 
   // NOTE: no prefetch. Each scene loads only when it becomes current (load-on-cut),
   // so its rAF starts at reveal ≈ t0 — the scene is seen from its true start point
@@ -116,7 +213,7 @@ export function Film() {
   // Reset to false whenever the scene changes (see the reset effect below).
   const advancedRef = useRef(false)
   useEffect(() => {
-    if (reduced || ended || !ready || !visible) return
+    if (reduced || ended || !ready || !armed) return
 
     if (paused) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
@@ -129,7 +226,7 @@ export function Film() {
     const tick = () => {
       if (!alive) return
       const elapsed = carriedRef.current + (performance.now() - startRef.current)
-      const p = Math.min(1, elapsed / currentMs)
+      const p = Math.min(1, elapsed / effectiveMs)
       setProgress(p)
       if (p >= 1) {
         if (!advancedRef.current) {
@@ -146,7 +243,7 @@ export function Film() {
       alive = false
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
-  }, [actIdx, sceneIdx, paused, reduced, ended, ready, visible, currentMs, advance])
+  }, [actIdx, sceneIdx, paused, reduced, ended, ready, armed, effectiveMs, advance])
 
   // On a fresh scene: reset the clock guard, and fire the cinematic cut transition.
   // (Skip the very first scene so the overlay doesn't flash on initial load; the
@@ -159,6 +256,7 @@ export function Film() {
     carriedRef.current = 0
     advancedRef.current = false
     setProgress(0)
+    setArmed(false)
   }, [actIdx, sceneIdx])
 
   const revealOnLoad = (i: number) => {
@@ -233,10 +331,16 @@ export function Film() {
               title={`scene-slot-${i}`}
               onLoad={() => revealOnLoad(i)}
               style={{
+                // Render each scene INSIDE the letterbox safe band (top/bottom 5vh
+                // are masked by the bars below). Full-bleed (inset:0) hid the top/
+                // bottom 5vh of every scene behind the bars; banding the iframe to
+                // the visible 90vh means the whole scene viewport is on-screen and
+                // nothing gets clipped behind the letterbox.
                 position: 'absolute',
-                inset: 0,
+                top: '5vh',
+                left: 0,
                 width: '100%',
-                height: '100%',
+                height: '90vh',
                 border: 0,
                 pointerEvents: 'none',
                 // Materialize: the incoming scene comes INTO FOCUS (blur→sharp,
@@ -335,6 +439,26 @@ export function Film() {
       >
         건너뛰기 →
       </button>
+
+      {/* Outro iris — at the end, the frame collapses into a point, then routes home */}
+      {ended && (
+        <div
+          ref={irisRef}
+          aria-hidden
+          style={{
+            position: 'absolute',
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%)',
+            width: '170vmax',
+            height: '170vmax',
+            borderRadius: '50%',
+            boxShadow: '0 0 0 100vmax #000',
+            zIndex: 60,
+            pointerEvents: 'none',
+          }}
+        />
+      )}
     </div>
   )
 }

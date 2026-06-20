@@ -42,6 +42,7 @@
   "exclude": [
     "node_modules",
     "_vite_archive",
+    "_to-delete",
     "public/lab"
   ]
 }

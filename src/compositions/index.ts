@@ -21,7 +21,7 @@ export const COMPOSITIONS: Composition[] = [
     slug: 'project-career',
     title: '프로젝트 + 경력',
     audience: '채용·리더',
-    blurb: '미러리스/개인 제품과 제조 3社 경력 — 실제로 성과를 낸 것.',
+    blurb: '스타트업/개인 제품과 제조 3社 경력 — 실제로 성과를 낸 것.',
     scenes: ['03', '13', '20', '18', '15', '17'],
   },
   {

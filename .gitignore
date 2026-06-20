@@ -40,3 +40,6 @@ next-env.d.ts
 
 # working source materials (company/personal docs — not for the public repo)
 references/
+.vercel
+
+_to-delete/

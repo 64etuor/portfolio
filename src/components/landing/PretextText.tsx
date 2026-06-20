@@ -13,6 +13,7 @@ type Props = {
   height: number
   delay?: number // ms before the letters start assembling
   letterSpacing?: number // extra px between glyphs (at fontPx scale)
+  fontStyle?: string // e.g. 'italic' (prefixed onto the canvas font shorthand)
   style?: CSSProperties
 }
 
@@ -34,8 +35,10 @@ export function PretextText({
   height,
   delay = 0,
   letterSpacing = 0,
+  fontStyle = '',
   style,
 }: Props) {
+  const stylePrefix = fontStyle ? `${fontStyle} ` : ''
   const ref = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
@@ -52,7 +55,7 @@ export function PretextText({
     let W = 0
     let H = 0
     let baseY = 0
-    let curFont = `${fontWeight} ${fontPx}px ${fontFamily}`
+    let curFont = `${stylePrefix}${fontWeight} ${fontPx}px ${fontFamily}`
     let ls = letterSpacing
     let glyphs: G[] = []
     let raf = 0
@@ -61,7 +64,7 @@ export function PretextText({
 
     function build() {
       let px = fontPx
-      curFont = `${fontWeight} ${px}px ${fontFamily}`
+      curFont = `${stylePrefix}${fontWeight} ${px}px ${fontFamily}`
       let layout = layoutLines(prepare(text, curFont), 99999, 1)
       let line = layout.lines[0]
       let count = line ? line.glyphs.length : 0
@@ -72,7 +75,7 @@ export function PretextText({
         const s = avail / tw
         px = px * s
         ls = letterSpacing * s
-        curFont = `${fontWeight} ${px}px ${fontFamily}`
+        curFont = `${stylePrefix}${fontWeight} ${px}px ${fontFamily}`
         layout = layoutLines(prepare(text, curFont), 99999, 1)
         line = layout.lines[0]
         count = line ? line.glyphs.length : 0
@@ -175,7 +178,7 @@ export function PretextText({
       canvas.removeEventListener('pointermove', onPointer)
       canvas.removeEventListener('pointerleave', onLeave)
     }
-  }, [text, fontFamily, fontWeight, fontPx, color, width, height, delay, letterSpacing])
+  }, [text, fontFamily, fontWeight, fontPx, color, width, height, delay, letterSpacing, stylePrefix])
 
   return <canvas ref={ref} aria-label={text} style={{ width, height, display: 'block', pointerEvents: 'auto', ...style }} />
 }

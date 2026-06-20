@@ -13,8 +13,6 @@
     --phos:#d7d7d7;
     --phos-dim:#8d8d8d;
     --phos-deep:#3a3a3a;
-    --warm:#d6a15a;        /* 제조 — faint warm tint */
-    --cool:#62b0cc;        /* IT — faint cool tint */
     --gold:#f0c879;        /* 교집합 — the single bright accent */
     --gold-hot:#fff1cf;
     --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
@@ -63,11 +61,16 @@
   /* corner frame chrome */
   .frame{position:absolute;z-index:34;color:var(--phos-deep);font-family:var(--mono);
     font-size:10.5px;letter-spacing:.28em;text-transform:uppercase;opacity:.7;}
-  .frame.tl{top:26px;left:32px}
   .frame.tr{top:26px;right:32px;text-align:right}
   .frame.bl{bottom:26px;left:32px}
   .frame.br{bottom:26px;right:32px;text-align:right}
   .frame b{color:var(--gold);font-weight:700;text-shadow:0 0 8px rgba(240,200,121,.4)}
+
+  /* canonical scene eyebrow (matches 28) */
+  .eyebrow{position:absolute;z-index:34;left:5.4%;top:12.2%;pointer-events:none;
+    font-family:var(--mono);font-size:clamp(10px,.82vw,15px);
+    letter-spacing:.42em;color:var(--phos-dim);text-shadow:none;text-transform:none;}
+  .eyebrow b{color:var(--gold);text-shadow:0 0 8px rgba(240,200,121,.4);font-weight:700;}
 
   /* line 1 — the thesis (upper) */
   #l1{top:11.5%;left:50%;transform:translateX(-50%) translateY(10px);
@@ -75,7 +78,6 @@
     font-family:'Pretendard',var(--mono);font-weight:600;
     font-size:clamp(18px,2.3vw,40px);line-height:1.32;letter-spacing:-.01em;
     color:var(--phos-dim);opacity:0;}
-  #l1 .key{color:var(--phos);font-weight:700;}
   #l1 em{font-style:normal;color:var(--gold);font-weight:800;
     text-shadow:0 0 18px rgba(240,200,121,.5),0 0 46px rgba(240,200,121,.22);}
 
@@ -100,8 +102,8 @@
   <div id="flicker"></div>
 
   <!-- chrome -->
-  <div class="frame tl">SCN&nbsp;10 · 핵심 메시지</div>
-  <div class="frame tr">CROSS-DOMAIN&nbsp;INTERSECTION</div>
+  <div class="eyebrow kr"><b>SCENE 10</b> · 핵심 — CROSS-DOMAIN</div>
+  <div class="frame tr"></div>
   <div class="frame bl">제조&nbsp;<b>⟡</b>&nbsp;IT</div>
   <div class="frame br">∞&nbsp;SEAMLESS&nbsp;LOOP</div>
 
@@ -215,7 +217,7 @@ function conv(f){
 }
 
 /* ---- lens (vesica) bounds at a given y; null if outside / no overlap ---- */
-let RING_d=0, LCX=0, RCX=0, HY=0;
+let LCX=0, RCX=0, HY=0;
 function lensBounds(y){
   if(HY<=0) return null;
   const dy=y-CY;
@@ -242,9 +244,9 @@ function frame(now){
   const cv01=conv(f);
 
   // ring geometry this frame
-  RING_d = lerp(R*1.06, R*0.48, cv01);
-  LCX = CX - RING_d;  RCX = CX + RING_d;
-  HY = (RING_d<R) ? Math.sqrt(R*R - RING_d*RING_d) : 0;
+  const ringD = lerp(R*1.06, R*0.48, cv01);
+  LCX = CX - ringD;  RCX = CX + ringD;
+  HY = (ringD<R) ? Math.sqrt(R*R - ringD*ringD) : 0;
 
   const bloom = 0.5+0.5*Math.sin(T*1.7);          // gentle blaze breathing
   const goldPulse = 0.6+0.4*Math.sin(T*1.6);
@@ -252,13 +254,13 @@ function frame(now){
   ctx.clearRect(0,0,W,H);
 
   drawFields(T, cv01);
-  drawRings(T, cv01, bloom);
-  drawOrbitTerms(T, cv01);
+  drawRings(cv01);
+  drawOrbitTerms(T);
   drawBoundary(T, cv01);
   drawLens(cv01, bloom);
   drawParticles(T, cv01);
   drawCenterBloom(cv01, bloom);
-  drawLabels(T, cv01, goldPulse);
+  drawLabels(cv01, goldPulse);
 
   /* ---- DOM hero text sync ---- */
   const o1 = smooth((f-0.12)/0.12) * (1 - smooth((f-0.88)/0.12));
@@ -289,7 +291,7 @@ function drawFields(T, c){
 }
 
 /* ---- two domain rings ---- */
-function drawRings(T, c, bloom){
+function drawRings(c){
   ctx.lineJoin='round'; ctx.lineCap='round';
   const ring=(cx,tint)=>{
     const col=mix(PHOS, tint, 0.22);
@@ -310,7 +312,7 @@ function drawRings(T, c, bloom){
 }
 
 /* ---- orbit term labels on outer lobes ---- */
-function drawOrbitTerms(T, c){
+function drawOrbitTerms(T){
   ctx.textAlign='center'; ctx.textBaseline='middle';
   const fpx=Math.max(11,Math.min(15,MIN*0.0135));
   const draw=(arr,cx,tint)=>{
@@ -474,7 +476,7 @@ function drawCenterBloom(c, bloom){
 }
 
 /* ---- labels: domains + intersection ---- */
-function drawLabels(T, c, goldPulse){
+function drawLabels(c, goldPulse){
   ctx.textAlign='center'; ctx.textBaseline='middle';
   // domain anchor labels on the outer flanks
   const bigpx=Math.max(20,Math.min(40,MIN*0.036));

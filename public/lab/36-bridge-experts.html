@@ -3,23 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>씬 9 · 해결 방향 — AMBIDEXTROUS BRIDGE</title>
+<title>SCENE 09 · 해결 — THE BRIDGE</title>
 <style>
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
 
   :root{
     --bg:#050505;
-    --bg2:#101010;
     --phos:#dcdcdc;
     --phos-dim:#8d8d8d;
     --phos-deep:#3a3a3a;
     --warm:#d98a3d;        /* 제조 · MANUFACTURING (씬6 충돌의 현업색) */
-    --warm-soft:#f0c79b;
     --cold:#4ab3cc;        /* 디지털 · DIGITAL (씬6 충돌의 시스템색) */
-    --cold-soft:#a9e4f0;
     --conv:#4fe0c4;        /* 수렴 · 한 사람 (씬8 인사이트 청록의 연장) */
-    --conv-soft:#c4f8ee;
     --kr:"Pretendard","Pretendard Variable",-apple-system,sans-serif;
     --mono:"JetBrains Mono",ui-monospace,monospace;
   }
@@ -58,10 +54,15 @@
   /* corner frame ticks — quiet instrument chrome */
   .frame{position:absolute;z-index:34;font-family:var(--mono);color:var(--phos-deep);
     font-size:10px;letter-spacing:.28em;text-transform:uppercase;opacity:.7;}
-  .frame.tl{top:26px;left:32px}
   .frame.tr{top:26px;right:32px;text-align:right}
   .frame.bl{bottom:24px;left:32px}
   .frame.br{bottom:24px;right:32px;text-align:right}
+
+  /* canonical scene eyebrow (matches 28) */
+  .eyebrow{position:absolute;z-index:34;left:5.4%;top:12.2%;pointer-events:none;
+    font-family:var(--mono);font-size:clamp(10px,.82vw,15px);
+    letter-spacing:.42em;color:var(--phos-dim);text-shadow:none;text-transform:none;}
+  .eyebrow b{color:var(--conv);text-shadow:0 0 8px rgba(79,224,196,.4);font-weight:700;}
 
   /* ---------- kicker ---------- */
   .kicker{
@@ -147,18 +148,13 @@
 <div class="stage">
   <canvas id="scene"></canvas>
 
-  <div class="frame tl">SCENE 09 · 해결 방향</div>
-  <div class="frame tr">AMBIDEXTROUS BRIDGE</div>
+  <div class="eyebrow kr"><b>SCENE 09</b> · 해결 — THE BRIDGE</div>
   <div class="frame bl">제조 ∞ 디지털</div>
   <div class="frame br">ONE MIND · 양손잡이</div>
 
   <div class="kicker">
-    <span>씬 09 · 해결 방향</span>
-    <span class="sep">/</span>
     <span class="dot"></span>
     <span class="cv kr">양방향으로 이해하는 한 사람</span>
-    <span class="sep">/</span>
-    <span>THE BRIDGE</span>
   </div>
 
   <div class="hero">
@@ -255,7 +251,6 @@
   let t0=performance.now()-_off;
 
   const frac=x=>x-Math.floor(x);
-  const smooth=t=>t*t*(3-2*t);
 
   // ---- ribbon (the ∞ itself) ----
   function drawRibbon(time, beat){
@@ -313,7 +308,6 @@
       const cd=centerDist(t);
       const near=1-cd;                       // 1 at crossing → blend & glow
       const col=mix(colAt(p[0]), CONVH, near*0.7);
-      const fade=0.35+0.55*Math.sin(t*0)*0+0.55*near; // brighter near the crossing
       const r=(pt.sz)*(1+0.9*near);
       // halo
       const g=ctx.createRadialGradient(p[0],p[1],0,p[0],p[1],r*6);

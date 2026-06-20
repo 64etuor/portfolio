@@ -1,0 +1,1084 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>원가 제1원칙 해부 보드 / OPEX −85% First-Principles Ledger</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  :root{
+    --bg:#070809;
+    --panel:#1c2127;
+    --panel2:#161a1f;
+    --line:#262d35;
+    --line2:#323b45;
+    --ink:#e6ece9;
+    --muted:#7e8c87;
+    --muted2:#5a665f;
+    --amber:#ffb01f;
+    --green:#39ff8a;
+    --cyan:#5cd8ff;
+  }
+  html,body{height:100%}
+  body{
+    background:
+      radial-gradient(1300px 800px at 50% -8%, #101418 0%, var(--bg) 62%),
+      var(--bg);
+    color:var(--ink);
+    font-family:"Pretendard Variable",Pretendard,system-ui,sans-serif;
+    word-break:keep-all;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .mono{font-family:"DM Mono","SF Mono",ui-monospace,"Cascadia Code",Menlo,monospace}
+
+  /* ===== rack shell ===== */
+  .wrap{max-width:1500px;margin:0 auto;padding:clamp(14px,2vw,30px)}
+  .rack{
+    position:relative;
+    background:linear-gradient(180deg,#1a1e23 0%, #0f1216 100%);
+    border:1px solid #2b333c;
+    border-radius:14px;
+    padding:clamp(10px,1.3vw,18px);
+    box-shadow:0 50px 130px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.05);
+  }
+  .rack::before,.rack::after{
+    content:"";position:absolute;top:14px;bottom:14px;width:26px;
+    background:linear-gradient(90deg,#0a0c0e,#22272e 40%,#14181c 60%,#0a0c0e);
+    border:1px solid #2c333b;border-radius:5px;
+    box-shadow:inset 0 0 8px rgba(0,0,0,.6);
+  }
+  .rack::before{left:14px}
+  .rack::after{right:14px}
+  .rackinner{position:relative;margin:0 32px;display:flex;flex-direction:column;gap:11px;z-index:1}
+
+  .railholes{position:absolute;top:0;bottom:0;width:26px;z-index:0;display:flex;flex-direction:column;justify-content:space-evenly;align-items:center;padding:10px 0}
+  .railholes.l{left:14px} .railholes.r{right:14px}
+
+  /* ===== U-module ===== */
+  .u{
+    position:relative;
+    background:linear-gradient(180deg,var(--panel) 0%,var(--panel2) 100%);
+    border:1px solid var(--line2);
+    border-radius:8px;
+    padding:14px 16px;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,.06), 0 8px 22px rgba(0,0,0,.4);
+  }
+  .u::before{
+    content:"";position:absolute;inset:0;border-radius:8px;pointer-events:none;
+    background:repeating-linear-gradient(90deg,rgba(255,255,255,.014) 0 1px,transparent 1px 3px);
+    mix-blend-mode:overlay;
+  }
+  .ear{position:absolute;width:11px;height:11px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%,#586069,#2a3037);
+    box-shadow:inset 0 0 0 1px #1b2026,0 1px 1px rgba(0,0,0,.6)}
+  .ear::after{content:"";position:absolute;inset:3px;border-radius:50%;
+    background:linear-gradient(45deg,#1b2026 40%,#444b53 41% 59%,#1b2026 60%)}
+  .ear.tl{top:7px;left:7px}.ear.tr{top:7px;right:7px}
+  .ear.bl{bottom:7px;left:7px}.ear.br{bottom:7px;right:7px}
+
+  .modtitle{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+  .modtitle .uno{font-size:9.5px;letter-spacing:.14em;color:var(--amber);border:1px solid #4a3a12;background:#1c160a;border-radius:4px;padding:2px 7px;font-weight:800}
+  .modtitle h3{font-size:13.5px;font-weight:800;letter-spacing:-.01em}
+  .modtitle .sub{font-size:10px;color:var(--muted);letter-spacing:.05em;margin-left:auto;text-align:right}
+
+  /* ===== header ===== */
+  .head{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+  .logo{width:50px;height:50px;border-radius:11px;flex:0 0 auto;
+    background:radial-gradient(circle at 35% 30%,#143b2c,#06120c);
+    border:1px solid #2c5a48;display:grid;place-items:center;
+    box-shadow:0 0 12px rgba(57,255,138,.14),inset 0 0 12px rgba(0,0,0,.6)}
+  .logo svg{filter:drop-shadow(0 0 3px rgba(57,255,138,.45))}
+  .brand h1{font-size:clamp(16px,1.6vw,21px);font-weight:800;letter-spacing:-.01em;line-height:1.12}
+  .brand .role{font-size:11px;color:var(--muted);letter-spacing:.04em;margin-top:4px}
+  .brand .role b{color:var(--green);font-weight:700}
+  .topmeta{margin-left:auto;display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+  .pill{font-size:10px;letter-spacing:.13em;text-transform:uppercase;font-weight:700;
+    border:1px solid var(--line);border-radius:999px;padding:6px 11px;color:var(--muted);
+    display:flex;align-items:center;gap:7px;background:#0e1216}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 6px rgba(57,255,138,.55)}
+  .dot.run{animation:blink 1.2s steps(2,end) infinite}
+  @keyframes blink{50%{opacity:.22}}
+  .pill .dot.warn{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+
+  /* ===== thesis creed ===== */
+  .creed{font-size:11.5px;color:var(--muted);line-height:1.65;
+    border-left:2px solid #2c5a48;padding:3px 0 3px 12px;letter-spacing:.01em}
+  .creed b{color:var(--green);font-weight:700}
+  .creed .q{color:var(--ink);font-weight:700}
+
+  /* ===== main two-pane ===== */
+  .board2{display:grid;grid-template-columns:1.08fr 1fr;gap:11px}
+  @media(max-width:1040px){.board2{grid-template-columns:1fr}}
+
+  /* ===== LEDGER (left) ===== */
+  .ledger{display:flex;flex-direction:column;gap:7px}
+  .ledhead{display:grid;grid-template-columns:1fr 78px 92px;gap:8px;padding:0 11px 6px;
+    font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);font-weight:700}
+  .ledhead .r{text-align:right}
+  .ledrow{
+    display:grid;grid-template-columns:1fr 78px 92px;gap:8px;align-items:center;
+    background:#0e1216;border:1px solid var(--line);border-radius:6px;
+    padding:9px 11px;cursor:pointer;transition:border-color .15s,background .15s;
+    font-family:inherit;color:inherit;text-align:left;width:100%}
+  .ledrow:hover{border-color:#3f6b58;background:#0c1812}
+  .ledrow.active{border-color:var(--green);box-shadow:0 0 0 1px rgba(57,255,138,.25),inset 0 0 14px rgba(57,255,138,.06)}
+  .ledrow .li{display:flex;align-items:center;gap:9px;min-width:0}
+  .ledrow .led{width:8px;height:8px;border-radius:50%;background:#243038;box-shadow:inset 0 0 3px #000;flex:0 0 auto;transition:.15s}
+  .ledrow.active .led,.ledrow:hover .led{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .ledrow .nm{font-size:11.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .ledrow .base{font-family:"DM Mono",monospace;font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+  .ledrow .cut{font-family:"DM Mono",monospace;font-size:12px;font-weight:700;color:var(--green);text-align:right;font-variant-numeric:tabular-nums}
+  .ledrow .cut.zero{color:var(--muted2)}
+  .ledtot{display:grid;grid-template-columns:1fr 78px 92px;gap:8px;align-items:center;
+    margin-top:3px;padding:10px 11px;border-radius:6px;
+    background:linear-gradient(180deg,#0c2417,#08160e);border:1px solid #1c5a3c}
+  .ledtot .nm{font-size:11.5px;font-weight:800;color:var(--ink)}
+  .ledtot .base{font-family:"DM Mono",monospace;font-size:12px;color:var(--muted);text-align:right}
+  .ledtot .cut{font-family:"DM Mono",monospace;font-size:15px;font-weight:800;color:var(--green);text-align:right;text-shadow:0 0 6px rgba(57,255,138,.24)}
+
+  /* interrogation panel */
+  .interro{margin-top:9px;border:1px solid var(--line);border-radius:7px;background:#0b0f12;
+    padding:11px 13px;min-height:96px}
+  .interro .qh{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+  .interro .qh .qt{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .interro .qh .qn{margin-left:auto;font-family:"DM Mono",monospace;font-size:9.5px;color:var(--green)}
+  .interro .qq{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em}
+  .interro .qq::before{content:"❯ ";color:var(--green);font-family:"DM Mono",monospace}
+  .interro .qa{font-size:10.5px;color:var(--muted);line-height:1.6}
+  .interro .qa b{color:var(--cyan);font-weight:700}
+  .interro .qlev{display:inline-block;margin-top:8px;font-family:"DM Mono",monospace;font-size:9px;
+    color:var(--green);border:1px solid #1c5a3c;background:#0a2417;border-radius:4px;padding:3px 8px;letter-spacing:.04em}
+
+  /* ===== WATERFALL (right) ===== */
+  .wfwrap{display:flex;flex-direction:column;gap:10px}
+  .wfchart{position:relative;border:1px solid var(--line);border-radius:8px;background:#020806;
+    padding:16px 14px 10px;overflow:hidden;
+    box-shadow:inset 0 0 40px rgba(0,0,0,.85)}
+  .wfchart .ovl{position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 2px,transparent 2px 4px)}
+  .wfcorner{position:absolute;font-size:9px;color:#2a8a60;letter-spacing:.1em;font-weight:700;font-family:"DM Mono",monospace}
+  .wfcorner.tl{top:8px;left:11px}.wfcorner.tr{top:8px;right:11px;color:var(--amber)}
+  .wfcorner.br{bottom:6px;right:11px;color:var(--green)}
+  .wfsvg{display:block;width:100%;height:auto;position:relative;z-index:1}
+  .wfaxis{font-family:"DM Mono",monospace;font-size:8px;fill:#2a8a60}
+  .wfcap{font-family:"Pretendard Variable",Pretendard,sans-serif;font-size:8.5px;fill:#8aa39a;font-weight:600}
+  .wfval{font-family:"DM Mono",monospace;font-size:9px;font-weight:700}
+
+  .wfsteps{display:flex;flex-direction:column;gap:6px}
+  .wfstep{display:grid;grid-template-columns:18px 1fr 64px;gap:9px;align-items:center;
+    background:#0e1216;border:1px solid var(--line);border-radius:6px;padding:8px 11px}
+  .wfstep .si{font-family:"DM Mono",monospace;font-size:10px;font-weight:800;color:var(--amber);text-align:center}
+  .wfstep .sn{font-size:11px;font-weight:700}
+  .wfstep .sd{font-size:9px;color:var(--muted);letter-spacing:.02em;margin-top:2px}
+  .wfstep .sv{font-family:"DM Mono",monospace;font-size:12px;font-weight:700;color:var(--green);text-align:right;font-variant-numeric:tabular-nums}
+  .wfstep.baseline{background:#161013;border-color:#3a2a14}
+  .wfstep.baseline .si{color:var(--muted)}
+  .wfstep.baseline .sv{color:var(--amber)}
+  .wfstep.final{background:linear-gradient(180deg,#0c2417,#08160e);border-color:#1c5a3c}
+  .wfstep.final .si{color:var(--green)}
+  .wfstep.final .sv{font-size:14px;font-weight:800;text-shadow:0 0 6px rgba(57,255,138,.24)}
+
+  .illnote{font-size:9px;color:var(--muted);line-height:1.55;letter-spacing:.01em;
+    background:#0e1216;border:1px solid var(--line);border-radius:5px;padding:8px 10px}
+  .illnote .flag{color:var(--amber);font-weight:700;font-family:"DM Mono",monospace}
+  .illnote b{color:var(--green)}
+
+  /* ===== levers strip ===== */
+  .levgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+  @media(max-width:760px){.levgrid{grid-template-columns:repeat(2,1fr)}}
+  .lev{background:#0e1216;border:1px solid var(--line);border-radius:6px;padding:10px 11px}
+  .lev .lk{font-family:"DM Mono",monospace;font-size:9px;color:var(--amber);letter-spacing:.06em;font-weight:700}
+  .lev .lt{font-size:11.5px;font-weight:700;margin-top:5px;line-height:1.3}
+  .lev .ld{font-size:9.5px;color:var(--muted);margin-top:5px;line-height:1.45}
+
+  /* ===== inventory ===== */
+  .inv{display:flex;flex-direction:column;gap:7px}
+  .invrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;
+    background:#0e1216;border:1px solid var(--line);border-radius:6px;padding:8px 11px}
+  .invrow .nm{font-size:11px;font-weight:700}
+  .invrow .cap{font-size:9px;color:var(--muted);letter-spacing:.04em;font-family:"DM Mono",monospace}
+  .stled{display:flex;align-items:center;gap:6px;font-size:9px;font-weight:700;letter-spacing:.1em}
+  .stled .d{width:7px;height:7px;border-radius:50%}
+  .stled.ok{color:var(--green)} .stled.ok .d{background:var(--green);box-shadow:0 0 6px var(--green)}
+  .stled.amb{color:var(--amber)} .stled.amb .d{background:var(--amber);box-shadow:0 0 6px var(--amber)}
+
+  /* ===== instrument readouts (DMM / scope / gauge) ===== */
+  .instgrid{display:grid;grid-template-columns:1.1fr 1.3fr 1fr;gap:11px}
+  @media(max-width:880px){.instgrid{grid-template-columns:1fr}}
+  .inst{position:relative;border:1px solid var(--line2);border-radius:8px;
+    background:linear-gradient(180deg,#0a0f0c,#040806);
+    box-shadow:inset 0 0 34px rgba(0,0,0,.85),inset 0 1px 0 rgba(255,255,255,.04);
+    padding:12px 13px;overflow:hidden}
+  .inst::after{content:"";position:absolute;inset:0;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.20) 0 2px,transparent 2px 4px);mix-blend-mode:multiply}
+  .insth{display:flex;align-items:center;gap:8px;margin-bottom:9px;position:relative;z-index:2}
+  .insth .it{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  .insth .iu{margin-left:auto;font-family:"DM Mono",monospace;font-size:8.5px;color:#2a8a60;letter-spacing:.06em}
+  .insth .il{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 1.3s steps(2,end) infinite}
+
+  /* DMM digit roll */
+  .dmm{position:relative;z-index:2}
+  .dmm .dlabel{font-size:9px;color:var(--muted);letter-spacing:.04em;margin-bottom:6px}
+  .dmm .dwin{display:flex;align-items:flex-end;gap:1px;font-family:"DM Mono",monospace;
+    background:#020604;border:1px solid #103022;border-radius:6px;padding:8px 10px;
+    box-shadow:inset 0 0 16px rgba(0,0,0,.9)}
+  .dmm .sign{font-size:30px;font-weight:800;color:var(--green);line-height:.9;text-shadow:0 0 8px rgba(57,255,138,.35)}
+  .digit{position:relative;width:.64em;height:1em;overflow:hidden;font-size:34px;line-height:1;
+    color:var(--green);text-shadow:0 0 8px rgba(57,255,138,.35);font-weight:800}
+  .digit .col{position:absolute;left:0;top:0;display:flex;flex-direction:column;will-change:transform}
+  .digit .col span{height:1em;display:flex;align-items:center;justify-content:center}
+  .dmm .unit{font-size:18px;font-weight:800;color:var(--green);margin-left:3px;text-shadow:0 0 8px rgba(57,255,138,.35)}
+  .dmm .drange{display:flex;justify-content:space-between;margin-top:7px;
+    font-family:"DM Mono",monospace;font-size:8.5px;color:var(--muted2);letter-spacing:.04em}
+
+  /* scope */
+  .scope{position:relative;z-index:2}
+  .scopewrap{position:relative;border:1px solid #103022;border-radius:6px;background:#010503;overflow:hidden;
+    box-shadow:inset 0 0 20px rgba(0,0,0,.9)}
+  .scopewrap svg{display:block;width:100%;height:auto}
+  .scopefoot{display:flex;justify-content:space-between;margin-top:7px;
+    font-family:"DM Mono",monospace;font-size:8.5px;color:var(--muted2);letter-spacing:.04em}
+  .scopefoot b{color:var(--green)}
+
+  /* gauge */
+  .gauge{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center}
+  .gauge svg{display:block;width:100%;max-width:200px;height:auto}
+  .gauge .gcap{margin-top:4px;font-family:"DM Mono",monospace;font-size:8.5px;color:var(--muted2);letter-spacing:.05em;text-align:center}
+  .gauge .gcap b{color:var(--green)}
+
+  /* ===== footer ===== */
+  .footu{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+  .chips{display:flex;gap:7px;flex-wrap:wrap}
+  .chip{font-size:10px;font-family:"DM Mono",monospace;color:var(--muted);
+    border:1px solid var(--line2);border-radius:5px;padding:5px 9px;background:#0e1216;letter-spacing:.02em}
+  .chip b{color:var(--green)}
+  .label-strip{font-size:9px;color:var(--muted2);letter-spacing:.3em;text-transform:uppercase;
+    text-align:center;font-weight:700;padding:2px 0 6px}
+
+  /* ===== CINEMATIC MOTION LAYER ===== */
+  /* rack-wide CRT power feel: faint global flicker + a scanline beam that sweeps the whole board */
+  .rack::after{display:block}
+  .scanbeam{position:absolute;left:0;right:0;height:38%;top:-40%;pointer-events:none;z-index:4;
+    background:linear-gradient(180deg,transparent,rgba(57,255,138,.045) 45%,rgba(92,216,255,.06) 55%,transparent);
+    mix-blend-mode:screen;border-radius:14px;
+    animation:beamSweep 6.5s linear infinite;will-change:transform}
+  @keyframes beamSweep{0%{transform:translateY(0)}72%{transform:translateY(0)}
+    72.001%{transform:translateY(0);opacity:.0}
+    74%{opacity:1}100%{transform:translateY(360%);opacity:1}}
+  .crtflick{position:absolute;inset:0;pointer-events:none;z-index:5;border-radius:14px;
+    background:rgba(57,255,138,.012);mix-blend-mode:screen;
+    animation:crtFlick 5.3s steps(1,end) infinite;opacity:0}
+  @keyframes crtFlick{0%,100%{opacity:0}3%{opacity:.5}3.6%{opacity:0}51%{opacity:0}
+    51.5%{opacity:.7}52%{opacity:0}}
+
+  /* per-module power-on ignition (staggered top→bottom), then settles */
+  .u{opacity:0;transform:translateY(8px);
+    animation:uBoot .62s cubic-bezier(.22,.9,.24,1) forwards}
+  .u:nth-child(1){animation-delay:.05s}
+  .u:nth-child(2){animation-delay:.20s}
+  .u:nth-child(3){animation-delay:.36s}
+  .u:nth-child(4){animation-delay:.55s}
+  .u:nth-child(5){animation-delay:.70s}
+  .u:nth-child(6){animation-delay:.84s}
+  .u:nth-child(7){animation-delay:.98s}
+  @keyframes uBoot{
+    0%{opacity:0;transform:translateY(8px) scaleY(.992);filter:brightness(2.4) saturate(.4)}
+    18%{opacity:1;filter:brightness(2.4) saturate(.4)}
+    24%{filter:brightness(.7)}
+    30%{filter:brightness(1.9)}
+    44%{filter:brightness(1)}
+    100%{opacity:1;transform:none;filter:none}}
+
+  /* ledger rows: staggered drop-in, then an auto "interrogation cursor" walks them */
+  .ledrow{position:relative;overflow:hidden;opacity:0;transform:translateX(-10px);
+    animation:rowIn .5s cubic-bezier(.22,.9,.24,1) forwards}
+  /* scanning beam that crosses an actively-interrogated row */
+  .ledrow::after{content:"";position:absolute;inset:0;pointer-events:none;border-radius:6px;
+    background:linear-gradient(90deg,transparent,rgba(57,255,138,.22) 50%,transparent);
+    transform:translateX(-120%);opacity:0}
+  .ledrow.scan::after{animation:rowScan .5s ease-out}
+  @keyframes rowScan{0%{transform:translateX(-120%);opacity:1}100%{transform:translateX(120%);opacity:0}}
+  @keyframes rowIn{to{opacity:1;transform:none}}
+  .ledrow.active .cut{text-shadow:0 0 8px rgba(57,255,138,.5)}
+
+  /* waterfall step rows cascade down with momentum */
+  .wfstep{opacity:0;transform:translateY(-12px);
+    animation:stepDrop .55s cubic-bezier(.34,1.4,.5,1) forwards}
+  @keyframes stepDrop{0%{opacity:0;transform:translateY(-12px)}
+    60%{opacity:1}100%{opacity:1;transform:none}}
+  /* the climactic landing pulse on the final −85% endpoints */
+  @keyframes landPulse{0%{box-shadow:0 0 0 0 rgba(57,255,138,.0)}
+    18%{box-shadow:0 0 0 2px rgba(57,255,138,.55),0 0 30px rgba(57,255,138,.35)}
+    100%{box-shadow:0 0 0 0 rgba(57,255,138,0)}}
+  .wfstep.final.land,.ledtot.land{animation:landPulse 1.1s ease-out}
+  @keyframes headPulse{0%,100%{text-shadow:0 0 8px rgba(57,255,138,.35)}
+    50%{text-shadow:0 0 22px rgba(57,255,138,.85),0 0 4px rgba(57,255,138,.9)}}
+  .dwin.land .digit,.dwin.land .sign,.dwin.land .unit{animation:headPulse 1.1s ease-out}
+  .pill .dot.run.surge{animation:blink 1.2s steps(2,end) infinite,dotSurge 1.1s ease-out}
+  @keyframes dotSurge{0%,100%{box-shadow:0 0 6px rgba(57,255,138,.55)}
+    40%{box-shadow:0 0 16px rgba(57,255,138,1)}}
+
+  @media(prefers-reduced-motion:reduce){
+    .u,.ledrow,.wfstep{opacity:1!important;transform:none!important;animation:none!important}
+    .scanbeam,.crtflick{display:none!important}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="rack">
+    <div class="railholes l" aria-hidden="true"></div>
+    <div class="railholes r" aria-hidden="true"></div>
+    <div class="scanbeam" aria-hidden="true"></div>
+    <div class="crtflick" aria-hidden="true"></div>
+    <div class="rackinner">
+
+      <!-- ===== U1: brand / header ===== -->
+      <section class="u" aria-label="시스템 헤더">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="head">
+          <div class="logo" aria-hidden="true">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#39ff8a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 20V4"/><path d="M4 20h16"/>
+              <path d="M7 14l3-4 3 3 4-7"/>
+            </svg>
+          </div>
+          <div class="brand">
+            <h1>원가 제1원칙 해부 보드</h1>
+            <div class="role"><b>운영경비(OPEX) −85%</b> 절감 · 제1원칙 분석</div>
+          </div>
+          <div class="topmeta">
+            <span class="pill"><span class="dot run"></span> OPEX&nbsp;−85%</span>
+            <span class="pill"><span class="dot"></span> 0불량</span>
+            <span class="pill mono"><span class="dot warn"></span> IATF&nbsp;16949</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== U2: thesis ===== -->
+      <section class="u" aria-label="제1원칙 선언">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="modtitle">
+          <span class="uno">DOCTRINE</span>
+          <h3>제1원칙 — 모든 원가를 처음부터 다시 본다</h3>
+          <span class="sub mono">FIRST-PRINCIPLES COST TEARDOWN</span>
+        </div>
+        <div class="creed">
+          <span class="q">"이 비용은 관행이 아니라, 꼭 필요해서 존재하는가?"</span><br>
+          운영경비(OPEX)를 결과가 아니라 <b>구조</b>로 본다 — 원가를 숫자로 세우기 위해 항목을 한 줄씩 원장에 펼치고, 각 줄을 심문한다.
+          답이 "관행"이면 레버를 건다. 조달단가 재협상 · 라인 운영구조 재설계 · 비전검사 0불량 · 인원·공수·생산계획·재고 개선으로
+          기준 OPEX를 단계적으로 깎아 <b>−85%</b>까지 내렸다. 1막은 손의 시대에서 정렬을 시작한 시기였다.
+        </div>
+      </section>
+
+      <!-- ===== U3: ledger + waterfall ===== -->
+      <section class="u" aria-label="원가 원장 및 워터폴">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="modtitle">
+          <span class="uno">LEDGER · WATERFALL</span>
+          <h3>운영경비 원장 해부 → 단계 절감 워터폴</h3>
+          <span class="sub mono">왼쪽: 항목별 심문 · 오른쪽: 100 → 15 계단식 하강</span>
+        </div>
+
+        <div class="board2">
+          <!-- LEFT: ledger -->
+          <div>
+            <div class="ledger" role="group" aria-label="원가 원장">
+              <div class="ledhead">
+                <span>원가 항목 · 심문 대상</span>
+                <span class="r">기준 비중</span>
+                <span class="r">절감 후</span>
+              </div>
+              <div id="ledRows"></div>
+              <div class="ledtot">
+                <span class="nm">운영경비 합계 (지수)</span>
+                <span class="base">100</span>
+                <span class="cut" id="ledTot">15</span>
+              </div>
+            </div>
+
+            <div class="interro" id="interro" aria-live="polite">
+              <div class="qh">
+                <span class="qt">원장 메모 · LEDGER NOTE</span>
+                <span class="qn" id="interroIdx">항목 01 / 06</span>
+              </div>
+              <div class="qq" id="interroQ"></div>
+              <div class="qa" id="interroA"></div>
+              <span class="qlev" id="interroLev"></span>
+            </div>
+          </div>
+
+          <!-- RIGHT: waterfall -->
+          <div class="wfwrap">
+            <div class="wfchart">
+              <div class="ovl"></div>
+              <span class="wfcorner tl mono">OPEX INDEX</span>
+              <span class="wfcorner tr mono">illustrative [확인필요]</span>
+              <span class="wfcorner br mono">ENDPOINT −85%</span>
+              <svg class="wfsvg" id="wfSvg" viewBox="0 0 520 300" preserveAspectRatio="xMidYMid meet" role="img" aria-label="운영경비 워터폴 차트 — 100에서 15까지 단계 하강"></svg>
+            </div>
+
+            <div class="wfsteps" id="wfSteps"></div>
+
+            <div class="illnote">
+              <span class="flag">[확인필요]</span> 총 <b>운영경비 −85%</b>(지수 100→15)와 레버 항목은 실제 성과·실제 활동.
+              단, <b>레버별 절감 분해 비율</b>은 정확히 알 수 없어 워터폴 각 단계값은 illustrative(예시) 지수로 표기 — 실제 원화 총액 아님.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== U4: levers ===== -->
+      <section class="u" aria-label="절감 레버">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="modtitle">
+          <span class="uno">LEVERS</span>
+          <h3>제1원칙으로 건 4개 레버 — 실제 활동</h3>
+          <span class="sub mono">분해 비율은 illustrative · 활동 자체는 실제</span>
+        </div>
+        <div class="levgrid">
+          <div class="lev">
+            <div class="lk">LEVER ①</div>
+            <div class="lt">조달단가 재협상</div>
+            <div class="ld">실투입 자원 기준으로 협력사 공급단가를 재산정 · 마진 구조를 개선해 재료·조달원가를 끌어내림.</div>
+          </div>
+          <div class="lev">
+            <div class="lk">LEVER ②</div>
+            <div class="lt">라인 운영구조 재설계</div>
+            <div class="ld">공정·배치·운영 흐름을 다시 설계해 직접 공수와 간접 운영비를 줄임.</div>
+          </div>
+          <div class="lev">
+            <div class="lk">LEVER ③</div>
+            <div class="lt">비전검사 도입 → 0불량</div>
+            <div class="ld">외부 네트워크 활용 저비용 비전검사로 역방향 삽입 등 불량을 원천 차단 · 불량·재작업·폐기 비용 제거.</div>
+          </div>
+          <div class="lev">
+            <div class="lk">LEVER ④</div>
+            <div class="lt">인원·공수·계획·재고 개선</div>
+            <div class="ld">생산계획·인원 운영·재고 관리를 정비해 재고 유지비와 운영 낭비를 축소.</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== U4b: instrument readouts (DMM / scope / gauge) ===== -->
+      <section class="u" aria-label="계측 패널 — 측정 readout">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="modtitle">
+          <span class="uno">INSTRUMENTS</span>
+          <h3>계측 패널 — 측정으로 확정한 성과 readout</h3>
+          <span class="sub mono">DMM 절감률 · 원가 스코프 · OPEX 게이지 · live</span>
+        </div>
+        <div class="instgrid">
+
+          <!-- DMM: OPEX 절감률 -->
+          <div class="inst">
+            <div class="insth"><span class="il"></span><span class="it">DMM · 절감률</span><span class="iu">PERCENT · DC</span></div>
+            <div class="dmm">
+              <div class="dlabel">운영경비(OPEX) 절감률 — 실측</div>
+              <div class="dwin" id="dmmWin" aria-label="OPEX 절감률 마이너스 85 퍼센트">
+                <span class="sign">−</span>
+                <span class="digit" data-d="8"></span>
+                <span class="digit" data-d="5"></span>
+                <span class="unit">%</span>
+              </div>
+              <div class="drange"><span>RANGE 0–100%</span><span>HOLD · ENDPOINT</span></div>
+            </div>
+          </div>
+
+          <!-- Scope: 원가 하강 파형 -->
+          <div class="inst">
+            <div class="insth"><span class="il"></span><span class="it">Scope · 원가 트레이스</span><span class="iu" id="scopeUnit">100 → 15</span></div>
+            <div class="scope">
+              <div class="scopewrap">
+                <svg id="scopeSvg" viewBox="0 0 360 150" preserveAspectRatio="none" role="img" aria-label="기준 100에서 15까지 원가 하강 트레이스"></svg>
+              </div>
+              <div class="scopefoot"><span>BASE <b>100</b> idx</span><span>SWEEP · loop</span><span>END <b>15</b> idx</span></div>
+            </div>
+          </div>
+
+          <!-- Gauge: OPEX 게이지 -->
+          <div class="inst">
+            <div class="insth"><span class="il"></span><span class="it">Gauge · 잔여 OPEX</span><span class="iu">INDEX</span></div>
+            <div class="gauge">
+              <svg id="gaugeSvg" viewBox="0 0 200 124" role="img" aria-label="잔여 운영경비 게이지 — 100에서 15로"></svg>
+              <div class="gcap">바늘: 기준 100 → <b>잔여 15</b> · 스윕 반복</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===== U5: quality system inventory ===== -->
+      <section class="u" aria-label="품질·시스템 현황">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="modtitle">
+          <span class="uno">SYSTEMS</span>
+          <h3>품질체계 · 운영 시스템 — 절감을 떠받친 기반</h3>
+          <span class="sub mono">OPEX 절감 · 제1원칙 분석</span>
+        </div>
+        <div class="inv">
+          <div class="invrow">
+            <div><div class="nm">운영경비(OPEX) 구조 재검토</div><div class="cap">제1원칙으로 전 항목 재산정 · 라인 운영구조 재설계</div></div>
+            <div class="cap">생산관리 총괄</div>
+            <div class="stled ok"><span class="d"></span> −85% 달성</div>
+          </div>
+          <div class="invrow">
+            <div><div class="nm">비전검사 시스템 · 0불량</div><div class="cap">셀 역방향 삽입 등 불량 원천 차단 · 재작업·폐기 제거</div></div>
+            <div class="cap">외부 네트워크 활용</div>
+            <div class="stled ok"><span class="d"></span> 0불량</div>
+          </div>
+          <div class="invrow">
+            <div><div class="nm">SQ · ISO · IATF 16949 품질체계</div><div class="cap">자동차 품질표준 운영 · 고객·필드 불량 0건 유지</div></div>
+            <div class="cap">인증 관리</div>
+            <div class="stled ok"><span class="d"></span> 적합</div>
+          </div>
+          <div class="invrow">
+            <div><div class="nm">조달단가 재협상 · 계약 갱신</div><div class="cap">실투입 기준 공급단가 재산정 · 마진 구조 개선</div></div>
+            <div class="cap">협력사 협상</div>
+            <div class="stled amb"><span class="d"></span> 재산정</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== U6: stack + contact ===== -->
+      <section class="u" aria-label="기술 스택 / 연락처">
+        <span class="ear tl"></span><span class="ear tr"></span><span class="ear bl"></span><span class="ear br"></span>
+        <div class="footu">
+          <div class="chips">
+            <span class="chip"><b>원가 제1원칙</b></span><span class="chip">OPEX 절감</span><span class="chip">조달단가 재협상</span>
+            <span class="chip">라인 운영구조</span><span class="chip">비전검사</span><span class="chip"><b>IATF&nbsp;16949</b></span><span class="chip">SQ·ISO</span>
+            <span class="chip">생산계획·재고</span><span class="chip">배터리팩</span><span class="chip">와이어링 하네스</span>
+          </div>
+        </div>
+        <div class="label-strip" style="margin-top:10px;border-top:1px solid var(--line);padding-top:10px">OPEX −85% · 제1원칙 · 측정 · 심문 · 절감</div>
+      </section>
+
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ============================================================
+     DATA
+     - LEDGER: 운영경비 항목(지수 비중 합 100). 항목·심문은 실제 구조,
+       기준 비중(base)/절감후(cut)는 illustrative [확인필요].
+     - WATERFALL: 기준 100 → 레버별 단계 감액 → 최종 15 (= −85%, 실제).
+       단계 분해값은 illustrative.
+  ============================================================ */
+  var LEDGER = [
+    { nm:"재료비 · 조달단가",  base:38, cut:11, lever:"LEVER ① 조달단가 재협상",
+      q:"이 공급단가는 실투입 자원에 근거한 값인가, 관행 단가인가?",
+      a:"실투입 자원 기준으로 단가를 재산정하고 <b>협력사와 재협상</b> · 마진 구조를 개선해 재료·조달원가를 끌어내렸다." },
+    { nm:"직접 공수",          base:22, cut:7,  lever:"LEVER ② 라인 운영구조 재설계",
+      q:"이 공수는 제품이 요구하는가, 라인 배치가 만들어낸 낭비인가?",
+      a:"<b>라인 운영구조를 재설계</b>해 불필요한 직접 공수를 제거하고 흐름을 단축했다." },
+    { nm:"자재 · 소모품",      base:12, cut:5,  lever:"LEVER ① · ② 단가·운영 개선",
+      q:"이 소모량은 표준인가, 누구도 묻지 않은 초과분인가?",
+      a:"소모품 사용을 재산정하고 단가·운영구조 개선분에 함께 묶어 정비했다." },
+    { nm:"재고 유지비",        base:10, cut:3,  lever:"LEVER ④ 생산계획·재고 개선",
+      q:"이 재고는 수요가 부른 것인가, 계획 부재가 쌓아둔 것인가?",
+      a:"<b>생산계획·재고 관리</b>를 정비해 과잉 재고와 유지비를 축소했다." },
+    { nm:"불량 · 재작업 · 폐기", base:11, cut:0, lever:"LEVER ③ 비전검사 → 0불량",
+      q:"이 폐기·재작업 비용은 불가피한가, 검사로 없앨 수 있는가?",
+      a:"저비용 <b>비전검사를 도입</b>해 역방향 삽입 등 불량을 원천 차단 · <b>0불량</b>으로 이 항목 비용을 제거했다." },
+    { nm:"간접 · 운영",        base:7,  cut:4,  lever:"LEVER ② · ④ 운영 정비",
+      q:"이 간접비는 운영에 필수인가, 줄지 않아서 그대로 둔 것인가?",
+      a:"인원·공수 운영을 정비하고 간접 운영비를 다시 들여다봐 축소했다." }
+  ];
+  // base 합 = 100, cut 합 = 30 → 표기상 합계 100→15 (−85%) 로 정규화하여 표시.
+  // (지수는 illustrative; 실제는 총 OPEX −85% 만 확정)
+
+  /* ---------- ledger render ---------- */
+  var ledRows = document.getElementById("ledRows");
+  var interroQ = document.getElementById("interroQ");
+  var interroA = document.getElementById("interroA");
+  var interroLev = document.getElementById("interroLev");
+  var interroIdx = document.getElementById("interroIdx");
+  var rowEls = [];
+
+  function showInterro(i){
+    var it = LEDGER[i];
+    rowEls.forEach(function(el,j){ el.classList.toggle("active", j===i); });
+    interroQ.textContent = it.q;
+    interroA.innerHTML = it.a;
+    interroLev.textContent = it.lever;
+    interroIdx.textContent = "항목 " + String(i+1).padStart(2,"0") + " / " + String(LEDGER.length).padStart(2,"0");
+  }
+
+  var motionOK = !(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+  LEDGER.forEach(function(it,i){
+    var b = document.createElement("button");
+    b.className = "ledrow";
+    b.type = "button";
+    b.style.animationDelay = (1.05 + i*0.11).toFixed(2)+"s"; // after rack boot
+    var cutTxt = it.cut === 0 ? "0" : String(it.cut);
+    var cutCls = it.cut === 0 ? "cut zero" : "cut";
+    b.innerHTML =
+      '<span class="li"><span class="led"></span>'+
+        '<span style="min-width:0"><span class="nm">'+it.nm+'</span></span></span>'+
+      '<span class="base">'+it.base+'</span>'+
+      '<span class="'+cutCls+'">'+cutTxt+'</span>';
+    b.addEventListener("click", function(){ stopAutoWalk(); showInterro(i); });
+    b.addEventListener("focus", function(){ stopAutoWalk(); showInterro(i); });
+    ledRows.appendChild(b);
+    rowEls.push(b);
+  });
+  // static-correct default: first item interrogated
+  showInterro(0);
+
+  /* ---------- count-up helper (ticks a number toward target) ---------- */
+  function countUp(el, from, to, ms, prefix){
+    if(!el) return;
+    if(!motionOK){ el.textContent = prefix + to; return; }
+    var t0 = null;
+    function step(now){
+      if(t0===null) t0=now;
+      var k = Math.min(1,(now-t0)/ms);
+      var e = 1-Math.pow(1-k,3); // easeOutCubic
+      el.textContent = prefix + Math.round(from + (to-from)*e);
+      if(k<1) requestAnimationFrame(step);
+      else el.textContent = prefix + to;
+    }
+    requestAnimationFrame(step);
+  }
+
+  /* ---------- auto interrogation cursor: walks ledger row-by-row on a loop ----------
+     A glowing scan beam crosses each row as it's interrogated; the cut value ticks up
+     from its baseline. The walk is the cinematic spine of the scene and loops endlessly. */
+  var ledTot = document.getElementById("ledTot");
+  var autoTimer = null, walking = true;
+  function stopAutoWalk(){ walking = false; if(autoTimer){ clearTimeout(autoTimer); autoTimer=null; } }
+  function strikeRow(i){
+    var el = rowEls[i]; if(!el) return;
+    showInterro(i);
+    if(motionOK){
+      el.classList.remove("scan"); void el.offsetWidth; el.classList.add("scan");
+      var cutEl = el.querySelector(".cut");
+      countUp(cutEl, LEDGER[i].cut, LEDGER[i].cut, 0, ""); // ensure exact final
+    }
+  }
+  function autoWalk(){
+    if(!motionOK){ return; }
+    var BOOT = 1700;   // wait for rack + rows to settle
+    var STEP = 720;    // ms per row strike
+    var END_HOLD = 1400;
+    function run(i){
+      if(!walking) return;
+      if(i < LEDGER.length){
+        strikeRow(i);
+        autoTimer = setTimeout(function(){ run(i+1); }, STEP);
+      } else {
+        // climax: total settles + synchronized −85% landing pulse
+        if(ledTot) ledTot.parentNode.classList.add("land");
+        climax();
+        autoTimer = setTimeout(function(){
+          if(ledTot) ledTot.parentNode.classList.remove("land");
+          run0(); // loop
+        }, END_HOLD + 1100);
+      }
+    }
+    function run0(){ if(walking) run(0); }
+    autoTimer = setTimeout(run0, BOOT);
+  }
+
+  /* synchronized climax — fires the −85% landing across DMM / OPEX pill / final waterfall row */
+  function climax(){
+    if(!motionOK) return;
+    var dwin = document.getElementById("dmmWin");
+    if(dwin){ dwin.classList.remove("land"); void dwin.offsetWidth; dwin.classList.add("land");
+      setTimeout(function(){ dwin.classList.remove("land"); }, 1200); }
+    var surgeDot = document.querySelector(".pill .dot.run");
+    if(surgeDot){ surgeDot.classList.remove("surge"); void surgeDot.offsetWidth; surgeDot.classList.add("surge");
+      setTimeout(function(){ surgeDot.classList.remove("surge"); }, 1200); }
+    var finalStep = document.querySelector(".wfstep.final");
+    if(finalStep){ finalStep.classList.remove("land"); void finalStep.offsetWidth; finalStep.classList.add("land");
+      setTimeout(function(){ finalStep.classList.remove("land"); }, 1200); }
+  }
+  autoWalk();
+
+  /* ---------- waterfall steps (text list, static-correct) ---------- */
+  // 단계 분해값 illustrative — 합산 감액 85 → 최종 15
+  var STEPS = [
+    { kind:"baseline", si:"100", nm:"기준 운영경비", sd:"제1원칙 재검토 이전 · 지수 100", val:100, drop:0 },
+    { kind:"step", si:"①", nm:"조달단가 재협상", sd:"재료·조달원가 재산정", drop:27 },
+    { kind:"step", si:"②", nm:"라인 운영구조 재설계", sd:"직접 공수·간접비 축소", drop:22 },
+    { kind:"step", si:"③", nm:"비전검사 → 0불량", sd:"불량·재작업·폐기 비용 제거", drop:24 },
+    { kind:"step", si:"④", nm:"인원·공수·계획·재고", sd:"재고 유지비·운영 낭비 축소", drop:12 },
+    { kind:"final", si:"=15", nm:"최종 운영경비", sd:"기준 대비 −85% · 실제 성과", val:15, drop:0 }
+  ];
+  // 누적값 계산 (100 - 누적 drop)
+  (function(){
+    var running = 100;
+    STEPS.forEach(function(s){
+      if(s.kind==="step"){ running -= s.drop; s.val = running; }
+    });
+  })();
+
+  var wfSteps = document.getElementById("wfSteps");
+  STEPS.forEach(function(s,i){
+    var row = document.createElement("div");
+    row.className = "wfstep " + (s.kind!=="step" ? s.kind : "");
+    row.style.animationDelay = (0.95 + i*0.14).toFixed(2)+"s"; // cascade after rack boot
+    var valTxt;
+    if(s.kind==="baseline") valTxt = String(s.val);
+    else if(s.kind==="final") valTxt = String(s.val);
+    else valTxt = "−"+s.drop+" → "+s.val;
+    row.innerHTML =
+      '<span class="si">'+s.si+'</span>'+
+      '<span><div class="sn">'+s.nm+'</div><div class="sd">'+s.sd+'</div></span>'+
+      '<span class="sv">'+valTxt+'</span>';
+    wfSteps.appendChild(row);
+  });
+
+  /* ---------- waterfall SVG (static, headless-safe) ---------- */
+  (function(){
+    var svg = document.getElementById("wfSvg");
+    var NS = "http://www.w3.org/2000/svg";
+    var W = 520, H = 300;
+    var padL = 34, padR = 12, padT = 18, padB = 40;
+    var plotW = W - padL - padR, plotH = H - padT - padB;
+    var maxV = 100;
+    function yOf(v){ return padT + plotH * (1 - v/maxV); }
+    var wfBars = []; // collected for the looping fill animation
+
+    function el(tag, attrs){
+      var e = document.createElementNS(NS, tag);
+      for(var k in attrs){ e.setAttribute(k, attrs[k]); }
+      return e;
+    }
+
+    // gridlines + axis labels (0,25,50,75,100)
+    [0,25,50,75,100].forEach(function(v){
+      var y = yOf(v);
+      svg.appendChild(el("line",{x1:padL,y1:y.toFixed(1),x2:(W-padR),y2:y.toFixed(1),
+        stroke:"rgba(57,255,138,0.10)","stroke-width":1}));
+      var t = el("text",{x:(padL-6),y:(y+3).toFixed(1),"text-anchor":"end","class":"wfaxis"});
+      t.textContent = v;
+      svg.appendChild(t);
+    });
+
+    // build bars: baseline (full), 4 floating step bars, final (full)
+    var bars = STEPS;
+    var n = bars.length;
+    var gap = 10;
+    var bw = (plotW - gap*(n-1)) / n;
+
+    var prevTop = null; // for connector lines
+
+    bars.forEach(function(s, i){
+      var x = padL + i*(bw+gap);
+      var topV, botV, fill;
+
+      if(s.kind==="baseline"){
+        topV = s.val; botV = 0;
+        fill = "#3a2a14"; // amber-ish baseline
+      } else if(s.kind==="final"){
+        topV = s.val; botV = 0;
+        fill = "url(#wfGrad)";
+      } else {
+        // floating bar showing the drop from previous level to new level
+        botV = s.val;        // new (lower) level
+        topV = s.val + s.drop; // previous (higher) level
+        fill = "#0c5a39";
+      }
+
+      var yTop = yOf(topV), yBot = yOf(botV);
+      var h = Math.max(2, yBot - yTop);
+
+      // bar
+      var rect = el("rect",{x:x.toFixed(1),y:yTop.toFixed(1),width:bw.toFixed(1),height:h.toFixed(1),
+        rx:2, fill:fill});
+      if(s.kind==="baseline"){ rect.setAttribute("stroke","#5a4422"); rect.setAttribute("stroke-width","1"); }
+      else { rect.setAttribute("stroke","rgba(57,255,158,0.32)"); rect.setAttribute("stroke-width","1"); rect.setAttribute("filter","url(#wfGlow)"); }
+      svg.appendChild(rect);
+      // remember for looping fill animation: bars grow from baseline level (yBot) up to yTop
+      wfBars.push({ rect:rect, yTop:yTop, yBot:yBot, h:h, kind:s.kind });
+
+      // connector from previous bar top-of-drop
+      if(prevTop !== null){
+        var conn = el("line",{x1:prevTop.x.toFixed(1),y1:prevTop.y.toFixed(1),
+          x2:x.toFixed(1),y2:yTop.toFixed(1),
+          stroke:"rgba(126,140,135,0.55)","stroke-width":1,"stroke-dasharray":"3 3"});
+        svg.appendChild(conn);
+      }
+      // for steps/final, the connector should hop at the level the bar starts (top)
+      prevTop = { x: x+bw, y: yTop };
+      if(s.kind!=="baseline" && s.kind!=="final"){
+        // next connector should start at the NEW (lower) level = bottom of float
+        prevTop = { x: x+bw, y: yBot };
+      }
+      if(s.kind==="baseline"){
+        prevTop = { x: x+bw, y: yTop }; // baseline top = 100 level
+      }
+
+      // value label above bar
+      var lblV = el("text",{x:(x+bw/2).toFixed(1),y:(yTop-4).toFixed(1),
+        "text-anchor":"middle","class":"wfval"});
+      lblV.setAttribute("fill", s.kind==="baseline" ? "#ffb01f" : "#39ff8a");
+      lblV.textContent = (s.kind==="step") ? ("−"+s.drop) : String(s.val);
+      svg.appendChild(lblV);
+
+      // caption under axis
+      var cap = el("text",{x:(x+bw/2).toFixed(1),y:(H-padB+14).toFixed(1),
+        "text-anchor":"middle","class":"wfcap"});
+      cap.textContent = s.si;
+      svg.appendChild(cap);
+      var cap2 = el("text",{x:(x+bw/2).toFixed(1),y:(H-padB+25).toFixed(1),
+        "text-anchor":"middle","class":"wfcap"});
+      cap2.setAttribute("fill","#5a665f");
+      // shorten name for axis
+      var short = s.nm.length>7 ? s.nm.slice(0,6)+"…" : s.nm;
+      if(s.kind==="baseline") short="기준";
+      if(s.kind==="final") short="−85%";
+      cap2.textContent = short;
+      svg.appendChild(cap2);
+    });
+
+    // defs: gradient + glow (append last so they exist)
+    var defs = el("defs",{});
+    var grad = el("linearGradient",{id:"wfGrad",x1:"0",y1:"0",x2:"0",y2:"1"});
+    grad.appendChild(el("stop",{offset:"0","stop-color":"#2ee07b"}));
+    grad.appendChild(el("stop",{offset:"1","stop-color":"#0c5a39"}));
+    defs.appendChild(grad);
+    var filt = el("filter",{id:"wfGlow",x:"-18%",y:"-18%",width:"136%",height:"136%"});
+    var blur = el("feGaussianBlur",{stdDeviation:"1.1","in":"SourceGraphic",result:"b"});
+    var merge = el("feMerge",{});
+    merge.appendChild(el("feMergeNode",{"in":"b"}));
+    merge.appendChild(el("feMergeNode",{"in":"SourceGraphic"}));
+    filt.appendChild(blur); filt.appendChild(merge);
+    defs.appendChild(filt);
+    svg.insertBefore(defs, svg.firstChild);
+
+    /* ---------- looping waterfall fill animation ----------
+       Each bar grows from its baseline (yBot) up to its true top (yTop),
+       staggered left→right; once filled it holds, then the whole chart
+       resets and replays — endless loop. A subtle glow breathes throughout. */
+    var prefersReduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if(!prefersReduce && wfBars.length){
+      var FILL = 520;   // ms per bar grow
+      var STAG = 230;   // ms stagger between bars
+      var HOLD = 2600;  // ms hold once fully filled
+      var lastT = wfBars.length*STAG + FILL;
+      var cycle = lastT + HOLD;
+      function ease(t){ return t<0?0 : t>1?1 : (1-Math.pow(1-t,3)); } // easeOutCubic
+
+      function frame(now){
+        var p = now % cycle;
+        for(var i=0;i<wfBars.length;i++){
+          var b = wfBars[i];
+          var local = (p - i*STAG) / FILL;        // 0..1 grow progress
+          var k = ease(local);
+          var curY = b.yBot + (b.yTop - b.yBot)*k; // start collapsed at baseline, rise to top
+          var curH = Math.max(0.5, b.yBot - curY);
+          b.rect.setAttribute("y", curY.toFixed(1));
+          b.rect.setAttribute("height", curH.toFixed(1));
+        }
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    }
+  })();
+
+  /* ============================================================
+     INSTRUMENT READOUTS — continuous loops
+     All values are real (OPEX −85%, index 100→15); only the motion
+     loops. Respects prefers-reduced-motion (falls back to final value).
+  ============================================================ */
+  var reduce = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ---------- DMM: digit roll columns settling onto −85 ---------- */
+  (function(){
+    var digits = Array.prototype.slice.call(document.querySelectorAll("#dmmWin .digit"));
+    if(!digits.length) return;
+    digits.forEach(function(d){
+      var target = parseInt(d.getAttribute("data-d"),10);
+      var col = document.createElement("div");
+      col.className = "col";
+      // 0..9 then the target again at the bottom so the roll lands on target
+      var seq = [];
+      for(var n=0;n<=9;n++) seq.push(n);
+      seq.push(target);
+      seq.forEach(function(n){ var s=document.createElement("span"); s.textContent=n; col.appendChild(s); });
+      d.appendChild(col);
+      d._col = col; d._target = target;
+    });
+    if(reduce){
+      // park each column on its target digit
+      digits.forEach(function(d){ d._col.style.transform = "translateY(-"+(d._target)+"em)"; });
+      return;
+    }
+    var ROLL = 900;    // ms roll
+    var HOLD = 2200;   // ms hold on −85
+    var cycle = ROLL + HOLD;
+    function easeOut(t){ return 1-Math.pow(1-t,3); }
+    function tick(now){
+      digits.forEach(function(d,idx){
+        var off = idx*120; // slight stagger per digit
+        var p = ((now - off) % cycle + cycle) % cycle;
+        var em;
+        if(p < ROLL){
+          var k = easeOut(p/ROLL);
+          // spin through full 0..9 a couple times, then settle to target
+          var spins = 2;
+          var total = spins*10 + d._target;
+          em = total * k;
+          em = em % (10) ; // keep within the 0..9 visual band while spinning
+          // ensure it lands exactly on target at the end
+          if(p/ROLL > 0.985) em = d._target;
+        } else {
+          em = d._target; // hold
+        }
+        d._col.style.transform = "translateY(-"+em.toFixed(3)+"em)";
+      });
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  /* ---------- Scope: cost trace sweeping 100 → 15, looping ---------- */
+  (function(){
+    var svg = document.getElementById("scopeSvg");
+    if(!svg) return;
+    var NS="http://www.w3.org/2000/svg";
+    var W=360, H=150;
+    function el(tag,a){ var e=document.createElementNS(NS,tag); for(var k in a) e.setAttribute(k,a[k]); return e; }
+    // local glow filter (self-contained so it works regardless of other SVGs)
+    (function(){
+      var defs=el("defs",{}); var f=el("filter",{id:"scGlow",x:"-30%",y:"-30%",width:"160%",height:"160%"});
+      f.appendChild(el("feGaussianBlur",{stdDeviation:"1.4","in":"SourceGraphic",result:"b"}));
+      var m=el("feMerge",{}); m.appendChild(el("feMergeNode",{"in":"b"})); m.appendChild(el("feMergeNode",{"in":"SourceGraphic"}));
+      f.appendChild(m); defs.appendChild(f); svg.appendChild(defs);
+    })();
+    // grid
+    for(var gx=0; gx<=W; gx+=40){ svg.appendChild(el("line",{x1:gx,y1:0,x2:gx,y2:H,stroke:"rgba(57,255,138,0.07)","stroke-width":1})); }
+    for(var gy=0; gy<=H; gy+=30){ svg.appendChild(el("line",{x1:0,y1:gy,x2:W,y2:gy,stroke:"rgba(57,255,138,0.07)","stroke-width":1})); }
+    // center line
+    svg.appendChild(el("line",{x1:0,y1:H/2,x2:W,y2:H/2,stroke:"rgba(57,255,138,0.16)","stroke-width":1}));
+    // value→y mapping: 100 at top (y=18), 15 near bottom (y=128)
+    function yOf(v){ var t=(v-15)/(100-15); return 128 - t*(128-18); }
+    // the descending cost curve: 100 -> step drops -> 15 (matches waterfall levels)
+    var levels = [100,73,51,27,15]; // 100, after each lever, end 15 (illustrative, = STEPS)
+    function curveY(fx){ // fx 0..1 across width
+      var seg = fx*(levels.length-1);
+      var i = Math.min(levels.length-2, Math.floor(seg));
+      var f = seg - i;
+      // ease each step + small ripple so it always reads as "live"
+      var e = 0.5-0.5*Math.cos(Math.PI*Math.min(1,f*1.2));
+      var v = levels[i] + (levels[i+1]-levels[i])*e;
+      return yOf(v);
+    }
+    var trace = el("path",{fill:"none",stroke:"#39ff8a","stroke-width":2,
+      "stroke-linejoin":"round","stroke-linecap":"round",filter:"url(#scGlow)"});
+    svg.appendChild(trace);
+    var dot = el("circle",{r:3.2,fill:"#bfffd9",stroke:"#39ff8a","stroke-width":1});
+    svg.appendChild(dot);
+
+    function buildPath(){
+      var d="", N=72;
+      for(var i=0;i<=N;i++){ var fx=i/N, x=fx*W, y=curveY(fx); d+=(i?"L":"M")+x.toFixed(1)+" "+y.toFixed(1); }
+      return d;
+    }
+    var staticD = buildPath();
+    trace.setAttribute("d", staticD);
+    if(reduce){ dot.setAttribute("cx",W); dot.setAttribute("cy",curveY(1).toFixed(1)); return; }
+
+    // sweeping reveal: a glowing dot runs the trace, leaving the full curve drawn
+    var len = 0;
+    try{ len = trace.getTotalLength(); }catch(e){ len = W*1.4; }
+    trace.setAttribute("stroke-dasharray", len);
+    var SWEEP=2600, GAP=900, cyc=SWEEP+GAP;
+    function tick(now){
+      var p=(now%cyc)/SWEEP; // 0..>1
+      var k=Math.min(1,p);
+      trace.setAttribute("stroke-dashoffset", (len*(1-k)).toFixed(1));
+      var dx=k*W, dy=curveY(k);
+      dot.setAttribute("cx",dx.toFixed(1));
+      dot.setAttribute("cy",dy.toFixed(1));
+      dot.setAttribute("opacity", p<=1 ? "1" : "0.0");
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  /* ---------- Gauge: needle sweeping 100 → 15, looping ---------- */
+  (function(){
+    var svg=document.getElementById("gaugeSvg");
+    if(!svg) return;
+    var NS="http://www.w3.org/2000/svg";
+    function el(tag,a){ var e=document.createElementNS(NS,tag); for(var k in a) e.setAttribute(k,a[k]); return e; }
+    (function(){
+      var defs=el("defs",{}); var f=el("filter",{id:"ggGlow",x:"-40%",y:"-40%",width:"180%",height:"180%"});
+      f.appendChild(el("feGaussianBlur",{stdDeviation:"1.5","in":"SourceGraphic",result:"b"}));
+      var m=el("feMerge",{}); m.appendChild(el("feMergeNode",{"in":"b"})); m.appendChild(el("feMergeNode",{"in":"SourceGraphic"}));
+      f.appendChild(m); defs.appendChild(f); svg.appendChild(defs);
+    })();
+    var cx=100, cy=104, R=82;
+    // map value 0..100 to angle 180°(left)→0°(right). 100 at left, 0 at right.
+    function angOf(v){ return (180 - (v/100)*180); }
+    function pt(ang,r){ var a=ang*Math.PI/180; return [cx+r*Math.cos(a), cy-r*Math.sin(a)]; }
+    // arc track
+    function arc(rr,a0,a1,stroke,w,extra){
+      var p0=pt(a0,rr), p1=pt(a1,rr);
+      var large=Math.abs(a0-a1)>180?1:0;
+      var sweep=a1<a0?1:0;
+      var path=el("path",Object.assign({d:"M"+p0[0].toFixed(1)+" "+p0[1].toFixed(1)+
+        " A"+rr+" "+rr+" 0 "+large+" "+sweep+" "+p1[0].toFixed(1)+" "+p1[1].toFixed(1),
+        fill:"none",stroke:stroke,"stroke-width":w,"stroke-linecap":"round"}, extra||{}));
+      return path;
+    }
+    // background track (full 100→0)
+    svg.appendChild(arc(R,angOf(100),angOf(0),"rgba(57,255,138,0.12)",10));
+    // amber zone (100→15 = the part we cut) faint
+    svg.appendChild(arc(R,angOf(100),angOf(15),"rgba(255,176,31,0.18)",10));
+    // green endpoint zone (15→0 remaining)
+    svg.appendChild(arc(R,angOf(15),angOf(0),"rgba(57,255,138,0.5)",10,{filter:"url(#ggGlow)"}));
+    // ticks
+    [0,15,25,50,75,100].forEach(function(v){
+      var a=angOf(v), o=pt(a,R+2), inr=pt(a,R-10);
+      svg.appendChild(el("line",{x1:inr[0].toFixed(1),y1:inr[1].toFixed(1),x2:o[0].toFixed(1),y2:o[1].toFixed(1),
+        stroke:(v===15?"#39ff8a":"rgba(170,190,182,0.5)"),"stroke-width":(v===15?2:1)}));
+      var lp=pt(a,R-22);
+      var t=el("text",{x:lp[0].toFixed(1),y:(lp[1]+3).toFixed(1),"text-anchor":"middle",
+        "font-family":"'DM Mono',monospace","font-size":"8","fill":(v===15?"#39ff8a":"#7e8c87")});
+      t.textContent=v; svg.appendChild(t);
+    });
+    // hub + needle
+    var needle=el("line",{x1:cx,y1:cy,x2:pt(angOf(100),R-14)[0].toFixed(1),y2:pt(angOf(100),R-14)[1].toFixed(1),
+      stroke:"#39ff8a","stroke-width":2.4,"stroke-linecap":"round",filter:"url(#ggGlow)"});
+    svg.appendChild(needle);
+    svg.appendChild(el("circle",{cx:cx,cy:cy,r:5,fill:"#0a1410",stroke:"#39ff8a","stroke-width":1.5}));
+    // center value
+    var val=el("text",{x:cx,y:(cy-26).toFixed(1),"text-anchor":"middle",
+      "font-family":"'DM Mono',monospace","font-size":"19","font-weight":"800","fill":"#39ff8a"});
+    val.setAttribute("filter","url(#ggGlow)");
+    svg.appendChild(val);
+    function setNeedle(v){
+      var p=pt(angOf(v),R-14);
+      needle.setAttribute("x2",p[0].toFixed(1)); needle.setAttribute("y2",p[1].toFixed(1));
+      val.textContent=Math.round(v);
+    }
+    if(reduce){ setNeedle(15); return; }
+    var DROP=2200, HOLD=2400, cyc=DROP+HOLD;
+    function easeIO(t){ return t<0.5?2*t*t:1-Math.pow(-2*t+2,2)/2; }
+    function tick(now){
+      var p=now%cyc;
+      var v;
+      if(p<DROP){ v=100-(100-15)*easeIO(p/DROP); }
+      else { v=15; }
+      setNeedle(v);
+      requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  })();
+
+  /* ---------- header dot blink handled by CSS (.dot.run) ---------- */
+
+})();
+</script>
+</body>
+</html>

@@ -1,10 +1,9 @@
 'use client'
 
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import Spline from '@splinetool/react-spline'
 import type { Application } from '@splinetool/runtime'
-import { PROFILE } from '@content/index'
 import { PretextText } from './PretextText'
 import { LandingAmbientWords } from './LandingAmbientWords'
 
@@ -58,12 +57,11 @@ const ICON: Record<string, ReactNode> = {
 type NavItem = { href: string; label: string; icon: ReactNode; primary?: boolean; external?: boolean; mail?: boolean }
 
 const NAV: NavItem[] = [
-  { href: '/lab/17-gantt-cpm.html', label: 'Projects', icon: ICON.projects, external: true },
   { href: '/film', label: 'Portfolio', icon: ICON.portfolio, primary: true },
+  { href: '/lab/gantt-cpm.html', label: 'Projects', icon: ICON.projects, external: true },
   { href: '/lab/scenes.html', label: 'Scenes', icon: ICON.scenes, external: true },
   { href: '/lab/skills.html', label: 'Skills', icon: ICON.skills, external: true },
   { href: '/resume', label: 'Resume', icon: ICON.resume },
-  { href: `mailto:${PROFILE.contact.email}`, label: 'Contact', icon: ICON.contact, mail: true },
 ]
 
 const TX_MS = 720
@@ -79,6 +77,13 @@ export function Landing() {
   const splineRef = useRef<Application | null>(null)
   const navigatingRef = useRef(false)
   const [leaving, setLeaving] = useState(false)
+  // Reveal from black on mount — continues the film's iris-out collapse so the handoff
+  // from /film reads as one continuous shot (also a gentle intro on direct loads).
+  const [entering, setEntering] = useState(true)
+  useEffect(() => {
+    const r = requestAnimationFrame(() => setEntering(false))
+    return () => cancelAnimationFrame(r)
+  }, [])
 
   function onLoad(app: Application) {
     splineRef.current = app
@@ -155,20 +160,35 @@ export function Landing() {
           color="#8d8d8d"
           width={280}
           height={18}
+          delay={2400}
+          style={{ margin: '0 0 12px' }}
+        />
+        {/* film ends on "미래를 만드는 사람" → lands here: "It's me." 우아한 이탤릭 세리프,
+            이름 위에서 같은 pretext 등장 효과로 조립 (필름 엔딩과 자연스럽게 연결) */}
+        <PretextText
+          text="It’s me."
+          fontFamily="'Playfair Display', 'Noto Serif KR', serif"
+          fontStyle="italic"
+          fontWeight={500}
+          fontPx={33}
+          letterSpacing={1}
+          color="#cfe9e3"
+          width={300}
+          height={48}
           delay={2500}
-          style={{ margin: '0 0 14px' }}
+          style={{ margin: '0 0 4px' }}
         />
         <PretextText
           text="YANGHA PARK"
-          fontFamily="'Pretendard Variable', Pretendard, sans-serif"
-          fontWeight={800}
-          fontPx={60}
-          letterSpacing={3}
+          fontFamily="'Playfair Display', 'Noto Serif KR', serif"
+          fontWeight={600}
+          fontPx={62}
+          letterSpacing={5}
           color="#f1f4f8"
-          width={470}
-          height={82}
-          delay={2500}
-          style={{ margin: '0 0 8px', maxWidth: '92vw' }}
+          width={540}
+          height={86}
+          delay={3500}
+          style={{ margin: '0 0 10px', maxWidth: '92vw' }}
         />
         <PretextText
           text="Designing an awesome future"
@@ -179,7 +199,7 @@ export function Landing() {
           color="rgba(150, 168, 180, 0.82)"
           width={470}
           height={40}
-          delay={2500}
+          delay={4100}
           style={{ margin: '0 0 28px', maxWidth: '92vw' }}
         />
         <nav className="lp-actions" aria-label="primary">
@@ -206,6 +226,20 @@ export function Landing() {
             then the destination page reveals from black (no abrupt pop) */}
         <div className="lp-tx-fade" />
       </div>
+
+      {/* Reveal-from-black on entry (film iris-out → landing continuity) */}
+      <div
+        aria-hidden
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: '#000',
+          zIndex: 80,
+          pointerEvents: 'none',
+          opacity: entering ? 1 : 0,
+          transition: 'opacity 760ms ease',
+        }}
+      />
     </main>
   )
 }

@@ -23,6 +23,21 @@
     f.addEventListener('load', function () {
       w.classList.add('loaded');
       fitOne(w);
+      // Perf: gallery previews must NOT keep animating — many heavy canvas
+      // scenes looping at once pins the main thread. Let each preview compose
+      // its intro briefly, then FREEZE it by neutralizing the scene's animation
+      // loop (same-origin lab pages → we can null out its requestAnimationFrame
+      // and stop new interval/timeout-driven loops). The scene runs normally
+      // only when opened full-screen via the card's "전체화면으로 열기" link.
+      setTimeout(function () {
+        try {
+          var win = f.contentWindow;
+          if (win) {
+            win.requestAnimationFrame = function () { return 0; };
+            win.setInterval = function () { return 0; };
+          }
+        } catch (e) {}
+      }, 900);
     });
     f.src = w.dataset.src;
     w.appendChild(f);

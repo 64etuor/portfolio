@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SYS-BIOS // SYSTEM FIRMWARE</title>
+<title>SYS-BIOS // POWER-ON SELF-TEST</title>
 <style>
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
 
@@ -11,9 +11,7 @@
     --phos:#d7d7d7;
     --phos-dim:#8d8d8d;
     --phos-deep:#3a3a3a;
-    --amber:#c8c8c8;
-    --red:#a8a8a8;
-    --cyan:#bcbcbc;
+    --accent:#c8c8c8;
     --bg:#050505;
     --bg2:#101010;
     --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
@@ -51,7 +49,6 @@
     background:
       radial-gradient(ellipse 130% 130% at 50% 50%, var(--bg2) 0%, var(--bg) 62%, #000 100%);
     overflow:hidden;
-    perspective:1400px;
   }
   #crt::before{
     /* scanlines */
@@ -70,13 +67,32 @@
     opacity:.86;
   }
 
+  /* power-on flash — the tube warming up */
+  #flash{
+    position:absolute;inset:0;z-index:55;pointer-events:none;background:#fff;
+    opacity:0;
+  }
+  #flash.poweron{animation:poweron 1.05s ease-out forwards}
+  @keyframes poweron{
+    0%{opacity:0;transform:scaleY(.004);filter:brightness(3)}
+    6%{opacity:.9;transform:scaleY(.012)}
+    14%{opacity:.5;transform:scaleY(.5)}
+    30%{opacity:.12;transform:scaleY(1)}
+    100%{opacity:0;transform:scaleY(1)}
+  }
+  #flash.ready{animation:readyflash .5s ease-out forwards}
+  @keyframes readyflash{0%{opacity:.42}100%{opacity:0}}
+
   #screen{
     position:absolute;inset:0;
     padding:34px 48px 70px;
     overflow:hidden;
     text-shadow:0 0 3px rgba(255,255,255,.18);
     z-index:10;
+    opacity:0;
   }
+  #screen.lit{animation:screenin .9s ease-out .18s forwards}
+  @keyframes screenin{from{opacity:0}to{opacity:1}}
 
   /* ===== BOOT layer ===== */
   #boot{height:100%;display:flex;flex-direction:column;}
@@ -85,136 +101,64 @@
     border-bottom:1px solid var(--phos-deep);padding-bottom:10px;margin-bottom:14px;
   }
   .banner .vend{font-weight:700;letter-spacing:.5px;}
-  .banner .vend b{color:var(--amber);text-shadow:none}
+  .banner .vend b{color:var(--accent);text-shadow:none}
   .banner .meta{text-align:right;color:var(--phos-dim);font-size:12.5px;}
+
+  /* ASCII logo */
+  #asciiLogo{color:var(--phos);font-size:11px;line-height:1.05;white-space:pre;
+    margin:2px 0 10px;text-shadow:none;min-height:0}
+
   .bootlog{flex:1;overflow:hidden;font-size:14px;}
   .bootlog .line{white-space:pre-wrap;}
-  .ok{color:var(--phos);} .ok b{color:var(--phos)}
+  .ok{color:var(--phos);}
   .dim{color:var(--phos-dim);}
-  .warn{color:var(--amber);text-shadow:none}
-  .err{color:var(--red);text-shadow:none}
-  .cy{color:var(--cyan);text-shadow:none}
   .tag-ok{color:#000;background:var(--phos);padding:0 5px;font-weight:700;border-radius:1px;}
-  .tag-patch{color:#000;background:var(--amber);padding:0 5px;font-weight:700;border-radius:1px;}
-  .tag-detect{color:#000;background:var(--cyan);padding:0 5px;font-weight:700;border-radius:1px;}
 
-  .membar{margin:6px 0 2px;color:var(--phos-dim);}
+  .membar{color:var(--phos-dim);}
   .membar .fill{color:var(--phos)}
+
+  /* final READY banner — the handoff frame */
+  .readyline{
+    margin-top:10px;font-weight:700;letter-spacing:2px;color:var(--phos);
+    opacity:0;
+  }
+  .readyline.on{animation:rfade .4s ease forwards}
+  @keyframes rfade{from{opacity:0}to{opacity:1}}
 
   .bootfoot{
     position:absolute;left:48px;right:48px;bottom:26px;
     display:flex;justify-content:space-between;align-items:center;
     border-top:1px solid var(--phos-deep);padding-top:10px;font-size:12.5px;color:var(--phos-dim);
   }
-  .skiphint{color:var(--amber);}
-  .skiphint .blink{animation:blink 1s steps(2) infinite}
-  @keyframes blink{50%{opacity:0}}
+  .bootfoot .stat{letter-spacing:1px}
   .prog{flex:1;margin:0 24px;height:9px;border:1px solid var(--phos-deep);position:relative;}
   .prog > i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--phos);
     box-shadow:none;transition:width .15s linear;display:block}
 
-  /* ASCII logo */
-  #asciiLogo{color:var(--phos);font-size:11px;line-height:1.05;white-space:pre;
-    margin:2px 0 10px;text-shadow:none;min-height:0}
-
-  /* ===== POST-BOOT / OS layer ===== */
-  #os{display:none;height:100%;flex-direction:column;}
-  #os.show{display:flex;animation:osfade .5s ease}
-  @keyframes osfade{from{opacity:0;filter:brightness(2)}to{opacity:1}}
-
-  .osbar{
-    display:flex;justify-content:space-between;align-items:center;
-    border:1px solid var(--phos-deep);background:rgba(255,255,255,.035);
-    padding:8px 14px;margin-bottom:14px;font-size:13px;
-  }
-  .osbar .who{font-weight:700;}
-  .osbar .who b{color:var(--amber)}
-  .osbar .clock{color:var(--phos-dim)}
-
-  .oswrap{flex:1;display:grid;grid-template-columns:minmax(0,720px);align-content:start;min-height:0;}
-
-  .panel{border:1px solid var(--phos-deep);padding:22px 26px;overflow:auto;background:rgba(255,255,255,.025);min-height:0}
-  .panel::-webkit-scrollbar{width:10px}
-  .panel::-webkit-scrollbar-thumb{background:var(--phos-deep)}
-  .panel h2{font-size:20px;color:var(--amber);text-shadow:none;
-    letter-spacing:1px;margin-bottom:4px;}
-  .panel .sub{color:var(--phos-dim);font-size:12.5px;margin-bottom:18px;
-    border-bottom:1px dashed var(--phos-deep);padding-bottom:12px}
-
-  .view{display:none}
-  .view.on{display:block;animation:vfade .25s ease}
-  @keyframes vfade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-
-  /* career entries */
-  .job{border-left:2px solid var(--phos-deep);padding:0 0 20px 18px;margin-left:4px;position:relative}
-  .job::before{content:"";position:absolute;left:-6px;top:5px;width:9px;height:9px;
-    background:var(--phos);box-shadow:none;transform:rotate(45deg)}
-  .job:last-child{padding-bottom:0}
-  .job .role{font-weight:700;font-size:15.5px;color:var(--phos)}
-  .job .role .co{color:var(--amber)}
-  .job .when{color:var(--phos-dim);font-size:12px;margin:2px 0 9px}
-  .job ul{list-style:none}
-  .job li{padding:3px 0 3px 18px;position:relative;font-size:13.5px}
-  .job li::before{content:"›";position:absolute;left:0;color:var(--cyan)}
-  .job li b{color:var(--amber);font-weight:700}
-
-  /* skills grid */
-  .skgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
-  .sk{border:1px solid var(--phos-deep);padding:7px 11px;font-size:12.5px;display:flex;
-    justify-content:space-between;gap:8px;background:rgba(255,255,255,.025)}
-  .sk .v{color:var(--cyan);font-size:11px}
-  .skcat{margin:18px 0 8px;color:var(--amber);font-size:13px;font-weight:700;letter-spacing:.5px}
-  .skcat:first-child{margin-top:0}
-
-  /* metrics */
-  .metgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:12px}
-  .met{border:1px solid var(--phos-deep);padding:14px 16px;background:rgba(255,255,255,.025);position:relative;overflow:hidden}
-  .met .num{font-size:28px;font-weight:700;color:var(--phos);text-shadow:none;line-height:1}
-  .met .num.amber{color:var(--amber);text-shadow:none}
-  .met .lab{color:var(--phos-dim);font-size:12px;margin-top:7px}
-  .met .reg{position:absolute;top:8px;right:10px;color:var(--phos-deep);font-size:10px;letter-spacing:1px}
-
-  .kv{display:grid;grid-template-columns:130px 1fr;gap:6px 14px;font-size:13.5px}
-  .kv dt{color:var(--phos-dim)}
-  .kv dd a{color:var(--cyan);text-decoration:none;border-bottom:1px dotted var(--cyan)}
-  .kv dd a:hover{color:var(--phos)}
-
-  .cur{display:inline-block;width:9px;height:16px;background:var(--phos);
-    box-shadow:none;vertical-align:-3px;animation:blink 1.05s steps(2) infinite}
-
-  /* idle heartbeat log — keeps the quiet boot state alive after POST */
-  .idlelog{margin-top:16px;border-top:1px dashed var(--phos-deep);padding-top:12px;
-    font-size:12px;color:var(--phos-dim);min-height:84px}
-  .idlelog .iln{white-space:pre-wrap;opacity:0;animation:ifade .5s ease forwards}
-  .idlelog .iln .t{color:var(--phos-deep);margin-right:10px}
-  .idlelog .iln .idle-cur{display:inline-block;width:7px;height:12px;
-    background:var(--phos-dim);vertical-align:-2px;margin-left:2px;
-    animation:blink 1.05s steps(2) infinite}
-  @keyframes ifade{from{opacity:0}to{opacity:.92}}
-
-  .beep{position:fixed;right:18px;top:14px;z-index:60;width:9px;height:9px;border-radius:50%;
-    background:var(--phos-deep);transition:.06s}
-  .beep.on{background:var(--amber);box-shadow:none}
+  .cur{display:inline-block;width:9px;height:15px;background:var(--phos);
+    vertical-align:-2px;margin-left:6px;animation:blink 1.05s steps(2) infinite}
+  @keyframes blink{50%{opacity:0}}
 
   @media (max-width:980px){
     #screen{padding:24px 22px 60px}
+    .bootfoot{left:22px;right:22px}
   }
 </style>
 </head>
 <body>
 <div id="crt">
-  <div class="beep" id="beep"></div>
+  <div id="flash"></div>
   <div id="screen">
 
     <!-- ============ BOOT ============ -->
     <div id="boot">
       <div class="banner">
         <div>
-          <div class="vend"><b>SYS</b>-BIOS (C) 2025 &nbsp;Core Microsystems</div>
-          <div class="dim">Firmware Rev. 04.18 &nbsp;|&nbsp; Build ENG-OPS-SYS &nbsp;|&nbsp; CPU: HumanCore™ x1 @ System 3.6GHz</div>
+          <div class="vend"><b>SYS</b>-BIOS &nbsp; Core Microsystems</div>
+          <div class="dim">Firmware Rev. 04.18 &nbsp;|&nbsp; HumanCore&trade; x1 @ 3.6GHz &nbsp;|&nbsp; (C) 2025</div>
         </div>
         <div class="meta">
-          ESC = Setup<br>F12 = Boot Menu<br>DEL = SKIP
+          POWER-ON SELF-TEST<br>SERIAL 0xENG-OPS-SYS
         </div>
       </div>
 
@@ -222,37 +166,12 @@
 
       <div class="bootlog" id="bootlog"></div>
 
+      <div class="readyline" id="readyline">SYSTEM READY<span class="cur"></span></div>
+
       <div class="bootfoot">
-        <span class="skiphint">▸ PRESS ANY KEY / CLICK = SKIP <span class="blink">_</span></span>
+        <span class="stat" id="bootstat">POST</span>
         <div class="prog"><i id="progbar"></i></div>
         <span id="progpct">00%</span>
-      </div>
-    </div>
-
-    <!-- ============ OS / POST-BOOT ============ -->
-    <div id="os">
-      <div class="osbar">
-        <div class="who"><b>SYS-BIOS</b> &nbsp;//&nbsp; SYSTEM ONLINE</div>
-        <div class="clock" id="osclock">--:--:--</div>
-      </div>
-
-      <div class="oswrap">
-        <section class="panel" id="panel">
-          <div class="view on" id="v-boot-complete">
-            <h2>BOOT COMPLETE</h2>
-            <div class="sub kr">POST 결과만 보존한 저전력 대기 화면</div>
-            <div class="metgrid">
-              <div class="met"><span class="reg">0x01</span><div class="num">[OK]</div><div class="lab kr">MFG_LINE · 제조 공정</div></div>
-              <div class="met"><span class="reg">0x02</span><div class="num">[OK]</div><div class="lab kr">DATA_BUS · DB·BI</div></div>
-              <div class="met"><span class="reg">0x03</span><div class="num">[OK]</div><div class="lab kr">DEV_STACK · FastAPI·AWS</div></div>
-              <div class="met"><span class="reg">0x04</span><div class="num">[OK]</div><div class="lab kr">AX_AI · MCP 서버</div></div>
-            </div>
-            <p class="dim kr" style="margin-top:18px;font-size:12.5px">
-              SYSTEM READY. awaiting film shell overlay<span class="cur"></span>
-            </p>
-            <div class="idlelog" id="idlelog"></div>
-          </div>
-        </section>
       </div>
     </div>
 
@@ -260,26 +179,26 @@
 </div>
 
 <script>
-/* POST checklist — repurposed BIOS language for system domains */
+/* ============ TIMING ============ */
+const BOOT_MS = 6200; // ideal on-screen duration (declared to parent film)
+try{
+  parent && parent !== window &&
+  parent.postMessage({type:'film-scene', file:'05-bios-boot.html', ms:BOOT_MS, ready:true}, '*');
+}catch(e){}
+
+/* POST checklist — clean, generic firmware boot lines (no narrative content) */
 const POST = [
   {t:'Initializing SYS-BIOS Power-On Self-Test ...', s:'dim'},
-  {t:'CMOS Checksum .................. valid (STATE PERSISTENT)', s:'dim'},
-  {t:'Detecting HumanCore™ Processor .. OPS / ENGINEER / SYSTEMS', s:'ok'},
+  {t:'CMOS Checksum ................. valid', s:'dim'},
+  {t:'Detecting HumanCore™ Processor . online', s:'ok'},
   {mem:true},
-  {t:'PROBE  MFG_LINE.SYS  [제조] ............... mounted', s:'ok', tag:'OK', beep:1},
-  {t:'PROBE  DATA_BUS.SYS  [데이터] ............. DB·BI online', s:'ok', tag:'OK', beep:1},
-  {t:'PROBE  DEV_STACK.SYS [개발] .............. FastAPI/AWS/CI', s:'ok', tag:'OK', beep:1},
-  {t:'PROBE  AX_AI.SYS     [AI] ................. MCP server up', s:'cy', tag:'OK', beep:1},
-  {t:'PROBE  QUALITY.SYS   [품질] .............. IATF16949 hold', s:'ok', tag:'OK', beep:1},
-  {t:'Loading DEFECT_GUARD.SYS ...... anomaly detected', s:'warn'},
-  {t:'  ↳ applying DOE optimization ... 비전 검출 → 재용접 → clean', s:'warn', tag:'PATCH', tagtxt:'PATCHED', beep:1},
-  {t:'ACPI: PROCESS power state ...... optimized (deep save)', s:'ok', tag:'OK'},
-  {t:'SATA0: MES_DATABASE ........... attached  (real-time trace)', s:'ok', tag:'OK', beep:1},
-  {t:'IRQ:  vision-inspection ....... routed   (quality gate up)', s:'ok', tag:'OK'},
-  {t:'Scanning DRAM device map ...... 29 devices detected', s:'cy', tag:'DET', tagtxt:'DETECTED'},
-  {t:'Verifying boot signature ...... SYS-BIOS v04.18  OK', s:'ok'},
-  {t:'', s:'dim'},
-  {t:'>> POST complete. Holding quiet boot state ...', s:'cy'},
+  {t:'PCI Bus enumeration .......... 7 devices', s:'ok', tag:1},
+  {t:'Storage controller ........... attached', s:'ok', tag:1},
+  {t:'System clock ................. synchronized', s:'ok', tag:1},
+  {t:'Display adapter .............. CRT 1280x720', s:'ok', tag:1},
+  {t:'Loading firmware modules ..... mounted', s:'ok', tag:1},
+  {t:'Verifying boot signature ..... v04.18', s:'ok', tag:1},
+  {t:'Handing off to system shell .. ready', s:'ok'},
 ];
 
 const LOGO = [
@@ -292,16 +211,13 @@ const LOGO = [
 
 /* ============ ELEMENTS ============ */
 const $ = s=>document.querySelector(s);
-const bootEl=$('#boot'), osEl=$('#os'), logEl=$('#bootlog'), logoEl=$('#asciiLogo');
-const barEl=$('#progbar'), pctEl=$('#progpct'), beepEl=$('#beep');
-let booted=false, timers=[];
+const screenEl=$('#screen'), flashEl=$('#flash');
+const logEl=$('#bootlog'), logoEl=$('#asciiLogo');
+const barEl=$('#progbar'), pctEl=$('#progpct'), statEl=$('#bootstat'), readyEl=$('#readyline');
+let done=false, timers=[];
 
 /* ============ HELPERS ============ */
 function esc(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function beep(){
-  beepEl.classList.add('on');
-  setTimeout(()=>beepEl.classList.remove('on'),90);
-}
 function setProg(p){
   p=Math.min(100,Math.round(p));
   barEl.style.width=p+'%';
@@ -309,29 +225,28 @@ function setProg(p){
 }
 
 /* ============ ASCII LOGO type-in ============ */
-function typeLogo(done){
+function typeLogo(cb){
   let i=0;
   (function step(){
-    if(booted)return;
+    if(done)return;
     logoEl.textContent = LOGO.slice(0,i+1).join('\n');
     i++;
-    if(i<LOGO.length){ timers.push(setTimeout(step,70)); }
-    else { timers.push(setTimeout(done,180)); }
+    if(i<LOGO.length){ timers.push(setTimeout(step,60)); }
+    else { timers.push(setTimeout(cb,150)); }
   })();
 }
 
-/* ============ MEMORY COUNT-UP (boot subsystem check) ============ */
-function memCount(lineEl, done){
+/* ============ MEMORY COUNT-UP ============ */
+function memCount(lineEl, cb){
   const TARGET=2048; let v=0;
   const step=()=>{
-    if(booted)return;
-    v += Math.max(1, Math.round((TARGET-v)/6));
+    if(done)return;
+    v += Math.max(1, Math.round((TARGET-v)/5));
     if(v>=TARGET)v=TARGET;
     lineEl.innerHTML='<span class="membar">Memory Test : <span class="fill">'
-      + String(v).padStart(4,' ')+'</span> MB OK '
-      + '<span class="dim">// process working-set mapped</span></span>';
-    if(v<TARGET){ timers.push(setTimeout(step, 26)); }
-    else { beep(); timers.push(setTimeout(done,260)); }
+      + String(v).padStart(4,' ')+'</span> MB OK</span>';
+    if(v<TARGET){ timers.push(setTimeout(step, 22)); }
+    else { timers.push(setTimeout(cb,200)); }
   };
   step();
 }
@@ -342,10 +257,10 @@ function runBoot(){
     let idx=0;
     const total=POST.length;
     const next=()=>{
-      if(booted)return;
-      if(idx>=total){ timers.push(setTimeout(finishBoot,420)); return; }
+      if(done)return;
+      if(idx>=total){ setProg(100); timers.push(setTimeout(finishBoot,360)); return; }
       const item=POST[idx];
-      setProg(8 + (idx/total)*92);
+      setProg(6 + (idx/total)*94);
 
       if(item.mem){
         const ln=document.createElement('div'); ln.className='line';
@@ -356,90 +271,69 @@ function runBoot(){
       const ln=document.createElement('div');
       ln.className='line '+(item.s||'dim');
       let html=esc(item.t);
-      if(item.tag==='OK')      html+=' <span class="tag-ok">[ OK ]</span>';
-      else if(item.tag==='PATCH')  html+=' <span class="tag-patch">['+(item.tagtxt||'PATCHED')+']</span>';
-      else if(item.tag==='DET') html+=' <span class="tag-detect">['+(item.tagtxt||'DETECTED')+']</span>';
+      if(item.tag) html+=' <span class="tag-ok">[ OK ]</span>';
       ln.innerHTML=html;
       logEl.appendChild(ln);
-      if(item.beep) beep();
       idx++;
-      timers.push(setTimeout(next, item.t===''?120 : 190));
+      timers.push(setTimeout(next, 185));
     };
     next();
   });
 }
 
+/* ============ READY / HANDOFF ============ */
 function finishBoot(){
-  if(booted)return;
-  booted=true;
+  if(done)return;
+  done=true;
   setProg(100);
-  timers.forEach(clearTimeout);
-  bootEl.style.display='none';
-  osEl.classList.add('show');
-  startClock();
-  startIdle();
+  statEl.textContent='READY';
+  readyEl.classList.add('on');
+  flashEl.classList.remove('poweron');
+  // brief warm flash as the system "comes up" — earns the cut to the film
+  void flashEl.offsetWidth;
+  flashEl.classList.add('ready');
 }
 
-/* ============ IDLE HEARTBEAT ============
-   After POST, the box never goes to a dead black screen: a quiet daemon
-   log keeps cycling so the boot state stays subtly alive under the film
-   shell. No new metrics — just idle/housekeeping chatter in BIOS language. */
-const IDLE = [
-  'acpi: idle governor parked — deep save held',
-  'mes_database: heartbeat ok · trace buffer flushed',
-  'vision-inspection: quality gate up · no anomaly',
-  'defect_guard: scanning ... clean',
-  'humancore: working-set resident · awaiting task',
-  'data_bus: link up · BI pipeline idle',
-  'dev_stack: services nominal · CI runner asleep',
-  'ax_ai: mcp server listening · 0 pending',
-  'watchdog: tick — system online, holding quiet boot state',
-];
-function startIdle(){
-  const box=$('#idlelog');
-  if(!box)return;
-  let n=0, MAX=6;
-  const emit=()=>{
-    const prev=box.querySelector('.idle-cur');
-    if(prev) prev.remove();
+/* ============ STATIC READY FRAME (reduced motion) ============ */
+function showReadyStatic(){
+  done=true;
+  screenEl.style.opacity='1';
+  logoEl.textContent=LOGO.join('\n');
+  logEl.innerHTML='';
+  POST.forEach(item=>{
     const ln=document.createElement('div');
-    ln.className='iln';
-    const d=new Date();
-    ln.innerHTML='<span class="t">['+d.toTimeString().slice(0,8)+']</span>'
-      + esc(IDLE[n % IDLE.length])
-      + '<span class="idle-cur"></span>';
-    box.appendChild(ln);
-    n++;
-    while(box.children.length>MAX) box.removeChild(box.firstChild);
-  };
-  emit();
-  setInterval(emit, 2600);
+    if(item.mem){ ln.className='line';
+      ln.innerHTML='<span class="membar">Memory Test : <span class="fill">2048</span> MB OK</span>'; }
+    else{ ln.className='line '+(item.s||'dim');
+      let html=esc(item.t);
+      if(item.tag) html+=' <span class="tag-ok">[ OK ]</span>';
+      ln.innerHTML=html; }
+    logEl.appendChild(ln);
+  });
+  setProg(100);
+  statEl.textContent='READY';
+  readyEl.style.opacity='1';
 }
 
-/* skip */
-function skip(){ if(!booted) finishBoot(); }
-window.addEventListener('keydown', e=>{
-  if(!booted){ skip(); return; }
-});
-$('#screen').addEventListener('click', e=>{
-  if(!booted && !e.target.closest('a')) skip();
-});
-
-/* ============ CLOCK ============ */
-function startClock(){
-  const c=$('#osclock');
-  const tick=()=>{ const d=new Date();
-    c.textContent='UPTIME '+d.toTimeString().slice(0,8); };
-  tick(); setInterval(tick,1000);
+/* ============ START ============ */
+function startAnim(){
+  flashEl.classList.add('poweron');
+  screenEl.classList.add('lit');
+  timers.push(setTimeout(runBoot, 280));
+}
+function start(){
+  const reduce = window.matchMedia &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){ showReadyStatic(); return; }
+  startAnim();
 }
 
-/* ============ BOOT START (after fonts ready, with safe fallback) ============ */
-function start(){ runBoot(); }
+/* fonts ready, with safe fallback so headless never stalls */
 if(document.fonts && document.fonts.ready){
   let started=false;
   const go=()=>{ if(!started){ started=true; start(); } };
   document.fonts.ready.then(go);
-  setTimeout(go, 600); // fallback so headless never stalls
+  setTimeout(go, 500);
 } else { start(); }
 </script>
 </body>

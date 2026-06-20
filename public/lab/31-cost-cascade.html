@@ -116,10 +116,15 @@
   /* corner frame ticks — quiet instrument chrome */
   .frame{position:absolute;z-index:34;color:var(--phos-deep);font-size:10.5px;
     letter-spacing:.28em;text-transform:uppercase;opacity:.65;}
-  .frame.tl{top:26px;left:32px}
   .frame.tr{top:26px;right:32px;text-align:right}
   .frame.bl{bottom:26px;left:32px}
   .frame.br{bottom:26px;right:32px;text-align:right}
+
+  /* canonical scene eyebrow (matches 28) */
+  .eyebrow{position:absolute;z-index:34;left:5.4%;top:12.2%;pointer-events:none;
+    font-family:var(--mono);font-size:clamp(10px,.82vw,15px);
+    letter-spacing:.42em;color:var(--phos-dim);text-shadow:none;text-transform:none;}
+  .eyebrow b{color:var(--sig);text-shadow:0 0 8px rgba(194,85,58,.4);font-weight:700;}
 
   @media (max-width:760px){
     .frame{font-size:9px;letter-spacing:.18em}
@@ -132,7 +137,7 @@
   <canvas id="field"></canvas>
 
   <!-- chrome -->
-  <div class="frame tl">SCN&nbsp;07 · 결과</div>
+  <div class="eyebrow kr"><b>SCENE 07</b> · 비용 — COST CASCADE</div>
   <div class="frame tr">FRACTURE&nbsp;PROPAGATION</div>
   <div class="frame bl">ORIGIN&nbsp;→&nbsp;3&nbsp;BRANCH</div>
   <div class="frame br">∞&nbsp;SEAMLESS&nbsp;LOOP</div>
@@ -231,12 +236,12 @@ function resize(){
 }
 
 /* ===================== static lattice (offscreen) ===================== */
-let nodesX, nodesY, NSX, NSY;
+let nodesX, NSX, NSY;
 function buildLattice(){
   const step = Math.max(22, Math.min(34, W/56));
   NSX = Math.ceil(W/step)+1;
   NSY = Math.ceil(H/step)+1;
-  nodesX = step; nodesY = step;
+  nodesX = step;
 
   lattice = document.createElement('canvas');
   lattice.width = W*DPR; lattice.height = H*DPR;

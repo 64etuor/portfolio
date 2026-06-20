@@ -3,20 +3,17 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>씬 8 — 연결하는 사람 / THE CONNECTOR</title>
+<title>SCENE 08 · 연결 — THE CONNECTOR</title>
 <style>
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
 
   :root{
     --bg:#050505;
-    --bg2:#101010;
     --phos:#d7d7d7;
     --phos-dim:#8d8d8d;
     --phos-deep:#3a3a3a;
     --link:#4fe0c4;        /* 연결을 빛내는 절제된 청록 인광 */
-    --link-bright:#c4f8ee;
-    --link-deep:#1d6b5f;
     --kr:"Pretendard","Pretendard Variable",-apple-system,sans-serif;
     --mono:"JetBrains Mono",ui-monospace,monospace;
   }
@@ -67,6 +64,12 @@
   #status{color:var(--link);min-width:120px;text-align:left;letter-spacing:3px;
     text-shadow:0 0 12px rgba(79,224,196,.4);transition:color .5s;}
 
+  /* canonical scene eyebrow (matches 28) */
+  .scene-id{position:absolute;z-index:65;left:5.4%;top:12.2%;pointer-events:none;
+    font-family:var(--mono);font-size:clamp(10px,.82vw,15px);
+    letter-spacing:.42em;color:var(--phos-dim);text-shadow:none;}
+  .scene-id b{color:var(--link);text-shadow:0 0 8px rgba(79,224,196,.4);font-weight:700;}
+
   .footer{
     position:absolute;bottom:4.6vh;left:0;right:0;z-index:30;
     display:flex;justify-content:center;gap:14px;
@@ -109,13 +112,11 @@
 <div class="stage">
   <canvas id="scene"></canvas>
 
+  <div class="scene-id kr"><b>SCENE 08</b> · 연결 — THE CONNECTOR</div>
+
   <div class="kicker">
-    <span>씬 08 · 인사이트</span>
-    <span class="sep">/</span>
     <span class="dot"></span>
     <span id="status" class="kr">현장 ↔ 기술 · 단절</span>
-    <span class="sep">/</span>
-    <span>THE CONNECTOR</span>
   </div>
 
   <div class="hero">
@@ -439,7 +440,6 @@
     ctx.save();
     ctx.strokeStyle=rgba([20,20,20],1);
     ctx.lineWidth=1;
-    let x=cx;
     ctx.beginPath();
     ctx.moveTo(cx,y0);
     const segs=14;

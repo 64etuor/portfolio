@@ -3,20 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SCENE · 선언 — AX ERA / 데이터·지식의 시대</title>
+<title>SCENE 02 · 선언 — AX ERA / 데이터·지식의 시대</title>
 <style>
   @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
   @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
 
   :root{
     --bg:#050505;
-    --bg2:#101010;
     --phos:#d7d7d7;        /* 제조의 물성 — 인광 그레이 */
     --phos-dim:#8d8d8d;
     --phos-deep:#3a3a3a;
     --ax:#4ea3f0;          /* 단 하나의 액센트 — 데이터·지식이 솟는 일렉트릭 애저(새 시대) */
     --ax-hot:#cfe8ff;
-    --ax-deep:#1d4e7a;
     --kr:"Pretendard","Pretendard Variable",-apple-system,sans-serif;
     --mono:"JetBrains Mono",ui-monospace,monospace;
   }
@@ -52,9 +50,15 @@
   }
   @keyframes grain{0%{transform:translate(0,0);}50%{transform:translate(-3%,2%);}100%{transform:translate(2%,-2%);}}
 
+  /* canonical scene eyebrow (matches 28) */
+  .scene-id{position:absolute;z-index:65;left:5.4%;top:12.2%;pointer-events:none;
+    font-family:var(--mono);font-size:clamp(10px,.82vw,15px);
+    letter-spacing:.42em;color:var(--phos-dim);text-shadow:none;}
+  .scene-id b{color:var(--ax);text-shadow:0 0 8px rgba(78,163,240,.4);font-weight:700;}
+
   /* ---------- kicker / footer ---------- */
   .kicker{
-    position:absolute;top:5vh;left:0;right:0;z-index:30;
+    position:absolute;top:7vh;left:0;right:0;z-index:30;
     display:flex;justify-content:center;align-items:center;gap:18px;
     font-family:var(--mono);font-size:11px;letter-spacing:5px;
     color:var(--phos-dim);text-transform:uppercase;
@@ -121,13 +125,11 @@
 <div class="stage">
   <canvas id="scene"></canvas>
 
+  <div class="scene-id kr"><b>SCENE 02</b> · 선언 — AX ERA</div>
+
   <div class="kicker">
-    <span>선언 · DECLARATION</span>
-    <span class="sep">/</span>
     <span class="dot"></span>
     <span id="status" class="kr">선언 — DX</span>
-    <span class="sep">/</span>
-    <span>AX ERA</span>
   </div>
 
   <div class="hero">

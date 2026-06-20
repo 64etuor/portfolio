@@ -75,6 +75,7 @@ function Section({ id, label, children }: { id: string; label: string; children:
 export function ResumeDoc({ data }: { data: ResumeData }) {
   const { basics } = data
   const gh = basics.profiles?.find((p) => p.network.toLowerCase() === 'github')
+  const portfolio = basics.profiles?.find((p) => p.network.toLowerCase() === 'portfolio')
 
   return (
     <main className="rz-root">
@@ -102,6 +103,14 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
               <span className="rz-k">EMAIL</span>
               <a href={`mailto:${basics.email}`}>{basics.email}</a>
             </li>
+            {portfolio && (
+              <li>
+                <span className="rz-k">PORTFOLIO</span>
+                <a href={portfolio.url} target="_blank" rel="noreferrer">
+                  {portfolio.url.replace(/^https?:\/\//, '')}
+                </a>
+              </li>
+            )}
             {basics.phone && (
               <li>
                 <span className="rz-k">PHONE</span>

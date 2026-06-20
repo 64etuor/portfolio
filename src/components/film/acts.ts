@@ -19,41 +19,48 @@ export interface Act {
 }
 
 export const ACTS: Act[] = [
-  // 1. 시대 변화 — 옛날 OS 부팅 (arc ~6s)
-  { id: 's1-era', scenes: [{ file: '05-bios-boot.html', ms: 6500 }] },
-  // 1-1. 제조업 — DX→AX (arc 15s)
+  // 0. 콜드 오픈 — 시스템 부팅 (POST→SYSTEM READY ~3.85s 후 핸드오프; 자체 ms 선언)
+  { id: 's0-boot', scenes: [{ file: '05-bios-boot.html', ms: 6200 }] },
+  // 1. 시대(SCENE 01) — "시대는 빠르게 변하고 있습니다" 가속하는 시대 스트림 (arc 8.2s; 자체 ms 선언)
+  { id: 's1-era', scenes: [{ file: '42-era-shift.html', ms: 8200 }] },
+  // 2. 선언(SCENE 02) — 제조업 DX→AX (arc 15s)
   { id: 's1b-ax', scenes: [{ file: '33-ax-era.html', ms: 12000 }] },
   // 2. 현실 — 기대·성과 격차 (arc 13s)
   { id: 's2-reality', scenes: [{ file: '28-gap-reality.html', ms: 11000 }] },
   // 3. 문제 제기 — 소통의 문제 (arc 19s, longest)
   { id: 's3-problem', scenes: [{ file: '29-lost-in-translation.html', ms: 15000 }] },
-  // 4. 실무자 관점 — RACK FOCUS (arc 16s)
-  { id: 's4-field', scenes: [{ file: '34-field-expert.html', ms: 12000 }] },
-  // 5. 개발자 관점 — 거울쌍 (arc 9s)
-  { id: 's5-dev', scenes: [{ file: '35-dev-expert.html', ms: 8500 }] },
-  // 6. 충돌 — 클라이맥스 (arc 12s)
-  { id: 's6-collision', scenes: [{ file: '30-collision.html', ms: 11000 }] },
-  // 7. 결과 — 비용 균열 전파 (arc ~12s)
-  { id: 's7-cost', scenes: [{ file: '31-cost-cascade.html', ms: 11000 }] },
+  // 4+5. 관점 — 현장↔시스템 통합 랙포커스 (arc 22s, 컷 ~20s). 씬4(34)·씬5(35) 통합.
+  { id: 's4-perspectives', scenes: [{ file: '41-perspectives.html', ms: 16000 }] },
+  // 6. 충돌 — LEXICAL COLLISION (루프 12s). 페이로드 = IMPACT→DRIFT APART
+  // ('프로젝트는 멀어집니다', ~10.3s). 그 뒤 RESET(0.86~1.0)은 토큰 재조립=루프 봉합용
+  // 이라 컷 전에 끝냄 — 11s는 리셋 되감기가 보여서 살짝 늦게 넘어갔음.
+  { id: 's6-collision', scenes: [{ file: '30-collision.html', ms: 10300 }] },
+  // 7. 결과 — 비용 균열 전파 (내부 루프 8.77s: idle+charge+rupture+hold+heal).
+  // 한 루프(heal 완료=해소)에 맞춰 컷 — 11s는 2번째 루프로 재진입해 늦게 넘어갔음.
+  { id: 's7-cost', scenes: [{ file: '31-cost-cascade.html', ms: 8800 }] },
   // 8. 인사이트 — 연결하는 사람 (arc 14s)
   { id: 's8-insight', scenes: [{ file: '32-the-connector.html', ms: 12000 }] },
-  // 9. 해결 방향 — 양손잡이 전문가(arc 6.6s, 텍스트 상주) + 증거(CMM / Hermes)
+  // 9. 해결 방향 — 양손잡이 전문가(arc 6.6s, 텍스트 상주) + 증거(Work Radar 콕핏 / GraphRAG).
+  // CMM은 씬4+5(41)에 이미 등장 → 중복 제거하고 임팩트 큰 AI 콕핏으로 교체.
   {
     id: 's9-bridge',
     scenes: [
       { file: '36-bridge-experts.html', ms: 8500 },
-      { file: '12-cmm-metrology.html', ms: 6500 },
-      { file: '26-graphrag.html', ms: 6500 },
+      { file: 'radar-sonar.html', ms: 6500 },
+      { file: 'graphrag.html', ms: 6500 },
     ],
   },
-  // 10. 핵심 메시지 — 크로스도메인(arc 15s) + 증거(MES / 지식맵 / 간트)
+  // 10. 핵심 메시지 — 크로스도메인(arc 15s) + 증거(MES / 생산관리·원가 −85% / 지식맵).
+  // 간트(17)는 홈 'Projects'에 상주 → 필름에서 제외. 대신 강한 지표 시안으로 임팩트 강화.
   {
     id: 's10-crossdomain',
     scenes: [
+      // 하이라이트(핵심) 직전: 디지털 트윈을 잠깐 — 크로스도메인 증거 예고
+      { file: 'digital-twin.html', ms: 4500 },
       { file: '37-cross-domain.html', ms: 12000 },
-      { file: '01-mes-console.html', ms: 6500 },
-      { file: '04-ai-latent.html', ms: 6500 },
-      { file: '17-gantt-cpm.html', ms: 7500 },
+      { file: 'mes-console.html', ms: 6500 },
+      { file: 'instrument-rack.html', ms: 6500 },
+      { file: 'ai-latent.html', ms: 6500 },
     ],
   },
   // 엔딩 — 캐치프레이즈 (arc 13s) → 랜딩 복귀

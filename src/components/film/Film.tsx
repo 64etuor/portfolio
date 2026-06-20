@@ -1,8 +1,41 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from 'react'
 import { useRouter } from 'next/navigation'
+import { ErrorBoundary } from 'react-error-boundary'
 import { ACTS } from './acts'
+import { loaderFor } from '@/scenes/loaders'
+import type { SceneProps } from '@/scenes/_host/types'
+
+// Per-file memoized lazy components, so a scene module is split & created once and
+// re-used across slot re-renders (a fresh lazy() per render would remount/reload it).
+const lazyCache = new Map<string, ComponentType<SceneProps>>()
+function lazyFor(file: string): ComponentType<SceneProps> | null {
+  const cached = lazyCache.get(file)
+  if (cached) return cached
+  const loader = loaderFor(file)
+  if (!loader) return null // no loader for this file → render nothing (don't crash)
+  const Comp = lazy(loader)
+  lazyCache.set(file, Comp)
+  return Comp
+}
+
+/**
+ * One double-buffer slot. Renders the ported React scene for `file` (or nothing if
+ * the slot is blank / has no loader). Isolated behind an ErrorBoundary so one bad
+ * scene can't kill the film. `running` mounts/runs the scene; `onReady` drives reveal.
+ */
+function SceneSlot({ file, running, onReady }: { file: string | null; running: boolean; onReady: () => void }) {
+  const Comp = useMemo(() => (file ? lazyFor(file) : null), [file])
+  if (!Comp) return null
+  return (
+    <ErrorBoundary fallback={null}>
+      <Suspense fallback={null}>
+        <Comp running={running} onReady={onReady} />
+      </Suspense>
+    </ErrorBoundary>
+  )
+}
 
 // Neutral film accent (progress bar / controls). Scenes carry their own color.
 const ACCENT = '#cdd2d8'
@@ -58,14 +91,7 @@ export function Film() {
   const [visibleSlot, setVisibleSlot] = useState(0)
   const [txId, setTxId] = useState(0) // bumps on each cut → replays the transition overlay
 
-  // Scene→film handshake. A scene may postMessage {type:'film-scene', file, ms?, ready?}
-  // to (a) DECLARE its own playtime (dynamic, overrides acts.ts) and (b) signal when it's
-  // actually ready to be watched (fonts + first content loaded). The per-scene clock only
-  // starts once the scene is ready, so loading delay never eats into its on-screen arc.
-  // Scenes that don't post fall back to load-based timing (current behavior).
-  const readyRef = useRef<Set<string>>(new Set())
-  const declaredRef = useRef<Map<string, number>>(new Map())
-  const [signalTick, setSignalTick] = useState(0)
+  // Ported scenes signal readiness via their onReady prop (no postMessage handshake).
   const [armed, setArmed] = useState(false)
 
   useEffect(() => {
@@ -73,28 +99,12 @@ export function Film() {
     setReady(true)
   }, [])
 
-  useEffect(() => {
-    const onMsg = (e: MessageEvent) => {
-      const d = e.data as { type?: string; file?: string; ms?: number; ready?: boolean } | null
-      if (!d || d.type !== 'film-scene' || typeof d.file !== 'string') return
-      if (typeof d.ms === 'number' && d.ms > 0) declaredRef.current.set(d.file, d.ms)
-      if (d.ready) readyRef.current.add(d.file)
-      setSignalTick((n) => n + 1)
-    }
-    window.addEventListener('message', onMsg)
-    return () => window.removeEventListener('message', onMsg)
-  }, [])
-
   const shot = ACTS[actIdx].scenes[sceneIdx]
   const currentFile = shot.file
-  const currentMs = shot.ms
   // The current scene is "visible" only once the visible slot actually holds it.
   const visible = slotFiles[visibleSlot] === currentFile
-  // Playtime is dynamic: a scene that declared its own arc length drives the duration;
-  // otherwise the static acts.ts value applies. (signalTick re-renders on each message.)
-  void signalTick
-  const declaredMs = declaredRef.current.get(currentFile)
-  const effectiveMs = declaredMs && declaredMs > 0 ? declaredMs : currentMs
+  // Playtime is the static acts.ts value (ported scenes don't declare their own).
+  const effectiveMs = shot.ms
 
   const onFilmEnd = useCallback(() => setEnded(true), [])
 
@@ -144,7 +154,7 @@ export function Film() {
     })
   }, [currentFile, slotFiles, visibleSlot, reduced, ready])
 
-  // Safety: if a scene's iframe `load` never fires (network stall), force-reveal after a
+  // Safety: if a scene's `onReady` never fires (load stall), force-reveal after a
   // cap so the film can't hang waiting for a frame that never paints.
   useEffect(() => {
     if (reduced || !ready || visible) return
@@ -176,19 +186,11 @@ export function Film() {
     return () => clearTimeout(t)
   }, [visibleSlot, currentFile, reduced, ready, slotFiles])
 
-  // Arm the clock once the scene is ready to watch. A scene that uses the handshake
-  // (declared a duration) waits for its `ready` signal — with a hard cap so a missing or
-  // late signal can never stall the film. Other scenes arm as soon as they're visible.
+  // Arm the clock as soon as the scene is visible (no handshake wait).
   useEffect(() => {
     if (reduced || !ready || !visible || armed) return
-    const usesHandshake = declaredRef.current.has(currentFile)
-    if (!usesHandshake || readyRef.current.has(currentFile)) {
-      setArmed(true)
-      return
-    }
-    const cap = setTimeout(() => setArmed(true), 6000)
-    return () => clearTimeout(cap)
-  }, [reduced, ready, visible, armed, currentFile, signalTick])
+    setArmed(true)
+  }, [reduced, ready, visible, armed])
 
   // NOTE: no prefetch. Each scene loads only when it becomes current (load-on-cut),
   // so its rAF starts at reveal ≈ t0 — the scene is seen from its true start point
@@ -302,11 +304,9 @@ export function Film() {
     const endFile = ACTS[ACTS.length - 1].scenes[0].file
     return (
       <div style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
-        <iframe
-          src={`/lab/${endFile}`}
-          title="ending"
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
-        />
+        <div style={{ position: 'absolute', inset: 0 }}>
+          <SceneSlot file={endFile} running onReady={() => {}} />
+        </div>
       </div>
     )
   }
@@ -319,29 +319,26 @@ export function Film() {
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
-      {/* Buffered scene viewport — two stable iframes that cross-fade. */}
+      {/* Buffered scene viewport — two stable slots that cross-fade. */}
       <div style={{ position: 'absolute', inset: 0 }}>
         {[0, 1].map((i) => {
           const f = slotFiles[i]
           const isVisible = visibleSlot === i
           return (
-            <iframe
+            <div
               key={`slot-${i}`}
-              src={f ? `/lab/${f}` : 'about:blank'}
-              title={`scene-slot-${i}`}
-              onLoad={() => revealOnLoad(i)}
               style={{
                 // Render each scene INSIDE the letterbox safe band (top/bottom 5vh
                 // are masked by the bars below). Full-bleed (inset:0) hid the top/
-                // bottom 5vh of every scene behind the bars; banding the iframe to
+                // bottom 5vh of every scene behind the bars; banding the slot to
                 // the visible 90vh means the whole scene viewport is on-screen and
-                // nothing gets clipped behind the letterbox.
+                // nothing gets clipped behind the letterbox. The scene's own
+                // SceneHost is position:absolute inset:0, so it fills this band.
                 position: 'absolute',
                 top: '5vh',
                 left: 0,
                 width: '100%',
                 height: '90vh',
-                border: 0,
                 pointerEvents: 'none',
                 // Materialize: the incoming scene comes INTO FOCUS (blur→sharp,
                 // settle from a slight zoom, fade up) so its content builds in
@@ -355,7 +352,10 @@ export function Film() {
                   : 'opacity 380ms ease, filter 380ms ease, transform 380ms ease',
                 zIndex: isVisible ? 2 : 1,
               }}
-            />
+            >
+              {/* Mounted scenes run; the blanking unmount (f→null) stops the outgoing. */}
+              <SceneSlot file={f} running={f != null} onReady={() => revealOnLoad(i)} />
+            </div>
           )
         })}
       </div>

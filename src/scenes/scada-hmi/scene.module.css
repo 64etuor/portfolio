@@ -1,0 +1,1356 @@
+.root {
+  --panel: #161b21;
+  --panel2: #1d242c;
+  --steel: #2a333d;
+  --line: #3a4654;
+  --txt: #c4d2dd;
+  --txt-dim: #7e8c99;
+  --run: #21d07a;
+  --run-d: #0c5a36;
+  --alarm: #ff3b3b;
+  --warn: #ffb020;
+  --info: #39b6ff;
+  --pv: #39d6ff;
+  --sp: #ffd23f;
+  --grid: #1f2a33;
+  min-height: 100%;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  background:
+    radial-gradient(1200px 700px at 50% -10%, #18222b 0%, transparent 60%),
+    linear-gradient(180deg, #0a0e12 0%, #0c1014 100%);
+  color: var(--txt);
+  font-family: 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+  word-break: keep-all;
+  -webkit-font-smoothing: antialiased;
+}
+
+.root,
+.root * {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.c {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  opacity: 0;
+}
+
+.root :global(.mono) {
+  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  letter-spacing: 0.04em;
+}
+
+.root :global(.hmi) {
+  position: relative;
+  z-index: 1;
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 14px;
+}
+
+.root :global(.bezel) {
+  border-radius: 14px;
+  padding: 10px;
+  background: linear-gradient(145deg, #39434e, #161c22 55%, #0d1217);
+  box-shadow:
+    0 0 0 1px #05080b,
+    0 30px 80px rgba(0, 0, 0, 0.7),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.root :global(.screen) {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #05080b;
+  border-radius: 8px;
+  background: linear-gradient(180deg, #10151a, #0c1014);
+  box-shadow:
+    inset 0 0 80px rgba(0, 0, 0, 0.6),
+    inset 0 0 1px rgba(57, 182, 255, 0.2);
+}
+
+.root :global(.screen::after) {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.012) 0 1px, transparent 1px 3px);
+  mix-blend-mode: overlay;
+}
+
+.root :global(header.bar) {
+  display: flex;
+  height: 58px;
+  align-items: center;
+  gap: 0;
+  border-bottom: 1px solid #05080b;
+  background: linear-gradient(180deg, #222b34, #141a20);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.root :global(.brand) {
+  display: flex;
+  height: 100%;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+  padding: 0 18px;
+  border-right: 1px solid var(--line);
+}
+
+.root :global(.logo) {
+  position: relative;
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 6px;
+  background: conic-gradient(from 0deg, #39d6ff, #21d07a, #ffd23f, #39d6ff);
+  box-shadow: 0 0 14px rgba(57, 214, 255, 0.4);
+}
+
+.root :global(.logo::before) {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border-radius: 4px;
+  background: #0c1014;
+}
+
+.root :global(.logo::after) {
+  content: 'SCM';
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #39d6ff;
+  font: 700 11px/1 'Share Tech Mono', monospace;
+}
+
+.root :global(.brand h1) {
+  color: #e8f1f8;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.root :global(.brand .sub) {
+  margin-top: 2px;
+  color: var(--txt-dim);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+}
+
+.root :global(.hdr-block) {
+  display: flex;
+  height: 100%;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 16px;
+  border-right: 1px solid var(--line);
+}
+
+.root :global(.hdr-block .k) {
+  color: var(--txt-dim);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.root :global(.hdr-block .v) {
+  margin-top: 3px;
+  color: var(--txt);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.root :global(.hdr-spacer) {
+  flex: 1;
+}
+
+.root :global(.clock) {
+  padding: 0 18px;
+  text-align: right;
+}
+
+.root :global(.clock .t) {
+  color: #e8f1f8;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.root :global(.clock .d) {
+  margin-top: 2px;
+  color: var(--txt-dim);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+}
+
+.root :global(.mode-pill) {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-right: 16px;
+  padding: 5px 12px;
+  border: 1px solid var(--run-d);
+  border-radius: 5px;
+  background: rgba(33, 208, 122, 0.12);
+  color: var(--run);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.root :global(.mode-pill .dot) {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+  background: var(--run);
+  box-shadow: 0 0 8px var(--run);
+}
+
+.root :global(nav.tabs) {
+  display: flex;
+  border-bottom: 1px solid #05080b;
+  background: #0e1318;
+}
+
+.root :global(nav.tabs button) {
+  position: relative;
+  cursor: pointer;
+  appearance: none;
+  padding: 11px 22px;
+  border: 0;
+  border-right: 1px solid #05080b;
+  background: transparent;
+  color: var(--txt-dim);
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: 0.15s;
+}
+
+.root :global(nav.tabs button:hover) {
+  background: rgba(57, 182, 255, 0.05);
+  color: var(--txt);
+}
+
+.root :global(nav.tabs button.active) {
+  background: linear-gradient(180deg, #1a232c, #11171c);
+  color: #e8f1f8;
+}
+
+.root :global(nav.tabs button.active::after) {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
+  background: var(--info);
+  box-shadow: 0 0 10px var(--info);
+}
+
+.root :global(nav.tabs .tag) {
+  margin-left: 7px;
+  color: var(--txt-dim);
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 9px;
+}
+
+.root :global(.alarm-banner) {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: 14px;
+  padding: 9px 18px;
+  border-bottom: 1px solid #05080b;
+  background: #0e1318;
+}
+
+.root :global(.alarm-banner.active) {
+  animation: alarmflash 1s steps(1) infinite;
+  background: repeating-linear-gradient(135deg, #3a0c0c 0 14px, #2a0808 14px 28px);
+}
+
+.root :global(.alarm-banner .ico) {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex: none;
+  place-items: center;
+  border-radius: 5px;
+  background: var(--steel);
+  color: var(--txt-dim);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.root :global(.alarm-banner.active .ico) {
+  animation: pulse 1s infinite;
+  background: var(--alarm);
+  color: #fff;
+}
+
+.root :global(.alarm-banner .msg) {
+  min-width: 0;
+  flex: 1;
+}
+
+.root :global(.alarm-banner .msg .lvl) {
+  color: var(--txt-dim);
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.root :global(.alarm-banner.active .msg .lvl) {
+  color: #ff8a8a;
+}
+
+.root :global(.alarm-banner .msg .txt) {
+  margin-top: 2px;
+  color: var(--txt);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.root :global(.alarm-banner.active .msg .txt) {
+  color: #ffd7d7;
+}
+
+.root :global(.alarm-banner.cleared) {
+  background: rgba(33, 208, 122, 0.08);
+}
+
+.root :global(.alarm-banner.cleared .ico) {
+  background: var(--run-d);
+  color: var(--run);
+}
+
+.root :global(.alarm-banner.cleared .msg .lvl) {
+  color: var(--run);
+}
+
+.root :global(.ack-btn) {
+  cursor: pointer;
+  appearance: none;
+  padding: 9px 20px;
+  border: 1px solid #6a1414;
+  border-radius: 6px;
+  background: linear-gradient(180deg, #7a1818, #4a0d0d);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+  color: #ffcaca;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  transition: 0.12s;
+  white-space: nowrap;
+}
+
+.root :global(.ack-btn:hover) {
+  filter: brightness(1.18);
+}
+
+.root :global(.ack-btn:active) {
+  transform: translateY(1px);
+}
+
+.root :global(.ack-btn:disabled) {
+  cursor: default;
+  opacity: 0.4;
+  filter: grayscale(0.6);
+}
+
+.root :global(.ack-btn.ok) {
+  border-color: var(--run-d);
+  background: linear-gradient(180deg, #0f6e42, #0a4429);
+  color: #bff7da;
+}
+
+.root :global(.stage) {
+  display: none;
+  padding: 16px;
+}
+
+.root :global(.stage.show) {
+  display: block;
+}
+
+.root :global(.layout) {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 16px;
+  align-items: start;
+}
+
+.root :global(.panel) {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: linear-gradient(180deg, var(--panel), var(--panel2));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+.root :global(.panel-h) {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--line);
+  border-radius: 8px 8px 0 0;
+  background: linear-gradient(180deg, #232c35, #1a212a);
+}
+
+.root :global(.panel-h .ttl) {
+  color: #dbe7f0;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.root :global(.panel-h .ttl small) {
+  margin-left: 8px;
+  color: var(--txt-dim);
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: none;
+}
+
+.root :global(.panel-h .tagid) {
+  padding: 2px 7px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: rgba(57, 182, 255, 0.07);
+  color: var(--info);
+  font: 600 10px 'Share Tech Mono', monospace;
+}
+
+.root :global(.mimic-wrap) {
+  position: relative;
+  padding: 8px;
+}
+
+.root :global(svg.mimic) {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.root :global(.led) {
+  filter: drop-shadow(0 0 4px currentColor);
+}
+
+.root :global(.pv-strip) {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.root :global(.pv-tile) {
+  position: relative;
+  overflow: hidden;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: linear-gradient(180deg, #11171c, #0d1217);
+}
+
+.root :global(.pv-tile::before) {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: var(--info);
+}
+
+.root :global(.pv-tile.good::before) {
+  background: var(--run);
+}
+
+.root :global(.pv-tile.warn::before) {
+  background: var(--warn);
+}
+
+.root :global(.pv-tile .lbl) {
+  display: flex;
+  justify-content: space-between;
+  color: var(--txt-dim);
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.root :global(.pv-tile .lbl .tg) {
+  color: var(--info);
+  font: 600 8.5px 'Share Tech Mono', monospace;
+}
+
+.root :global(.pv-tile .num) {
+  margin-top: 8px;
+  color: var(--pv);
+  font: 700 26px/1 'Share Tech Mono', monospace;
+  text-shadow: 0 0 12px rgba(57, 214, 255, 0.3);
+}
+
+.root :global(.pv-tile.good .num) {
+  color: var(--run);
+  text-shadow: 0 0 12px rgba(33, 208, 122, 0.3);
+}
+
+.root :global(.pv-tile.warn .num) {
+  color: var(--warn);
+  text-shadow: 0 0 12px rgba(255, 176, 32, 0.3);
+}
+
+.root :global(.pv-tile .unit) {
+  margin-left: 3px;
+  color: var(--txt-dim);
+  font-size: 11px;
+}
+
+.root :global(.pv-tile .sp) {
+  margin-top: 6px;
+  color: var(--sp);
+  font: 600 9px 'Share Tech Mono', monospace;
+}
+
+.root :global(.inv-grid) {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 14px;
+  padding: 14px;
+}
+
+.root :global(.inv-gauge) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #11171c, #0d1217);
+}
+
+.root :global(.inv-gauge svg) {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0 8px rgba(33, 208, 122, 0.25));
+}
+
+.root :global(.role-card) {
+  min-height: 168px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+}
+
+.root :global(.role-code) {
+  color: var(--info);
+  font: 700 11px 'Share Tech Mono', monospace;
+  letter-spacing: 0.12em;
+}
+
+.root :global(.role-title) {
+  color: #e8f1f8;
+  font-size: 23px;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.root :global(.role-copy) {
+  color: var(--txt);
+  font-size: 11.5px;
+  line-height: 1.65;
+}
+
+.root :global(.role-flow) {
+  color: var(--sp);
+  font: 700 11px 'Share Tech Mono', monospace;
+  line-height: 1.5;
+}
+
+.root :global(.micro-kpi) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border: 1px solid var(--run-d);
+  border-radius: 4px;
+  background: rgba(33, 208, 122, 0.1);
+  color: var(--run);
+  font: 700 10px 'Share Tech Mono', monospace;
+  white-space: nowrap;
+}
+
+.root :global(.micro-kpi .muted) {
+  color: var(--txt-dim);
+  font-weight: 600;
+}
+
+.root :global(.inv-body) {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+}
+
+.root :global(.inv-stat) {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.root :global(.inv-stat .k) {
+  width: 42px;
+  flex: none;
+  color: var(--txt-dim);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.root :global(.inv-stat .v) {
+  color: var(--txt);
+  line-height: 1.5;
+}
+
+.root :global(.inv-stat .v b) {
+  color: #21d07a;
+  font: 700 14px 'Share Tech Mono', monospace;
+}
+
+.root :global(.inv-note) {
+  margin-top: 2px;
+  padding-top: 8px;
+  border-top: 1px dashed rgba(58, 70, 84, 0.5);
+  color: var(--txt-dim);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.root :global(.trend-box) {
+  padding: 12px 14px 14px;
+}
+
+.root :global(.trend-legend) {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+  color: var(--txt-dim);
+  font-size: 10px;
+}
+
+.root :global(.trend-legend span) {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.root :global(.trend-legend i) {
+  display: inline-block;
+  width: 14px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+.root :global(.trendCanvas) {
+  display: block;
+  width: 100%;
+  height: 200px;
+  border: 1px solid var(--grid);
+  border-radius: 5px;
+  background: linear-gradient(180deg, #0a0f13, #0c1116);
+}
+
+.root :global(.sp-list) {
+  padding: 6px;
+}
+
+.root :global(.sp-row) {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid rgba(58, 70, 84, 0.4);
+  border-radius: 6px;
+}
+
+.root :global(.sp-row:last-child) {
+  border-bottom: 0;
+}
+
+.root :global(.sp-row .area-led) {
+  width: 11px;
+  height: 11px;
+  flex: none;
+  border-radius: 50%;
+  box-shadow: 0 0 7px currentColor;
+}
+
+.root :global(.sp-row .info) {
+  min-width: 0;
+  flex: 1;
+}
+
+.root :global(.sp-row .info .nm) {
+  overflow: hidden;
+  color: var(--txt);
+  font-size: 11.5px;
+  font-weight: 600;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.root :global(.sp-row .info .yr) {
+  margin-top: 2px;
+  color: var(--txt-dim);
+  font: 600 9px 'Share Tech Mono', monospace;
+}
+
+.root :global(.sp-row .val) {
+  text-align: right;
+}
+
+.root :global(.sp-row .val .pv) {
+  color: var(--pv);
+  font: 700 16px 'Share Tech Mono', monospace;
+}
+
+.root :global(.sp-row .val .un) {
+  color: var(--txt-dim);
+  font-size: 9px;
+}
+
+.root :global(.alm-list) {
+  max-height: none;
+  padding: 0;
+}
+
+.root :global(.alm-item) {
+  display: grid;
+  grid-template-columns: auto 64px 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 14px;
+  border-bottom: 1px solid rgba(58, 70, 84, 0.4);
+  font-size: 11.5px;
+}
+
+.root :global(.alm-item .sev) {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 2px;
+}
+
+.root :global(.alm-item .ts) {
+  color: var(--txt-dim);
+  font: 600 10px 'Share Tech Mono', monospace;
+}
+
+.root :global(.alm-item .desc) {
+  color: var(--txt);
+}
+
+.root :global(.alm-item .st) {
+  padding: 2px 8px;
+  border-radius: 3px;
+  font: 600 9px 'Share Tech Mono', monospace;
+}
+
+.root :global(.st.ALM) {
+  border: 1px solid #6a1414;
+  background: rgba(255, 59, 59, 0.15);
+  color: #ffcaca;
+}
+
+.root :global(.st.ACK) {
+  border: 1px solid #5e3e00;
+  background: rgba(255, 176, 32, 0.12);
+  color: #ffe0a8;
+}
+
+.root :global(.st.RTN) {
+  border: 1px solid var(--run-d);
+  background: rgba(33, 208, 122, 0.12);
+  color: #bff7da;
+}
+
+.root :global(footer.statusbar) {
+  display: flex;
+  height: 30px;
+  align-items: center;
+  gap: 0;
+  border-top: 1px solid #05080b;
+  background: linear-gradient(180deg, #161c22, #0e1318);
+  font-size: 10.5px;
+}
+
+.root :global(footer.statusbar .seg) {
+  display: flex;
+  height: 100%;
+  align-items: center;
+  gap: 7px;
+  padding: 0 14px;
+  border-right: 1px solid var(--line);
+  color: var(--txt-dim);
+}
+
+.root :global(footer.statusbar .seg b) {
+  color: var(--txt);
+  font-weight: 600;
+}
+
+.root :global(footer.statusbar .seg .l) {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+.root :global(.io-grid) {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 8px;
+  padding: 14px;
+}
+
+.root :global(.io-tag) {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: linear-gradient(180deg, #11171c, #0d1217);
+}
+
+.root :global(.io-tag .io-led) {
+  width: 9px;
+  height: 9px;
+  flex: none;
+  border-radius: 50%;
+  background: var(--run);
+  box-shadow: 0 0 6px var(--run);
+}
+
+.root :global(.io-tag .io-nm) {
+  flex: 1;
+  color: var(--txt);
+  font-size: 11px;
+}
+
+.root :global(.io-tag .io-addr) {
+  color: var(--info);
+  font: 600 8.5px 'Share Tech Mono', monospace;
+}
+
+.root :global(.q-grid) {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 14px;
+}
+
+.root :global(.q-card) {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #11171c, #0d1217);
+  text-align: center;
+}
+
+.root :global(.q-card .big) {
+  color: var(--run);
+  font: 700 34px/1 'Share Tech Mono', monospace;
+  text-shadow: 0 0 14px rgba(33, 208, 122, 0.3);
+}
+
+.root :global(.q-card .cap) {
+  margin-top: 9px;
+  color: var(--txt-dim);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.root :global(.q-card .delta) {
+  margin-top: 6px;
+  color: var(--info);
+  font: 600 10px 'Share Tech Mono', monospace;
+}
+
+.root :global(.hist) {
+  padding: 14px;
+}
+
+.root :global(.hist-row) {
+  display: grid;
+  grid-template-columns: 120px 1fr;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(58, 70, 84, 0.4);
+}
+
+.root :global(.hist-row:last-child) {
+  border-bottom: 0;
+}
+
+.root :global(.hist-row .when) {
+  color: var(--sp);
+  font: 700 13px 'Share Tech Mono', monospace;
+}
+
+.root :global(.hist-row .when small) {
+  display: block;
+  margin-top: 3px;
+  color: var(--txt-dim);
+  font-size: 10px;
+  font-weight: 500;
+}
+
+.root :global(.hist-row .what .role) {
+  color: #e8f1f8;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.root :global(.hist-row .what .org) {
+  margin-top: 2px;
+  color: var(--info);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.root :global(.hist-row .what .body) {
+  margin-top: 7px;
+  color: var(--txt-dim);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+
+.root :global(.hist-row .what .chips) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 9px;
+}
+
+.root :global(.hist-row .chip) {
+  padding: 3px 8px;
+  border: 1px solid var(--run-d);
+  border-radius: 4px;
+  background: rgba(33, 208, 122, 0.1);
+  color: var(--run);
+  font: 600 9.5px 'Share Tech Mono', monospace;
+}
+
+.root :global(.contact-bar) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 18px;
+  padding: 14px;
+}
+
+.root :global(.contact-bar a),
+.root :global(.contact-bar span) {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--txt);
+  text-decoration: none;
+  font: 600 12px 'Share Tech Mono', monospace;
+}
+
+.root :global(.contact-bar a:hover) {
+  color: var(--info);
+}
+
+.root :global(.contact-bar .ic) {
+  color: var(--info);
+}
+
+.root :global(.scm-creed) {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 14px 14px;
+  padding: 11px 14px;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--info);
+  border-radius: 6px;
+  background: linear-gradient(180deg, #11171c, #0d1217);
+}
+
+.root :global(.scm-creed .ic) {
+  flex: none;
+  color: var(--info);
+  font-size: 18px;
+}
+
+.root :global(.scm-creed .ct) {
+  color: var(--txt);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+.root :global(.scm-creed .ct .principle) {
+  display: block;
+  margin-top: 4px;
+  color: var(--sp);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.root :global(.scm-note) {
+  padding: 0 14px 12px;
+  color: var(--txt-dim);
+  font-size: 11px;
+  line-height: 1.6;
+}
+
+.root :global(.scm-note b) {
+  color: var(--sp);
+  font-weight: 700;
+}
+
+.root :global(.para-grid) {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  padding: 14px;
+}
+
+.root :global(.para-tank) {
+  position: relative;
+  overflow: hidden;
+  padding: 11px 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: linear-gradient(180deg, #11171c, #0d1217);
+}
+
+.root :global(.para-tank .ph) {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+
+.root :global(.para-tank .ph .root) {
+  color: var(--info);
+  font: 700 13px 'Share Tech Mono', monospace;
+}
+
+.root :global(.para-tank .ph .nm) {
+  color: var(--txt-dim);
+  font-size: 9px;
+  letter-spacing: 0.06em;
+}
+
+.root :global(.para-tank .lvlwrap) {
+  position: relative;
+  overflow: hidden;
+  height: 90px;
+  margin: 10px 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  background: #0a0f13;
+}
+
+.root :global(.para-tank .lvl) {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  animation: tankBreathe 4.2s ease-in-out infinite;
+  background: linear-gradient(180deg, #1a9ed0, #0c5a82);
+  opacity: 0.85;
+  transition: height 0.8s ease;
+}
+
+.root :global(.para-tank .lvl .wave) {
+  position: absolute;
+  top: 0;
+  right: -30%;
+  left: -30%;
+  height: 6px;
+  animation: waveDrift 2.6s linear infinite;
+  background:
+    radial-gradient(60% 200% at 20% 0, #9be8ff 0, rgba(155, 232, 255, 0) 60%),
+    radial-gradient(60% 200% at 70% 0, #9be8ff 0, rgba(155, 232, 255, 0) 60%);
+  opacity: 0.55;
+}
+
+.root :global(.para-tank:nth-child(2) .lvl) {
+  animation-delay: -0.8s;
+}
+
+.root :global(.para-tank:nth-child(3) .lvl) {
+  animation-delay: -1.6s;
+}
+
+.root :global(.para-tank:nth-child(4) .lvl) {
+  animation-delay: -2.4s;
+}
+
+.root :global(.para-tank:nth-child(5) .lvl) {
+  animation-delay: -3.2s;
+}
+
+.root :global(.para-tank:nth-child(2) .lvl .wave) {
+  animation-delay: -0.6s;
+}
+
+.root :global(.para-tank:nth-child(3) .lvl .wave) {
+  animation-delay: -1.2s;
+}
+
+.root :global(.para-tank:nth-child(4) .lvl .wave) {
+  animation-delay: -1.8s;
+}
+
+.root :global(.para-tank:nth-child(5) .lvl .wave) {
+  animation-delay: -2.4s;
+}
+
+.root :global(.para-tank .cnt) {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  left: 0;
+  transform: translateY(-50%);
+  color: #fff;
+  text-align: center;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
+  font: 700 18px 'Share Tech Mono', monospace;
+}
+
+.root :global(.para-tank .cap) {
+  color: var(--txt-dim);
+  font-size: 9px;
+  text-align: center;
+}
+
+.root :global(.ssot-grid) {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 14px;
+}
+
+.root :global(.ssot-row) {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: linear-gradient(180deg, #11171c, #0d1217);
+}
+
+.root :global(.ssot-row .sl) {
+  width: 11px;
+  height: 11px;
+  flex: none;
+  border-radius: 50%;
+  box-shadow: 0 0 7px currentColor;
+}
+
+.root :global(.ssot-row .nm) {
+  color: var(--txt);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.root :global(.ssot-row .nm small) {
+  display: block;
+  margin-top: 2px;
+  color: var(--txt-dim);
+  font: 600 8.5px 'Share Tech Mono', monospace;
+}
+
+.root :global(.ssot-row .pv) {
+  text-align: right;
+  font: 700 17px 'Share Tech Mono', monospace;
+}
+
+.root :global(.ssot-row .sp) {
+  color: var(--sp);
+  text-align: right;
+  white-space: nowrap;
+  font: 600 9px 'Share Tech Mono', monospace;
+}
+
+.root :global(.gap-queue) {
+  padding: 0;
+}
+
+.root :global(.gap-item) {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(58, 70, 84, 0.4);
+  font-size: 11.5px;
+}
+
+.root :global(.gap-item:last-child) {
+  border-bottom: 0;
+}
+
+.root :global(.gap-item .rk) {
+  width: 22px;
+  color: var(--txt-dim);
+  font: 700 11px 'Share Tech Mono', monospace;
+}
+
+.root :global(.gap-item .lk) {
+  color: var(--txt);
+}
+
+.root :global(.gap-item .lk small) {
+  color: var(--txt-dim);
+  font-size: 9.5px;
+}
+
+.root :global(.gap-item .dep) {
+  color: var(--pv);
+  font: 700 13px 'Share Tech Mono', monospace;
+}
+
+.root :global(.gap-item .qd) {
+  padding: 2px 7px;
+  border: 1px solid var(--run-d);
+  border-radius: 3px;
+  background: rgba(33, 208, 122, 0.12);
+  color: var(--run);
+  font: 600 9px 'Share Tech Mono', monospace;
+}
+
+.root :global(.gridrow) {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.root :global(.mt16) {
+  margin-top: 16px;
+}
+
+.root :global(.top-line) {
+  border-top: 1px solid var(--line);
+}
+
+.root :global(.swatch-run) {
+  background: #21d07a;
+}
+
+.root :global(.swatch-pv) {
+  background: #39d6ff;
+}
+
+.root :global(.swatch-alarm) {
+  background: #ff3b3b;
+}
+
+.root :global(.swatch-sp) {
+  background: #ffd23f;
+}
+
+.root :global(.blue) {
+  color: #39b6ff;
+}
+
+.root :global(.green) {
+  color: #21d07a;
+}
+
+.root :global(.run-dot) {
+  background: #21d07a;
+  box-shadow: 0 0 6px #21d07a;
+}
+
+.root :global(.footer-note) {
+  justify-content: flex-end;
+  border-right: 0;
+  color: #7e8c99;
+}
+
+@keyframes alarmflash {
+  50% {
+    background: repeating-linear-gradient(135deg, #5e1212 0 14px, #3a0c0c 14px 28px);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@keyframes waveDrift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(20%);
+  }
+}
+
+@keyframes tankBreathe {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+}
+
+@media (max-width: 1100px) {
+  .root :global(.layout) {
+    grid-template-columns: 1fr;
+  }
+
+  .root :global(.pv-strip) {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .root :global(.gridrow) {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .root :global(.inv-grid) {
+    grid-template-columns: 1fr;
+  }
+}

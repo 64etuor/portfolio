@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
   // transpiling lets Next resolve it cleanly from the client component.
   transpilePackages: ['@splinetool/react-spline', '@splinetool/runtime'],
   typescript: { ignoreBuildErrors: false },
+  // React Compiler — 셸/오케스트레이션(Film 비트 전환·갤러리 그리드·테마 스위칭)의
+  // 리렌더를 자동 메모이즈. 33개 포팅 컴포넌트의 useMemo/useCallback 수작업 제거(DX).
+  // 캔버스 rAF 루프는 effect/ref 안이라 컴파일러가 bail-out → 안전. Babel 패스가 추가돼
+  // build 가 느려지는 비용이 있음. (Next 16 승격 시 experimental → 최상위로 이동)
+  experimental: { reactCompiler: true },
   // The film clock drives an imperative rAF loop; StrictMode's dev-only double
   // invocation spins up a second loop and races the scene timeline (prod, which
   // never double-invokes, is unaffected). Disable so dev matches prod timing.

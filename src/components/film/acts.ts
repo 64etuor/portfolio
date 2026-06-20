@@ -8,7 +8,7 @@
 // actually shows before we cut. Beats s9/s10 intercut tech demos as evidence.
 // After the ending beat the film returns to the landing (see Film.tsx onFilmEnd).
 
-export interface Shot {
+interface Shot {
   file: string // file under /lab/
   ms: number // on-screen duration for this scene
 }

@@ -1,0 +1,240 @@
+export type GaugeColor = 'green' | 'amber' | 'cyan'
+
+export const GAUGE_COLORS: Record<GaugeColor, string> = {
+  green: '#37f08e',
+  amber: '#ffb627',
+  cyan: '#3fd0e0',
+}
+
+export const GAUGES = [
+  { id: 'oee', target: 91.4, color: 'green' as const, label: 'OEE', sub: '종합 효율' },
+  { id: 'avail', target: 96.2, color: 'amber' as const, label: '가동률', sub: 'AVAILABILITY' },
+  { id: 'perf', target: 94.8, color: 'cyan' as const, label: '성능률', sub: 'PERFORMANCE' },
+]
+
+export const KPIS = [
+  {
+    label: '설비 종합 효율 OEE',
+    value: 91.4,
+    suffix: '%',
+    colorClass: 'g',
+    desc: '가동률×성능률×품질률 / 실시간',
+    fixed: 1,
+    range: [89, 93] as const,
+    sparkRange: [89, 93] as const,
+  },
+  {
+    label: '가동률 AVAILABILITY',
+    value: 96.2,
+    suffix: '%',
+    colorClass: 'g',
+    desc: '설비 가동 신호 / OPC UA DAQ',
+    fixed: 1,
+    range: [94, 98] as const,
+    sparkRange: [94, 98] as const,
+  },
+  {
+    label: '성능률 PERFORMANCE',
+    value: 94.8,
+    suffix: '%',
+    colorClass: 'c',
+    desc: '실제 C/T / 이상 C/T / 실시간',
+    fixed: 1,
+    range: [92, 97] as const,
+    sparkRange: [92, 97] as const,
+  },
+  {
+    label: '품질률 · 수율 FPY',
+    value: 99.7,
+    suffix: '%',
+    colorClass: 'g',
+    desc: 'OCV/IR 검사 통과율 / 당일',
+    fixed: 1,
+    range: [99.2, 99.9] as const,
+    sparkRange: [99.2, 99.9] as const,
+  },
+  {
+    label: '시간당 생산량 UPH',
+    value: 872,
+    suffix: 'EA',
+    colorClass: 'c',
+    desc: '당일 누적 / DAQ @1Hz',
+    fixed: 0,
+    range: [820, 910] as const,
+    sparkRange: [820, 910] as const,
+  },
+  {
+    label: '생산 달성률 ACHV',
+    value: 94,
+    suffix: '%',
+    colorClass: 'g',
+    desc: '실적 / 계획 / 워크오더 기준',
+    fixed: 0,
+    range: [88, 97] as const,
+    sparkRange: [88, 97] as const,
+  },
+  {
+    label: '사이클타임 C/T',
+    value: 12.4,
+    suffix: 's',
+    colorClass: '',
+    desc: '라인 평균 / Takt 13.2s',
+    fixed: 1,
+    range: [11.5, 13.2] as const,
+    sparkRange: [11.5, 13.2] as const,
+  },
+  {
+    label: '비가동 다운타임',
+    value: 18,
+    suffix: 'min',
+    colorClass: '',
+    desc: '당일 누적 / 설비 정지 이벤트',
+    fixed: 0,
+    range: [10, 30] as const,
+    sparkRange: [10, 30] as const,
+  },
+]
+
+export const JOBS = [
+  {
+    wo: 'WO-2401',
+    name: 'OCV 검사 · 1호 라인',
+    role: 'OCV 충방전 · 비전검사',
+    startHour: 0,
+    startMinute: 0,
+    endHour: 3,
+    endMinute: 30,
+    status: 'done',
+    desc: 'OCV/IR 검사장비 → Python 드라이버 수집 → PostgreSQL 적재 · 완료',
+  },
+  {
+    wo: 'WO-2402',
+    name: 'IR 검사 · 2호 라인',
+    role: '내부저항 측정 · 불량 분류',
+    startHour: 1,
+    startMinute: 0,
+    endHour: 4,
+    endMinute: 30,
+    status: 'done',
+    desc: 'IR 측정값 OPC UA 태그 수집 → FPY 산출 · 완료',
+  },
+  {
+    wo: 'WO-2403',
+    name: '조립 공정 · A라인',
+    role: '부품 조립 · 토크 검사',
+    startHour: 2,
+    startMinute: 0,
+    endHour: 8,
+    endMinute: 0,
+    status: 'run',
+    desc: '진행 중 — React/Electron MES UI에서 실시간 모니터링',
+  },
+  {
+    wo: 'WO-2404',
+    name: '비전 검사 · B라인',
+    role: 'TCP/IP 비전 데이터 수집',
+    startHour: 3,
+    startMinute: 30,
+    endHour: 9,
+    endMinute: 0,
+    status: 'run',
+    desc: '진행 중 — TCP/IP 비전 시스템 → Django REST API 실시간 적재',
+  },
+  {
+    wo: 'WO-2405',
+    name: '출하 검사 · 전수',
+    role: '최종 OCV·외관 검사',
+    startHour: 8,
+    startMinute: 0,
+    endHour: 12,
+    endMinute: 0,
+    status: 'run',
+    desc: '진행 중 — Python Dash 대시보드 FPY 실시간 반영',
+  },
+  {
+    wo: 'WO-2406',
+    name: '야간 배치 · DB 집계',
+    role: 'PostgreSQL ETL · 일일 리포트',
+    startHour: 14,
+    startMinute: 0,
+    endHour: 17,
+    endMinute: 0,
+    status: 'run',
+    desc: '예정 — Django REST 집계 API → KPI 일간 보고서 자동 생성',
+  },
+]
+
+export const DEFECTS = [
+  { mode: 'OCV 전압 편차', count: 38, cat: 'Machine' },
+  { mode: 'IR 측정 이상', count: 24, cat: 'Machine' },
+  { mode: '외관 스크래치', count: 17, cat: 'Material' },
+  { mode: '조립 토크 NG', count: 11, cat: 'Method' },
+  { mode: '작업자 셋업 오류', count: 6, cat: 'Man' },
+]
+
+export const SKILL_GROUPS = [
+  {
+    cat: '설비 · 라인 상태',
+    items: [
+      ['OCV 검사 1호', ''],
+      ['IR 검사 2호', ''],
+      ['조립 A라인', 'a'],
+      ['비전검사 B라인', 'a'],
+      ['출하검사', ''],
+      ['야간배치 ETL', 'c'],
+    ] as const,
+  },
+  {
+    cat: 'MES 스택 · 자체개발',
+    items: [
+      ['Django REST Framework', ''],
+      ['PostgreSQL', ''],
+      ['OPC UA 수집', 'a'],
+      ['React · TS · Electron', ''],
+      ['Python Dash', 'a'],
+      ['TCP/IP 비전 ETL', 'c'],
+      ['MS Access DB 드라이버', 'c'],
+    ] as const,
+  },
+  {
+    cat: '하드웨어 · 인프라',
+    items: [
+      ['Zebra DS2208', 'a'],
+      ['RAID1 서버', 'a'],
+      ['계층형 S/N 바코드', 'c'],
+    ] as const,
+  },
+]
+
+export type FeedSeverity = 'info' | 'warn' | 'crit' | 'ok'
+
+export const LIVE_POOL: Array<{ sev: FeedSeverity; msg: string }> = [
+  { sev: 'info', msg: 'OEE 91.4% 유지 · 가동률 96.2% · 성능률 94.8%' },
+  { sev: 'info', msg: 'UPH 872EA · C/T 12.4s — Takt 13.2s 이내 정상' },
+  { sev: 'warn', msg: 'WO-2403 · 조립 토크 NG 감지 — 설비 점검 요청' },
+  { sev: 'ok', msg: 'OCV 전압 편차 알람 해제 · 1호 라인 정상 복귀' },
+  { sev: 'info', msg: 'PostgreSQL 실적 적재 완료 — 생산 달성률 94%' },
+  { sev: 'crit', msg: '2호 라인 비전검사 설비 정지 — 다운타임 발생' },
+  { sev: 'ok', msg: '비전검사 설비 재가동 · FPY 99.7% 회복' },
+  { sev: 'info', msg: 'Python Dash KPI 대시보드 갱신 @1Hz 정상' },
+  { sev: 'warn', msg: 'IR 측정 편차 상한 근접 · 교정 요청' },
+  { sev: 'ok', msg: '생산 달성률 94% 달성 · 계획 대비 정상 궤도' },
+  { sev: 'info', msg: 'OPC UA 태그 수집 @1Hz 정상 — LINE-01' },
+  { sev: 'warn', msg: 'B라인 사이클타임 13.1s — Takt 근접 모니터링' },
+  { sev: 'ok', msg: 'WO-2404 비전검사 단계 완료 · 불량 0건' },
+  { sev: 'info', msg: 'Django REST API 응답 정상 — avg 12ms' },
+  { sev: 'crit', msg: 'OCV 충전 이상 감지 · L01-ST3 설비 정지' },
+  { sev: 'ok', msg: 'L01-ST3 복귀 · 충전 파라미터 재조정 완료' },
+  { sev: 'info', msg: 'FPY 99.7% · 불량 PPM 3,000 — 목표 이내' },
+  { sev: 'warn', msg: '다운타임 누적 18min — 목표 15min 초과' },
+  { sev: 'ok', msg: 'WO-2403 조립 A라인 중간 점검 완료 · 재가동' },
+  { sev: 'info', msg: 'UPH 868EA / 목표 850EA — 달성률 102%' },
+]
+
+export const SEED_EVENTS: Array<{ sev: FeedSeverity; msg: string }> = [
+  { sev: 'ok', msg: 'SHIFT START · DAY A조 가동 — OEE 모니터링 시작' },
+  { sev: 'info', msg: 'OPC UA · 설비 태그 수집 정상 @1Hz — LINE-01' },
+  { sev: 'ok', msg: 'WO-2401 완료 · OCV 검사 1호 라인 — FPY 99.8%' },
+  { sev: 'ok', msg: 'WO-2402 완료 · IR 검사 2호 라인 — 불량 2건 분류' },
+  { sev: 'info', msg: 'Django REST · 생산 실적 API 업데이트 완료' },
+]

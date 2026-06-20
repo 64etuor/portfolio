@@ -1,6 +1,7 @@
-/* 폰트 (CDN — 결정성 위해 추후 self-host 가능). @import 는 다른 규칙보다 앞서야 함. */
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,500;1,600&family=Noto+Serif+KR:wght@500;600;700&family=Playfair+Display:ital,wght@0,500;0,600;0,700;1,500;1,600&display=swap');
+/* 폰트는 self-host (src/app/layout.tsx 의 @fontsource / pretendard import).
+   렌더 차단 CDN @import 제거. 씬들은 LITERAL family name('JetBrains Mono',
+   'Pretendard Variable' 등)을 참조하며, 각 패키지가 동일한 family name 으로
+   @font-face 를 제공하므로 씬 CSS 는 변경 없이 동작한다. */
 @import 'tailwindcss';
 
 /* 셸 테마 토큰 — ThemeProvider 가 :root inline style 로 덮어쓴다. 기본값 = Ink */
@@ -785,3 +786,56 @@
   transform: translateX(-50%);
 }
 @media print { .site-bar { display: none !important; } }
+
+/* ===== 전역 라우트 전환 (app/template.tsx) — 매 네비게이션마다 재생되는 CRT 컷 ===== */
+.route-tx {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  pointer-events: none;
+  overflow: hidden;
+}
+/* 다크 베일이 덮였다가 걷히며 새 페이지를 드러냄 */
+.route-tx-veil {
+  position: absolute;
+  inset: 0;
+  background: #05070a;
+  animation: rtx-veil 0.52s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+/* 스캔 스윕 */
+.route-tx-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(180deg, transparent, rgba(150, 205, 255, 0.12), transparent);
+  mix-blend-mode: screen;
+  animation: rtx-scan 0.55s ease forwards;
+}
+/* 짧은 페인트 플래시 */
+.route-tx-flash {
+  position: absolute;
+  inset: 0;
+  background: #cfe6ff;
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: rtx-flash 0.5s ease forwards;
+}
+@keyframes rtx-veil {
+  0% { opacity: 1; }
+  55% { opacity: 0.45; }
+  100% { opacity: 0; }
+}
+@keyframes rtx-scan {
+  0% { transform: translateY(-60%); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translateY(230%); opacity: 0; }
+}
+@keyframes rtx-flash {
+  0% { opacity: 0; }
+  9% { opacity: 0.16; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-tx { display: none; }
+}

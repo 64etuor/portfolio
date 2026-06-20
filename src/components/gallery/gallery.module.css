@@ -1,0 +1,83 @@
+/* public/lab/_gallery.css 포팅 — Next CSS Module PURE MODE.
+   CDN font @import 제거, :root/body 대신 .page 에 변수·배경 스코프. */
+
+.page {
+  --bg: #0c0d10;
+  --panel: #15171c;
+  --line: #262a31;
+  --ink: #e9e9ec;
+  --muted: #8b909a;
+  --accent: #e07a5f;
+  --film: #5fb5c2;
+
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
+  word-break: keep-all;
+  min-height: 100dvh;
+  padding: 28px clamp(16px, 4vw, 48px) 64px;
+}
+.page a { color: inherit; text-decoration: none; }
+
+/* Unified site header bar — centered HOME + optional right-end action. */
+.top {
+  position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  min-height: 44px;
+  margin: -28px calc(-1 * clamp(16px, 4vw, 48px)) 24px;
+  padding: 8px clamp(16px, 4vw, 40px);
+  background: color-mix(in oklab, var(--bg) 82%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  font-family: 'Playfair Display', Georgia, serif; font-size: clamp(15px, 1.5vw, 19px);
+  font-weight: 600; letter-spacing: 0.01em; color: var(--ink); transition: opacity 0.16s;
+}
+.brand:hover { opacity: 0.72; }
+.home { position: absolute; left: 50%; transform: translateX(-50%); }
+.back {
+  font-family: ui-monospace, monospace; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted);
+  border: 1px solid var(--line); border-radius: 7px; padding: 7px 13px;
+  transition: border-color 0.16s, color 0.16s, background 0.16s, box-shadow 0.16s;
+}
+.back:hover { border-color: rgba(224, 122, 95, 0.5); color: var(--ink); background: rgba(255, 255, 255, 0.06); box-shadow: 0 0 14px rgba(224, 122, 95, 0.2); }
+
+.h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
+.sub { margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.6; max-width: 920px; }
+
+.grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 24px; }
+@media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
+.card { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--panel); display: flex; flex-direction: column; }
+.bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.tt { font-size: 14px; font-weight: 700; }
+.tag { flex: none; font-size: 10.5px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); }
+.cardFilm .tag { color: var(--film); }
+.desc { padding: 10px 16px; font-size: 12px; color: var(--muted); line-height: 1.55; min-height: 38px; }
+
+/* preview area — now mounts the live React scene (was a static iframe thumbnail). */
+.frameWrap { position: relative; aspect-ratio: 16 / 10; background: #000; overflow: hidden; border-top: 1px solid var(--line); }
+.placeholder {
+  position: absolute; inset: 0; display: grid; place-items: center;
+  font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.1em; color: #3b4049;
+}
+
+.actions { display: flex; gap: 8px; padding: 12px 16px; }
+.actions a { font-size: 12px; font-weight: 600; color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 7px 12px; transition: border-color 0.15s, color 0.15s; }
+.actions a:hover { border-color: var(--accent); color: var(--accent); }
+
+/* Skills overview — area cards (light, no preview) */
+.areas { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-top: 24px; }
+.area { display: block; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 20px; transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s; }
+.area:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4); }
+.an { font-size: 17px; font-weight: 700; }
+.ac { float: right; font-family: ui-monospace, monospace; font-size: 12px; color: var(--muted); }
+.ad { margin-top: 8px; color: var(--muted); font-size: 12.5px; line-height: 1.55; }
+.al { margin-top: 14px; font-family: ui-monospace, monospace; font-size: 11px; letter-spacing: 0.02em; color: #5a6470; }
+.footer { margin-top: 30px; color: var(--muted); font-size: 12px; }
+
+/* page entrance — reveal from black so it doesn't pop in after the landing transition */
+@keyframes gallery-enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.page { animation: gallery-enter 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@media (prefers-reduced-motion: reduce) { .page { animation: none; } }

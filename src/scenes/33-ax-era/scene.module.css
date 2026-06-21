@@ -3,16 +3,12 @@
 
 .root {
   --bg: #050505;
-  --phos: #d7d7d7;
-  --phos-dim: #8d8d8d;
-  --phos-deep: #3a3a3a;
   --ax: #4ea3f0;
-  --ax-hot: #cfe8ff;
 
   position: absolute;
   inset: 0;
   overflow: hidden;
-  color: #d7d7d7;
+  color: var(--scene-phos);
   font-family: 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
@@ -82,7 +78,7 @@
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: clamp(10px, 0.82vw, 15px);
   letter-spacing: 0.42em;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   text-shadow: none;
 }
 
@@ -106,7 +102,7 @@
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px;
   letter-spacing: 5px;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   text-transform: uppercase;
 }
 
@@ -124,9 +120,6 @@
   50% { opacity: 1; }
 }
 
-.kickerSep {
-  color: #3a3a3a;
-}
 
 .status {
   color: #4ea3f0;
@@ -150,11 +143,11 @@
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10.5px;
   letter-spacing: 3px;
-  color: #3a3a3a;
+  color: var(--scene-phos-deep);
 }
 
 .footer b {
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   font-weight: 500;
 }
 
@@ -186,7 +179,7 @@
   font-size: clamp(34px, 5.6vw, 92px);
   letter-spacing: -1.6px;
   line-height: 1.06;
-  color: #d7d7d7;
+  color: var(--scene-phos);
   display: flex;
   align-items: baseline;
   justify-content: center;
@@ -202,7 +195,7 @@
 }
 
 .dx {
-  color: #3a3a3a;
+  color: var(--scene-phos-deep);
   display: inline-block;
   transform-origin: center bottom;
 }
@@ -216,14 +209,14 @@
 }
 
 .muted {
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   font-weight: 700;
   font-size: 0.62em;
   letter-spacing: -0.5px;
 }
 
 .beyond {
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   font-weight: 700;
   font-size: 0.62em;
   position: relative;
@@ -249,7 +242,7 @@
   font-size: clamp(16px, 2.3vw, 38px);
   letter-spacing: -0.4px;
   line-height: 1.4;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
 }
 
 .ln {
@@ -259,7 +252,7 @@
 }
 
 .core {
-  color: #d7d7d7;
+  color: var(--scene-phos);
   font-weight: 800;
   position: relative;
 }

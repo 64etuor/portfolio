@@ -4,18 +4,14 @@
 .root {
   --bg: #050505;
   --bg2: #101010;
-  --phos: #d7d7d7;
-  --phos-dim: #8d8d8d;
-  --phos-deep: #3a3a3a;
   --gold: #f0c879;
-  --gold-hot: #fff1cf;
   --mono: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
 
   position: absolute;
   inset: 0;
   overflow: hidden;
   background: radial-gradient(ellipse 130% 130% at 50% 45%, #101010 0%, #050505 60%, #000 100%);
-  color: #d7d7d7;
+  color: var(--scene-phos);
   font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
@@ -82,7 +78,7 @@
 .frame {
   position: absolute;
   z-index: 34;
-  color: #3a3a3a;
+  color: var(--scene-phos-deep);
   font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
   font-size: 10.5px;
   letter-spacing: 0.28em;
@@ -120,7 +116,7 @@
   font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
   font-size: clamp(10px, 0.82vw, 15px);
   letter-spacing: 0.42em;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   text-shadow: none;
   text-transform: none;
 }
@@ -148,7 +144,7 @@
   font-size: clamp(18px, 2.3vw, 40px);
   line-height: 1.32;
   letter-spacing: -0.01em;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   opacity: 0;
 }
 .l1 em {
@@ -172,7 +168,7 @@
   font-size: clamp(26px, 3.7vw, 68px);
   line-height: 1.18;
   letter-spacing: -0.02em;
-  color: #d7d7d7;
+  color: var(--scene-phos);
   text-shadow: 0 0 16px rgba(215, 215, 215, 0.16);
   opacity: 0;
 }

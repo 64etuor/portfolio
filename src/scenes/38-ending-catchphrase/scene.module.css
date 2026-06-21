@@ -1,8 +1,8 @@
 .stage {
   --bg: #050505;
   --phos: #e9e9e9;
-  --phos-dim: #8d8d8d;
-  --phos-deep: #3a3a3a;
+  --phos-dim: var(--scene-phos-dim);
+  --phos-deep: var(--scene-phos-deep);
   --acc: #52e6cf;
   --acc-bright: #c7fbf1;
   --kr: 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;

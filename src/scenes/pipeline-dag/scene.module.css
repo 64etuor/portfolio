@@ -109,7 +109,6 @@
   box-shadow: -12px 0 40px rgba(0,0,0,.5);
   overflow: hidden;
 }
-.panelOpen { transform: translateX(0) }
 
 /* ---------- Minimap ---------- */
 .minimap {

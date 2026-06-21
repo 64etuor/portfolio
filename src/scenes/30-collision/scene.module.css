@@ -94,7 +94,7 @@
 }
 .hudK {
   font-size: 10px;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
 }
 .hudV {
   font-size: 13px;
@@ -112,7 +112,7 @@
   font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
   font-size: clamp(10px, 0.82vw, 15px);
   letter-spacing: 0.42em;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   text-shadow: none;
 }
 .eyebrow b {
@@ -150,7 +150,7 @@
   font-weight: 400;
   font-size: 9px;
   letter-spacing: 2px;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   margin-top: 4px;
 }
 
@@ -165,7 +165,7 @@
   font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
   font-size: 11px;
   letter-spacing: 4px;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   display: flex;
   gap: 14px;
   align-items: center;
@@ -177,7 +177,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #3a3a3a;
+  background: var(--scene-phos-deep);
   display: inline-block;
 }
 .dotOn {

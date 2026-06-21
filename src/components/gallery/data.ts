@@ -18,7 +18,6 @@ export type SkillAreaKey = 'pm' | 'process' | 'dev' | 'infra' | 'pkm'
 export interface SkillArea {
   key: SkillAreaKey
   label: string
-  count: number
   blurb: string
   cards: GalleryCard[]
 }
@@ -44,7 +43,6 @@ export const SKILL_AREAS: SkillArea[] = [
   {
     key: 'pm',
     label: 'PM',
-    count: 5,
     blurb: '경영 · 관리 · 의사결정 — 원가 제1원칙, 커리어 임팩트 보드, Notion OS, 창고물류 SCM, 결정 시스템.',
     cards: [
       { file: 'instrument-rack', title: '원가 제1원칙 해부 보드', tag: '원가', desc: 'OPEX First-Principles Ledger — 원가를 분해·측정·절감.' },
@@ -57,7 +55,6 @@ export const SKILL_AREAS: SkillArea[] = [
   {
     key: 'process',
     label: '공정',
-    count: 7,
     blurb: '제조 · 계측 · 로보틱스 — 용접/적층/측정/로봇 교시와 디지털 트윈.',
     cards: [
       { file: 'sonar-waterfall', title: '초음파 용착 DOE', tag: '공정', desc: '조건 최적화 반응면 — 용착 파라미터 DOE 워터폴.' },
@@ -72,7 +69,6 @@ export const SKILL_AREAS: SkillArea[] = [
   {
     key: 'dev',
     label: '개발',
-    count: 4,
     blurb: '소프트웨어 · 데이터 — 도면·DB·MES·IDE로 보는 시스템 설계.',
     cards: [
       { file: 'pid-scheme', title: 'P&ID 시스템 토폴로지', tag: '아키텍처', desc: 'ISA-5.1 — 소프트웨어 아키텍처를 P&ID 도면으로.' },
@@ -84,7 +80,6 @@ export const SKILL_AREAS: SkillArea[] = [
   {
     key: 'infra',
     label: '인프라',
-    count: 2,
     blurb: '시스템 · 관제 — 작업 관제와 에이전트 거버넌스.',
     cards: [
       { file: 'radar-sonar', title: 'Work Radar 관제 콕핏', tag: '관제', desc: 'PPI 스코프 — 작업 신호를 무한 재취득하는 관제 레이더.' },
@@ -94,7 +89,6 @@ export const SKILL_AREAS: SkillArea[] = [
   {
     key: 'pkm',
     label: 'PKM',
-    count: 2,
     blurb: '지식관리 — 볼트 의미지도와 Hermes 지식 컨트롤 플레인.',
     cards: [
       { file: 'ai-latent', title: '볼트 의미지도', tag: 'PKM', desc: 'BGE-M3 지식그래프 — 캡션 전환마다 크로스도메인 연결이 재형성. 테크스택·철학을 한 그래프로.' },

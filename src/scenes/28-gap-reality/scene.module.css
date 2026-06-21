@@ -5,7 +5,7 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  color: #d7d7d7;
+  color: var(--scene-phos);
   font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
   word-break: keep-all;
   -webkit-font-smoothing: none;
@@ -61,7 +61,7 @@
   top: 12.2%;
   font-size: clamp(10px, 0.82vw, 15px);
   letter-spacing: 0.42em;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   text-shadow: none;
 }
 .eyebrow b {
@@ -77,13 +77,13 @@
   font-weight: 600;
   font-size: clamp(20px, 2.36vw, 48px);
   line-height: 1.34;
-  color: #d7d7d7;
+  color: var(--scene-phos);
   letter-spacing: -0.01em;
 }
 .s1 em {
   font-style: normal;
   color: #fff;
-  border-bottom: 2px solid #3a3a3a;
+  border-bottom: 2px solid var(--scene-phos-deep);
   padding-bottom: 1px;
 }
 
@@ -95,7 +95,7 @@
   font-weight: 700;
   font-size: clamp(26px, 3.42vw, 70px);
   line-height: 1.22;
-  color: #d7d7d7;
+  color: var(--scene-phos);
   letter-spacing: -0.02em;
 }
 .s2 em {
@@ -129,7 +129,7 @@
   align-items: center;
   pointer-events: none;
   font-size: clamp(9px, 0.74vw, 12.5px);
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   letter-spacing: 0.06em;
 }
 .legend .it {
@@ -143,7 +143,7 @@
   border-radius: 50%;
 }
 .legend .exp {
-  background: #d7d7d7;
+  background: var(--scene-phos);
   box-shadow: 0 0 7px rgba(215, 215, 215, 0.6);
 }
 .legend .real {
@@ -157,6 +157,6 @@
   opacity: 0.8;
 }
 .legend small {
-  color: #3a3a3a;
+  color: var(--scene-phos-deep);
   margin-left: 3px;
 }

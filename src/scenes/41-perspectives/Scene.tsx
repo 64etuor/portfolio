@@ -155,11 +155,10 @@ const TOKS = buildTokens()
 
 function persp(f: number) {
   if (f < 0.1) return 0
-  if (f < 0.38) return 0
-  if (f < 0.5) return ease((f - 0.38) / 0.12)
-  if (f < 0.78) return 1
-  if (f < 0.9) return 1 - ease((f - 0.78) / 0.12)
-  return 0
+  if (f < 0.38) return 0 // FIELD 홀드
+  if (f < 0.5) return ease((f - 0.38) / 0.12) // → DEV 전환
+  if (f < 0.9) return 1 // DEV 홀드(연장: 필름이 개발자 관점을 충분히 보여준 뒤 컷)
+  return 1 - ease((f - 0.9) / 0.1) // → FIELD 복귀(루프 봉합, 마지막 0.1 구간)
 }
 
 function focalBreath(f: number, time: number) {

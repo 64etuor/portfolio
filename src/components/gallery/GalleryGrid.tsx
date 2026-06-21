@@ -39,7 +39,7 @@ export function GalleryGrid({ cards }: { cards: GalleryCard[] }) {
             <div className={styles.desc}>{card.desc}</div>
             <div className={styles.frameWrap}>
               {load ? (
-                <SceneFrame load={load} title={card.title} bg={bg} />
+                <SceneFrame load={load} title={card.title} bg={bg} hoverPlay />
               ) : (
                 <div className={styles.placeholder}>● 미리보기 없음</div>
               )}

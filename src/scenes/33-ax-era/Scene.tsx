@@ -6,6 +6,7 @@ import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'
 import { rgba, mix } from '../_host/color'
 import type { RGB } from '../_host/color'
+import { PALETTE_LIGHT_GRAY, PALETTE_DIM } from '../_host/palette'
 import { ease, smoothstep as ramp, lerp } from '../_host/math'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
@@ -23,8 +24,8 @@ import s from './scene.module.css'
    ════════════════════════════════════════════════════════════════ */
 
 // ---- color helpers ----
-const COLD: RGB = [215, 215, 215]
-const DIMC: RGB = [141, 141, 141]
+const COLD: RGB = PALETTE_LIGHT_GRAY
+const DIMC: RGB = PALETTE_DIM
 const AZ: RGB = [78, 163, 240]
 const AZH: RGB = [207, 232, 255]
 

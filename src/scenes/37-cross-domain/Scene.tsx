@@ -5,6 +5,7 @@ import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import type { Frame, SceneProps } from '../_host/types'
 import { type RGB, rgba, mix } from '../_host/color'
+import { PALETTE_LIGHT_GRAY, PALETTE_DIM } from '../_host/palette'
 import { clamp, lerp, smooth01 } from '../_host/math'
 import { mulberry32 } from '../_host/random'
 import { useSceneReady } from '../_host/useSceneReady'
@@ -22,8 +23,8 @@ import s from './scene.module.css'
    ════════════════════════════════════════════════════════════════ */
 
 /* ---- color arrays ---- */
-const PHOS: [number, number, number] = [215, 215, 215]
-const DIM: [number, number, number] = [141, 141, 141]
+const PHOS: RGB = PALETTE_LIGHT_GRAY
+const DIM: RGB = PALETTE_DIM
 const DEEP: [number, number, number] = [58, 58, 58]
 const WARM: [number, number, number] = [214, 161, 90]
 const COOL: [number, number, number] = [98, 176, 204]

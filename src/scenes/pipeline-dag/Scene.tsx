@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
 import {
@@ -83,8 +84,6 @@ const AI_MAX = 80
 // ── Scene ──────────────────────────────────────────────────────────
 
 export default function Scene({ running = true, onReady }: SceneProps) {
-  const readyFired = useRef(false)
-
   // DOM refs (imperative containers)
   const stageRef    = useRef<HTMLDivElement | null>(null)
   const worldRef    = useRef<HTMLDivElement | null>(null)
@@ -149,12 +148,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const WB = useRef({ w: 0, h: 0 })
 
   // onReady
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   // ── grid background + token/AI animation draw callback ────────────
   const ref = useSceneCanvas((g: CanvasRenderingContext2D, fr: Frame) => {

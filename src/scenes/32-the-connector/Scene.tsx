@@ -1,8 +1,12 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
+import { rgba, mix } from '../_host/color'
+import type { RGB } from '../_host/color'
+import { ease, smoothstep as ramp } from '../_host/math'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
 
@@ -14,21 +18,13 @@ const T_WARM1 = 7.4
 const T_HOLD1 = 10.8
 const T_DIS1 = 13.3
 
-type Color = [number, number, number]
+type Color = RGB
 type Point = [number, number]
 type NodePoint = { x: number; y: number; i: number; ph: number }
 
 const COLD: Color = [150, 150, 150]
 const TEAL: Color = [79, 224, 196]
 const TEALH: Color = [196, 248, 238]
-
-function mix(a: Color, b: Color, t: number): Color {
-  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
-}
-
-function rgba(c: Color, a: number) {
-  return `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`
-}
 
 function makeNode(x: number, y: number, i: number): NodePoint {
   return { x, y, i, ph: i * 0.74 + (i % 2 ? 0.9 : 0) }
@@ -50,14 +46,6 @@ function buildShores(W: number, H: number) {
     rightNodes.push(makeNode(RX - bulge, yy, i))
   }
   return { leftNodes, rightNodes, anchorI: Math.floor(n / 2) }
-}
-
-function ease(x: number) {
-  return x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x)
-}
-
-function ramp(a: number, b: number, x: number) {
-  return ease((x - a) / (b - a))
 }
 
 function B(p0: Point, p1: Point, p2: Point, p3: Point, t: number): Point {
@@ -299,14 +287,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const line2Ref = useRef<HTMLDivElement | null>(null)
   const statusRef = useRef<HTMLSpanElement | null>(null)
   const lastStatus = useRef('')
-  const readyFired = useRef(false)
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   const ref = useSceneCanvas((ctx: CanvasRenderingContext2D, fr: Frame) => {
     const W = fr.w

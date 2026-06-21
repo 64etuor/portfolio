@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
+import { useSceneReady } from '../_host/useSceneReady'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import type { Frame, SceneProps } from '../_host/types'
 import {
@@ -161,7 +162,6 @@ const statusColor = (status: AgentStatus) =>
 export default function Scene({ running = true, onReady }: SceneProps) {
   const rootRef = useRef<HTMLDivElement | null>(null)
   const elRefs = useRef<Partial<Record<ElementKey, HTMLElement | null>>>({})
-  const readyFired = useRef(false)
   const prepainted = useRef(false)
   const timeouts = useRef<ReturnType<typeof setTimeout>[]>([])
 
@@ -241,12 +241,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     }
   }, [])
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   useEffect(() => {
     renderFleet()

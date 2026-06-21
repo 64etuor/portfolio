@@ -1,8 +1,12 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
+import { rgba, mix } from '../_host/color'
+import type { RGB } from '../_host/color'
+import { clamp, lerp } from '../_host/math'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
 
@@ -23,24 +27,9 @@ const KO = ['공정', '불량률', '금형', '양산', '치수', '납기', '현�
 const EN = ['deploy', 'schema', 'async', 'refactor', 'commit', 'build', 'endpoint', 'latency', 'cache', 'rollback', 'queue', 'nullable']
 
 // ---------- color helpers ----------
-const PHOS: [number, number, number] = [226, 226, 226]
-const WARM: [number, number, number] = [217, 138, 61]
-const COLD: [number, number, number] = [74, 179, 204]
-
-function rgba(c: [number, number, number], a: number): string {
-  return `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`
-}
-function mix(
-  a: [number, number, number],
-  b: [number, number, number],
-  t: number
-): [number, number, number] {
-  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
-}
-
-// ---------- easing ----------
-const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v)
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+const PHOS: RGB = [226, 226, 226]
+const WARM: RGB = [217, 138, 61]
+const COLD: RGB = [74, 179, 204]
 const seg = (p: number, a: number, b: number) => clamp((p - a) / (b - a), 0, 1)
 const eIn = (t: number) => t * t * t
 const eOut = (t: number) => 1 - Math.pow(1 - t, 3)
@@ -168,14 +157,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const tokensRef = useRef<Token[]>([])
   const heroFontRef = useRef(64)
   const line1FontRef = useRef(26)
-  const readyFired = useRef(false)
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   const ref = useSceneCanvas((g: CanvasRenderingContext2D, fr: Frame) => {
     const W = fr.w

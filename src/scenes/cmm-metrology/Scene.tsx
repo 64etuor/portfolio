@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
+import { clamp } from '../_host/math'
+import { useSceneReady } from '../_host/useSceneReady'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import type { Frame, SceneProps } from '../_host/types'
 import { FEATURES, SEED0, SKILLS, SYMS, TARGETS, XCHECKS } from './data'
@@ -137,7 +139,6 @@ interface SceneDomRefs {
   bootFill: { current: HTMLDivElement | null }
 }
 
-const clamp01 = (v: number) => Math.max(0, Math.min(1, v))
 const text = (el: Element | null | undefined, value: string | number) => {
   if (el) el.textContent = String(value)
 }
@@ -580,7 +581,7 @@ function drawCpk(refs: SceneDomRefs, val: number) {
   gctx.beginPath()
   gctx.arc(cx, cy, R, Math.PI, 0)
   gctx.stroke()
-  const t = clamp01(val / 2)
+  const t = clamp(val / 2, 0, 1)
   const ang = Math.PI + t * Math.PI
   const col = val >= 1.33 ? CSS.pass : val >= 1 ? CSS.amber : CSS.fail
   const g2 = gctx.createLinearGradient(0, 0, w, 0)
@@ -918,7 +919,6 @@ function drawScene(g: CanvasRenderingContext2D, fr: Frame, st: RuntimeState, ref
 }
 
 export default function Scene({ running = true, onReady }: SceneProps) {
-  const readyFired = useRef(false)
   const runtimeRef = useRef<RuntimeState | null>(null)
   if (!runtimeRef.current) runtimeRef.current = createRuntimeState()
 
@@ -976,12 +976,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     bootFill: bootFillRef,
   }
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   const ref = useSceneCanvas((g: CanvasRenderingContext2D, fr: Frame) => {
     drawScene(g, fr, runtimeRef.current!, refs, s)

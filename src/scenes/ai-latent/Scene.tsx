@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
+import { useSceneReady } from '../_host/useSceneReady'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
@@ -240,15 +241,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const autoCycleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const idleHeatTimerRef  = useRef<ReturnType<typeof setInterval> | null>(null)
   const logIdxRef    = useRef(0)
-  const readyFired   = useRef(false)
-
   /* ── onReady ── */
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   /* ── build links once nodes exist ── */
   useEffect(() => {

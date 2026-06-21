@@ -1,9 +1,13 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import type { Frame, SceneProps } from '../_host/types'
+import { type RGB, rgba, mix } from '../_host/color'
+import { clamp, lerp, ease } from '../_host/math'
+import { fractHash } from '../_host/random'
+import { useSceneReady } from '../_host/useSceneReady'
 import s from './scene.module.css'
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -11,7 +15,6 @@ import s from './scene.module.css'
    public/lab/41-perspectives.html 이식.
    ════════════════════════════════════════════════════════════════════════ */
 
-type RGB = readonly [number, number, number]
 type Screen = { file: string; title: string; tag: string }
 type Token = {
   t: string
@@ -47,6 +50,8 @@ const COLD: RGB = [110, 168, 255]
 const COLDB: RGB = [207, 224, 255]
 const COLDD: RGB = [35, 70, 127]
 const DIM: RGB = [141, 141, 141]
+
+
 
 const FIELD: Screen[] = [
   { file: 'sonar-waterfall.html', title: '초음파 용착', tag: 'ULTRASONIC' },
@@ -119,18 +124,7 @@ const BLUR_MAX = 6
 const BLUR_STEP = 0.5
 const NB = Math.round(BLUR_MAX / BLUR_STEP) + 1
 
-const clamp = (a: number, b: number, v: number) => (v < a ? a : v > b ? b : v)
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t
-const ease = (x: number) => {
-  x = clamp(0, 1, x)
-  return x * x * (3 - 2 * x)
-}
-const mix = (a: RGB, b: RGB, t: number): RGB => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
-const rgba = (c: RGB, a: number) => `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`
-const hsh = (i: number, salt: number) => {
-  const v = Math.sin((i + 1) * 12.9898 + salt * 78.233) * 43758.5453
-  return v - Math.floor(v)
-}
+const hsh = fractHash
 const labUrl = (file: string) => (file.startsWith('/') ? file : `/lab/${file}`)
 const makeProcNodes = (count: number): ProcNode[] => Array.from({ length: count }, () => ({ root: null, scr: null, iframe: null }))
 
@@ -535,7 +529,7 @@ function applyHero(
 function setLabel(el: HTMLSpanElement | null, p: number, col: RGB, state: { lab: string; labA: number }) {
   if (!el) return
   const dist = Math.abs(p - 0.5) * 2
-  const focus = ease(clamp(0, 1, (dist - 0.18) / 0.82))
+  const focus = ease(clamp((dist - 0.18) / 0.82, 0, 1))
   const txt = p < 0.5 ? '실무자 관점 · FIELD EXPERT' : '개발자 관점 · DEVELOPER'
   if (txt !== state.lab && focus < 0.22) {
     state.lab = txt
@@ -607,14 +601,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const heroStateRef = useRef(new WeakMap<HTMLElement, { fb: number; ty: number }>())
   const labelStateRef = useRef({ lab: '', labA: -1 })
   const offsetRef = useRef<number | null>(null)
-  const readyFired = useRef(false)
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   const getOffset = () => {
     if (offsetRef.current === null) {
@@ -635,7 +623,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     const layout = syncLayout(fieldProcRefs.current, devProcRefs.current, layoutRef, W, H)
 
     const breath = focalBreath(f, time)
-    const focalX = lerp(W * 0.3, W * 0.7, clamp(0, 1, sf + breath))
+    const focalX = lerp(W * 0.3, W * 0.7, clamp(sf + breath, 0, 1))
 
     g.clearRect(0, 0, W, H)
     drawGears(g, time, fieldVis, layout.gears)

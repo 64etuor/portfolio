@@ -3,6 +3,8 @@
 import { useEffect, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
+import { lerp, smooth01 } from '../_host/math'
 import type { SceneProps } from '../_host/types'
 import s from './scene.module.css'
 
@@ -66,8 +68,7 @@ const LOOP = 19.0
 const BLOCKS = ['▚', '▞', '▒', '▓', '░', '█']
 
 const clamp = (v: number, a = 0, b = 1) => (v < a ? a : v > b ? b : v)
-const smooth = (t: number) => { t = clamp(t); return t * t * (3 - 2 * t) }
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t
+const smooth = smooth01
 
 const PHASE_TXT = [
   ['QUESTION', '질문'],
@@ -114,16 +115,10 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const answerContainerRef = useRef<HTMLDivElement | null>(null)
   const layersContainerRef = useRef<HTMLDivElement | null>(null)
 
-  const readyFired = useRef(false)
   /* sizing unit (min(1vw, 1.778vh)) — updated on resize */
   const uRef = useRef(0)
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   /* build dynamic DOM once on mount */
   useEffect(() => {

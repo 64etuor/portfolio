@@ -3,6 +3,8 @@
 import { useEffect, useId, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
+import { clamp, lerp } from '../_host/math'
 import type { Frame, SceneProps } from '../_host/types'
 import {
   DEFECTS,
@@ -18,8 +20,6 @@ import {
 import s from './scene.module.css'
 
 const rnd = (a: number, b: number) => a + Math.random() * (b - a)
-const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v))
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 const easeCubicOut = (t: number) => 1 - Math.pow(1 - clamp(t, 0, 1), 3)
 const fmt = (n: number) => n.toFixed(2)
 
@@ -349,7 +349,7 @@ function nowLinePct() {
 
 export default function Scene({ running = true, onReady }: SceneProps) {
   const idBase = useId().replace(/:/g, '')
-  const readyFired = useRef(false)
+  useSceneReady(onReady)
   const runtimeRef = useRef<Runtime | null>(null)
   if (!runtimeRef.current) runtimeRef.current = createRuntime()
 
@@ -382,13 +382,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const lampRRef = useRef<HTMLSpanElement | null>(null)
   const andonStateRef = useRef<HTMLSpanElement | null>(null)
   const stopFlagRef = useRef<HTMLSpanElement | null>(null)
-
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
 
   const setAndon = (level: 'g' | 'y' | 'r') => {
     const lampG = lampGRef.current

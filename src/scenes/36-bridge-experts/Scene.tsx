@@ -1,8 +1,11 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
+import { rgba, mix } from '../_host/color'
+import type { RGB } from '../_host/color'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
 
@@ -11,7 +14,6 @@ import s from './scene.module.css'
    제조와 디지털의 양방향 이해를 하나의 교차점으로 수렴하는 ∞ 브리지로 표현한다.
    ════════════════════════════════════════════════════════════════ */
 
-type RGB = readonly [number, number, number]
 type Particle = { u: number; dir: 1 | -1; sz: number }
 type Chevron = { base: number; dir: 1 | -1 }
 
@@ -36,14 +38,6 @@ const CHEVRONS: Chevron[] = Array.from({ length: 2 }, (_, d) =>
 ).flat()
 
 const frac = (x: number) => x - Math.floor(x)
-
-function mix(a: RGB, b: RGB, t: number): RGB {
-  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
-}
-
-function rgba(c: RGB, a: number) {
-  return `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`
-}
 
 function lem(t: number, cx: number, cy: number, a: number, ys: number): [number, number] {
   const c = Math.cos(t)
@@ -258,15 +252,9 @@ function drawAxis(g: CanvasRenderingContext2D, beat: number, cx: number, cy: num
 }
 
 export default function Scene({ running = true, onReady }: SceneProps) {
-  const readyFired = useRef(false)
   const timeOffset = useRef<number | null>(null)
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   const ref = useSceneCanvas((g: CanvasRenderingContext2D, f: Frame) => {
     if (timeOffset.current === null) {

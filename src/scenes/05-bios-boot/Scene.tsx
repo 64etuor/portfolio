@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
+import { useSceneReady } from '../_host/useSceneReady'
 import type { SceneProps } from '../_host/types'
 import s from './scene.module.css'
 
@@ -53,14 +54,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const pctRef = useRef<HTMLSpanElement | null>(null)
   const statRef = useRef<HTMLSpanElement | null>(null)
   const readyRef = useRef<HTMLDivElement | null>(null)
-  const readyFired = useRef(false)
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   useEffect(() => {
     if (!running) return

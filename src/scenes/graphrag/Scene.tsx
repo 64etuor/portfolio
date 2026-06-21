@@ -8,9 +8,10 @@
    모션: 결정적(시간 파라미터) · 무한 루프 · 난수/가짜 로그 없음
    ════════════════════════════════════════════════════════════════════ */
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
 import type { Frame, SceneProps } from '../_host/types'
 import { GRAPH_NODES, GRAPH_EDGES } from './data'
 import s from './scene.module.css'
@@ -482,14 +483,7 @@ function drawReject(ctx: CanvasRenderingContext2D, L: Layout, t: number) {
 
 /* ───────────────── component ───────────────── */
 export default function Scene({ running = true, onReady }: SceneProps) {
-  const readyFired = useRef(false)
-
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   const ref = useSceneCanvas((g: CanvasRenderingContext2D, fr: Frame) => {
     const W = fr.w, H = fr.h

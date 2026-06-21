@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
+import { useSceneReady } from '../_host/useSceneReady'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
@@ -42,7 +43,6 @@ function cls(...tokens: (string | number | false | undefined | null)[]): string 
 
 export default function Scene({ running = true, onReady }: SceneProps) {
   const rootRef = useRef<HTMLDivElement | null>(null)
-  const readyFired = useRef(false)
   // 씬이 화면 밖(running=false)일 때 자체 rAF/interval 틱을 멈추기 위한 게이트.
   // ref 로 들고 useEffect 내부 루프가 매 틱 읽는다. running=true 동안엔 동작 동일.
   const runningRef = useRef(running)
@@ -55,12 +55,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     g.fillRect(0, 0, f.w, f.h)
   }, { running })
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   // running 프롭 → runningRef 동기화. false→true 전환 시 멈췄던 rAF 루프 재가동.
   useEffect(() => {

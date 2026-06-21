@@ -1,8 +1,10 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
+import { cx } from '../_host/dom-util'
 import type { Frame, SceneProps } from '../_host/types'
 import { SRC, TERM, type TerminalEvent } from './data'
 import s from './scene.module.css'
@@ -90,10 +92,6 @@ const termClass: Record<string, string> = {
   tok: s.tok,
   tsummary: s.tsummary,
   '': s.tdim,
-}
-
-function cx(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ')
 }
 
 function createRuntime(): Runtime {
@@ -223,7 +221,7 @@ function isCommand(ev: TerminalEvent): ev is Extract<TerminalEvent, { cmd: strin
 }
 
 export default function Scene({ running = true, onReady }: SceneProps) {
-  const readyFired = useRef(false)
+  useSceneReady(onReady)
   const runtime = useRef(createRuntime())
   const codeflowRef = useRef<HTMLDivElement | null>(null)
   const edwrapRef = useRef<HTMLDivElement | null>(null)
@@ -239,13 +237,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const tabRef = useRef<HTMLDivElement | null>(null)
   const centerRef = useRef<HTMLDivElement | null>(null)
   const uptimeRef = useRef<HTMLSpanElement | null>(null)
-
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
 
   function rowHTML(li: number, inner: string, active: boolean) {
     return `<div class="${cx(s.row, active && s.active)}"><span class="${s.gut}">${li + 1}</span><span class="${s.code}">${inner}</span></div>`

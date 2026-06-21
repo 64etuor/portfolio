@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
+import { cx, setText } from '../_host/dom-util'
+import { lerp } from '../_host/math'
 import type { Frame, SceneProps } from '../_host/types'
 import {
   ACTION_DEFS,
@@ -78,8 +81,6 @@ const TREND_CONFIG: Record<TrendId, Array<{ color: string; start: number }>> = {
 
 const SCM_AREA_MAX = Math.max(...SCM_AREAS.map((p) => p.cnt))
 
-const cn = (...parts: Array<string | false | null | undefined>) => parts.filter(Boolean).join(' ')
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 const pad = (n: number) => String(n).padStart(2, '0')
 const round2 = (n: number) => n.toFixed(2)
 
@@ -95,10 +96,6 @@ function makeTrendRuntime(): TrendRuntime {
       })),
     ])
   ) as TrendRuntime
-}
-
-function setText(node: Element | null | undefined, text: string) {
-  if (node && node.textContent !== text) node.textContent = text
 }
 
 function setAttr(node: Element | null | undefined, name: string, value: string) {
@@ -186,7 +183,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const [activeTab, setActiveTab] = useState<TabId>('overview')
   const [ackPhase, setAckPhase] = useState<AckPhase>('active')
   const ackPhaseRef = useRef<AckPhase>('active')
-  const readyFired = useRef(false)
 
   const stateRef = useRef<ProcessState>({
     invCost: 4.0,
@@ -245,12 +241,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const trendInvRef = useRef<HTMLCanvasElement | null>(null)
   const trendScmRef = useRef<HTMLCanvasElement | null>(null)
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   useEffect(() => {
     renderAlarms(eventLogRef.current, alarmMiniRef.current, alarmFullRef.current)
@@ -473,7 +464,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
               ))}
             </nav>
 
-            <div className={cn('alarm-banner', ackPhase === 'active' && 'active', ackPhase === 'cleared' && 'cleared')}>
+            <div className={cx('alarm-banner', ackPhase === 'active' && 'active', ackPhase === 'cleared' && 'cleared')}>
               <div className="ico" ref={almIcoRef}>
                 {ackPhase === 'cleared' ? '*' : ackPhase === 'ramping' ? '+' : '!'}
               </div>
@@ -489,12 +480,12 @@ export default function Scene({ running = true, onReady }: SceneProps) {
                       : '제조·영업 간 재고 이관 프로세스가 전산화되어 있지 않아 재고 정확도가 낮고 과잉·부족 재고가 반복되었음.'}
                 </div>
               </div>
-              <button className={cn('ack-btn', ackPhase === 'cleared' && 'ok')} disabled={ackPhase !== 'active'} onClick={handleAck} ref={ackBtnRef} type="button">
+              <button className={cx('ack-btn', ackPhase === 'cleared' && 'ok')} disabled={ackPhase !== 'active'} onClick={handleAck} ref={ackBtnRef} type="button">
                 {ackPhase === 'cleared' ? '* CLEARED' : ackPhase === 'ramping' ? '개선 적용중...' : 'ACK · 개선 적용'}
               </button>
             </div>
 
-            <section className={cn('stage', activeTab === 'overview' && 'show')}>
+            <section className={cx('stage', activeTab === 'overview' && 'show')}>
               <div className="layout">
                 <div>
                   <div className="panel">
@@ -712,7 +703,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
                   <div className="pv-strip">
                     {PV_DEFS.map((p, i) => (
-                      <div className={cn('pv-tile', p.cls)} key={p.tag} ref={i === 4 ? riskTileRef : undefined}>
+                      <div className={cx('pv-tile', p.cls)} key={p.tag} ref={i === 4 ? riskTileRef : undefined}>
                         <div className="lbl">
                           <span>{p.lbl}</span>
                           <span className="tg">{p.tag}</span>
@@ -851,7 +842,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
               </div>
             </section>
 
-            <section className={cn('stage', activeTab === 'line1' && 'show')}>
+            <section className={cx('stage', activeTab === 'line1' && 'show')}>
               <div className="panel">
                 <div className="panel-h">
                   <div className="ttl">
@@ -888,7 +879,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
               </div>
             </section>
 
-            <section className={cn('stage', activeTab === 'quality' && 'show')}>
+            <section className={cx('stage', activeTab === 'quality' && 'show')}>
               <div className="panel">
                 <div className="panel-h">
                   <div className="ttl">
@@ -929,7 +920,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
               </div>
             </section>
 
-            <section className={cn('stage', activeTab === 'alarms' && 'show')}>
+            <section className={cx('stage', activeTab === 'alarms' && 'show')}>
               <div className="panel">
                 <div className="panel-h">
                   <div className="ttl">
@@ -941,7 +932,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
               </div>
             </section>
 
-            <section className={cn('stage', activeTab === 'history' && 'show')}>
+            <section className={cx('stage', activeTab === 'history' && 'show')}>
               <div className="panel">
                 <div className="panel-h">
                   <div className="ttl">
@@ -985,7 +976,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
               </div>
             </section>
 
-            <section className={cn('stage', activeTab === 'scmtf' && 'show')}>
+            <section className={cx('stage', activeTab === 'scmtf' && 'show')}>
               <div className="scm-creed">
                 <span className="ic">◎</span>
                 <div className="ct">
@@ -1038,7 +1029,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
                   <div className="pv-strip">
                     {SCM_PV_DEFS.map((p) => (
-                      <div className={cn('pv-tile', p.cls)} key={p.tag}>
+                      <div className={cx('pv-tile', p.cls)} key={p.tag}>
                         <div className="lbl">
                           <span>{p.lbl}</span>
                           <span className="tg">{p.tag}</span>

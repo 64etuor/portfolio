@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
 
@@ -157,8 +158,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const runBtnRef = useRef<HTMLButtonElement | null>(null)
   const runSubRef = useRef<HTMLSpanElement | null>(null)
 
-  const readyFired = useRef(false)
-
   // ===== persistent simulation state (refs, mutated in draw) =====
   const stateRef = useRef<State>({
     running: true,
@@ -205,12 +204,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     }
   }
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   // ===== DOM control handlers (attached once on mount) =====
   useEffect(() => {

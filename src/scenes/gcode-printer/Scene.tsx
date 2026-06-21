@@ -3,6 +3,8 @@
 import { useEffect, useRef, type CSSProperties } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
+import { cx, setText, scrollIntoNearestScrollable } from '../_host/dom-util'
 import type { Frame, SceneProps } from '../_host/types'
 import {
   CAREER,
@@ -52,10 +54,6 @@ const G_MAX = 40
 const TOTAL_MOVES = LAYERS.reduce((sum, layer) => sum + layer.moves.length, 0)
 const FIL_HOT = '#ffd9a8'
 
-function cx(...classes: Array<string | false | null | undefined>) {
-  return classes.filter(Boolean).join(' ')
-}
-
 function fmt(n: number, d = 1) {
   return n.toFixed(d)
 }
@@ -98,22 +96,6 @@ function project(cam: Cam, x: number, y: number, z: number): Point {
   const py = y - PLATE.d / 2
   const sinT = Math.sin(cam.tiltY)
   return [cam.cx + px * cam.scale, cam.cy + (py * sinT - z * 0.9) * cam.scale * 0.92]
-}
-
-function scrollLocal(el: HTMLElement | null) {
-  if (!el) return
-  let p = el.parentElement
-  while (p) {
-    const oy = getComputedStyle(p).overflowY
-    if ((oy === 'auto' || oy === 'scroll') && p.scrollHeight > p.clientHeight + 1) {
-      const er = el.getBoundingClientRect()
-      const pr = p.getBoundingClientRect()
-      if (er.top < pr.top) p.scrollTop -= pr.top - er.top
-      else if (er.bottom > pr.bottom) p.scrollTop += er.bottom - pr.bottom
-      return
-    }
-    p = p.parentElement
-  }
 }
 
 function metricToneClass(cls: string) {
@@ -305,7 +287,7 @@ function drawNozzle(g: CanvasRenderingContext2D, cam: Cam, W: number, state: Sim
 }
 
 export default function Scene({ running = true, onReady }: SceneProps) {
-  const readyFired = useRef(false)
+  useSceneReady(onReady)
   const state = useRef<SimState>(createInitialState())
   const deposited = useRef<Deposit[]>([])
   const movesDone = useRef(0)
@@ -349,10 +331,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const metricRefs = useRef<Array<HTMLDivElement | null>>([])
   const metricBarRefs = useRef<Array<HTMLElement | null>>([])
   const skillRefs = useRef<Array<HTMLDivElement | null>>([])
-
-  function setText(el: Element | null, value: string | number) {
-    if (el) el.textContent = String(value)
-  }
 
   function currentLayer(): Layer | undefined {
     return LAYERS[state.current.layer]
@@ -433,7 +411,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   function maybeShowDefect() {
     if (!defectShown.current && state.current.layer >= 42) {
       defectShown.current = true
-      scrollLocal(defectRef.current)
+      scrollIntoNearestScrollable(defectRef.current)
     }
   }
 
@@ -772,13 +750,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   useEffect(() => {
     resetSimulation()
   }, [])
-
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
 
   const ref = useSceneCanvas((g: CanvasRenderingContext2D, fr: Frame) => {
     advance(fr.dt, fr.t)

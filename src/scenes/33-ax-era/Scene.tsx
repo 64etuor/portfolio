@@ -1,8 +1,12 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
+import { rgba, mix } from '../_host/color'
+import type { RGB } from '../_host/color'
+import { ease, smoothstep as ramp, lerp } from '../_host/math'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
 
@@ -19,29 +23,13 @@ import s from './scene.module.css'
    ════════════════════════════════════════════════════════════════ */
 
 // ---- color helpers ----
-const COLD: [number, number, number] = [215, 215, 215]
-const DIMC: [number, number, number] = [141, 141, 141]
-const AZ: [number, number, number] = [78, 163, 240]
-const AZH: [number, number, number] = [207, 232, 255]
+const COLD: RGB = [215, 215, 215]
+const DIMC: RGB = [141, 141, 141]
+const AZ: RGB = [78, 163, 240]
+const AZH: RGB = [207, 232, 255]
 
-type RGB = [number, number, number]
-
-function mix(a: RGB, b: RGB, t: number): RGB {
-  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
-}
-function rgba(c: RGB, a: number): string {
-  return 'rgba(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ',' + a + ')'
-}
-function ease(x: number): number {
-  return x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x)
-}
-function ramp(a: number, b: number, x: number): number {
-  return ease((x - a) / (b - a))
-}
-function lerp(a: number, b: number, t: number): number {
-  return a + (b - a) * t
-}
 // deterministic pseudo-scatter (no Math.random — seamless & repeatable)
+// NOTE: uses i*12.9898 WITHOUT +1 — differs from fractHash, kept local
 function hash(i: number): number {
   const sv = Math.sin(i * 12.9898) * 43758.5453
   return sv - Math.floor(sv)
@@ -165,14 +153,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const lastStatusRef = useRef('')
   const geoRef = useRef<SceneGeo | null>(null)
   const lastSizeRef = useRef({ w: 0, h: 0 })
-  const readyFired = useRef(false)
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   const ref = useSceneCanvas((g: CanvasRenderingContext2D, fr: Frame) => {
     const W = fr.w, H = fr.h

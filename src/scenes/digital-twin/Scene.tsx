@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
+import { useSceneReady } from '../_host/useSceneReady'
 import type { SceneProps } from '../_host/types'
 import s from './scene.module.css'
 import { STATIONS, PLANT_KPIS, STREAM_MSGS, renderStreamMsg } from './data'
@@ -20,7 +21,7 @@ type AnyMod = any
 
 export default function Scene({ running = true, onReady }: SceneProps) {
   const containerRef = useRef<HTMLDivElement>(null)
-  const readyFired = useRef(false)
+  useSceneReady(onReady)
 
   // `running` mirror — read inside the rAF loop so pause/resume never re-inits Three.js.
   const runningRef = useRef(running)
@@ -50,13 +51,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const dtMetricsRef = useRef<HTMLDivElement>(null)
   const dtListRef = useRef<HTMLDivElement>(null)
   const dtChipsRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
 
   // Pause/resume the render loop on `running` change WITHOUT tearing down Three.js.
   useEffect(() => {

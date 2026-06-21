@@ -1,8 +1,10 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
+import { clamp, lerp, smooth01 as smooth } from '../_host/math'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
 
@@ -21,12 +23,6 @@ const PHOS = '#d7d7d7',
   DEEP = '#3a3a3a'
 const N = 90 // 곡선 샘플 수
 
-const clamp = (a: number, b: number, v: number) => Math.max(a, Math.min(b, v))
-const smooth = (t: number) => {
-  t = clamp(0, 1, t)
-  return t * t * (3 - 2 * t)
-}
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t
 function rgba(hex: string, a: number) {
   let h = hex.replace('#', '')
   if (h.length === 3) h = h.split('').map((x) => x + x).join('')
@@ -58,7 +54,7 @@ function geo(W: number, H: number) {
 }
 type Q = ReturnType<typeof geo>
 const expY = (tx: number, q: Q) => q.yBot + (q.yTop - q.yBot) * (0.3 * tx + 0.7 * smooth(tx))
-const gapProf = (tx: number) => Math.pow(smooth(clamp(0, 1, (tx - 0.1) / 0.9)), 1.25)
+const gapProf = (tx: number) => Math.pow(smooth(clamp((tx - 0.1) / 0.9, 0, 1)), 1.25)
 const realY = (tx: number, q: Q, gv: number) => expY(tx, q) + q.maxGap * gapProf(tx) * gv
 
 function drawDot(g: CanvasRenderingContext2D, x: number, y: number, color: string, pulse: number, dv: number) {
@@ -87,14 +83,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const legendRef = useRef<HTMLDivElement | null>(null)
   const tickScroll = useRef(0)
   const gridScroll = useRef(0)
-  const readyFired = useRef(false)
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   const ref = useSceneCanvas((g: CanvasRenderingContext2D, fr: Frame) => {
     const W = fr.w,
@@ -171,7 +161,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           yB = realY(tx, q, gv)
         const len = yB - yT
         if (len < 2) continue
-        const edgeFade = smooth(clamp(0, 1, (tx - 0.12) / 0.12)) * smooth(clamp(0, 1, (1.0 - tx) / 0.1))
+        const edgeFade = smooth(clamp((tx - 0.12) / 0.12, 0, 1)) * smooth(clamp((1.0 - tx) / 0.1, 0, 1))
         const a = 0.34 * gapProf(tx) * edgeFade * dv
         g.strokeStyle = rgba(GAPC, a)
         g.lineWidth = 1
@@ -296,8 +286,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     if (eyebrowRef.current) eyebrowRef.current.style.opacity = (0.9 * dv).toFixed(3)
     if (s1Ref.current) s1Ref.current.style.opacity = (s1op * dv).toFixed(3)
     if (s2Ref.current) {
-      s2Ref.current.style.opacity = (clamp(0, 1, s2op) * dv).toFixed(3)
-      s2Ref.current.style.transform = `translateY(${lerp(14, 0, clamp(0, 1, s2op))}px)`
+      s2Ref.current.style.opacity = (clamp(s2op, 0, 1) * dv).toFixed(3)
+      s2Ref.current.style.transform = `translateY(${lerp(14, 0, clamp(s2op, 0, 1))}px)`
     }
     if (legendRef.current) legendRef.current.style.opacity = (0.85 * dv).toFixed(3)
   }, { running })

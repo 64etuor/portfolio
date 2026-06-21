@@ -3,6 +3,8 @@
 import { useEffect, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
+import { setText } from '../_host/dom-util'
 import type { Frame, SceneProps } from '../_host/types'
 import { LUT, PROGRAMS, type WeldProgram } from './data'
 import s from './scene.module.css'
@@ -190,10 +192,6 @@ function createEngine(): Engine {
     fpsCount: 0,
     initialized: false,
   }
-}
-
-const setText = (el: HTMLElement | null, value: string | number) => {
-  if (el) el.textContent = String(value)
 }
 
 function pad(value: number | string, length: number) {
@@ -876,7 +874,6 @@ function bootstrap(e: Engine, refs: DomRefs) {
 
 export default function Scene({ running = true, onReady }: SceneProps) {
   const engineRef = useRef<Engine>(createEngine())
-  const readyFired = useRef(false)
 
   const modeTxtRef = useRef<HTMLSpanElement | null>(null)
   const fiberTxtRef = useRef<HTMLSpanElement | null>(null)
@@ -956,12 +953,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     passEls: passRefs.current,
   })
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   useEffect(() => {
     const engine = engineRef.current

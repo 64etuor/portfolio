@@ -30,11 +30,10 @@ export const ACTS: Act[] = [
   // 3. 문제 제기 — 소통의 문제 (arc 19s, longest)
   { id: 's3-problem', scenes: [{ file: '29-lost-in-translation.html', ms: 15000 }] },
   // 4+5. 관점 — 현장↔시스템 통합 랙포커스 (CYCLE 22s). 씬4(34)·씬5(35) 통합.
-  // persp() 타임라인: FIELD(0~.38) → DEV 전환(.38~.5) → DEV 홀드(.5~.78) →
-  //   DEV→FIELD 복귀(.78~.9) → FIELD(.9~1). 20s(f≈.91)는 "개발자 관점 보여준 뒤
-  //   다시 현업으로 돌아가는" 복귀 애니메이션이 보이며 끝났다. DEV 홀드 끝(f=.78=17.16s)
-  //   직전에 컷 + 720ms 크로스페이드가 복귀 시작에 맞춰 끝나도록 16.4s 로 (개발자 관점에서 종료).
-  { id: 's4-perspectives', scenes: [{ file: '41-perspectives.html', ms: 16400 }] },
+  // persp() DEV 홀드를 f=.5~.9 로 연장(복귀는 .9~1 로 압축)해, 19s(f=.864) 컷 + 720ms
+  //   크로스페이드(끝 f=.897)가 전부 DEV 홀드 안에서 끝난다 → 개발자 관점을 충분히(약 8s)
+  //   보여주고 현업 복귀는 화면에 안 보인 채 종료. (16.4s 는 너무 빨랐음)
+  { id: 's4-perspectives', scenes: [{ file: '41-perspectives.html', ms: 19000 }] },
   // 6. 충돌 — LEXICAL COLLISION (루프 12s). 페이로드 = IMPACT→DRIFT APART
   // ('프로젝트는 멀어집니다', ~10.3s). 그 뒤 RESET(0.86~1.0)은 토큰 재조립=루프 봉합용
   // 이라 컷 전에 끝냄 — 11s는 리셋 되감기가 보여서 살짝 늦게 넘어갔음.
@@ -63,7 +62,8 @@ export const ACTS: Act[] = [
       //  부팅 화면만 깜빡여 하이라이트 직전 이상한 화면이 됨. 단독 /s/digital-twin 으로는 정상.)
       { file: '37-cross-domain.html', ms: 12000 },
       { file: 'mes-console.html', ms: 6500 },
-      { file: 'instrument-rack.html', ms: 6500 },
+      // 원가 제1원칙 보드(instrument-rack) 대신 CMM 정밀측정(GD&T) 장면 — 계측 임팩트 강화.
+      { file: 'cmm-metrology.html', ms: 6500 },
       { file: 'ai-latent.html', ms: 6500 },
     ],
   },

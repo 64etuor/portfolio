@@ -26,6 +26,9 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
   const sizeRef = useRef({ w: 0, h: 0, dpr: 1 })
   const startRef = useRef(0)
   const lastRef = useRef(0)
+  // 누적 재생 시간(초). running 토글(일시정지/재개·뷰포트 진출입) 사이에 보존되어
+  // 재개 시 t 가 0 으로 리셋되지 않고 멈춘 지점부터 이어진다(freeze-resume).
+  const elapsedRef = useRef(0)
   const reducedRef = useRef(false)
 
   // 최신 draw 를 항상 참조(의존성으로 인한 재구독 없이).
@@ -47,11 +50,13 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
     sizeRef.current = { w, h, dpr }
   }, [])
 
+  // 정지 프레임 — 누적 시간(elapsedRef) 지점을 그린다. 최초 마운트/감속모드면 0(=인트로),
+  // 일시정지면 멈춘 그 순간을 다시 그려 화면이 인트로로 튀지 않는다.
   const renderStatic = useCallback(() => {
     const ctx = ctxRef.current
     if (!ctx) return
     const { w, h, dpr } = sizeRef.current
-    drawRef.current(ctx, { w, h, dpr, t: 0, dt: 0 })
+    drawRef.current(ctx, { w, h, dpr, t: elapsedRef.current, dt: 0 })
   }, [])
 
   // canvas 마운트/언마운트.
@@ -114,14 +119,20 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
         startRef.current = now
         lastRef.current = now
       }
-      const t = (now - startRef.current) / 1000
+      const t = elapsedRef.current + (now - startRef.current) / 1000
       const dt = Math.min(MAX_DT, (now - lastRef.current) / 1000)
       lastRef.current = now
       const { w, h, dpr } = sizeRef.current
       const f: Frame = { w, h, dpr, t, dt }
       drawRef.current(ctx, f)
     })
-    return unsub
+    // running 이 꺼지거나 언마운트될 때 이번 세션 재생분을 누적 → 재개 시 이어서.
+    return () => {
+      unsub()
+      if (startRef.current !== 0) {
+        elapsedRef.current += (lastRef.current - startRef.current) / 1000
+      }
+    }
   }, [running, reducedMotionStatic, renderStatic])
 
   return ref

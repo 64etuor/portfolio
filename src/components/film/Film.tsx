@@ -265,21 +265,23 @@ export function Film() {
     if (slotFiles[i] === currentFile && i !== visibleSlot) setVisibleSlot(i)
   }
 
+  // Rewind one beat (act). Always lands on that beat's first scene and resumes
+  // playback (un-pause), so the control produces visible motion even while paused.
   const rewindBeat = useCallback(() => {
     setEnded(false)
+    setPaused(false)
     carriedRef.current = 0
-    setActIdx((i) => {
-      const t = Math.max(0, i - 1)
-      setSceneIdx(0)
-      return t
-    })
+    setActIdx((i) => Math.max(0, i - 1))
+    setSceneIdx(0)
   }, [])
 
+  // Jump to the ending beat and resume playback (un-pause).
   const skipToEnd = useCallback(() => {
     setEnded(false)
+    setPaused(false)
     carriedRef.current = 0
-    setSceneIdx(0)
     setActIdx(ACTS.length - 1)
+    setSceneIdx(0)
   }, [])
 
   // Keyboard: space = play/pause, ArrowLeft = rewind one beat.
@@ -353,8 +355,10 @@ export function Film() {
                 zIndex: isVisible ? 2 : 1,
               }}
             >
-              {/* Mounted scenes run; the blanking unmount (f→null) stops the outgoing. */}
-              <SceneSlot file={f} running={f != null} onReady={() => revealOnLoad(i)} />
+              {/* Mounted scenes run unless paused; blanking unmount (f→null) stops the outgoing.
+                  Tying running to !paused freezes the visible scene's canvas on pause (the
+                  scene host now freeze-resumes, so it continues from the same frame on play). */}
+              <SceneSlot file={f} running={f != null && !paused} onReady={() => revealOnLoad(i)} />
             </div>
           )
         })}
@@ -413,10 +417,10 @@ export function Film() {
 
       {/* Controls (bottom-right): rewind + play/pause */}
       <div style={{ position: 'absolute', right: 20, bottom: 16, zIndex: 50, display: 'flex', gap: 8 }}>
-        <button onClick={rewindBeat} aria-label="이전" style={ctrlBtn}>
+        <button onClick={rewindBeat} aria-label="이전" className="film-ctrl">
           ←
         </button>
-        <button onClick={() => setPaused((p) => !p)} aria-label={paused ? '재생' : '일시정지'} style={ctrlBtn}>
+        <button onClick={() => setPaused((p) => !p)} aria-label={paused ? '재생' : '일시정지'} className="film-ctrl">
           {paused ? '▶' : '⏸'}
         </button>
       </div>
@@ -424,23 +428,10 @@ export function Film() {
       {/* Skip to ending (top-right) */}
       <button
         onClick={skipToEnd}
-        style={{
-          position: 'absolute',
-          top: '6.2vh',
-          right: 20,
-          zIndex: 50,
-          color: '#fff',
-          background: 'rgba(0,0,0,0.45)',
-          border: '1px solid rgba(255,255,255,0.3)',
-          borderRadius: 999,
-          padding: '6px 14px',
-          fontSize: 12,
-          fontFamily: 'var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace)',
-          cursor: 'pointer',
-          letterSpacing: '0.03em',
-        }}
+        className="film-skip"
+        style={{ position: 'absolute', top: '6.2vh', right: 20, zIndex: 50 }}
       >
-        건너뛰기 →
+        SKIP →
       </button>
 
       {/* Outro iris — at the end, the frame collapses into a point, then routes home */}
@@ -466,15 +457,3 @@ export function Film() {
   )
 }
 
-const ctrlBtn: React.CSSProperties = {
-  width: 32,
-  height: 32,
-  display: 'grid',
-  placeItems: 'center',
-  color: '#fff',
-  background: 'rgba(0,0,0,0.45)',
-  border: '1px solid rgba(255,255,255,0.25)',
-  borderRadius: 8,
-  fontSize: 13,
-  cursor: 'pointer',
-}

@@ -165,6 +165,55 @@
   color: #7fe3ef;
 }
 
+/* 갤러리 정지 카드 — 캔버스 freeze 와 함께 씬 CSS 애니메이션(grain/scan/beat)도 멈춰
+   "재생 안 되는" 완전 정지 상태로. 호버하면 클래스가 빠지며 즉시 재생된다. */
+.scene-frozen,
+.scene-frozen *,
+.scene-frozen *::before,
+.scene-frozen *::after {
+  animation-play-state: paused !important;
+}
+
+/* ===== Film controls — hover language matches .lp-btn (accent border + glow) ===== */
+.film-ctrl {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.film-ctrl:hover {
+  border-color: rgba(224, 122, 95, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 14px rgba(224, 122, 95, 0.25);
+}
+.film-ctrl:active {
+  transform: scale(0.94);
+}
+.film-skip {
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+.film-skip:hover {
+  border-color: rgba(224, 122, 95, 0.6);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 0 14px rgba(224, 122, 95, 0.22);
+}
+
 /* ===== Landing navigation transition — glitch slash + bloom on button press ===== */
 .lp-tx { position: fixed; inset: 0; z-index: 30; pointer-events: none; opacity: 0; }
 .lp-tx--on { opacity: 1; }

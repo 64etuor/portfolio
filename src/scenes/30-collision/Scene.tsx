@@ -197,12 +197,12 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       const glyphs: Glyph[] = []
       const targetW = W * 0.80
       let fpx = Math.min(H * 0.12, W * 0.075)
-      g.font = `800 ${fpx}px 'Pretendard'`
+      g.font = `800 ${fpx}px 'Pretendard Variable', sans-serif`
       let tw = 0
       for (const ch of LINE2) tw += g.measureText(ch).width
       if (tw > targetW) {
         fpx *= targetW / tw
-        g.font = `800 ${fpx}px 'Pretendard'`
+        g.font = `800 ${fpx}px 'Pretendard Variable', sans-serif`
         tw = 0
         for (const ch of LINE2) tw += g.measureText(ch).width
       }
@@ -342,7 +342,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
                 (tk.ko ? '600 ' : '400 ') +
                 fpx +
                 "px " +
-                (tk.ko ? "'Pretendard'" : "'JetBrains Mono'")
+                (tk.ko ? "'Pretendard Variable', sans-serif" : "'JetBrains Mono', monospace")
               g.fillText(tk.txt, tx, y)
             }
           }
@@ -354,7 +354,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           (tk.ko ? '600 ' : '400 ') +
           fpx +
           "px " +
-          (tk.ko ? "'Pretendard'" : "'JetBrains Mono'")
+          (tk.ko ? "'Pretendard Variable', sans-serif" : "'JetBrains Mono', monospace")
         g.shadowColor = rgba(col, 0.5)
         g.shadowBlur = 8
         g.fillStyle = rgba(col, 0.9)
@@ -401,7 +401,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       if (S.l1 > 0.01) {
         g.save()
         g.globalAlpha = S.l1
-        g.font = `600 ${line1Font}px 'Pretendard'`
+        g.font = `600 ${line1Font}px 'Pretendard Variable', sans-serif`
         g.textAlign = 'center'
         g.textBaseline = 'middle'
         g.fillStyle = rgba(PHOS, 0.92)
@@ -412,7 +412,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         g.restore()
       }
 
-      g.font = `800 ${heroFont}px 'Pretendard'`
+      g.font = `800 ${heroFont}px 'Pretendard Variable', sans-serif`
       g.textAlign = 'center'
       g.textBaseline = 'middle'
       const sh = S.shatter

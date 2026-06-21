@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, lazy, useMemo, type ComponentType } from 'react'
+import { Suspense, lazy, useMemo, useState, type ComponentType } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { useIntersectionObserver } from 'usehooks-ts'
 import type { SceneProps } from './types'
@@ -21,6 +21,8 @@ export function SceneFrame({
   rootMargin = '200px',
   /** keepMounted — 한번 마운트되면 화면 밖에서도 언마운트하지 않음(pause만). 필름 더블버퍼용. */
   keepMounted = false,
+  /** hoverPlay — 갤러리용: 기본은 정지(포스터), 호버할 때만 재생. 자동재생 방지. */
+  hoverPlay = false,
 }: {
   load: Loader
   title: string
@@ -28,19 +30,33 @@ export function SceneFrame({
   className?: string
   rootMargin?: string
   keepMounted?: boolean
+  hoverPlay?: boolean
 }) {
   const { ref, isIntersecting } = useIntersectionObserver({
     rootMargin,
     threshold: 0,
     freezeOnceVisible: keepMounted,
   })
+  const [hovered, setHovered] = useState(false)
 
   const Lazy = useMemo(() => lazy(load), [load])
   // freezeOnceVisible(=keepMounted) 면 한번 보이면 isIntersecting 이 고정돼 계속 마운트 유지.
   const mounted = isIntersecting
+  // hoverPlay 면 호버 중에만 재생(SceneHost 가 freeze-resume → 떠날 때 마지막 프레임에서 정지).
+  const running = hoverPlay ? isIntersecting && hovered : isIntersecting
+  // 정지 상태: 캔버스(running=false)뿐 아니라 씬 CSS 오버레이(grain/scan/beat 등)도 멈춰
+  // 카드가 완전 정지하도록 scene-frozen 클래스로 animation-play-state 를 paused 한다.
+  const frozen = hoverPlay && !hovered
+  const rootClass = [className, frozen ? 'scene-frozen' : ''].filter(Boolean).join(' ')
 
   return (
-    <div ref={ref} className={className} style={{ position: 'relative', background: bg, width: '100%', height: '100%' }}>
+    <div
+      ref={ref}
+      className={rootClass}
+      style={{ position: 'relative', background: bg, width: '100%', height: '100%' }}
+      onMouseEnter={hoverPlay ? () => setHovered(true) : undefined}
+      onMouseLeave={hoverPlay ? () => setHovered(false) : undefined}
+    >
       <ErrorBoundary
         fallback={
           <div style={fallbackStyle}>
@@ -55,12 +71,33 @@ export function SceneFrame({
             </div>
           }
         >
-          {mounted ? <Lazy running={isIntersecting} /> : null}
+          {mounted ? <Lazy running={running} /> : null}
         </Suspense>
       </ErrorBoundary>
+      {/* 호버 재생 힌트 — 정지 상태일 때만 표시. */}
+      {hoverPlay && mounted && !hovered && (
+        <div style={hintStyle} aria-hidden>
+          ▶ 호버 시 재생
+        </div>
+      )}
     </div>
   )
 }
+
+const hintStyle = {
+  position: 'absolute',
+  bottom: 8,
+  right: 10,
+  padding: '3px 8px',
+  borderRadius: 999,
+  background: 'rgba(0,0,0,0.5)',
+  border: '1px solid rgba(255,255,255,0.18)',
+  color: 'rgba(255,255,255,0.62)',
+  fontSize: 10,
+  letterSpacing: '0.08em',
+  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+  pointerEvents: 'none',
+} as const
 
 const fallbackStyle = {
   position: 'absolute',

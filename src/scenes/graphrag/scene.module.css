@@ -5,7 +5,7 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  color: #d7d7d7;
+  color: var(--scene-phos);
   font-family: 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   word-break: keep-all;
@@ -75,7 +75,7 @@
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 11px;
   letter-spacing: 4px;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   text-transform: uppercase;
   pointer-events: none;
 }
@@ -95,7 +95,7 @@
 }
 
 .sep {
-  color: #3a3a3a;
+  color: var(--scene-phos-deep);
 }
 
 .hl {
@@ -118,7 +118,7 @@
   font-family: 'JetBrains Mono', ui-monospace, monospace;
   font-size: 10.5px;
   letter-spacing: 1.5px;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   pointer-events: none;
 }
 
@@ -131,7 +131,7 @@
 .sw {
   width: 18px;
   height: 0;
-  border-top: 2px solid #3a3a3a;
+  border-top: 2px solid var(--scene-phos-deep);
   flex: none;
 }
 
@@ -151,6 +151,6 @@
 }
 
 .legendBold {
-  color: #d7d7d7;
+  color: var(--scene-phos);
   font-weight: 500;
 }

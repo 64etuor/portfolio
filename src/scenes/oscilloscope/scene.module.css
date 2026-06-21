@@ -8,7 +8,7 @@
   background:
     radial-gradient(1200px 700px at 50% -10%, #101010 0%, #050505 60%),
     #050505;
-  color: #d7d7d7;
+  color: var(--scene-phos);
   font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
@@ -84,7 +84,7 @@
 }
 .brand .model {
   font-size: 11px;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   letter-spacing: 0.16em;
   margin-top: 3px;
   text-transform: uppercase;
@@ -107,7 +107,7 @@
   border: 1px solid #1c2123;
   border-radius: 999px;
   padding: 6px 11px;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   display: flex;
   align-items: center;
   gap: 7px;
@@ -241,7 +241,7 @@
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   font-weight: 700;
   font-family: 'JetBrains Mono', monospace;
 }
@@ -274,7 +274,7 @@
   font-size: 10.5px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   margin-bottom: 11px;
   font-weight: 800;
   font-family: 'JetBrains Mono', monospace;
@@ -323,7 +323,7 @@
 }
 .chmeta .yr {
   font-size: 10px;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   margin-top: 1px;
 }
 .chmeta .yr b {
@@ -369,7 +369,7 @@
   font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   font-weight: 700;
   font-family: 'JetBrains Mono', monospace;
 }
@@ -392,7 +392,7 @@
   flex: 1;
   background: transparent;
   border: 0;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
   font-size: 11px;
@@ -414,7 +414,7 @@
 }
 .slider label {
   font-size: 9.5px;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   width: 60px;
   letter-spacing: 0.06em;
   font-family: 'JetBrains Mono', monospace;
@@ -456,7 +456,7 @@
 }
 .modnote {
   font-size: 9.5px;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   line-height: 1.5;
   margin-top: 4px;
   font-family: 'JetBrains Mono', monospace;
@@ -475,7 +475,7 @@
   border: 1px solid #2a3236;
   border-radius: 9px;
   background: linear-gradient(180deg, #171a1c, #0e1011);
-  color: #d7d7d7;
+  color: var(--scene-phos);
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
   font-size: 12px;
@@ -490,7 +490,7 @@
 }
 .ab small {
   font-size: 8.5px;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   font-weight: 500;
   letter-spacing: 0.04em;
 }
@@ -525,7 +525,7 @@
   border-bottom: 0;
 }
 .meas .lbl {
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   letter-spacing: 0.02em;
 }
 .meas .swatch {
@@ -540,7 +540,7 @@
 .meas .num {
   text-align: right;
   font-weight: 800;
-  color: #d7d7d7;
+  color: var(--scene-phos);
   font-variant-numeric: tabular-nums;
 }
 .meas .num.hi {
@@ -555,7 +555,7 @@
   border-top: 1px solid rgba(255, 255, 255, 0.06);
   font-size: 10px;
   line-height: 1.55;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   font-family: 'JetBrains Mono', monospace;
 }
 .routineNote b {
@@ -604,7 +604,7 @@
 }
 .chip {
   font-size: 10px;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   border: 1px solid #1c2123;
   border-radius: 6px;
   padding: 4px 8px;
@@ -617,7 +617,7 @@
 }
 .hint {
   font-size: 11px;
-  color: #8d8d8d;
+  color: var(--scene-phos-dim);
   text-align: center;
   margin-top: 12px;
   letter-spacing: 0.02em;

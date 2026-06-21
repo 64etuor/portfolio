@@ -1,6 +1,7 @@
 'use client'
 
 import type { CSSProperties, ReactNode } from 'react'
+import '../_styles/tokens.css'
 import host from './host.module.css'
 
 /**

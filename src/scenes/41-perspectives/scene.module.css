@@ -1,8 +1,8 @@
 .stage {
   --bg: #050505;
   --phos: #e6e6e6;
-  --phos-dim: #8d8d8d;
-  --phos-deep: #3a3a3a;
+  --phos-dim: var(--scene-phos-dim);
+  --phos-deep: var(--scene-phos-deep);
   --warm: #d98a3d;
   --warm-bright: #f3c184;
   --cold: #6ea8ff;

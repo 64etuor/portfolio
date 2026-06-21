@@ -4,8 +4,8 @@
 .stage {
   --bg: #050505;
   --phos: #e8e8e8;
-  --phos-dim: #8d8d8d;
-  --phos-deep: #3a3a3a;
+  --phos-dim: var(--scene-phos-dim);
+  --phos-deep: var(--scene-phos-deep);
   --accent: #6fb6ff;
   --mono: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace;
   --s: min(1vw, 1.778vh);

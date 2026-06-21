@@ -43,3 +43,6 @@ references/
 .vercel
 
 _to-delete/
+
+# any NEXT_DIST_DIR build-verify variant
+.next-*/

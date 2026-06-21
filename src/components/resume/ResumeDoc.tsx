@@ -1,6 +1,7 @@
 import { ResumeDragonHero } from './ResumeDragonHero'
 import { PretextHeading } from './PretextHeading'
 import { coverLetter } from '@content/coverLetter'
+import type { ResumeData } from '@content/resume'
 
 /**
  * ResumeDoc — the résumé body, rendered server-side from `public/resume.json`
@@ -10,38 +11,7 @@ import { coverLetter } from '@content/coverLetter'
  * a résumé is identity, not a film scene.
  */
 
-type Profile = { network: string; username: string; url: string }
-type Basics = {
-  name: string
-  label: string
-  email: string
-  phone?: string
-  url?: string
-  summary?: string
-  profiles?: Profile[]
-}
-type Work = { name: string; position: string; summary?: string; highlights?: string[]; startDate?: string }
-type Project = {
-  name: string
-  description?: string
-  highlights?: string[]
-  keywords?: string[]
-  roles?: string[]
-  entity?: string
-  url?: string
-}
-type SkillGroup = { name: string; keywords: string[] }
-type Education = { institution: string; area: string; studyType?: string; startDate?: string }
-type Certificate = { name: string; issuer?: string; summary?: string; date?: string }
-
-export type ResumeData = {
-  basics: Basics
-  work: Work[]
-  projects: Project[]
-  skills: SkillGroup[]
-  education: Education[]
-  certificates?: Certificate[]
-}
+export type { ResumeData }
 
 const NAME_EN = 'Yangha Park'
 

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { sceneById } from '@/scenes/registry'
+import { SITE } from '@content/site'
 
 /**
  * The single, unified site header — one bar on every non-immersive route
@@ -20,7 +21,7 @@ export function SiteHeader() {
 
   return (
     <header className="site-bar">
-      <Link href="/" className="site-bar__brand">yanghapark.com</Link>
+      <Link href="/" className="site-bar__brand">{SITE.domain}</Link>
       <Link href="/" className="chrome-btn home">← Home</Link>
       {pathname === '/resume' && (
         <button type="button" className="chrome-btn" onClick={() => window.print()}>

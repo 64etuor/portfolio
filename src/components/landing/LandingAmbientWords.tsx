@@ -1,31 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { SITE } from '@content/site'
 
-// Descriptor words that surface briefly behind the scene. `lum` is a per-word
+// Descriptor words sourced from content/site.ts (SSOT). `lum` is a per-word
 // brightness weight (0..1): the warm / human / hopeful words glow a little — a
 // small light in the dark — while the technical ones stay almost flat. The
 // brightening is kept very subtle overall; lum only nudges it.
-const WORDS: { word: string; lum: number }[] = [
-  { word: 'Love', lum: 1 },
-  { word: 'Hope', lum: 1 },
-  { word: 'Peace', lum: 0.92 },
-  { word: 'Service', lum: 0.7 },
-  { word: 'Art', lum: 0.6 },
-  { word: 'Music', lum: 0.6 },
-  { word: 'Philosophy', lum: 0.42 },
-  { word: 'Literature', lum: 0.42 },
-  { word: 'Psychology', lum: 0.42 },
-  { word: 'Knowledge', lum: 0.4 },
-  { word: 'Design', lum: 0.36 },
-  { word: 'Technology', lum: 0.22 },
-  { word: 'Development', lum: 0.22 },
-  { word: 'Management', lum: 0.22 },
-  { word: 'Infrastructure', lum: 0.22 },
-  { word: 'Data', lum: 0.22 },
-  { word: 'Systems', lum: 0.22 },
-  { word: 'Manufacturing', lum: 0.22 },
-]
+const WORDS: { word: string; lum: number }[] = [...SITE.landing.ambientWords]
 
 type Item = { id: number; word: string; x: number; y: number; rot: number; lum: number }
 

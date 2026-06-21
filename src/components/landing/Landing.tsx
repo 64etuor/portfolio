@@ -6,6 +6,9 @@ import Spline from '@splinetool/react-spline'
 import type { Application } from '@splinetool/runtime'
 import { PretextText } from './PretextText'
 import { LandingAmbientWords } from './LandingAmbientWords'
+import { SITE } from '@content/site'
+
+const [HERO_PORTFOLIO, HERO_ITS_ME, HERO_NAME, HERO_TAGLINE] = SITE.landing.hero
 
 // Runtime scene (.splinecode) — replaces the old cross-origin iframe embed, so we
 // can drive the camera on navigation.
@@ -152,7 +155,7 @@ export function Landing() {
       <div className="lp-content">
         {/* all landing text rendered with the pretext letter-physics, 2.5s in */}
         <PretextText
-          text="PORTFOLIO"
+          text={HERO_PORTFOLIO}
           fontFamily="'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace"
           fontWeight={500}
           fontPx={11}
@@ -166,7 +169,7 @@ export function Landing() {
         {/* film ends on "미래를 만드는 사람" → lands here: "It's me." 우아한 이탤릭 세리프,
             이름 위에서 같은 pretext 등장 효과로 조립 (필름 엔딩과 자연스럽게 연결) */}
         <PretextText
-          text="It’s me."
+          text={HERO_ITS_ME}
           fontFamily="'Playfair Display', 'Noto Serif KR', serif"
           fontStyle="italic"
           fontWeight={500}
@@ -179,7 +182,7 @@ export function Landing() {
           style={{ margin: '0 0 4px' }}
         />
         <PretextText
-          text="YANGHA PARK"
+          text={HERO_NAME}
           fontFamily="'Playfair Display', 'Noto Serif KR', serif"
           fontWeight={600}
           fontPx={62}
@@ -191,7 +194,7 @@ export function Landing() {
           style={{ margin: '0 0 10px', maxWidth: '92vw' }}
         />
         <PretextText
-          text="Designing an awesome future"
+          text={HERO_TAGLINE}
           fontFamily="'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace"
           fontWeight={500}
           fontPx={16}

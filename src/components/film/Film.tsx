@@ -1,61 +1,16 @@
 'use client'
 
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from 'react'
-import { useRouter } from 'next/navigation'
-import { ErrorBoundary } from 'react-error-boundary'
+import { useCallback, useEffect, useState } from 'react'
 import { ACTS } from './acts'
-import { loaderFor } from '@/scenes/loaders'
-import type { SceneProps } from '@/scenes/_host/types'
-
-// Per-file memoized lazy components, so a scene module is split & created once and
-// re-used across slot re-renders (a fresh lazy() per render would remount/reload it).
-const lazyCache = new Map<string, ComponentType<SceneProps>>()
-function lazyFor(file: string): ComponentType<SceneProps> | null {
-  const cached = lazyCache.get(file)
-  if (cached) return cached
-  const loader = loaderFor(file)
-  if (!loader) return null // no loader for this file → render nothing (don't crash)
-  const Comp = lazy(loader)
-  lazyCache.set(file, Comp)
-  return Comp
-}
-
-/**
- * One double-buffer slot. Renders the ported React scene for `file` (or nothing if
- * the slot is blank / has no loader). Isolated behind an ErrorBoundary so one bad
- * scene can't kill the film. `running` mounts/runs the scene; `onReady` drives reveal.
- */
-function SceneSlot({ file, running, onReady }: { file: string | null; running: boolean; onReady: () => void }) {
-  const Comp = useMemo(() => (file ? lazyFor(file) : null), [file])
-  if (!Comp) return null
-  return (
-    <ErrorBoundary fallback={null}>
-      <Suspense fallback={null}>
-        <Comp running={running} onReady={onReady} />
-      </Suspense>
-    </ErrorBoundary>
-  )
-}
+import { SceneSlot } from './SceneSlot'
+import { FilmControls } from './FilmControls'
+import { FilmTransition, txVariantFor } from './FilmTransition'
+import { useFilmClock } from './useFilmClock'
+import { useSceneBuffer } from './useSceneBuffer'
+import { useIrisOutro } from './useIrisOutro'
 
 // Neutral film accent (progress bar / controls). Scenes carry their own color.
 const ACCENT = '#cdd2d8'
-
-// Per-beat scene-cut flavor, keyed by the INCOMING beat's id (else 'default').
-const TX_VARIANT: Record<string, string> = {
-  's6-collision': 'glitch', // 충돌 — 디지털 글리치/찢김
-  's8-insight': 'weave', // 연결 — 양쪽(현업·개발)이 중앙에서 만나 봉합
-  's9-bridge': 'weave', // 해결(양손잡이) — 봉합
-  's10-crossdomain': 'weave', // 크로스도메인 — 봉합
-  ending: 'bloom', // 엔딩 — 빛이 바깥으로 열림
-}
-
-// The scene that plays after (actIdx, sceneIdx), or null at the end of the film.
-function nextIndex(actIdx: number, sceneIdx: number): [number, number] | null {
-  const a = ACTS[actIdx]
-  if (sceneIdx + 1 < a.scenes.length) return [actIdx, sceneIdx + 1]
-  if (actIdx + 1 < ACTS.length) return [actIdx + 1, 0]
-  return null
-}
 
 /**
  * Film — the autoplay portfolio "film" controller (DX→AX narrative).
@@ -73,7 +28,6 @@ function nextIndex(actIdx: number, sceneIdx: number): [number, number] | null {
  *  - After the ending beat → onFilmEnd() returns to the landing.
  */
 export function Film() {
-  const router = useRouter()
   const [reduced, setReduced] = useState(false)
   const [ready, setReady] = useState(false)
   const [ended, setEnded] = useState(false)
@@ -81,15 +35,6 @@ export function Film() {
   const [actIdx, setActIdx] = useState(0)
   const [sceneIdx, setSceneIdx] = useState(0)
   const [paused, setPaused] = useState(false)
-  const [progress, setProgress] = useState(0)
-
-  // Two stable iframe slots; we cross-fade between them.
-  const [slotFiles, setSlotFiles] = useState<[string | null, string | null]>(() => [
-    ACTS[0].scenes[0].file,
-    null,
-  ])
-  const [visibleSlot, setVisibleSlot] = useState(0)
-  const [txId, setTxId] = useState(0) // bumps on each cut → replays the transition overlay
 
   // Ported scenes signal readiness via their onReady prop (no postMessage handshake).
   const [armed, setArmed] = useState(false)
@@ -101,8 +46,6 @@ export function Film() {
 
   const shot = ACTS[actIdx].scenes[sceneIdx]
   const currentFile = shot.file
-  // The current scene is "visible" only once the visible slot actually holds it.
-  const visible = slotFiles[visibleSlot] === currentFile
   // Playtime is the static acts.ts value (ported scenes don't declare their own).
   const effectiveMs = shot.ms
 
@@ -111,80 +54,14 @@ export function Film() {
   // Film outro → landing: on the final beat the whole frame collapses into a single
   // point at center (iris-out), then we navigate. The landing reveals from black, so
   // the film hands off to the home page as one continuous shot (no abrupt cut).
-  const irisRef = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    if (!ended) return
-    const el = irisRef.current
-    const DUR = 860
-    const t0 = performance.now()
-    let raf = 0
-    const tick = (now: number) => {
-      const k = Math.min(1, (now - t0) / DUR)
-      if (el) {
-        const e = k * k // ease-in: accelerate as the image is sucked into the point
-        const size = (1 - e) * 170 // vmax — transparent aperture shrinking toward 0
-        el.style.width = `${size}vmax`
-        el.style.height = `${size}vmax`
-        const glow = k > 0.78 ? 1 - (k - 0.78) / 0.22 : 0 // bright pinpoint near the end
-        el.style.boxShadow = `0 0 ${(26 * glow).toFixed(1)}px ${(7 * glow).toFixed(1)}px rgba(255,255,255,${(glow * 0.9).toFixed(2)}), 0 0 0 100vmax #000`
-      }
-      if (k < 1) raf = requestAnimationFrame(tick)
-      else router.push('/')
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [ended, router])
+  const irisRef = useIrisOutro(ended)
 
-  // Reveal the current scene: show whichever slot has it (prefetched → instant);
-  // otherwise load it into the hidden slot and reveal on its `load`.
-  useEffect(() => {
-    if (reduced || !ready) return
-    const at = slotFiles.indexOf(currentFile)
-    if (at === visibleSlot) return
-    if (at >= 0) {
-      setVisibleSlot(at)
-      return
-    }
-    const hidden = visibleSlot ^ 1
-    setSlotFiles((prev) => {
-      if (prev[hidden] === currentFile) return prev
-      const n: [string | null, string | null] = [prev[0], prev[1]]
-      n[hidden] = currentFile
-      return n
-    })
-  }, [currentFile, slotFiles, visibleSlot, reduced, ready])
-
-  // Safety: if a scene's `onReady` never fires (load stall), force-reveal after a
-  // cap so the film can't hang waiting for a frame that never paints.
-  useEffect(() => {
-    if (reduced || !ready || visible) return
-    const at = slotFiles.indexOf(currentFile)
-    if (at < 0) return
-    const t = setTimeout(() => setVisibleSlot(at), 5000)
-    return () => clearTimeout(t)
-  }, [reduced, ready, visible, currentFile, slotFiles])
-
-  // Optimization: once a cut has settled, blank the now-hidden slot so the OUTGOING
-  // scene stops rendering. Otherwise its iframe keeps a full rAF loop alive — invisibly —
-  // for the entire duration of the next scene (the double-buffer always retains the
-  // previous file). Blanking it after the cross-fade halves steady-state canvas load
-  // with zero visual change (it's already faded out), and the slot reloads on the next
-  // cut exactly as before (load-on-cut).
-  useEffect(() => {
-    if (reduced || !ready) return
-    const hidden = visibleSlot ^ 1
-    if (slotFiles[hidden] == null) return
-    const t = setTimeout(() => {
-      setSlotFiles((prev) => {
-        const h = visibleSlot ^ 1
-        if (prev[h] == null || prev[h] === currentFile) return prev
-        const n: [string | null, string | null] = [prev[0], prev[1]]
-        n[h] = null
-        return n
-      })
-    }, 1100) // after the 720ms cross-fade has fully settled
-    return () => clearTimeout(t)
-  }, [visibleSlot, currentFile, reduced, ready, slotFiles])
+  // Double-buffer scene slots — reveal/blank/cross-fade logic.
+  const { slotFiles, visibleSlot, visible, revealOnLoad } = useSceneBuffer({
+    currentFile,
+    reduced,
+    ready,
+  })
 
   // Arm the clock as soon as the scene is visible (no handshake wait).
   useEffect(() => {
@@ -196,74 +73,21 @@ export function Film() {
   // so its rAF starts at reveal ≈ t0 — the scene is seen from its true start point
   // (static intro → dynamic), not mid-loop. The load gap is hidden by the cut overlay.
 
-  const advance = useCallback(() => {
-    const n = nextIndex(actIdx, sceneIdx)
-    if (!n) {
-      onFilmEnd()
-      return
-    }
-    setActIdx(n[0])
-    setSceneIdx(n[1])
-  }, [actIdx, sceneIdx, onFilmEnd])
-
-  // Clock — starts only when the current scene is VISIBLE, runs for currentMs.
-  const rafRef = useRef<number | null>(null)
-  const startRef = useRef(0)
-  const carriedRef = useRef(0)
-  // Shared per-scene guard: advance() fires at most once per scene, even if two
-  // rAF loops briefly coexist (React StrictMode double-invokes effects in dev).
-  // Reset to false whenever the scene changes (see the reset effect below).
-  const advancedRef = useRef(false)
-  useEffect(() => {
-    if (reduced || ended || !ready || !armed) return
-
-    if (paused) {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-      carriedRef.current += performance.now() - startRef.current
-      return
-    }
-
-    startRef.current = performance.now()
-    let alive = true
-    const tick = () => {
-      if (!alive) return
-      const elapsed = carriedRef.current + (performance.now() - startRef.current)
-      const p = Math.min(1, elapsed / effectiveMs)
-      setProgress(p)
-      if (p >= 1) {
-        if (!advancedRef.current) {
-          advancedRef.current = true
-          carriedRef.current = 0
-          advance()
-        }
-        return
-      }
-      rafRef.current = requestAnimationFrame(tick)
-    }
-    rafRef.current = requestAnimationFrame(tick)
-    return () => {
-      alive = false
-      if (rafRef.current) cancelAnimationFrame(rafRef.current)
-    }
-  }, [actIdx, sceneIdx, paused, reduced, ended, ready, armed, effectiveMs, advance])
-
-  // On a fresh scene: reset the clock guard, and fire the cinematic cut transition.
-  // (Skip the very first scene so the overlay doesn't flash on initial load; the
-  // ref-compare also makes it immune to React StrictMode's double-invoke in dev.)
-  const prevSceneRef = useRef('')
-  useEffect(() => {
-    const key = `${actIdx}-${sceneIdx}`
-    if (prevSceneRef.current && prevSceneRef.current !== key) setTxId((n) => n + 1)
-    prevSceneRef.current = key
-    carriedRef.current = 0
-    advancedRef.current = false
-    setProgress(0)
-    setArmed(false)
-  }, [actIdx, sceneIdx])
-
-  const revealOnLoad = (i: number) => {
-    if (slotFiles[i] === currentFile && i !== visibleSlot) setVisibleSlot(i)
-  }
+  // Clock — progress, scene advancement, cut transition id, pause carry.
+  const { progress, txId, carriedRef } = useFilmClock({
+    actIdx,
+    sceneIdx,
+    setActIdx,
+    setSceneIdx,
+    paused,
+    reduced,
+    ended,
+    ready,
+    armed,
+    setArmed,
+    effectiveMs,
+    onFilmEnd,
+  })
 
   // Rewind one beat (act). Always lands on that beat's first scene and resumes
   // playback (un-pause), so the control produces visible motion even while paused.
@@ -273,7 +97,7 @@ export function Film() {
     carriedRef.current = 0
     setActIdx((i) => Math.max(0, i - 1))
     setSceneIdx(0)
-  }, [])
+  }, [carriedRef])
 
   // Jump to the ending beat and resume playback (un-pause).
   const skipToEnd = useCallback(() => {
@@ -282,7 +106,7 @@ export function Film() {
     carriedRef.current = 0
     setActIdx(ACTS.length - 1)
     setSceneIdx(0)
-  }, [])
+  }, [carriedRef])
 
   // Keyboard: space = play/pause, ArrowLeft = rewind one beat.
   useEffect(() => {
@@ -317,7 +141,7 @@ export function Film() {
   const flatTotal = ACTS.reduce((s, a) => s + a.scenes.length, 0)
   const flatIdx = ACTS.slice(0, actIdx).reduce((s, a) => s + a.scenes.length, 0) + sceneIdx
   const overall = Math.min(1, (flatIdx + progress) / flatTotal)
-  const txVariant = TX_VARIANT[ACTS[actIdx].id] ?? 'default'
+  const txVariant = txVariantFor(ACTS[actIdx].id)
 
   return (
     <div style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
@@ -370,32 +194,7 @@ export function Film() {
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '5vh', background: '#000', pointerEvents: 'none', zIndex: 20 }} />
 
       {/* Cinematic scene-cut transition — the key replays the animation on each cut */}
-      {txId > 0 && (
-        <div className={`film-tx film-tx--${txVariant}`} key={txId} aria-hidden>
-          {txVariant === 'glitch' && (
-            <>
-              <div className="ftx-flash" />
-              <div className="ftx-slice a" />
-              <div className="ftx-slice b" />
-              <div className="ftx-noise" />
-            </>
-          )}
-          {txVariant === 'weave' && (
-            <>
-              <div className="ftx-wl" />
-              <div className="ftx-wr" />
-              <div className="ftx-merge" />
-            </>
-          )}
-          {txVariant === 'bloom' && <div className="ftx-b" />}
-          {txVariant === 'default' && (
-            <>
-              <div className="film-tx-bloom" />
-              <div className="film-tx-slash" />
-            </>
-          )}
-        </div>
-      )}
+      <FilmTransition txId={txId} txVariant={txVariant} />
 
       {/* Overall progress bar (top) */}
       <div
@@ -415,24 +214,13 @@ export function Film() {
         }}
       />
 
-      {/* Controls (bottom-right): rewind + play/pause */}
-      <div style={{ position: 'absolute', right: 20, bottom: 16, zIndex: 50, display: 'flex', gap: 8 }}>
-        <button onClick={rewindBeat} aria-label="이전" className="film-ctrl">
-          ←
-        </button>
-        <button onClick={() => setPaused((p) => !p)} aria-label={paused ? '재생' : '일시정지'} className="film-ctrl">
-          {paused ? '▶' : '⏸'}
-        </button>
-      </div>
-
-      {/* Skip to ending (top-right) */}
-      <button
-        onClick={skipToEnd}
-        className="film-skip"
-        style={{ position: 'absolute', top: '6.2vh', right: 20, zIndex: 50 }}
-      >
-        SKIP →
-      </button>
+      {/* Controls: rewind + play/pause + skip-to-ending */}
+      <FilmControls
+        paused={paused}
+        onRewind={rewindBeat}
+        onTogglePause={() => setPaused((p) => !p)}
+        onSkip={skipToEnd}
+      />
 
       {/* Outro iris — at the end, the frame collapses into a point, then routes home */}
       {ended && (
@@ -456,4 +244,3 @@ export function Film() {
     </div>
   )
 }
-

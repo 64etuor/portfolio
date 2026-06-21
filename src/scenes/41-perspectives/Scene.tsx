@@ -5,6 +5,7 @@ import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import type { Frame, SceneProps } from '../_host/types'
 import { type RGB, rgba, mix } from '../_host/color'
+import { PALETTE_WARM, PALETTE_DIM } from '../_host/palette'
 import { clamp, lerp, ease } from '../_host/math'
 import { fractHash } from '../_host/random'
 import { useSceneReady } from '../_host/useSceneReady'
@@ -44,12 +45,12 @@ type LayoutState = {
   archBox: ArchBox[]
 }
 
-const WARM: RGB = [217, 138, 61]
+const WARM: RGB = PALETTE_WARM
 const WARMB: RGB = [243, 193, 132]
 const COLD: RGB = [110, 168, 255]
 const COLDB: RGB = [207, 224, 255]
 const COLDD: RGB = [35, 70, 127]
-const DIM: RGB = [141, 141, 141]
+const DIM: RGB = PALETTE_DIM
 
 
 

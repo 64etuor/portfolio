@@ -6,6 +6,7 @@ import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'
 import { rgba, mix } from '../_host/color'
 import type { RGB } from '../_host/color'
+import { PALETTE_WARM, PALETTE_COLD_BLUE } from '../_host/palette'
 import { clamp, lerp } from '../_host/math'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
@@ -28,8 +29,8 @@ const EN = ['deploy', 'schema', 'async', 'refactor', 'commit', 'build', 'endpoin
 
 // ---------- color helpers ----------
 const PHOS: RGB = [226, 226, 226]
-const WARM: RGB = [217, 138, 61]
-const COLD: RGB = [74, 179, 204]
+const WARM: RGB = PALETTE_WARM
+const COLD: RGB = PALETTE_COLD_BLUE
 const seg = (p: number, a: number, b: number) => clamp((p - a) / (b - a), 0, 1)
 const eIn = (t: number) => t * t * t
 const eOut = (t: number) => 1 - Math.pow(1 - t, 3)

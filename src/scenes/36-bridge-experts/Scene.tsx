@@ -6,6 +6,7 @@ import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'
 import { rgba, mix } from '../_host/color'
 import type { RGB } from '../_host/color'
+import { PALETTE_WARM, PALETTE_COLD_BLUE, PALETTE_TEAL, PALETTE_TEAL_HI } from '../_host/palette'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
 
@@ -17,10 +18,10 @@ import s from './scene.module.css'
 type Particle = { u: number; dir: 1 | -1; sz: number }
 type Chevron = { base: number; dir: 1 | -1 }
 
-const WARM: RGB = [217, 138, 61]
-const COLD: RGB = [74, 179, 204]
-const CONV: RGB = [79, 224, 196]
-const CONVH: RGB = [196, 248, 238]
+const WARM: RGB = PALETTE_WARM
+const COLD: RGB = PALETTE_COLD_BLUE
+const CONV: RGB = PALETTE_TEAL
+const CONVH: RGB = PALETTE_TEAL_HI
 const WHITE: RGB = [255, 255, 255]
 
 const CYCLE = 6.6

@@ -6,6 +6,7 @@ import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'
 import { rgba, mix } from '../_host/color'
 import type { RGB } from '../_host/color'
+import { PALETTE_TEAL, PALETTE_TEAL_HI } from '../_host/palette'
 import { ease, smoothstep as ramp } from '../_host/math'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
@@ -23,8 +24,8 @@ type Point = [number, number]
 type NodePoint = { x: number; y: number; i: number; ph: number }
 
 const COLD: Color = [150, 150, 150]
-const TEAL: Color = [79, 224, 196]
-const TEALH: Color = [196, 248, 238]
+const TEAL: Color = PALETTE_TEAL
+const TEALH: Color = PALETTE_TEAL_HI
 
 function makeNode(x: number, y: number, i: number): NodePoint {
   return { x, y, i, ph: i * 0.74 + (i % 2 ? 0.9 : 0) }

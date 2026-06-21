@@ -25,7 +25,6 @@ import '@fontsource/jetbrains-mono/800.css'
 import '@fontsource/share-tech-mono/400.css'
 
 // DM Mono — instrument/label mono. Family: 'DM Mono'.
-import '@fontsource/dm-mono/300.css'
 import '@fontsource/dm-mono/400.css'
 import '@fontsource/dm-mono/500.css'
 
@@ -42,7 +41,6 @@ import '@fontsource/ibm-plex-mono/600.css'
 
 // Oswald — condensed display. Family: 'Oswald'.
 import '@fontsource/oswald/400.css'
-import '@fontsource/oswald/500.css'
 import '@fontsource/oswald/600.css'
 import '@fontsource/oswald/700.css'
 
@@ -80,10 +78,10 @@ export const FONTS = {
   'Pretendard Variable': { role: 'kr/sans (primary)', weights: ['variable'] },
   'JetBrains Mono': { role: 'mono (primary)', weights: [400, 500, 700, 800] },
   'Share Tech Mono': { role: 'terminal/HUD', weights: [400] },
-  'DM Mono': { role: 'instrument mono', weights: [300, 400, 500] },
+  'DM Mono': { role: 'instrument mono', weights: [400, 500] },
   'IBM Plex Sans KR': { role: 'kr UI', weights: [400, 500, 600, 700] },
   'IBM Plex Mono': { role: 'mono (secondary)', weights: [400, 500, 600] },
-  Oswald: { role: 'condensed display', weights: [400, 500, 600, 700] },
+  Oswald: { role: 'condensed display', weights: [400, 600, 700] },
   Inter: { role: 'ui sans', weights: [400, 500, 600, 700] },
   'Cormorant Garamond': { role: 'editorial serif', weights: [500, 600, 700], italic: [500, 600] },
   'Noto Serif KR': { role: 'kr serif', weights: [500, 600, 700] },

@@ -197,7 +197,9 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         <span>THE MAKERS</span>
       </div>
 
-      <div className={s.hero} ref={heroRef}>
+      {/* 초기 opacity:0 — rAF 가 master(=0→상승)로 덮어쓰기 전 첫 페인트에 글자가
+          전부 보였다가 등장 효과가 재생되는 FOUC 방지 (37-cross-domain 와 동일 패턴). */}
+      <div className={s.hero} ref={heroRef} style={{ opacity: 0 }}>
         <div className={`${s.l1} ${s.kr}`} ref={l1Ref}>
           제조와 <span className={s.mono}>IT</span>를 <span className={s.acc}>잇는</span> 사람,
         </div>

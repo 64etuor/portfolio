@@ -44,11 +44,12 @@ import './resume.css' // /resume 전용 (globals 에서 분리)
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { SiteHeader } from '@/components/SiteHeader'
 import { PROFILE } from '@content/index'
+import { SITE } from '@content/site'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
-  title: '박양하 · Portfolio',
+  title: SITE.title,
   description: PROFILE.identity.tagline,
   icons: {
     icon: [

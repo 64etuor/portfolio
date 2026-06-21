@@ -1,6 +1,7 @@
-/* 폰트 (CDN — 결정성 위해 추후 self-host 가능). @import 는 다른 규칙보다 앞서야 함. */
-@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css');
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Serif+KR:wght@500;600;700&display=swap');
+/* 폰트는 self-host (src/app/layout.tsx 의 @fontsource / pretendard import).
+   렌더 차단 CDN @import 제거. 씬들은 LITERAL family name('JetBrains Mono',
+   'Pretendard Variable' 등)을 참조하며, 각 패키지가 동일한 family name 으로
+   @font-face 를 제공하므로 씬 CSS 는 변경 없이 동작한다. */
 @import 'tailwindcss';
 
 /* 셸 테마 토큰 — ThemeProvider 가 :root inline style 로 덮어쓴다. 기본값 = Ink */
@@ -13,6 +14,7 @@
   --line: rgba(233, 233, 236, 0.12);
   --font-sans: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', system-ui, sans-serif;
   --font-serif: 'Cormorant Garamond', 'Noto Serif KR', serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
 @layer base {
@@ -39,84 +41,136 @@
   }
 }
 
-/* ===== 인트로 시퀀스 (BIOS → CRT turn-off → 타이핑 → 릴) ===== */
-@keyframes pf-blink {
-  0%, 49% { opacity: 1; }
-  50%, 100% { opacity: 0; }
+/* ===== Shared instrument-chrome button language ===== */
+/* Base: mono uppercase hairline — used across all shell surfaces */
+.chrome-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  padding: 7px 13px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color 160ms ease, color 160ms ease, background 160ms ease, box-shadow 160ms ease;
 }
-/* CRT 전원 꺼짐: 세로로 수축 → 밝은 가로선 → 가운데 점 → 암전 */
-@keyframes pf-crt-off {
-  0% { transform: scale(1, 1); filter: brightness(1); opacity: 1; }
-  45% { transform: scale(1, 0.016); filter: brightness(5); opacity: 1; }
-  72% { transform: scale(0.35, 0.011); filter: brightness(10); opacity: 1; }
-  100% { transform: scale(0, 0.008); filter: brightness(30); opacity: 0.5; }
+.chrome-btn:hover {
+  border-color: rgba(224, 122, 95, 0.5);
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: 0 0 14px rgba(224, 122, 95, 0.2);
 }
-@keyframes pf-crt-dot {
-  0% { opacity: 0; transform: scale(0.2); }
-  18% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(0.1); }
+/* Primary variant — accent-tinted border */
+.chrome-btn--primary {
+  color: var(--ink);
+  border-color: rgba(224, 122, 95, 0.45);
+  background: rgba(224, 122, 95, 0.04);
 }
-.pf-crt-off {
-  animation: pf-crt-off 1s cubic-bezier(0.5, 0, 0.7, 0.1) forwards;
-  transform-origin: center;
+.chrome-btn--primary:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 18px rgba(224, 122, 95, 0.28);
 }
-.pf-cursor::after {
-  content: '▮';
-  animation: pf-blink 1.05s steps(1) infinite;
+/* Back variant — leading arrow already in the label text */
+.chrome-btn--back {
+  color: var(--muted);
 }
-/* CRT 전원 켜짐: 점 → 밝은 가로선 → 펼쳐짐 (off 의 역재생) */
-@keyframes pf-crt-on {
-  0% { transform: scale(0, 0.008); filter: brightness(30); opacity: 0.4; }
-  28% { transform: scale(0.35, 0.011); filter: brightness(12); opacity: 1; }
-  55% { transform: scale(1, 0.018); filter: brightness(8); }
-  100% { transform: scale(1, 1); filter: brightness(1); opacity: 1; }
+.chrome-btn--back:hover {
+  color: var(--ink);
 }
-.pf-crt-on { animation: pf-crt-on 1s cubic-bezier(0.3, 0.9, 0.4, 1) forwards; transform-origin: center; }
-/* TV 지지직(static noise) */
-.pf-static {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 180px 180px;
-  animation: pf-static-jit 0.09s steps(2) infinite, pf-static-flicker 0.4s steps(3) infinite;
+
+
+/* ===== Unified site header bar — centered HOME, optional right-end action.
+   Used on /s, /c, /resume and replicated inline on the static lab pages. ===== */
+.site-bar {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px clamp(16px, 4vw, 40px);
+  background: color-mix(in oklab, var(--bg) 82%, transparent);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
 }
-@keyframes pf-static-jit {
-  0% { background-position: 0 0; }
-  50% { background-position: 48px -34px; }
-  100% { background-position: -36px 26px; }
+/* Brand wordmark (left) — elegant serif */
+.site-bar__brand {
+  font-family: 'Playfair Display', var(--font-serif), serif;
+  font-size: clamp(15px, 1.5vw, 19px);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity 160ms ease;
 }
-@keyframes pf-static-flicker {
-  0% { opacity: 0.92; }
-  50% { opacity: 0.7; }
-  100% { opacity: 0.85; }
-}
-/* 지지직 위 가로 롤 바 */
-.pf-static::after {
-  content: '';
+.site-bar__brand:hover { opacity: 0.72; }
+/* HOME button sits dead-center regardless of brand / right-end action width */
+.site-bar .home {
   position: absolute;
-  left: 0; right: 0; height: 18%;
-  background: linear-gradient(rgba(255,255,255,0.12), rgba(255,255,255,0));
-  animation: pf-roll 1.1s linear infinite;
+  left: 50%;
+  transform: translateX(-50%);
 }
-@keyframes pf-roll { 0% { top: -20%; } 100% { top: 100%; } }
-@keyframes pf-fade-out { from { opacity: 1; } to { opacity: 0; } }
-/* 세련된 타이핑: 부드러운 캐럿 + 글자 페이드인 */
-@keyframes pf-blink-soft { 0%, 100% { opacity: 1; } 50% { opacity: 0.08; } }
-.pf-caret {
-  display: inline-block;
-  width: 2px;
-  height: 1.02em;
-  margin-left: 7px;
-  vertical-align: -0.12em;
-  background: linear-gradient(#bfe0ff, #6fb6ff);
-  box-shadow: 0 0 10px rgba(120, 190, 255, 0.9);
-  border-radius: 1px;
-  animation: pf-blink-soft 1.1s ease-in-out infinite;
+@media print { .site-bar { display: none !important; } }
+
+/* ===== 전역 라우트 전환 (app/template.tsx) — 매 네비게이션마다 재생되는 CRT 컷 ===== */
+.route-tx {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  pointer-events: none;
+  overflow: hidden;
 }
-@keyframes pf-char-in {
-  from { opacity: 0; filter: blur(5px); }
-  to { opacity: 1; filter: blur(0); }
+/* 다크 베일이 덮였다가 걷히며 새 페이지를 드러냄 */
+.route-tx-veil {
+  position: absolute;
+  inset: 0;
+  background: #05070a;
+  animation: rtx-veil 0.52s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
-.pf-char { display: inline-block; white-space: pre; animation: pf-char-in 0.32s ease forwards; }
-@keyframes pf-line-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+/* 스캔 스윕 */
+.route-tx-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(180deg, transparent, rgba(150, 205, 255, 0.12), transparent);
+  mix-blend-mode: screen;
+  animation: rtx-scan 0.55s ease forwards;
+}
+/* 짧은 페인트 플래시 */
+.route-tx-flash {
+  position: absolute;
+  inset: 0;
+  background: #cfe6ff;
+  mix-blend-mode: screen;
+  opacity: 0;
+  animation: rtx-flash 0.5s ease forwards;
+}
+@keyframes rtx-veil {
+  0% { opacity: 1; }
+  55% { opacity: 0.45; }
+  100% { opacity: 0; }
+}
+@keyframes rtx-scan {
+  0% { transform: translateY(-60%); opacity: 0; }
+  25% { opacity: 1; }
+  100% { transform: translateY(230%); opacity: 0; }
+}
+@keyframes rtx-flash {
+  0% { opacity: 0; }
+  9% { opacity: 0.16; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .route-tx { display: none; }
 }

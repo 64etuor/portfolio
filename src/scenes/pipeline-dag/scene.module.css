@@ -1,0 +1,282 @@
+/* pipeline-dag — Notion OS DAG scene.
+   인라인 <style> 이식. 폰트 @import/@font-face 제거(전역 제공).
+   #id → .id (class), :root CSS 변수는 인라인 vars로 유지. */
+
+.root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #0a0e14;
+  color: #c9d4e3;
+  font-family: 'SF Mono','JetBrains Mono','Fira Code',ui-monospace,'Cascadia Code',Consolas,monospace;
+  word-break: keep-all;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* canvas fills root */
+.c {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ---------- Top toolbar ---------- */
+.toolbar {
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 46px; z-index: 40;
+  display: flex; align-items: center; gap: 14px; padding: 0 14px;
+  background: linear-gradient(180deg,#0e141d,#0b1018);
+  border-bottom: 1px solid #1f2733;
+  box-shadow: 0 1px 0 rgba(255,255,255,.02);
+}
+.brand { display: flex; align-items: center; gap: 9px; font-weight: 600; font-size: 13px; letter-spacing: .3px }
+.brandDot {
+  width: 9px; height: 9px; border-radius: 50%; background: #5ee3a1;
+  box-shadow: 0 0 10px #5ee3a1; animation: pulse 2.4s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+.brandB { color: #fff }
+.brandPath { color: #6b7787; font-weight: 400 }
+.tbSep { width: 1px; height: 22px; background: #1f2733 }
+.tbMeta { font-size: 11px; color: #6b7787; display: flex; gap: 14px; align-items: center }
+.tbMeta .k { color: #414c5c }
+.tbMeta .v { color: #c9d4e3 }
+.banner {
+  display: flex; align-items: center; gap: 7px; font-size: 11px; padding: 4px 10px; border-radius: 5px;
+  background: rgba(94,227,161,.08); border: 1px solid rgba(94,227,161,.25); color: #5ee3a1;
+}
+.bannerOk { width: 6px; height: 6px; border-radius: 50%; background: #5ee3a1; box-shadow: 0 0 6px #5ee3a1 }
+.spacer { flex: 1 }
+.btn {
+  font-family: inherit; font-size: 12px; cursor: pointer; border: 1px solid #1f2733;
+  background: #161c26; color: #c9d4e3; padding: 7px 12px; border-radius: 6px;
+  display: flex; align-items: center; gap: 7px; transition: .14s; user-select: none;
+}
+.btn:hover { border-color: #33414f; background: #1b2330 }
+.btnRun { border-color: rgba(94,227,161,.4); color: #5ee3a1; background: rgba(94,227,161,.06) }
+.btnRun:hover { background: rgba(94,227,161,.14); box-shadow: 0 0 14px rgba(94,227,161,.2) }
+.btnRunActive { border-color: rgba(240,180,41,.5); color: #f0b429; background: rgba(240,180,41,.08) }
+.btnTri { font-size: 10px }
+.btnGhost { background: transparent; border-color: transparent; color: #6b7787; padding: 7px 9px; font-family: inherit; font-size: 12px; cursor: pointer; border-radius: 6px }
+.btnGhost:hover { background: #161c26; color: #c9d4e3 }
+
+/* ---------- Stage / world ---------- */
+.stage {
+  position: absolute;
+  inset: 46px 0 0 0;
+  overflow: hidden;
+  cursor: grab;
+  background:
+    radial-gradient(1200px 700px at 70% 10%, rgba(74,168,255,.05), transparent 60%),
+    radial-gradient(900px 600px at 10% 90%, rgba(176,140,255,.05), transparent 60%),
+    #0a0e14;
+}
+.stageGrabbing { cursor: grabbing }
+.world {
+  position: absolute;
+  top: 0; left: 0;
+  transform-origin: 0 0;
+  z-index: 1;
+  will-change: transform;
+}
+.edgesSvg {
+  position: absolute;
+  top: 0; left: 0;
+  overflow: visible;
+  pointer-events: none;
+  z-index: 1;
+}
+.nodesLayer {
+  position: absolute;
+  top: 0; left: 0;
+  z-index: 2;
+}
+
+/* ---------- Detail panel ---------- */
+.panel {
+  position: absolute;
+  top: 46px; right: 0; bottom: 0; width: 380px; z-index: 50;
+  background: linear-gradient(180deg,#0c111a,#0a0e15);
+  border-left: 1px solid #1f2733;
+  transform: translateX(100%);
+  transition: transform .32s cubic-bezier(.4,0,.2,1);
+  display: flex; flex-direction: column;
+  box-shadow: -12px 0 40px rgba(0,0,0,.5);
+  overflow: hidden;
+}
+
+/* ---------- Minimap ---------- */
+.minimap {
+  position: absolute;
+  left: 14px; bottom: 14px; width: 200px; height: 130px; z-index: 40;
+  background: rgba(8,11,16,.85); border: 1px solid #1f2733; border-radius: 8px; overflow: hidden;
+  box-shadow: 0 8px 28px rgba(0,0,0,.5); backdrop-filter: blur(4px);
+}
+.minimapH {
+  font-size: 9px; letter-spacing: 1px; color: #414c5c; padding: 5px 8px;
+  border-bottom: 1px solid #1f2733; text-transform: uppercase;
+  display: flex; justify-content: space-between;
+}
+.mmSvg { display: block; width: 100%; height: calc(100% - 22px); cursor: pointer }
+
+/* ---------- Legend ---------- */
+.legend {
+  position: absolute; right: 14px; bottom: 14px; z-index: 40;
+  display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; max-width: 300px;
+}
+.legendShift { right: 394px }
+.leg {
+  font-size: 10px; color: #6b7787; background: rgba(8,11,16,.8);
+  border: 1px solid #1f2733; padding: 5px 9px; border-radius: 6px;
+  display: flex; align-items: center; gap: 6px; backdrop-filter: blur(4px);
+}
+.legD { width: 7px; height: 7px; border-radius: 2px }
+
+/* ---------- Zoom controls ---------- */
+.zoomCtl {
+  position: absolute; left: 14px; top: 60px; z-index: 40;
+  display: flex; flex-direction: column; gap: 1px;
+  background: #10151d; border: 1px solid #1f2733; border-radius: 7px; overflow: hidden;
+}
+.zoomBtn {
+  width: 32px; height: 30px; background: transparent; border: none; color: #6b7787;
+  font-family: inherit; font-size: 15px; cursor: pointer;
+  border-bottom: 1px solid #1f2733;
+}
+.zoomBtnLast { border-bottom: none; font-size: 10px }
+.zoomBtn:hover { background: #161c26; color: #fff }
+.zLabel {
+  position: absolute; left: 54px; top: 60px; z-index: 40; font-size: 10px; color: #414c5c;
+  background: rgba(8,11,16,.7); padding: 3px 7px; border-radius: 5px; border: 1px solid #1f2733;
+  pointer-events: none;
+}
+
+/* ---------- Run progress bar ---------- */
+.runbar {
+  position: absolute; top: 46px; left: 0; height: 2px; width: 0;
+  background: linear-gradient(90deg,#f0b429,#5ee3a1);
+  z-index: 55; transition: width .25s; box-shadow: 0 0 8px #5ee3a1;
+}
+
+/* ---------- Hint ---------- */
+.hint {
+  position: absolute; top: 54px; left: 50%; transform: translateX(-50%); z-index: 35;
+  font-size: 11px; color: #6b7787; background: rgba(8,11,16,.8);
+  padding: 6px 14px; border-radius: 20px; border: 1px solid #1f2733;
+  backdrop-filter: blur(4px); transition: opacity .5s; pointer-events: none;
+}
+.kbd {
+  display: inline-block; padding: 1px 6px; border-radius: 4px;
+  background: #161c26; border: 1px solid #1f2733; color: #c9d4e3; font-size: 10px; margin: 0 2px;
+}
+
+/* ---------- Schema tooltip ---------- */
+.schema {
+  position: fixed; z-index: 60; pointer-events: none;
+  background: #10151d; border: 1px solid #5ee3a1; border-radius: 7px;
+  padding: 8px 11px; font-size: 10.5px; color: #c9d4e3;
+  box-shadow: 0 8px 26px rgba(0,0,0,.6); max-width: 280px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   :global — imperative DOM (innerHTML) 로 생성되는 요소들.
+   CSS Modules 스코프 밖이므로 :global() 블록으로 전역 노출.
+   ═══════════════════════════════════════════════════════════════════ */
+.root :global(.node) {
+  position: absolute; width: 230px; border-radius: 9px; overflow: hidden; cursor: pointer;
+  background: linear-gradient(180deg,#10151d,#161c26);
+  border: 1px solid #1f2733;
+  box-shadow: 0 6px 22px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.03);
+  transition: border-color .15s, box-shadow .15s, transform .15s;
+}
+.root :global(.node:hover) { border-color: #3a4a5c; box-shadow: 0 10px 30px rgba(0,0,0,.6),0 0 0 1px rgba(94,227,161,.08) }
+.root :global(.node.sel) { border-color: #5ee3a1; box-shadow: 0 12px 36px rgba(0,0,0,.7),0 0 0 1px #5ee3a1,0 0 22px rgba(94,227,161,.18) }
+.root :global(.node .top) { display: flex; align-items: center; gap: 8px; padding: 9px 11px 8px; border-bottom: 1px solid #1f2733 }
+.root :global(.node .ico) {
+  width: 26px; height: 26px; border-radius: 6px; flex: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; background: rgba(255,255,255,.04); border: 1px solid #1f2733;
+}
+.root :global(.node .ttl) { flex: 1; min-width: 0 }
+.root :global(.node .ttl .name) { font-size: 12.5px; font-weight: 600; color: #e7eef7; line-height: 1.25; overflow: hidden; text-overflow: ellipsis; white-space: nowrap }
+.root :global(.node .ttl .type) { font-size: 9.5px; color: #414c5c; letter-spacing: .5px; text-transform: uppercase; margin-top: 1px }
+.root :global(.node .body) { padding: 8px 11px 10px }
+.root :global(.node .sub) { font-size: 10.5px; color: #6b7787; line-height: 1.5 }
+.root :global(.node .foot) { display: flex; align-items: center; gap: 8px; padding: 7px 11px; border-top: 1px solid #1f2733; background: rgba(0,0,0,.18); font-size: 9.5px; color: #414c5c }
+.root :global(.node .foot .dur) { margin-left: auto; color: #6b7787 }
+.root :global(.node .runid) { color: #414c5c; font-family: ui-monospace, monospace }
+
+.root :global(.node.metric) { width: 170px }
+.root :global(.node.metric .big) { font-size: 24px; font-weight: 700; letter-spacing: -.5px; line-height: 1 }
+.root :global(.node.metric .big.up) { color: #5ee3a1 }
+.root :global(.node.metric .big.down) { color: #4aa8ff }
+.root :global(.node.metric .lbl) { font-size: 10px; color: #6b7787; margin-top: 4px }
+
+.root :global(.port) { position: absolute; width: 9px; height: 9px; border-radius: 50%; background: #161c26; border: 1.5px solid #3b4756; top: 50%; transform: translateY(-50%); z-index: 3 }
+.root :global(.port.in) { left: -5px }
+.root :global(.port.out) { right: -5px }
+.root :global(.node[data-status="success"] .port) { border-color: #5ee3a1 }
+
+/* node status left bar */
+.root :global(.node::before) { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: #3b4756; transition: .3s }
+.root :global(.node[data-status="success"]::before) { background: #5ee3a1; box-shadow: 0 0 12px rgba(94,227,161,.5) }
+.root :global(.node[data-status="running"]::before) { background: #f0b429; box-shadow: 0 0 12px rgba(240,180,41,.6); animation: dag-flow 1s linear infinite }
+.root :global(.node[data-status="queued"]::before) { background: #4aa8ff }
+@keyframes dag-flow { 0%{opacity:.4} 50%{opacity:1} 100%{opacity:.4} }
+
+/* kind icon tints */
+.root :global(.node[data-kind="source"] .ico) { color: #4aa8ff; background: rgba(74,168,255,.1); border-color: rgba(74,168,255,.2) }
+.root :global(.node[data-kind="decision"] .ico) { color: #b08cff; background: rgba(176,140,255,.1); border-color: rgba(176,140,255,.2) }
+.root :global(.node[data-kind="okr"] .ico) { color: #36d9d9; background: rgba(54,217,217,.1); border-color: rgba(54,217,217,.2) }
+.root :global(.node[data-kind="metric"] .ico) { color: #5ee3a1; background: rgba(94,227,161,.1); border-color: rgba(94,227,161,.2) }
+.root :global(.node[data-kind="sink"] .ico) { color: #ff7eb6; background: rgba(255,126,182,.1); border-color: rgba(255,126,182,.2) }
+.root :global(.node[data-kind="ai"] .ico) { color: #f0b429; background: rgba(240,180,41,.1); border-color: rgba(240,180,41,.2) }
+
+/* status pills */
+.root :global(.pill) { display: inline-flex; align-items: center; gap: 5px; font-size: 9.5px; padding: 2px 7px; border-radius: 20px; letter-spacing: .3px; font-weight: 600 }
+.root :global(.pill .d) { width: 5px; height: 5px; border-radius: 50% }
+.root :global(.pill.success) { color: #5ee3a1; background: rgba(94,227,161,.1); border: 1px solid rgba(94,227,161,.25) }
+.root :global(.pill.success .d) { background: #5ee3a1; box-shadow: 0 0 6px #5ee3a1 }
+.root :global(.pill.running) { color: #f0b429; background: rgba(240,180,41,.12); border: 1px solid rgba(240,180,41,.3) }
+.root :global(.pill.running .d) { background: #f0b429; box-shadow: 0 0 6px #f0b429; animation: dag-blink .8s infinite }
+.root :global(.pill.queued) { color: #4aa8ff; background: rgba(74,168,255,.1); border: 1px solid rgba(74,168,255,.25) }
+.root :global(.pill.queued .d) { background: #4aa8ff }
+.root :global(.pill.idle) { color: #6b7787; background: rgba(120,135,150,.08); border: 1px solid #1f2733 }
+.root :global(.pill.idle .d) { background: #3b4756 }
+@keyframes dag-blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+/* detail panel body content */
+.root :global(.sec) { margin-bottom: 18px }
+.root :global(.sec h4) { font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #414c5c; margin-bottom: 9px; display: flex; align-items: center; gap: 7px }
+.root :global(.sec h4::after) { content: ''; flex: 1; height: 1px; background: #1f2733 }
+.root :global(.desc) { font-size: 12.5px; line-height: 1.7; color: #c9d4e3 }
+.root :global(.kv) { display: flex; font-size: 11.5px; padding: 6px 0; border-bottom: 1px solid rgba(31,39,51,.6) }
+.root :global(.kv .k) { color: #6b7787; width: 104px; flex: none }
+.root :global(.kv .v) { color: #c9d4e3; flex: 1 }
+.root :global(.kv .v b) { color: #5ee3a1 }
+.root :global(.tags) { display: flex; flex-wrap: wrap; gap: 6px }
+.root :global(.tag) { font-size: 10.5px; padding: 4px 9px; border-radius: 5px; background: #161c26; border: 1px solid #1f2733; color: #6b7787 }
+.root :global(.tag.hl) { color: #36d9d9; border-color: rgba(54,217,217,.3); background: rgba(54,217,217,.06) }
+.root :global(.ach) { display: flex; gap: 9px; align-items: baseline; padding: 8px 0; border-bottom: 1px solid rgba(31,39,51,.6) }
+.root :global(.ach .n) { font-size: 16px; font-weight: 700; color: #5ee3a1; min-width: 62px; font-variant-numeric: tabular-nums }
+.root :global(.ach .t) { font-size: 11.5px; color: #c9d4e3; line-height: 1.5 }
+.root :global(.logbox) { background: #070a0f; border: 1px solid #1f2733; border-radius: 7px; padding: 10px 12px; font-size: 10.5px; line-height: 1.7 }
+.root :global(.logbox .l) { color: #6b7787; white-space: pre-wrap }
+.root :global(.logbox .l .t) { color: #414c5c }
+.root :global(.logbox .l .ok) { color: #5ee3a1 }
+.root :global(.logbox .l .w) { color: #f0b429 }
+
+/* schema tooltip inner */
+.root :global(.schema .h) { color: #5ee3a1; font-weight: 600; margin-bottom: 5px; font-size: 10px; letter-spacing: .4px }
+.root :global(.schema .row) { color: #6b7787; line-height: 1.6 }
+.root :global(.schema .row .key) { color: #36d9d9 }
+.root :global(.schema .row .ty) { color: #b08cff }
+
+/* toolbar meta inner spans */
+.root :global(.k) { color: #414c5c }
+.root :global(.v) { color: #c9d4e3 }

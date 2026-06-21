@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>notion-os.dag — Notion OS · Org Operating System</title>
+<style>
+  :root{
+    --bg:#0a0e14;
+    --bg2:#0d1117;
+    --panel:#10151d;
+    --panel2:#161c26;
+    --grid:#141b25;
+    --line:#1f2733;
+    --txt:#c9d4e3;
+    --txt-dim:#6b7787;
+    --txt-faint:#414c5c;
+    --accent:#5ee3a1;     /* success green */
+    --running:#f0b429;    /* running amber */
+    --idle:#3b4756;       /* idle */
+    --blue:#4aa8ff;
+    --purple:#b08cff;
+    --pink:#ff7eb6;
+    --cyan:#36d9d9;
+    --red:#ff6363;
+    --mono:'SF Mono','JetBrains Mono','Fira Code',ui-monospace,'Cascadia Code',Consolas,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font-family:var(--mono);
+    word-break:keep-all;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+  /* ---------- Top toolbar ---------- */
+  #toolbar{
+    position:fixed;top:0;left:0;right:0;height:46px;z-index:40;
+    display:flex;align-items:center;gap:14px;padding:0 14px;
+    background:linear-gradient(180deg,#0e141d,#0b1018);
+    border-bottom:1px solid var(--line);
+    box-shadow:0 1px 0 rgba(255,255,255,.02);
+  }
+  .brand{display:flex;align-items:center;gap:9px;font-weight:600;font-size:13px;letter-spacing:.3px}
+  .brand .dot{width:9px;height:9px;border-radius:50%;background:var(--accent);
+    box-shadow:0 0 10px var(--accent);animation:pulse 2.4s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  .brand b{color:#fff}
+  .brand .path{color:var(--txt-dim);font-weight:400}
+  .tb-sep{width:1px;height:22px;background:var(--line)}
+  .tb-meta{font-size:11px;color:var(--txt-dim);display:flex;gap:14px;align-items:center}
+  .tb-meta .k{color:var(--txt-faint)}
+  .tb-meta .v{color:var(--txt)}
+  .banner{
+    display:flex;align-items:center;gap:7px;font-size:11px;padding:4px 10px;border-radius:5px;
+    background:rgba(94,227,161,.08);border:1px solid rgba(94,227,161,.25);color:var(--accent)
+  }
+  .banner .ok{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent)}
+  .spacer{flex:1}
+  .btn{
+    font-family:var(--mono);font-size:12px;cursor:pointer;border:1px solid var(--line);
+    background:var(--panel2);color:var(--txt);padding:7px 12px;border-radius:6px;
+    display:flex;align-items:center;gap:7px;transition:.14s;user-select:none
+  }
+  .btn:hover{border-color:#33414f;background:#1b2330}
+  .btn.run{border-color:rgba(94,227,161,.4);color:var(--accent);background:rgba(94,227,161,.06)}
+  .btn.run:hover{background:rgba(94,227,161,.14);box-shadow:0 0 14px rgba(94,227,161,.2)}
+  .btn.run.running{border-color:rgba(240,180,41,.5);color:var(--running);background:rgba(240,180,41,.08)}
+  .btn .tri{font-size:10px}
+  .btn-ghost{background:transparent;border-color:transparent;color:var(--txt-dim);padding:7px 9px}
+  .btn-ghost:hover{background:var(--panel2);color:var(--txt)}
+
+  /* ---------- Canvas ---------- */
+  #stage{position:fixed;inset:46px 0 0 0;overflow:hidden;cursor:grab;
+    background:
+      radial-gradient(1200px 700px at 70% 10%, rgba(74,168,255,.05), transparent 60%),
+      radial-gradient(900px 600px at 10% 90%, rgba(176,140,255,.05), transparent 60%),
+      var(--bg);
+  }
+  #stage.grabbing{cursor:grabbing}
+  #stage:active{cursor:grabbing}
+  #gridbg{position:absolute;inset:0;pointer-events:none;z-index:0}
+  #world{position:absolute;top:0;left:0;transform-origin:0 0;z-index:1;will-change:transform}
+  #edges{position:absolute;top:0;left:0;overflow:visible;pointer-events:none;z-index:1}
+  #nodes{position:absolute;top:0;left:0;z-index:2}
+
+  /* ---------- Node card ---------- */
+  .node{
+    position:absolute;width:230px;border-radius:9px;overflow:hidden;cursor:pointer;
+    background:linear-gradient(180deg,var(--panel),var(--panel2));
+    border:1px solid var(--line);
+    box-shadow:0 6px 22px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.03);
+    transition:border-color .15s, box-shadow .15s, transform .15s;
+  }
+  .node:hover{border-color:#3a4a5c;box-shadow:0 10px 30px rgba(0,0,0,.6),0 0 0 1px rgba(94,227,161,.08)}
+  .node.sel{border-color:var(--accent);box-shadow:0 12px 36px rgba(0,0,0,.7),0 0 0 1px var(--accent),0 0 22px rgba(94,227,161,.18)}
+  .node .top{display:flex;align-items:center;gap:8px;padding:9px 11px 8px;border-bottom:1px solid var(--line)}
+  .node .ico{
+    width:26px;height:26px;border-radius:6px;flex:none;display:flex;align-items:center;justify-content:center;
+    font-size:13px;background:rgba(255,255,255,.04);border:1px solid var(--line)
+  }
+  .node .ttl{flex:1;min-width:0}
+  .node .ttl .name{font-size:12.5px;font-weight:600;color:#e7eef7;line-height:1.25;
+    overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .node .ttl .type{font-size:9.5px;color:var(--txt-faint);letter-spacing:.5px;text-transform:uppercase;margin-top:1px}
+  .node .body{padding:8px 11px 10px}
+  .node .sub{font-size:10.5px;color:var(--txt-dim);line-height:1.5}
+  .node .foot{display:flex;align-items:center;gap:8px;padding:7px 11px;border-top:1px solid var(--line);
+    background:rgba(0,0,0,.18);font-size:9.5px;color:var(--txt-faint)}
+  .node .foot .dur{margin-left:auto;color:var(--txt-dim)}
+  .node .runid{color:var(--txt-faint);font-family:var(--mono)}
+
+  .pill{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;padding:2px 7px;border-radius:20px;
+    letter-spacing:.3px;font-weight:600}
+  .pill .d{width:5px;height:5px;border-radius:50%}
+  .pill.success{color:var(--accent);background:rgba(94,227,161,.1);border:1px solid rgba(94,227,161,.25)}
+  .pill.success .d{background:var(--accent);box-shadow:0 0 6px var(--accent)}
+  .pill.running{color:var(--running);background:rgba(240,180,41,.12);border:1px solid rgba(240,180,41,.3)}
+  .pill.running .d{background:var(--running);box-shadow:0 0 6px var(--running);animation:blink .8s infinite}
+  .pill.queued{color:var(--blue);background:rgba(74,168,255,.1);border:1px solid rgba(74,168,255,.25)}
+  .pill.queued .d{background:var(--blue)}
+  .pill.idle{color:var(--txt-dim);background:rgba(120,135,150,.08);border:1px solid var(--line)}
+  .pill.idle .d{background:var(--idle)}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+  /* node status accents (left bar) */
+  .node::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--idle);transition:.3s}
+  .node[data-status="success"]::before{background:var(--accent);box-shadow:0 0 12px rgba(94,227,161,.5)}
+  .node[data-status="running"]::before{background:var(--running);box-shadow:0 0 12px rgba(240,180,41,.6);animation:flow 1s linear infinite}
+  .node[data-status="queued"]::before{background:var(--blue)}
+  @keyframes flow{0%{opacity:.4}50%{opacity:1}100%{opacity:.4}}
+
+  /* group tint by kind */
+  .node[data-kind="source"] .ico{color:var(--blue);background:rgba(74,168,255,.1);border-color:rgba(74,168,255,.2)}
+  .node[data-kind="decision"] .ico{color:var(--purple);background:rgba(176,140,255,.1);border-color:rgba(176,140,255,.2)}
+  .node[data-kind="okr"] .ico{color:var(--cyan);background:rgba(54,217,217,.1);border-color:rgba(54,217,217,.2)}
+  .node[data-kind="metric"] .ico{color:var(--accent);background:rgba(94,227,161,.1);border-color:rgba(94,227,161,.2)}
+  .node[data-kind="sink"] .ico{color:var(--pink);background:rgba(255,126,182,.1);border-color:rgba(255,126,182,.2)}
+  .node[data-kind="ai"] .ico{color:var(--running);background:rgba(240,180,41,.1);border-color:rgba(240,180,41,.2)}
+
+  /* metric big number */
+  .node.metric{width:170px}
+  .node.metric .big{font-size:24px;font-weight:700;letter-spacing:-.5px;line-height:1}
+  .node.metric .big.up{color:var(--accent)} .node.metric .big.down{color:var(--blue)}
+  .node.metric .lbl{font-size:10px;color:var(--txt-dim);margin-top:4px}
+
+  /* ports */
+  .port{position:absolute;width:9px;height:9px;border-radius:50%;background:var(--panel2);
+    border:1.5px solid var(--idle);top:50%;transform:translateY(-50%);z-index:3}
+  .port.in{left:-5px}.port.out{right:-5px}
+  .node[data-status="success"] .port{border-color:var(--accent)}
+
+  /* AI mini-chart (AI reconciliation live trend) */
+  #aicanvas{display:block;width:100%;height:54px;background:rgba(0,0,0,.25);border-radius:5px;margin-top:2px}
+
+  /* edge schema tooltip */
+  #schema{position:fixed;z-index:60;pointer-events:none;display:none;
+    background:var(--panel);border:1px solid var(--accent);border-radius:7px;padding:8px 11px;
+    font-size:10.5px;color:var(--txt);box-shadow:0 8px 26px rgba(0,0,0,.6);max-width:280px}
+  #schema .h{color:var(--accent);font-weight:600;margin-bottom:5px;font-size:10px;letter-spacing:.4px}
+  #schema .row{color:var(--txt-dim);line-height:1.6}
+  #schema .row .key{color:var(--cyan)} #schema .row .ty{color:var(--purple)}
+
+  /* hit areas for edges (transparent wide strokes) */
+  .ehit{stroke:transparent;stroke-width:14;fill:none;pointer-events:stroke;cursor:help}
+
+  /* ---------- Detail panel ---------- */
+  #panel{
+    position:fixed;top:46px;right:0;bottom:0;width:380px;z-index:50;
+    background:linear-gradient(180deg,#0c111a,#0a0e15);
+    border-left:1px solid var(--line);
+    transform:translateX(100%);transition:transform .32s cubic-bezier(.4,0,.2,1);
+    display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(0,0,0,.5)
+  }
+  #panel.open{transform:translateX(0)}
+  #panel .ph{display:flex;align-items:flex-start;gap:11px;padding:18px 18px 14px;border-bottom:1px solid var(--line)}
+  #panel .ph .ico{width:40px;height:40px;border-radius:9px;display:flex;align-items:center;justify-content:center;
+    font-size:19px;background:rgba(255,255,255,.04);border:1px solid var(--line);flex:none}
+  #panel .ph .name{font-size:15px;font-weight:700;color:#fff;line-height:1.3}
+  #panel .ph .meta{font-size:10.5px;color:var(--txt-dim);margin-top:4px;display:flex;gap:8px;flex-wrap:wrap}
+  #panel .ph .meta span{display:inline-flex;align-items:center;gap:4px}
+  #pclose{margin-left:auto;cursor:pointer;color:var(--txt-dim);font-size:18px;line-height:1;
+    width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px;flex:none}
+  #pclose:hover{background:var(--panel2);color:#fff}
+  #pbody{overflow-y:auto;padding:16px 18px 28px;flex:1}
+  #pbody::-webkit-scrollbar{width:8px}#pbody::-webkit-scrollbar-thumb{background:#1c2530;border-radius:4px}
+  .sec{margin-bottom:18px}
+  .sec h4{font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--txt-faint);margin-bottom:9px;
+    display:flex;align-items:center;gap:7px}
+  .sec h4::after{content:'';flex:1;height:1px;background:var(--line)}
+  .desc{font-size:12.5px;line-height:1.7;color:var(--txt)}
+  .kv{display:flex;font-size:11.5px;padding:6px 0;border-bottom:1px solid rgba(31,39,51,.6)}
+  .kv .k{color:var(--txt-dim);width:104px;flex:none}
+  .kv .v{color:var(--txt);flex:1}
+  .kv .v b{color:var(--accent)}
+  .tags{display:flex;flex-wrap:wrap;gap:6px}
+  .tag{font-size:10.5px;padding:4px 9px;border-radius:5px;background:var(--panel2);border:1px solid var(--line);color:var(--txt-dim)}
+  .tag.hl{color:var(--cyan);border-color:rgba(54,217,217,.3);background:rgba(54,217,217,.06)}
+  .ach{display:flex;gap:9px;align-items:baseline;padding:8px 0;border-bottom:1px solid rgba(31,39,51,.6)}
+  .ach .n{font-size:16px;font-weight:700;color:var(--accent);min-width:62px;font-variant-numeric:tabular-nums}
+  .ach .t{font-size:11.5px;color:var(--txt);line-height:1.5}
+  .logbox{background:#070a0f;border:1px solid var(--line);border-radius:7px;padding:10px 12px;font-size:10.5px;line-height:1.7}
+  .logbox .l{color:var(--txt-dim);white-space:pre-wrap}
+  .logbox .l .t{color:var(--txt-faint)} .logbox .l .ok{color:var(--accent)} .logbox .l .w{color:var(--running)}
+
+  /* ---------- Minimap ---------- */
+  #minimap{position:fixed;left:14px;bottom:14px;width:200px;height:130px;z-index:40;
+    background:rgba(8,11,16,.85);border:1px solid var(--line);border-radius:8px;overflow:hidden;
+    box-shadow:0 8px 28px rgba(0,0,0,.5);backdrop-filter:blur(4px)}
+  #minimap .mh{font-size:9px;letter-spacing:1px;color:var(--txt-faint);padding:5px 8px;border-bottom:1px solid var(--line);
+    text-transform:uppercase;display:flex;justify-content:space-between}
+  #mmsvg{display:block;width:100%;height:calc(100% - 22px);cursor:pointer}
+  #mmview{fill:rgba(94,227,161,.1);stroke:var(--accent);stroke-width:1.2}
+
+  /* ---------- Legend / breadcrumb ---------- */
+  #legend{position:fixed;right:14px;bottom:14px;z-index:40;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;
+    max-width:300px}
+  #panel.open ~ #legend{right:394px}
+  .leg{font-size:10px;color:var(--txt-dim);background:rgba(8,11,16,.8);border:1px solid var(--line);
+    padding:5px 9px;border-radius:6px;display:flex;align-items:center;gap:6px;backdrop-filter:blur(4px)}
+  .leg .d{width:7px;height:7px;border-radius:2px}
+
+  /* zoom controls */
+  #zoomctl{position:fixed;left:14px;top:60px;z-index:40;display:flex;flex-direction:column;gap:1px;
+    background:var(--panel);border:1px solid var(--line);border-radius:7px;overflow:hidden}
+  #zoomctl button{width:32px;height:30px;background:transparent;border:none;color:var(--txt-dim);
+    font-family:var(--mono);font-size:15px;cursor:pointer;border-bottom:1px solid var(--line)}
+  #zoomctl button:last-child{border-bottom:none;font-size:10px}
+  #zoomctl button:hover{background:var(--panel2);color:#fff}
+  #zlabel{position:fixed;left:54px;top:60px;z-index:40;font-size:10px;color:var(--txt-faint);
+    background:rgba(8,11,16,.7);padding:3px 7px;border-radius:5px;border:1px solid var(--line)}
+
+  /* run progress bar */
+  #runbar{position:fixed;top:46px;left:0;height:2px;width:0;background:linear-gradient(90deg,var(--running),var(--accent));
+    z-index:55;transition:width .25s;box-shadow:0 0 8px var(--accent)}
+
+  /* hint */
+  #hint{position:fixed;top:54px;left:50%;transform:translateX(-50%);z-index:35;font-size:11px;color:var(--txt-dim);
+    background:rgba(8,11,16,.8);padding:6px 14px;border-radius:20px;border:1px solid var(--line);
+    backdrop-filter:blur(4px);transition:opacity .5s;pointer-events:none}
+  .kbd{display:inline-block;padding:1px 6px;border-radius:4px;background:var(--panel2);border:1px solid var(--line);
+    color:var(--txt);font-size:10px;margin:0 2px}
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <div class="brand"><span class="dot"></span><b>notion-os</b><span class="path">/ notion-os.dag</span></div>
+  <div class="tb-sep"></div>
+  <div class="tb-meta">
+    <span><span class="k">project:</span> <span class="v">Notion OS</span></span>
+    <span><span class="k">domain:</span> <span class="v">조직 운영 시스템 · 의사결정 OS</span></span>
+    <span><span class="k">schedule:</span> <span class="v">@continuous</span></span>
+  </div>
+  <div class="spacer"></div>
+  <div class="banner"><span class="ok"></span>SSOT: Notion · GitHub · Drive · 운영 중</div>
+  <button class="btn run" id="runBtn"><span class="tri">&#9654;</span> RUN PIPELINE</button>
+  <button class="btn-ghost" id="resetBtn" title="reset view">&#10562; fit</button>
+</div>
+<div id="runbar"></div>
+
+<div id="stage">
+  <canvas id="gridbg"></canvas>
+  <div id="world">
+    <svg id="edges"></svg>
+    <div id="nodes"></div>
+  </div>
+</div>
+
+<div id="zoomctl">
+  <button id="zin">+</button>
+  <button id="zout">&#8722;</button>
+  <button id="zfit">FIT</button>
+</div>
+<div id="zlabel">100%</div>
+
+<div id="hint">드래그로 이동 · 휠로 줌 · 노드 클릭으로 상세 · <span class="kbd">RUN</span> 으로 파이프라인 실행</div>
+
+<div id="schema"></div>
+
+<div id="minimap">
+  <div class="mh"><span>MINIMAP</span><span id="mmstat">overview</span></div>
+  <svg id="mmsvg"></svg>
+</div>
+
+<div id="legend">
+  <span class="leg"><span class="d" style="background:var(--blue)"></span>input</span>
+  <span class="leg"><span class="d" style="background:var(--purple)"></span>decision</span>
+  <span class="leg"><span class="d" style="background:var(--cyan)"></span>execution</span>
+  <span class="leg"><span class="d" style="background:var(--running)"></span>ai</span>
+  <span class="leg"><span class="d" style="background:var(--accent)"></span>metric</span>
+  <span class="leg"><span class="d" style="background:var(--pink)"></span>sink</span>
+</div>
+
+<aside id="panel">
+  <div class="ph">
+    <div class="ico" id="picon">&#11041;</div>
+    <div>
+      <div class="name" id="pname">node</div>
+      <div class="meta" id="pmeta"></div>
+    </div>
+    <div id="pclose">&#10005;</div>
+  </div>
+  <div id="pbody"></div>
+</aside>
+
+<script>
+//==================================================================
+//  DATA — Notion OS : 조직 운영 시스템 DAG
+//  스타트업의 빠른 의사결정이 정보 유실 없이 목표·실행·회고로 이어지는 조직 운영 OS
+//==================================================================
+var NODES = [
+  // ---- SOURCE : 입력 ----
+  { id:'src_meeting', kind:'source', col:0, row:0, type:'extract', icon:'📋', name:'Meeting',
+    sub:'팀 회의 · 스탠드업 · 스프린트 플래닝 인풋', dur:'realtime', runs:'src.meeting.0001',
+    desc:'모든 정보 흐름의 출발점. 회의에서 오고가는 논의·결정 후보·액션을 구조화된 포맷으로 캡처한다. Notion 회의록 DB에 자동 적재되며 AI 레이어가 결정 후보를 추출한다.',
+    kv:[['source type','meeting notes'],['포맷','Notion DB · 구조화 템플릿'],['freshness','per session']],
+    tags:['회의록','스탠드업','스프린트 플래닝','Notion'] },
+
+  { id:'src_github', kind:'source', col:0, row:1, type:'extract', icon:'&#128570;', name:'GitHub',
+    sub:'PR · 커밋 · 이슈 — 코드 정본(SSOT)', dur:'webhook', runs:'src.github.0002',
+    desc:'코드 단일 출처(SSOT). PR 머지 이벤트가 AI 자동화 레이어를 트리거해 PRD 변경로그를 갱신하고 개발 뉴스를 요약한다. 이슈는 백로그와 실시간 동기화된다.',
+    kv:[['source type','code SSOT'],['트리거','PR merge · issue close'],['연동','Runbook · PRD · Backlog']],
+    tags:['GitHub','PR','이슈','코드SSOT','webhook'] },
+
+  // ---- DECISION OS ----
+  { id:'dec_ledger', kind:'decision', col:1, row:0, type:'transform', icon:'&#128220;', name:'Decision Ledger',
+    sub:'모든 결정의 단일 기록부 — 맥락·근거·책임자', dur:'88ms', runs:'dec.ledger.v1',
+    desc:'Decision OS의 핵심. 회의에서 도출된 결정 후보가 AI 추출을 거쳐 이곳에 영구 기록된다. 결정 날짜·맥락·찬반 근거·책임자·리뷰 일정을 함께 저장해 정보 유실을 방지한다.',
+    kv:[['저장소','Notion Decision DB'],['필드','날짜 / 맥락 / 책임자 / 리뷰 기한'],['연동','Action Items · OKR']],
+    tags:['Decision Ledger','의사결정','SSOT','맥락 보존','책임자'],
+    ach:[['ZERO','결정 유실 0건'],['LINK','결정→액션 자동 연결'],['LOG','근거·반대의견 보존'],['SYNC','OKR 체크인 자동 연계']] },
+
+  { id:'dec_values', kind:'decision', col:1, row:1, type:'transform', icon:'&#10024;', name:'Core Values',
+    sub:'의사결정 필터 — 원칙 기반 판단 기준', dur:'static', runs:'dec.values.v1',
+    desc:'모든 결정이 이 원칙 레이어를 통과한다. Notion 단일 페이지에 관리되며, 결정이 Core Values와 충돌할 때 자동으로 플래그를 세운다. 조직 문화와 전략적 일관성을 유지하는 거버넌스 게이트.',
+    kv:[['형태','Notion 단일 페이지 (SSOT)'],['역할','의사결정 필터 · 문화 앵커'],['갱신','분기 리뷰 후 업데이트']],
+    tags:['Core Values','원칙','문화','거버넌스','필터'] },
+
+  { id:'dec_actions', kind:'decision', col:1, row:2, type:'transform', icon:'&#9989;', name:'Action Items',
+    sub:'결정 → 담당자·기한·완료 상태 추적', dur:'sync', runs:'dec.actions.v1',
+    desc:'Decision Ledger에서 도출된 액션이 자동으로 이 DB에 생성된다. 담당자·기한·우선순위·완료 여부를 추적하며, 미완료 액션은 다음 회의 아젠다에 자동 삽입된다.',
+    kv:[['필드','담당자 / 기한 / 우선순위 / 상태'],['자동화','미완료 → 다음 회의 아젠다 자동 추가'],['연동','OKR 진척 업데이트 트리거']],
+    tags:['Action Items','추적','완료율','아젠다 자동화'],
+    ach:[['AUTO','미완료 자동 이월'],['LINK','결정→액션 1-to-N'],['TRACK','담당자별 완료율 대시보드'],['GATE','OKR 체크인 트리거']] },
+
+  // ---- AI AUTOMATION ----
+  { id:'ai_layer', kind:'ai', col:2, row:0, type:'ml', icon:'&#129504;', name:'AI Reconciliation Layer',
+    sub:'회의록→결정 추출 · PR→PRD 갱신 · 개발뉴스 요약(자동)', dur:'auto', runs:'ai.layer.v2', ml:true,
+    desc:'세 가지 자동화 파이프라인을 실행하는 AI 레이어. (1) 회의록에서 결정 후보를 자동 추출해 Decision Ledger 초안 생성. (2) GitHub PR 머지 시 PRD 변경로그 자동 갱신. (3) GitHub 이슈/커밋 요약으로 개발 뉴스 자동 생성. 반복 수작업을 제거하고 정보를 즉시 맥락에 연결한다.',
+    kv:[['파이프라인 1','회의록 → 결정 후보 추출'],['파이프라인 2','PR → PRD 변경로그 갱신'],['파이프라인 3','GitHub → 개발 뉴스 자동 요약']],
+    tags:['AI 자동화','결정 추출','PRD 갱신','개발뉴스','MCP'] },
+
+  // ---- EXECUTION ----
+  { id:'exec_okr', kind:'okr', col:3, row:0, type:'transform', icon:'&#127919;', name:'OKR / KPI',
+    sub:'분기 Objectives · Key Results · 체크인 뷰', dur:'quarterly', runs:'exec.okr.v1',
+    desc:'조직 목표의 단일 출처. 분기마다 Objectives와 Key Results를 설정하고, 회의 때는 "체크인 필요" 뷰만 노출해 집중도를 높인다. Action Items 완료가 Key Results 진척에 자동 반영된다.',
+    kv:[['사이클','분기 OKR · 월별 KPI 체크인'],['Notion 뷰','체크인 필요 · 달성 · 위험'],['자동화','액션 완료 → KR 진척 업데이트']],
+    tags:['OKR','KPI','분기','체크인','목표정렬'],
+    ach:[['VIEW','체크인 필요 뷰만 노출'],['AUTO','액션→KR 자동 연산'],['RISK','지연 KR 자동 플래그'],['LOG','분기별 Objectives Logs 보관']] },
+
+  { id:'exec_backlog', kind:'okr', col:3, row:1, type:'transform', icon:'&#128190;', name:'Backlog / Epic',
+    sub:'우선순위 에픽 · GitHub 이슈 실시간 동기화', dur:'sync', runs:'exec.backlog.v1',
+    desc:'제품 로드맵의 실행 큐. OKR 하위로 에픽이 구성되고, GitHub 이슈가 실시간 동기화된다. 우선순위·스프린트·담당팀이 Notion에서 관리되며 PRD로 업스트림한다.',
+    kv:[['구조','OKR → Epic → Story → Task'],['동기화','GitHub 이슈 양방향 sync'],['우선순위','MoSCoW · 분기 OKR 정렬']],
+    tags:['백로그','에픽','GitHub sync','로드맵','스프린트'] },
+
+  { id:'exec_prd', kind:'okr', col:3, row:2, type:'transform', icon:'&#128196;', name:'PRD',
+    sub:'제품 요구사항 문서 · AI 변경로그 자동 갱신', dur:'living doc', runs:'exec.prd.v1',
+    desc:'제품 요구사항의 단일 출처. Backlog에픽에서 업스트림된 스펙과 AI 레이어가 PR마다 자동 갱신하는 변경로그가 한 문서에 공존한다. Runbook 실행 전 반드시 PRD가 승인된 상태여야 한다.',
+    kv:[['갱신','PR 머지 시 AI 자동 변경로그 추가'],['승인 게이트','PRD approved → Runbook 실행'],['연동','Backlog · AI Layer · Runbook']],
+    tags:['PRD','변경로그','제품 스펙','승인 게이트','AI 갱신'] },
+
+  { id:'exec_runbook', kind:'okr', col:3, row:3, type:'deploy', icon:'&#9881;', name:'Runbook',
+    sub:'실행 절차서 · 배포·온보딩·장애 대응 SOP', dur:'running', runs:'exec.runbook.v1', status:'running',
+    desc:'PRD 승인 이후 실제 실행을 정의하는 절차서. 배포 체크리스트·온보딩 가이드·장애 대응 플레이북이 포함된다. GitHub Actions와 연동돼 배포 트리거가 자동으로 Runbook 실행 로그를 생성한다.',
+    kv:[['포함','배포 체크리스트 · 온보딩 · 장애 플레이북'],['자동화','GitHub Actions → 실행 로그 자동 생성'],['전제','PRD approved']],
+    tags:['Runbook','SOP','배포','장애대응','GitHub Actions'],
+    ach:[['AUTO','배포 로그 자동 생성'],['SOP','온보딩 표준화'],['GATE','PRD 승인 필수'],['LIVE','현재 운영 중']] },
+
+  // ---- SSOT GOVERNANCE ----
+  { id:'gov_dash', kind:'metric', col:2, row:2, metric:true, big:'SSOT', dir:'up', lbl:'단일 출처 원칙', type:'load', name:'SSOT 거버넌스',
+    sub:'gov.ssot', dur:'always', runs:'gov.ssot.v1', icon:'&#127963;',
+    desc:'Notion(문서), GitHub(코드), Google Drive(민감 문서) 세 출처가 각자 정본을 담당한다. 중복 저장 금지 원칙으로 정보 충돌 및 유실을 방지한다.', kv:[['Notion','문서 · 결정 · 프로세스 정본'],['GitHub','코드 · 이슈 정본'],['Drive','민감 문서 정본']], tags:['SSOT','거버넌스','Notion','GitHub','Drive'] },
+
+  { id:'gov_opdash', kind:'metric', col:2, row:3, metric:true, big:'LIVE', dir:'up', lbl:'Operating Dashboard', type:'load', name:'Operating Dashboard',
+    sub:'ops.dashboard', dur:'realtime', runs:'gov.opdash.v1', icon:'&#128202;',
+    desc:'OKR 진척·Action Items 완료율·AI 파이프라인 상태를 한 화면에 집계하는 운영 대시보드. Notion 데이터베이스 연산으로 실시간 갱신된다.', kv:[['갱신','realtime (Notion 자동 집계)'],['포함','OKR · 액션 · AI 상태'],['접근','전 팀원 공개']], tags:['대시보드','OKR','Action Items','Notion 집계'] },
+
+  // ---- METRICS (output) ----
+  { id:'m1', kind:'metric', col:4, row:0, metric:true, big:'100%', dir:'up', lbl:'결정 추적률', type:'load', name:'결정 추적률',
+    sub:'dec.coverage', dur:'8ms', runs:'out.dec', icon:'&#128220;',
+    desc:'회의에서 도출된 모든 결정이 Decision Ledger에 기록되는 비율. AI 추출 + 수동 보완으로 100% 달성.', kv:[['source','dec.coverage'],['type','coverage %']], tags:['결정','추적','커버리지'] },
+  { id:'m2', kind:'metric', col:4, row:1, metric:true, big:'&lt;2h', dir:'up', lbl:'결정→액션 지연', type:'load', name:'결정→액션 지연',
+    sub:'dec.lag', dur:'8ms', runs:'out.lag', icon:'&#9889;',
+    desc:'결정이 Decision Ledger에 기록된 후 Action Items에 생성되기까지 걸리는 시간. 자동화로 2시간 이내 달성.', kv:[['source','dec.lag'],['type','time-to-action']], tags:['자동화','지연','액션'] },
+  { id:'m3', kind:'metric', col:4, row:2, metric:true, big:'Q+1', dir:'up', lbl:'OKR 사이클', type:'load', name:'OKR 사이클',
+    sub:'okr.cycle', dur:'8ms', runs:'out.okr', icon:'&#127919;',
+    desc:'분기 OKR 체크인 완료율. 매 분기 시작 전 다음 분기 OKR이 확정되는 Q+1 패턴 운영.', kv:[['source','okr.cycle'],['type','quarterly cadence']], tags:['OKR','분기','체크인'] },
+  { id:'m4', kind:'metric', col:4, row:3, metric:true, big:'3 src', dir:'up', lbl:'SSOT 출처 수', type:'load', name:'SSOT 출처',
+    sub:'ssot.count', dur:'8ms', runs:'out.ssot', icon:'&#127963;',
+    desc:'Notion · GitHub · Google Drive — 세 출처가 각자 영역의 단일 정본 역할. 중복 없음.', kv:[['source','ssot.count'],['type','source count']], tags:['SSOT','출처','거버넌스'] },
+  { id:'m5', kind:'metric', col:4, row:4, metric:true, big:'0', dir:'up', lbl:'정보 유실 건수', type:'load', name:'정보 유실',
+    sub:'info.loss', dur:'8ms', runs:'out.loss', icon:'&#10003;',
+    desc:'구조화 캡처 + AI 추출 + SSOT 원칙으로 달성한 결정/액션 정보 유실 0건.', kv:[['source','info.loss'],['type','zero loss']], tags:['유실','품질','SSOT'] },
+  { id:'m6', kind:'metric', col:4, row:5, metric:true, big:'AUTO', dir:'up', lbl:'AI 파이프라인', type:'load', name:'AI 파이프라인',
+    sub:'ai.pipelines', dur:'8ms', runs:'out.ai', icon:'&#129504;',
+    desc:'회의록 추출 · PR 갱신 · 개발뉴스 요약 — 세 파이프라인이 상시 자동 실행.', kv:[['source','ai.pipelines'],['type','automation']], tags:['AI','자동화','파이프라인'] },
+
+  // ---- RETROSPECTIVE (sink) ----
+  { id:'sink_retro', kind:'sink', col:5, row:2, type:'load', icon:'&#128260;', name:'Retrospective',
+    sub:'스프린트 회고 · 조직 학습 싱크', dur:'sprint', runs:'sink.retro.v1',
+    desc:'모든 흐름이 수렴하는 최종 싱크. 스프린트 완료 후 Decision Ledger · Action Items · OKR 달성 결과를 종합해 회고록을 생성한다. 회고의 개선 사항은 다음 사이클의 Meeting 인풋으로 피드백되며 루프를 닫는다.',
+    kv:[['산출물','스프린트 회고록 · 개선 액션'],['피드백','개선사항 → 다음 Meeting 인풋'],['주기','스프린트 종료 · 분기 말']],
+    tags:['회고','스프린트','조직학습','피드백 루프'] },
+];
+
+// edges: 위상정렬 순서 — Meeting → Decision → Action → OKR → Backlog → PRD → Runbook → Retro
+var EDGES = [
+  // 입력 → Decision OS
+  ['src_meeting','dec_ledger'],
+  ['src_meeting','ai_layer'],
+  ['src_github','ai_layer'],
+  ['src_github','exec_backlog'],
+  // Core Values 필터
+  ['dec_values','dec_ledger'],
+  ['dec_values','dec_actions'],
+  // Decision → Action
+  ['dec_ledger','dec_actions'],
+  ['dec_ledger','exec_okr'],
+  // AI 자동화
+  ['ai_layer','dec_ledger'],
+  ['ai_layer','exec_prd'],
+  ['ai_layer','gov_dash'],
+  // Action → OKR
+  ['dec_actions','exec_okr'],
+  ['dec_actions','exec_backlog'],
+  // SSOT 거버넌스
+  ['gov_dash','gov_opdash'],
+  ['gov_opdash','exec_okr'],
+  // OKR → Backlog → PRD → Runbook
+  ['exec_okr','exec_backlog'],
+  ['exec_backlog','exec_prd'],
+  ['exec_prd','exec_runbook'],
+  // → 메트릭
+  ['dec_ledger','m1'],
+  ['dec_actions','m2'],
+  ['exec_okr','m3'],
+  ['gov_dash','m4'],
+  ['ai_layer','m5'],
+  ['ai_layer','m6'],
+  // → 회고 싱크
+  ['exec_runbook','sink_retro'],
+  ['exec_okr','sink_retro'],
+  ['m1','sink_retro'],['m3','sink_retro'],['m5','sink_retro'],
+];
+
+//==================================================================
+//  LAYOUT
+//==================================================================
+var COLX = [80, 370, 700, 1010, 1320, 1650];
+var ROWH = 155;
+var NODE_W = 230, NODE_MW = 170;
+var nodeById = {};
+NODES.forEach(function(n){ nodeById[n.id]=n; });
+
+function layout(){
+  var colRows = {};
+  NODES.forEach(function(n){ colRows[n.col]=(colRows[n.col]||0); colRows[n.col]=Math.max(colRows[n.col], n.row+1); });
+  var maxRows = Math.max.apply(null, Object.values(colRows));
+  NODES.forEach(function(n){
+    var rows = colRows[n.col];
+    var colHeight = rows*ROWH;
+    var maxHeight = maxRows*ROWH;
+    var offset = (maxHeight-colHeight)/2;
+    n.x = COLX[n.col];
+    n.y = 40 + offset + n.row*ROWH;
+    n.w = n.metric ? NODE_MW : NODE_W;
+    n.h = n.ml ? 200 : (n.metric ? 96 : 120);
+  });
+}
+layout();
+
+function worldBounds(){
+  var maxX=0, maxY=0;
+  NODES.forEach(function(n){ maxX=Math.max(maxX,n.x+n.w); maxY=Math.max(maxY,n.y+n.h); });
+  return {w:maxX+120, h:maxY+120};
+}
+var WB = worldBounds();
+
+//==================================================================
+//  RENDER NODES
+//==================================================================
+var nodesLayer = document.getElementById('nodes');
+var edgesSvg = document.getElementById('edges');
+edgesSvg.setAttribute('width', WB.w);
+edgesSvg.setAttribute('height', WB.h);
+
+function statusPill(status){
+  var map = {success:['success','SUCCESS'],running:['running','RUNNING'],queued:['queued','QUEUED'],idle:['idle','IDLE']};
+  var ct = map[status]||map.idle;
+  var c=ct[0], t=ct[1];
+  return '<span class="pill '+c+'"><span class="d"></span>'+t+'</span>';
+}
+
+var TYPE_LABEL = {extract:'EXTRACT',transform:'TRANSFORM',load:'LOAD',ml:'AI.AUTO',deploy:'DEPLOY'};
+
+NODES.forEach(function(n){
+  var el = document.createElement('div');
+  el.className = 'node'+(n.metric?' metric':'');
+  el.dataset.id = n.id; el.dataset.kind = n.kind;
+  n.status = n.status || 'success';
+  el.dataset.status = n.status;
+  el.style.left = n.x+'px'; el.style.top = n.y+'px'; el.style.width = n.w+'px';
+
+  if(n.metric){
+    el.innerHTML =
+      '<div class="top">'+
+        '<div class="ico">'+n.icon+'</div>'+
+        '<div class="ttl"><div class="name">'+n.name+'</div><div class="type">LOAD · OUTPUT</div></div>'+
+      '</div>'+
+      '<div class="body" style="padding-bottom:12px">'+
+        '<div class="big '+n.dir+'">'+n.big+'</div>'+
+        '<div class="lbl">'+n.lbl+'</div>'+
+      '</div>'+
+      '<span class="port in"></span><span class="port out"></span>';
+  } else {
+    var aiChart = n.ml ? '<canvas id="aicanvas"></canvas>' : '';
+    el.innerHTML =
+      '<div class="top">'+
+        '<div class="ico">'+n.icon+'</div>'+
+        '<div class="ttl"><div class="name">'+n.name+'</div><div class="type">'+(TYPE_LABEL[n.type]||'TASK')+'</div></div>'+
+        statusPill(n.status)+
+      '</div>'+
+      '<div class="body">'+
+        '<div class="sub">'+n.sub+'</div>'+
+        aiChart+
+      '</div>'+
+      '<div class="foot">'+
+        '<span class="runid">'+n.runs+'</span>'+
+        '<span class="dur">&#9201; '+n.dur+'</span>'+
+      '</div>'+
+      '<span class="port in"></span><span class="port out"></span>';
+  }
+  el.addEventListener('click', function(e){ e.stopPropagation(); openPanel(n.id); });
+  nodesLayer.appendChild(el);
+  n.el = el;
+});
+
+//==================================================================
+//  EDGES  (orthogonal-ish bezier) + hit areas + schema tooltips
+//==================================================================
+var NS='http://www.w3.org/2000/svg';
+function edgePath(a,b){
+  var x1=a.x+a.w, y1=a.y+a.h/2;
+  var x2=b.x, y2=b.y+b.h/2;
+  var dx=Math.max(40,(x2-x1)*0.5);
+  return 'M '+x1+','+y1+' C '+(x1+dx)+','+y1+' '+(x2-dx)+','+y2+' '+x2+','+y2;
+}
+
+var defs=document.createElementNS(NS,'defs');
+defs.innerHTML=
+  '<marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">'+
+    '<path d="M0,0 L10,5 L0,10 z" fill="#2c3848"/>'+
+  '</marker>'+
+  '<marker id="arrowA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">'+
+    '<path d="M0,0 L10,5 L0,10 z" fill="#5ee3a1"/>'+
+  '</marker>'+
+  '<linearGradient id="eg" x1="0" y1="0" x2="1" y2="0">'+
+    '<stop offset="0" stop-color="#243040"/><stop offset="1" stop-color="#2c3a4c"/>'+
+  '</linearGradient>';
+edgesSvg.appendChild(defs);
+
+var SCHEMAS = [
+  {h:'schema: meeting_record',rows:[['decision_candidate','string'],['action_item','string'],['owner','string'],['ts','datetime']]},
+  {h:'schema: decision_entry',rows:[['id','uuid'],['context','text'],['owner','string'],['review_date','date']]},
+  {h:'schema: action_item',rows:[['title','string'],['owner','string'],['due','date'],['status','enum']]},
+  {h:'schema: okr_entry',rows:[['objective','string'],['key_result','string[]'],['progress','float'],['quarter','string']]},
+  {h:'schema: prd_change',rows:[['pr_id','string'],['summary','text'],['affected_spec','string[]'],['ts','datetime']]},
+];
+
+var edgeEls=[];
+EDGES.forEach(function(e,i){
+  var a=nodeById[e[0]], b=nodeById[e[1]];
+  if(!a||!b) return;
+  var d=edgePath(a,b);
+  var p=document.createElementNS(NS,'path');
+  p.setAttribute('d',d); p.setAttribute('fill','none');
+  p.setAttribute('stroke','url(#eg)'); p.setAttribute('stroke-width','1.4');
+  p.setAttribute('marker-end','url(#arrow)');
+  p.setAttribute('opacity','0.85');
+  edgesSvg.appendChild(p);
+
+  var hit=document.createElementNS(NS,'path');
+  hit.setAttribute('d',d); hit.setAttribute('class','ehit');
+  var schema = SCHEMAS[i % SCHEMAS.length];
+  hit.addEventListener('mousemove',function(ev){ showSchema(ev,schema); });
+  hit.addEventListener('mouseenter',function(){
+    p.setAttribute('stroke','#5ee3a1'); p.setAttribute('stroke-width','2'); p.setAttribute('marker-end','url(#arrowA)');
+  });
+  hit.addEventListener('mouseleave',function(){
+    hideSchema(); p.setAttribute('stroke','url(#eg)'); p.setAttribute('stroke-width','1.4'); p.setAttribute('marker-end','url(#arrow)');
+  });
+  edgesSvg.appendChild(hit);
+
+  var tok=document.createElementNS(NS,'circle');
+  tok.setAttribute('r','2.6'); tok.setAttribute('fill','#5ee3a1');
+  tok.style.filter='drop-shadow(0 0 4px #5ee3a1)';
+  edgesSvg.appendChild(tok);
+
+  edgeEls.push({a:e[0],b:e[1],path:p,len:p.getTotalLength(),tok:tok,phase:Math.random(),speed:0.10+Math.random()*0.13,targetSpeed:0.10+Math.random()*0.13,active:true});
+});
+
+//==================================================================
+//  TOKEN ANIMATION (60fps rAF + dt) — 자동 시작, 루프 무한 반복
+//==================================================================
+var lastT=performance.now();
+function animate(t){
+  var dt=Math.min(0.05,(t-lastT)/1000); lastT=t;
+  for(var i=0;i<edgeEls.length;i++){
+    var e=edgeEls[i];
+    if(!e.active){ e.tok.style.opacity=0; continue; }
+    // 목표 속도로 부드럽게 보간 (speed 점프 제거)
+    e.speed += (e.targetSpeed - e.speed) * Math.min(1, dt * 4);
+    e.phase += e.speed*dt;
+    if(e.phase>1) e.phase-=1;
+    var pt=e.path.getPointAtLength(e.phase*e.len);
+    e.tok.setAttribute('cx',pt.x); e.tok.setAttribute('cy',pt.y);
+    var edge = Math.min(e.phase, 1-e.phase);
+    e.tok.style.opacity = Math.min(1, edge*8)*0.95;
+  }
+  drawAI(t);
+  tickRunSweep(dt);
+  tickMetrics(t);
+  tickEventLog(t);
+  requestAnimationFrame(animate);
+}
+requestAnimationFrame(animate);
+
+//==================================================================
+//  AI mini live trend chart (AI Reconciliation Layer) — 지속 스크롤링
+//==================================================================
+var aiCanvas=null, aiCtx=null, aiData=[], aiNextSampleAt=0;
+var AI_MAX=80; // 화면에 보이는 샘플 수
+
+function aiSample(t){
+  // 세 파이프라인 진동을 시간 기반으로 생성
+  var s = t * 0.001;
+  var v = 0.38 + 0.48*(
+    Math.sin(s*2.1)*0.38 +
+    Math.cos(s*3.7+1.2)*0.28 +
+    Math.sin(s*5.9+2.5)*0.18 +
+    (Math.random()-0.5)*0.08
+  );
+  return Math.max(0.04, Math.min(0.96, v));
+}
+
+function initAI(){
+  aiCanvas=document.getElementById('aicanvas');
+  if(!aiCanvas) return;
+  var dpr=window.devicePixelRatio||1;
+  aiCanvas.width=206*dpr; aiCanvas.height=54*dpr;
+  aiCtx=aiCanvas.getContext('2d'); aiCtx.scale(dpr,dpr);
+  aiData=[];
+  var now=performance.now();
+  for(var i=0;i<AI_MAX;i++) aiData.push(aiSample(now - (AI_MAX-i)*83));
+  aiNextSampleAt=now;
+}
+
+function drawAI(t){
+  if(!aiCtx) return;
+  // 절대 시간 기준 ~12fps 샘플 추가
+  if(t >= aiNextSampleAt){
+    aiData.push(aiSample(t));
+    if(aiData.length > AI_MAX) aiData.shift();
+    aiNextSampleAt = t + 83;
+  }
+  var W=206,H=54,pad=4;
+  aiCtx.clearRect(0,0,W,H);
+  aiCtx.strokeStyle='rgba(255,255,255,.04)'; aiCtx.lineWidth=1;
+  for(var g=1;g<4;g++){
+    var gy=pad+(H-2*pad)*g/4;
+    aiCtx.beginPath(); aiCtx.moveTo(pad,gy); aiCtx.lineTo(W-pad,gy); aiCtx.stroke();
+  }
+  var n=aiData.length;
+  if(n<2) return;
+  // area fill
+  aiCtx.beginPath();
+  for(var i=0;i<n;i++){
+    var x=pad+(W-2*pad)*i/(AI_MAX-1);
+    var yv=pad+(H-2*pad)*(1-aiData[i]);
+    if(i===0){ aiCtx.moveTo(x,yv); } else { aiCtx.lineTo(x,yv); }
+  }
+  var lxA=pad+(W-2*pad)*(n-1)/(AI_MAX-1);
+  aiCtx.lineTo(lxA,H-pad); aiCtx.lineTo(pad,H-pad); aiCtx.closePath();
+  var grad=aiCtx.createLinearGradient(0,0,0,H);
+  grad.addColorStop(0,'rgba(240,180,41,.28)'); grad.addColorStop(1,'rgba(240,180,41,0)');
+  aiCtx.fillStyle=grad; aiCtx.fill();
+  // line
+  aiCtx.beginPath();
+  for(var j=0;j<n;j++){
+    var xj=pad+(W-2*pad)*j/(AI_MAX-1);
+    var yj=pad+(H-2*pad)*(1-aiData[j]);
+    if(j===0){ aiCtx.moveTo(xj,yj); } else { aiCtx.lineTo(xj,yj); }
+  }
+  aiCtx.strokeStyle='#f0b429'; aiCtx.lineWidth=1.6; aiCtx.lineJoin='round'; aiCtx.stroke();
+  // head dot
+  var hx=pad+(W-2*pad)*(n-1)/(AI_MAX-1);
+  var hy=pad+(H-2*pad)*(1-aiData[n-1]);
+  aiCtx.beginPath(); aiCtx.arc(hx,hy,2.4,0,7); aiCtx.fillStyle='#5ee3a1'; aiCtx.fill();
+  aiCtx.fillStyle='rgba(201,212,227,.5)'; aiCtx.font='8px monospace';
+  aiCtx.fillText('ai.pipelines · throughput', 6, 11);
+  aiCtx.fillStyle='#5ee3a1';
+  aiCtx.fillText('AUTO', W-34, 11);
+}
+initAI();
+
+//==================================================================
+//  LIVE EVENT LOG STREAMING — AI Reconciliation 패널
+//  (AI 노드 바디에 삽입, 결정 후보·PR 갱신·뉴스 한 줄씩 롤링)
+//==================================================================
+var LOG_TEMPLATES = [
+  {cls:'ok', pipe:'[meeting→dec]', msgs:[
+    '결정 후보 추출: "Q3 디자인 시스템 통합" — 신뢰도 0.91',
+    '결정 후보 추출: "온보딩 Runbook 분기 갱신" — 신뢰도 0.87',
+    '결정 후보 추출: "Backlog MoSCoW 재우선순위" — 신뢰도 0.83',
+    '결정 후보 추출: "AI 파이프라인 3개 → 5개 확장" — 신뢰도 0.95',
+    '결정 후보 추출: "스프린트 주기 2주 → 1주 실험" — 신뢰도 0.78',
+    '결정 후보 추출: "SSOT: Drive 민감문서 정책 갱신" — 신뢰도 0.89',
+  ]},
+  {cls:'w', pipe:'[pr→prd]', msgs:[
+    'PR #214 머지 → PRD 변경로그 자동 갱신 (auth-flow v2)',
+    'PR #217 머지 → PRD 변경로그 자동 갱신 (design-token sync)',
+    'PR #221 머지 → PRD 변경로그 자동 갱신 (backlog-api)',
+    'PR #229 머지 → PRD 변경로그 자동 갱신 (OKR-widget)',
+    'PR #233 머지 → PRD 변경로그 자동 갱신 (runbook-v3)',
+  ]},
+  {cls:'w', pipe:'[github→news]', msgs:[
+    '개발뉴스 요약: "이번 주 17 커밋 · 버그 2건 해결 · 신규 Epic 1건"',
+    '개발뉴스 요약: "PR 12건 리뷰 완료 · Backlog 감소 8% · 배포 성공"',
+    '개발뉴스 요약: "스프린트 속도 +11% · 이슈 close율 94%"',
+    '개발뉴스 요약: "Auth 모듈 리팩토링 완료 · 테스트 커버리지 87%"',
+  ]},
+];
+
+var logEntries = []; // {ts, cls, pipe, msg, age(0..1)}
+var logNextTime = 0;
+var logIntervalBase = 2800; // ms 간격 기반
+var logEl = null; // 주입될 DOM
+
+function buildLogEl(){
+  // AI 노드 body에 이벤트 로그 박스 동적 삽입
+  var aiNode = nodeById['ai_layer'];
+  if(!aiNode || !aiNode.el) return;
+  var body = aiNode.el.querySelector('.body');
+  if(!body) return;
+  var box = document.createElement('div');
+  box.id = 'ai-log-box';
+  box.style.cssText = 'margin-top:6px;background:#050810;border:1px solid #1a2232;border-radius:5px;' +
+    'padding:5px 7px;font-size:9px;line-height:1.65;height:62px;overflow:hidden;position:relative;';
+  // fade 마스크
+  var fade = document.createElement('div');
+  fade.style.cssText = 'position:absolute;bottom:0;left:0;right:0;height:18px;' +
+    'background:linear-gradient(transparent,#050810);pointer-events:none;z-index:1;';
+  box.appendChild(fade);
+  var lines = document.createElement('div');
+  lines.id = 'ai-log-lines';
+  lines.style.cssText = 'position:relative;z-index:0;';
+  box.appendChild(lines);
+  body.appendChild(box);
+  logEl = lines;
+}
+
+function padTs(){
+  var d=new Date();
+  var hh=String(d.getHours()).padStart(2,'0');
+  var mm=String(d.getMinutes()).padStart(2,'0');
+  var ss=String(d.getSeconds()).padStart(2,'0');
+  return hh+':'+mm+':'+ss;
+}
+
+function pushLogEntry(t){
+  if(!logEl) return;
+  var tpl = LOG_TEMPLATES[Math.floor(Math.random()*LOG_TEMPLATES.length)];
+  var msg = tpl.msgs[Math.floor(Math.random()*tpl.msgs.length)];
+  var line = document.createElement('div');
+  line.style.cssText = 'opacity:0;transition:opacity .4s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;';
+  var tsSpan = '<span style="color:#3a4a5c">'+padTs()+'</span> ';
+  var pipeSpan = '<span style="color:'+(tpl.cls==='ok'?'#5ee3a1':'#f0b429')+'">'+tpl.pipe+'</span> ';
+  var msgSpan = '<span style="color:#6b7787">'+msg+'</span>';
+  line.innerHTML = tsSpan + pipeSpan + msgSpan;
+  logEl.appendChild(line);
+  requestAnimationFrame(function(){ line.style.opacity='1'; });
+  // 5줄 초과 시 오래된 줄 페이드 제거
+  var children = logEl.children;
+  if(children.length > 5){
+    var old = children[0];
+    old.style.transition = 'opacity .6s';
+    old.style.opacity = '0';
+    setTimeout(function(){ if(old.parentNode) old.parentNode.removeChild(old); }, 650);
+  }
+  // 다음 간격: 1.8~4s 랜덤
+  logNextTime = t + logIntervalBase + Math.random()*1800;
+}
+
+function tickEventLog(t){
+  if(!logEl) return;
+  if(t >= logNextTime) pushLogEntry(t);
+}
+
+//==================================================================
+//  METRIC 미세 변동 — 결정 추적률·지연 수치 살아있게
+//==================================================================
+var metricDefs = {
+  m1: { base:'100%',  variants:['99.7%','100%','100%','99.8%','100%'] },
+  m2: { base:'<2h',   variants:['<1.8h','<2h','<2.1h','<1.9h','<2h'] },
+  m3: { base:'Q+1',   variants:['Q+1','Q+1','Q+1'] },
+  m4: { base:'3 src', variants:['3 src'] },
+  m5: { base:'0',     variants:['0','0','0','0'] },
+  m6: { base:'AUTO',  variants:['AUTO'] },
+};
+var metricNextTick = 0;
+var metricInterval = 4200;
+
+function tickMetrics(t){
+  if(t < metricNextTick) return;
+  metricNextTick = t + metricInterval + Math.random()*2000;
+  ['m1','m2'].forEach(function(id){
+    var n = nodeById[id]; if(!n || !n.el) return;
+    var def = metricDefs[id]; if(!def) return;
+    var v = def.variants[Math.floor(Math.random()*def.variants.length)];
+    var big = n.el.querySelector('.big');
+    if(big) big.textContent = v;
+  });
+}
+
+//==================================================================
+//  RUN SWEEP — rAF + dt 기반 위상정렬 스윕 (끊김 없는 진행)
+//==================================================================
+var sweepState = null; // { order, idx, accum, nodeDur, nodeRunDur, total }
+
+function tickRunSweep(dt){
+  if(!sweepState) return;
+  var sw = sweepState;
+  if(sw.idx >= sw.order.length){
+    // 완료 처리
+    runbar.style.width = '100%';
+    if(!sw.finishing){
+      sw.finishing = true;
+      sw.finishAccum = 0;
+    }
+    sw.finishAccum += dt;
+    if(sw.finishAccum > 0.45){
+      runbar.style.width = '0%';
+      edgeEls.forEach(function(e){
+        e.active = true;
+        e.targetSpeed = 0.10 + Math.random()*0.13;
+      });
+      running = false;
+      sweepState = null;
+      // 끊김 없는 루프: 짧은 호흡 후 곧바로 재시작 (정지 화면처럼 보이지 않도록)
+      setTimeout(runPipeline, 650);
+    }
+    return;
+  }
+  sw.accum += dt;
+  var n = nodeById[sw.order[sw.idx]];
+  // 아직 이 노드의 'running' 단계
+  if(sw.phase === 'run'){
+    if(sw.accum >= sw.nodeRunDur){
+      // 이 노드 완료
+      n.status = 'success'; n.el.dataset.status = 'success'; updatePill(n);
+      edgeEls.forEach(function(e){
+        if(e.b === n.id) e.targetSpeed = 0.12 + Math.random()*0.10;
+      });
+      sw.idx++;
+      sw.accum = 0;
+      sw.phase = 'run';
+      runbar.style.width = ((sw.idx / sw.total) * 100) + '%';
+      if(sw.idx < sw.order.length){
+        var next = nodeById[sw.order[sw.idx]];
+        next.status = 'running'; next.el.dataset.status = 'running'; updatePill(next);
+        sw.nodeRunDur = next.metric ? 0.17 : 0.28 + Math.random()*0.12;
+        edgeEls.forEach(function(e){
+          if(e.b === next.id){ e.active = true; e.phase = 0; e.targetSpeed = 0.55 + Math.random()*0.3; }
+        });
+      }
+    }
+  }
+}
+
+function runPipeline(){
+  if(running) return;
+  running = true;
+  runBtn.classList.add('running');
+  runBtn.innerHTML = '<span class="tri">&#9632;</span> RUNNING&#8230; <span style="opacity:.6">&#8635;</span>';
+  NODES.forEach(function(n){ n.status='queued'; n.el.dataset.status='queued'; updatePill(n); });
+  edgeEls.forEach(function(e){ e.active=false; e.targetSpeed=e.speed; });
+  var order = topoOrder();
+  var total = order.length;
+  runbar.style.width = '0%';
+  // 첫 노드 시작
+  var first = nodeById[order[0]];
+  first.status = 'running'; first.el.dataset.status = 'running'; updatePill(first);
+  edgeEls.forEach(function(e){
+    if(e.b === first.id){ e.active=true; e.phase=0; e.targetSpeed=0.55+Math.random()*0.3; }
+  });
+  sweepState = {
+    order: order,
+    total: total,
+    idx: 0,
+    accum: 0,
+    phase: 'run',
+    nodeRunDur: first.metric ? 0.17 : 0.28 + Math.random()*0.12,
+    finishing: false,
+    finishAccum: 0,
+  };
+}
+
+//==================================================================
+//  PAN / ZOOM
+//==================================================================
+var stage=document.getElementById('stage');
+var world=document.getElementById('world');
+var zlabel=document.getElementById('zlabel');
+var scale=1, tx=0, ty=0;
+function applyTransform(){
+  world.style.transform='translate('+tx+'px,'+ty+'px) scale('+scale+')';
+  zlabel.textContent=Math.round(scale*100)+'%';
+  drawGrid(); updateMinimap();
+}
+function fit(){
+  var vw=stage.clientWidth, vh=stage.clientHeight;
+  var s=Math.min(vw/(WB.w+60), vh/(WB.h+60), 1.2);
+  scale=s;
+  tx=(vw - WB.w*s)/2; ty=(vh - WB.h*s)/2;
+  applyTransform();
+}
+
+var dragging=false, sx, sy, stx, sty, moved=false;
+stage.addEventListener('mousedown',function(e){
+  if(e.target.closest('.node')||e.target.closest('.ehit')) return;
+  dragging=true; moved=false; sx=e.clientX; sy=e.clientY; stx=tx; sty=ty;
+  stage.classList.add('grabbing');
+});
+window.addEventListener('mousemove',function(e){
+  if(!dragging) return;
+  tx=stx+(e.clientX-sx); ty=sty+(e.clientY-sy);
+  if(Math.abs(e.clientX-sx)+Math.abs(e.clientY-sy)>3) moved=true;
+  applyTransform();
+});
+window.addEventListener('mouseup',function(){ dragging=false; stage.classList.remove('grabbing'); });
+
+stage.addEventListener('wheel',function(e){
+  e.preventDefault();
+  var rect=stage.getBoundingClientRect();
+  var mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  var wx=(mx-tx)/scale, wy=(my-ty)/scale;
+  var factor=e.deltaY<0?1.12:0.89;
+  scale=Math.min(2.4,Math.max(0.25,scale*factor));
+  tx=mx-wx*scale; ty=my-wy*scale;
+  applyTransform();
+},{passive:false});
+
+document.getElementById('zin').onclick=function(){ zoomBtn(1.2); };
+document.getElementById('zout').onclick=function(){ zoomBtn(0.83); };
+document.getElementById('zfit').onclick=fit;
+document.getElementById('zfit').textContent='FIT';
+function zoomBtn(f){
+  var cx=stage.clientWidth/2, cy=stage.clientHeight/2;
+  var wx=(cx-tx)/scale, wy=(cy-ty)/scale;
+  scale=Math.min(2.4,Math.max(0.25,scale*f));
+  tx=cx-wx*scale; ty=cy-wy*scale; applyTransform();
+}
+document.getElementById('resetBtn').onclick=fit;
+
+//==================================================================
+//  GRID BACKGROUND
+//==================================================================
+var grid=document.getElementById('gridbg');
+var gctx=grid.getContext('2d');
+function sizeGrid(){
+  var dpr=window.devicePixelRatio||1;
+  grid.width=stage.clientWidth*dpr; grid.height=stage.clientHeight*dpr;
+  grid.style.width=stage.clientWidth+'px'; grid.style.height=stage.clientHeight+'px';
+  gctx.setTransform(dpr,0,0,dpr,0,0);
+  drawGrid();
+}
+function drawGrid(){
+  var w=stage.clientWidth, h=stage.clientHeight;
+  gctx.clearRect(0,0,w,h);
+  var step=40*scale;
+  if(step<6) return;
+  var ox=((tx%step)+step)%step, oy=((ty%step)+step)%step;
+  gctx.strokeStyle='rgba(255,255,255,.025)'; gctx.lineWidth=1;
+  gctx.beginPath();
+  for(var x=ox;x<w;x+=step){ gctx.moveTo(x,0); gctx.lineTo(x,h); }
+  for(var y=oy;y<h;y+=step){ gctx.moveTo(0,y); gctx.lineTo(w,y); }
+  gctx.stroke();
+  var mstep=step*5;
+  var mox=((tx%mstep)+mstep)%mstep, moy=((ty%mstep)+mstep)%mstep;
+  gctx.fillStyle='rgba(94,227,161,.10)';
+  for(var xi=mox;xi<w;xi+=mstep){
+    for(var yi=moy;yi<h;yi+=mstep){
+      gctx.beginPath(); gctx.arc(xi,yi,1.3,0,7); gctx.fill();
+    }
+  }
+}
+
+//==================================================================
+//  MINIMAP
+//==================================================================
+var mmsvg=document.getElementById('mmsvg');
+function buildMinimap(){
+  mmsvg.innerHTML='';
+  var bbox=mmsvg.getBoundingClientRect();
+  var mw=bbox.width||200, mh=bbox.height||108;
+  var s=Math.min(mw/WB.w, mh/WB.h)*0.92;
+  var offx=(mw-WB.w*s)/2, offy=(mh-WB.h*s)/2;
+  mmsvg._s=s; mmsvg._ox=offx; mmsvg._oy=offy;
+  EDGES.forEach(function(e){
+    var a=nodeById[e[0]], b=nodeById[e[1]]; if(!a||!b) return;
+    var l=document.createElementNS(NS,'line');
+    l.setAttribute('x1',offx+(a.x+a.w)*s); l.setAttribute('y1',offy+(a.y+a.h/2)*s);
+    l.setAttribute('x2',offx+b.x*s); l.setAttribute('y2',offy+(b.y+b.h/2)*s);
+    l.setAttribute('stroke','#2a3543'); l.setAttribute('stroke-width','0.6');
+    mmsvg.appendChild(l);
+  });
+  var COLOR={source:'#4aa8ff',decision:'#b08cff',okr:'#36d9d9',metric:'#5ee3a1',sink:'#ff7eb6',ai:'#f0b429'};
+  NODES.forEach(function(n){
+    var r=document.createElementNS(NS,'rect');
+    r.setAttribute('x',offx+n.x*s); r.setAttribute('y',offy+n.y*s);
+    r.setAttribute('width',Math.max(3,n.w*s)); r.setAttribute('height',Math.max(2,n.h*s));
+    r.setAttribute('rx','1.5'); r.setAttribute('fill',COLOR[n.kind]||'#888'); r.setAttribute('opacity','.85');
+    r.dataset.id=n.id;
+    mmsvg.appendChild(r);
+  });
+  var view=document.createElementNS(NS,'rect');
+  view.setAttribute('id','mmview'); view.setAttribute('rx','2');
+  mmsvg.appendChild(view);
+}
+function updateMinimap(){
+  var view=document.getElementById('mmview'); if(!view) return;
+  var s=mmsvg._s, offx=mmsvg._ox, offy=mmsvg._oy;
+  if(!isFinite(s)||!scale||!isFinite(scale)||!stage.clientWidth||!stage.clientHeight) return;
+  var vx=-tx/scale, vy=-ty/scale, vw=stage.clientWidth/scale, vh=stage.clientHeight/scale;
+  view.setAttribute('x',offx+vx*s); view.setAttribute('y',offy+vy*s);
+  view.setAttribute('width',vw*s); view.setAttribute('height',vh*s);
+}
+mmsvg.addEventListener('click',function(e){
+  var rect=mmsvg.getBoundingClientRect();
+  var s=mmsvg._s, offx=mmsvg._ox, offy=mmsvg._oy;
+  var wx=((e.clientX-rect.left)-offx)/s, wy=((e.clientY-rect.top)-offy)/s;
+  tx=stage.clientWidth/2 - wx*scale; ty=stage.clientHeight/2 - wy*scale;
+  applyTransform();
+});
+
+//==================================================================
+//  SCHEMA TOOLTIP (edge hover)
+//==================================================================
+var schemaEl=document.getElementById('schema');
+function showSchema(ev,sch){
+  schemaEl.style.display='block';
+  schemaEl.innerHTML='<div class="h">'+sch.h+'</div>'+
+    sch.rows.map(function(r){
+      return '<div class="row"><span class="key">'+r[0]+'</span>: <span class="ty">'+r[1]+'</span></div>';
+    }).join('');
+  var x=ev.clientX+14, y=ev.clientY+14;
+  if(x+260>window.innerWidth) x=ev.clientX-260;
+  schemaEl.style.left=x+'px'; schemaEl.style.top=y+'px';
+}
+function hideSchema(){ schemaEl.style.display='none'; }
+
+//==================================================================
+//  DETAIL PANEL
+//==================================================================
+var panel=document.getElementById('panel');
+var pbody=document.getElementById('pbody');
+var selId=null;
+function openPanel(id){
+  var n=nodeById[id]; if(!n) return;
+  if(selId) nodeById[selId].el.classList.remove('sel');
+  selId=id; n.el.classList.add('sel');
+  document.getElementById('picon').textContent=n.icon;
+  document.getElementById('pname').textContent=n.name;
+  var kindLabel={source:'SOURCE',decision:'DECISION',okr:'EXECUTION',metric:'METRIC',sink:'SINK',ai:'AI.AUTO'}[n.kind];
+  document.getElementById('pmeta').innerHTML=
+    '<span>'+statusPill(n.status)+'</span>'+
+    '<span style="color:var(--txt-faint)">'+kindLabel+' · '+(TYPE_LABEL[n.type]||'TASK')+'</span>'+
+    '<span style="color:var(--txt-faint)">&#9201; '+n.dur+'</span>';
+
+  var html='';
+  html+='<div class="sec"><h4>description</h4><div class="desc">'+n.desc+'</div></div>';
+  if(n.kv){
+    html+='<div class="sec"><h4>params</h4>';
+    n.kv.forEach(function(kv){
+      html+='<div class="kv"><span class="k">'+kv[0]+'</span><span class="v">'+kv[1]+'</span></div>';
+    });
+    html+='</div>';
+  }
+  if(n.ach){
+    html+='<div class="sec"><h4>output metrics</h4>';
+    n.ach.forEach(function(a){ html+='<div class="ach"><span class="n">'+a[0]+'</span><span class="t">'+a[1]+'</span></div>'; });
+    html+='</div>';
+  }
+  if(n.tags){
+    html+='<div class="sec"><h4>tags</h4><div class="tags">'+
+      n.tags.map(function(t){ return '<span class="tag '+(n.kind==='okr'?'hl':'')+'">'+t+'</span>'; }).join('')+
+      '</div></div>';
+  }
+  var up=EDGES.filter(function(e){ return e[1]===id; }).map(function(e){ return nodeById[e[0]]?nodeById[e[0]].name:null; }).filter(Boolean);
+  var down=EDGES.filter(function(e){ return e[0]===id; }).map(function(e){ return nodeById[e[1]]?nodeById[e[1]].name:null; }).filter(Boolean);
+  html+='<div class="sec"><h4>dependencies</h4>';
+  html+='<div class="kv"><span class="k">upstream &#8593;</span><span class="v">'+(up.length?up.join(', '):'&#8212; (root source)')+'</span></div>';
+  html+='<div class="kv"><span class="k">downstream &#8595;</span><span class="v">'+(down.length?down.join(', '):'&#8212; (terminal sink)')+'</span></div>';
+  html+='</div>';
+  html+='<div class="sec"><h4>task log</h4><div class="logbox">'+
+    '<div class="l"><span class="t">['+n.runs+']</span> queued &#8594; scheduler</div>'+
+    '<div class="l"><span class="t">[exec]</span> task_instance started</div>'+
+    (n.status==='running'
+      ? '<div class="l w">[exec] running&#8230; (live)</div>'
+      : '<div class="l ok">[exec] marked SUCCESS in '+n.dur+'</div>')+
+    '</div></div>';
+  pbody.innerHTML=html;
+  pbody.scrollTop=0;
+  panel.classList.add('open');
+  if(n.ml) requestAnimationFrame(function(){ if(document.getElementById('aicanvas')) initAI(); });
+}
+function closePanel(){ panel.classList.remove('open'); if(selId){ nodeById[selId].el.classList.remove('sel'); selId=null; } }
+document.getElementById('pclose').onclick=closePanel;
+stage.addEventListener('click',function(e){ if(!moved && !e.target.closest('.node')) closePanel(); });
+
+//==================================================================
+//  topoOrder / 공통 선언 — sweep에서 참조
+//==================================================================
+function topoOrder(){
+  var indeg={}, adj={};
+  NODES.forEach(function(n){ indeg[n.id]=0; adj[n.id]=[]; });
+  EDGES.forEach(function(e){ if(adj[e[0]]&&indeg[e[1]]!=null){ adj[e[0]].push(e[1]); indeg[e[1]]++; } });
+  var q=NODES.filter(function(n){ return indeg[n.id]===0; }).map(function(n){ return n.id; });
+  var order=[];
+  while(q.length){
+    var id=q.shift(); order.push(id);
+    (adj[id]||[]).forEach(function(t){ if(--indeg[t]===0) q.push(t); });
+  }
+  return order;
+}
+var running=false;
+var runBtn=document.getElementById('runBtn');
+var runbar=document.getElementById('runbar');
+runBtn.onclick=runPipeline;
+
+function updatePill(n){
+  if(n.metric) return;
+  var pill=n.el.querySelector('.pill');
+  if(!pill) return;
+  var map={success:['success','SUCCESS'],running:['running','RUNNING'],queued:['queued','QUEUED'],idle:['idle','IDLE']};
+  var ct=map[n.status]||map.idle;
+  pill.className='pill '+ct[0];
+  pill.innerHTML='<span class="d"></span>'+ct[1];
+}
+
+//==================================================================
+//  INIT — 자동재생 보장 (레이아웃 게이트 + setTimeout 재시도)
+//==================================================================
+var booted=false;
+function boot(){
+  if(booted) return;
+  booted=true;
+  sizeGrid();
+  buildMinimap();
+  fit();
+  buildLogEl();
+  // exec_runbook 은 현재 운영 중 상태
+  var rb=nodeById['exec_runbook'];
+  rb.status='running'; rb.el.dataset.status='running'; updatePill(rb);
+  // 힌트 자동 숨김
+  setTimeout(function(){ var h=document.getElementById('hint'); if(h) h.style.opacity='0'; }, 6500);
+  // 자동 실행 스윕 시작 — 레이아웃이 준비된 후 바로 시작
+  setTimeout(runPipeline, 800);
+}
+
+window.addEventListener('resize',function(){ sizeGrid(); buildMinimap(); updateMinimap(); });
+
+// 1차: 폰트 로드 완료 후 boot
+if(document.fonts && document.fonts.ready){
+  document.fonts.ready.then(boot);
+} else { boot(); }
+// 2차 fallback: 폰트 이벤트가 오지 않는 헤드리스 환경 대비
+setTimeout(function(){ if(!booted) boot(); }, 300);
+// 3차 fallback: 레이아웃이 아직 미완료인 경우 재시도
+setTimeout(function(){ if(!booted) boot(); }, 800);
+</script>
+</body>
+</html>

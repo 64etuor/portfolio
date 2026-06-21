@@ -30,3 +30,20 @@ next-env.d.ts
 
 # OMC orchestration state (noise)
 .omc/
+.gstack/
+
+# TypeScript incremental build cache
+*.tsbuildinfo
+
+# build-verify dist dir (NEXT_DIST_DIR=.next-verify)
+.next-verify/
+
+# working source materials (company/personal docs — not for the public repo)
+references/
+.vercel
+
+_to-delete/
+_vite_archive/
+
+# any NEXT_DIST_DIR build-verify variant
+.next-*/

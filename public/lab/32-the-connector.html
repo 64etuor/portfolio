@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCENE 08 · 연결 — THE CONNECTOR</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  :root{
+    --bg:#050505;
+    --phos:#d7d7d7;
+    --phos-dim:#8d8d8d;
+    --phos-deep:#3a3a3a;
+    --link:#4fe0c4;        /* 연결을 빛내는 절제된 청록 인광 */
+    --kr:"Pretendard","Pretendard Variable",-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--phos);
+    font-family:var(--kr);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .kr{word-break:keep-all;}
+
+  .stage{position:fixed;inset:0;overflow:hidden;background:
+    radial-gradient(130% 90% at 50% 42%, #0c0c0c 0%, #070707 48%, #030303 100%);}
+
+  #scene{position:absolute;inset:0;display:block;}
+
+  /* ---------- CRT shell ---------- */
+  .scan{
+    content:"";position:fixed;inset:0;z-index:60;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0px,rgba(0,0,0,0) 2px,rgba(0,0,0,0.22) 3px,rgba(0,0,0,0) 4px);
+    mix-blend-mode:multiply;opacity:.5;
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:61;pointer-events:none;
+    background:radial-gradient(ellipse at center,rgba(0,0,0,0) 52%,rgba(0,0,0,0.62) 100%);
+  }
+  .grain{
+    position:fixed;inset:-50%;z-index:59;pointer-events:none;opacity:.04;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 1.1s steps(3) infinite;
+  }
+  @keyframes grain{0%{transform:translate(0,0);}50%{transform:translate(-3%,2%);}100%{transform:translate(2%,-2%);}}
+
+  /* ---------- kicker / footer ---------- */
+  .kicker{
+    position:absolute;top:5.2vh;left:0;right:0;z-index:30;
+    display:flex;justify-content:center;align-items:center;gap:18px;
+    font-family:var(--mono);font-size:11px;letter-spacing:5px;
+    color:var(--phos-dim);text-transform:uppercase;
+  }
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--link);
+    box-shadow:0 0 10px var(--link);animation:beat 2.4s ease-in-out infinite;}
+  @keyframes beat{0%,100%{opacity:.35;}50%{opacity:1;}}
+  .kicker .sep{color:var(--phos-deep);}
+  #status{color:var(--link);min-width:120px;text-align:left;letter-spacing:3px;
+    text-shadow:0 0 12px rgba(79,224,196,.4);transition:color .5s;}
+
+  /* canonical scene eyebrow (matches 28) */
+  .scene-id{position:absolute;z-index:65;left:5.4%;top:12.2%;pointer-events:none;
+    font-family:var(--mono);font-size:clamp(10px,.82vw,15px);
+    letter-spacing:.42em;color:var(--phos-dim);text-shadow:none;}
+  .scene-id b{color:var(--link);text-shadow:0 0 8px rgba(79,224,196,.4);font-weight:700;}
+
+  .footer{
+    position:absolute;bottom:4.6vh;left:0;right:0;z-index:30;
+    display:flex;justify-content:center;gap:14px;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:3px;color:var(--phos-deep);
+  }
+  .footer b{color:var(--phos-dim);font-weight:500;}
+
+  /* ---------- HERO TYPOGRAPHY (the star) ---------- */
+  .hero{
+    position:absolute;top:21%;left:0;right:0;z-index:25;
+    display:flex;flex-direction:column;align-items:center;gap:2.6vh;
+    text-align:center;pointer-events:none;padding:0 6vw;
+  }
+  .line1{
+    font-family:var(--kr);font-weight:600;
+    font-size:clamp(20px,3.0vw,42px);letter-spacing:-0.5px;line-height:1.32;
+    color:var(--phos-dim);
+  }
+  .line1 .neg{
+    color:var(--phos);font-weight:700;position:relative;
+  }
+  .line1 .neg::after{
+    content:"";position:absolute;left:-4%;right:-4%;top:54%;height:2px;
+    background:var(--phos-deep);transform:scaleX(var(--strike,0));transform-origin:left;
+    transition:transform .1s linear;
+  }
+  .line2{
+    font-family:var(--kr);font-weight:800;
+    font-size:clamp(30px,5.0vw,78px);letter-spacing:-1.2px;line-height:1.22;
+    color:var(--phos);
+    opacity:0;transform:translateY(14px);
+  }
+  .line2 .acc{
+    color:var(--link);
+    text-shadow:0 0 22px rgba(79,224,196,.55),0 0 60px rgba(79,224,196,.25);
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <canvas id="scene"></canvas>
+
+  <div class="scene-id kr"><b>SCENE 08</b> · 연결 — THE CONNECTOR</div>
+
+  <div class="kicker">
+    <span class="dot"></span>
+    <span id="status" class="kr">현장 ↔ 기술 · 단절</span>
+  </div>
+
+  <div class="hero">
+    <div class="line1 kr">성공적인 DX·AX의 핵심은 기술이 <span class="neg">아닙니다.</span></div>
+    <div class="line2 kr" id="line2">현장과 기술을 <span class="acc">연결</span>하는 <span class="acc">사람</span>입니다.</div>
+  </div>
+
+  <div class="footer">
+    <span><b>FIELD</b> ⟶ ⟵ <b>TECH</b></span>
+  </div>
+
+  <div class="grain"></div>
+  <div class="scan"></div>
+  <div class="vignette"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  const line1 = document.querySelector('.line1');
+  const line1neg = document.querySelector('.line1 .neg');
+  const line2 = document.getElementById('line2');
+  const statusEl = document.getElementById('status');
+
+  let W=0,H=0,DPR=Math.min(window.devicePixelRatio||1,2);
+  let leftNodes=[], rightNodes=[], anchorI=0;
+  let LX=0,RX=0;
+
+  // ---- color helpers ----
+  const COLD=[150,150,150], TEAL=[79,224,196], TEALH=[196,248,238];
+  function mix(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
+  function rgba(c,a){return 'rgba('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+','+a+')';}
+
+  function makeNode(x,y,i){return {x,y,i,ph:i*0.74+(i%2?0.9:0)};}
+
+  function buildShores(){
+    leftNodes=[]; rightNodes=[];
+    const n=8;
+    const cy=H*0.705, span=H*0.40;
+    LX=W*0.130; RX=W*0.870;
+    for(let i=0;i<n;i++){
+      const f=i/(n-1);
+      const yy=cy - span/2 + f*span;
+      const bulge=Math.sin(f*Math.PI)*(W*0.040); // coastline curves toward the chasm
+      leftNodes.push(makeNode(LX+bulge, yy, i));
+      rightNodes.push(makeNode(RX-bulge, yy, i));
+    }
+    anchorI=Math.floor(n/2); // innermost node = connection anchor
+  }
+
+  function resize(){
+    W=window.innerWidth; H=window.innerHeight;
+    canvas.width=W*DPR; canvas.height=H*DPR;
+    canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    buildShores();
+  }
+  window.addEventListener('resize',resize);
+
+  // ---- timing ----
+  const CYCLE=14.0;
+  const T_REACH0=2.6, T_REACH1=5.6, T_WARM0=5.6, T_WARM1=7.4,
+        T_HOLD1=10.8, T_DIS1=13.3;
+  // optional ?t=SECONDS to jump the loop clock (verification / deep-linking)
+  const _off=(parseFloat(new URLSearchParams(location.search).get('t'))||0)*1000;
+  let t0=performance.now()-_off;
+
+  function ease(x){return x<=0?0:x>=1?1:x*x*(3-2*x);}
+  function ramp(a,b,x){return ease((x-a)/(b-a));}
+
+  // cubic bezier point
+  function B(p0,p1,p2,p3,t){
+    const u=1-t, uu=u*u, uuu=uu*u, tt=t*t, ttt=tt*t;
+    return [
+      uuu*p0[0]+3*uu*t*p1[0]+3*u*tt*p2[0]+ttt*p3[0],
+      uuu*p0[1]+3*uu*t*p1[1]+3*u*tt*p2[1]+ttt*p3[1]
+    ];
+  }
+
+  let lastStatus="";
+  function setStatus(txt,col){
+    if(txt===lastStatus)return; lastStatus=txt;
+    statusEl.textContent=txt;
+    statusEl.style.color=col;
+    statusEl.style.textShadow='0 0 12px '+col.replace('1)','0.45)');
+  }
+
+  function draw(now){
+    const elapsed=(now-t0)/1000;
+    const tt=elapsed % CYCLE;
+    const time=elapsed; // monotonic → seamless pulse across loop boundary
+
+    // phase scalars
+    const reach=Math.max(0, ramp(T_REACH0,T_REACH1,tt) - ramp(T_HOLD1,T_DIS1,tt));
+    const warm =Math.max(0, ramp(T_WARM0,T_WARM1,tt) - ramp(T_HOLD1,T_DIS1,tt));
+    const sync =warm;
+    const reaching=tt>T_REACH0 && tt<T_REACH1;
+    // contact flash window ~ T_REACH1
+    let flash=0;
+    if(tt>T_REACH1-0.12 && tt<T_REACH1+0.75){
+      flash=Math.max(0,1-(tt-(T_REACH1-0.12))/0.87);
+      flash*=flash;
+    }
+
+    // ---- status text ----
+    if(tt<T_REACH0)            setStatus('현장 ↔ 기술 · 단절','rgba(141,141,141,1)');
+    else if(tt<T_REACH1)       setStatus('연결선 전개 중','rgba(79,224,196,1)');
+    else if(tt<T_HOLD1)        setStatus('연결 — 동기화','rgba(79,224,196,1)');
+    else                       setStatus('연결 유지 · 잔광','rgba(141,141,141,1)');
+
+    // ---- typography reactive ----
+    line1.style.opacity=(0.92-0.55*warm).toFixed(3);
+    line1neg.style.setProperty('--strike', (ease(ramp(0.6,2.4,tt))*(1-warm)).toFixed(3));
+    line2.style.opacity=warm.toFixed(3);
+    line2.style.transform='translateY('+(14*(1-warm)).toFixed(1)+'px)';
+
+    ctx.clearRect(0,0,W,H);
+
+    const lA=leftNodes[anchorI], rA=rightNodes[anchorI];
+
+    // ===== chasm / fault line (the rift being sutured) =====
+    drawChasm(time, warm);
+
+    // ===== intra-shore links =====
+    drawShoreLinks(leftNodes, time, 0, warm, sync);
+    drawShoreLinks(rightNodes, time, Math.PI, warm, sync);
+
+    // ===== the single connecting filament =====
+    // control points bow gently downward; quiver while reaching, settle on contact
+    const mx=(lA.x+rA.x)/2;
+    const dip=H*0.12;
+    const wob=(reaching?(1-reach):0)*Math.sin(time*6.2)*H*0.030;
+    const p0=[lA.x,lA.y];
+    const p3=[rA.x,rA.y];
+    const cp1=[lA.x+(mx-lA.x)*0.42, lA.y+dip*0.55+wob];
+    const cp2=[rA.x-(rA.x-mx)*0.42, rA.y+dip*0.55-wob];
+
+    if(reach>0.001) drawFilament(p0,cp1,cp2,p3,reach,reaching,warm,time);
+
+    // contact ring — single restrained burst
+    if(flash>0){
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(rA.x,rA.y,8+(1-flash)*46,0,Math.PI*2);
+      ctx.strokeStyle=rgba(TEALH,0.75*flash);
+      ctx.lineWidth=2.0*flash+0.4;
+      ctx.shadowColor=rgba(TEAL,0.8); ctx.shadowBlur=18*flash;
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    // travelling energy pulses along the wire during HOLD (future hinted)
+    if(warm>0.55 && reach>0.98){
+      for(let k=0;k<3;k++){
+        let pp=((time*0.42 + k*0.34)%1);
+        const pt=B(p0,cp1,cp2,p3,pp);
+        const fade=Math.sin(pp*Math.PI); // dim at the ends
+        const a=0.85*warm*fade;
+        const r=3.4*fade+1.2;
+        ctx.beginPath();
+        ctx.fillStyle=rgba(TEALH,a);
+        ctx.shadowColor=rgba(TEAL,0.9); ctx.shadowBlur=14;
+        ctx.arc(pt[0],pt[1],r,0,Math.PI*2); ctx.fill();
+        ctx.shadowBlur=0;
+      }
+    }
+
+    // ===== secondary threads (the one connection enabling the network) =====
+    if(warm>0.35){
+      drawSecondary(time, warm);
+    }
+
+    // ===== nodes =====
+    drawNodes(leftNodes, time, 0, warm, sync);
+    drawNodes(rightNodes, time, Math.PI, warm, sync);
+
+    // shore labels
+    drawLabels(warm);
+
+    requestAnimationFrame(draw);
+  }
+
+  function nodeBrightness(n, time, sideOff, sync){
+    const asyncB=0.5+0.5*Math.sin(time*1.55+n.ph+sideOff);
+    const syncB =0.5+0.5*Math.sin(time*2.15);
+    return asyncB*(1-sync)+syncB*sync;
+  }
+
+  function drawNodes(arr, time, sideOff, warm, sync){
+    arr.forEach((n)=>{
+      const b=nodeBrightness(n,time,sideOff,sync);
+      const isAnchor=(n.i===anchorI);
+      const col=mix(COLD,TEAL,warm);
+      const baseR=(isAnchor?3.6:2.4)+(n.i%3)*0.3;
+      const r=baseR*(1+0.32*b+0.55*warm);
+      const a=0.22+0.5*b+0.22*warm;
+
+      if(warm>0.05 || b>0.7){
+        const gr=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,r*5.5);
+        gr.addColorStop(0,rgba(mix(COLD,TEALH,warm),0.34*(0.4+0.6*b)*(0.3+0.7*warm)));
+        gr.addColorStop(1,rgba(col,0));
+        ctx.fillStyle=gr;
+        ctx.beginPath();ctx.arc(n.x,n.y,r*5.5,0,Math.PI*2);ctx.fill();
+      }
+      ctx.beginPath();
+      ctx.fillStyle=rgba(col,a);
+      ctx.arc(n.x,n.y,r,0,Math.PI*2);ctx.fill();
+
+      if(isAnchor){
+        ctx.beginPath();
+        ctx.strokeStyle=rgba(mix(COLD,TEAL,warm),0.35+0.4*warm);
+        ctx.lineWidth=1;
+        ctx.arc(n.x,n.y,r+4+2*b,0,Math.PI*2);ctx.stroke();
+      }
+      // bright core
+      ctx.beginPath();
+      ctx.fillStyle=rgba(mix([255,255,255],TEALH,warm),0.25+0.45*b);
+      ctx.arc(n.x-r*0.28,n.y-r*0.28,r*0.34,0,Math.PI*2);ctx.fill();
+    });
+  }
+
+  function drawShoreLinks(arr, time, sideOff, warm, sync){
+    ctx.lineWidth=1;
+    for(let i=0;i<arr.length-1;i++){
+      const a=arr[i], b=arr[i+1];
+      const br=(nodeBrightness(a,time,sideOff,sync)+nodeBrightness(b,time,sideOff,sync))*0.5;
+      const col=mix(COLD,TEAL,warm);
+      ctx.strokeStyle=rgba(col,(0.06+0.10*br)+0.10*warm);
+      ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();
+    }
+  }
+
+  function drawFilament(p0,cp1,cp2,p3,reach,reaching,warm,time){
+    const N=64;
+    const lim=Math.floor(N*reach);
+    // glow underlay
+    ctx.save();
+    ctx.lineCap='round';
+    ctx.lineJoin='round';
+    const col=mix(TEAL, TEALH, 0.3+0.4*warm);
+    // soft wide glow
+    ctx.strokeStyle=rgba(TEAL,0.10+0.18*warm);
+    ctx.lineWidth=7+5*warm;
+    ctx.shadowColor=rgba(TEAL,0.6); ctx.shadowBlur=16+10*warm;
+    ctx.beginPath();
+    for(let i=0;i<=lim;i++){
+      const pt=B(p0,cp1,cp2,p3,(i/N));
+      i===0?ctx.moveTo(pt[0],pt[1]):ctx.lineTo(pt[0],pt[1]);
+    }
+    ctx.stroke();
+    // crisp core
+    ctx.shadowBlur=8+6*warm;
+    ctx.strokeStyle=rgba(col,0.55+0.4*warm);
+    ctx.lineWidth=1.5+0.8*warm;
+    ctx.beginPath();
+    let headPt=p0;
+    for(let i=0;i<=lim;i++){
+      const pt=B(p0,cp1,cp2,p3,(i/N));
+      i===0?ctx.moveTo(pt[0],pt[1]):ctx.lineTo(pt[0],pt[1]);
+      headPt=pt;
+    }
+    ctx.stroke();
+    ctx.restore();
+
+    // searching head while reaching
+    if(reaching && reach<0.995){
+      const exact=B(p0,cp1,cp2,p3,reach);
+      ctx.save();
+      ctx.beginPath();
+      ctx.fillStyle=rgba(TEALH,0.95);
+      ctx.shadowColor=rgba(TEAL,1); ctx.shadowBlur=20;
+      ctx.arc(exact[0],exact[1],3.4,0,Math.PI*2);ctx.fill();
+      // probing filaments fanning ahead
+      ctx.strokeStyle=rgba(TEAL,0.4);
+      ctx.lineWidth=1;
+      for(let s=-1;s<=1;s++){
+        const ang=Math.atan2(exact[1]-headPt[1],exact[0]-headPt[0])+s*0.5;
+        ctx.beginPath();ctx.moveTo(exact[0],exact[1]);
+        ctx.lineTo(exact[0]+Math.cos(ang)*(10+6*Math.sin(time*9+s)),
+                   exact[1]+Math.sin(ang)*(10+6*Math.sin(time*9+s)));
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  function drawSecondary(time, warm){
+    // a few thin threads between near cross-pairs, appearing after main link
+    const pairs=[[2,3],[5,4],[3,6]];
+    ctx.save();
+    ctx.lineWidth=1;
+    pairs.forEach((pr,idx)=>{
+      const a=leftNodes[pr[0]], b=rightNodes[pr[1]];
+      if(!a||!b)return;
+      const grow=ease(ramp(0.4+idx*0.12,0.9,warm));
+      if(grow<=0.01)return;
+      const mx=(a.x+b.x)/2, my=(a.y+b.y)/2+H*0.07*(idx%2?1:-1);
+      const steps=40, lim=Math.floor(steps*grow);
+      ctx.strokeStyle=rgba(TEAL,0.05+0.10*warm);
+      ctx.beginPath();
+      for(let i=0;i<=lim;i++){
+        const t=i/steps, u=1-t;
+        const x=u*u*a.x+2*u*t*mx+t*t*b.x;
+        const y=u*u*a.y+2*u*t*my+t*t*b.y;
+        i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+      }
+      ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  function drawChasm(time, warm){
+    // vertical fault seam at center; fades (heals) as the link warms
+    const cx=W/2;
+    const y0=H*0.50, y1=H*0.92;
+    const a=0.42*(1-warm);
+    if(a<0.01)return;
+    ctx.save();
+    ctx.strokeStyle=rgba([20,20,20],1);
+    ctx.lineWidth=1;
+    ctx.beginPath();
+    ctx.moveTo(cx,y0);
+    const segs=14;
+    for(let i=1;i<=segs;i++){
+      const f=i/segs;
+      const yy=y0+(y1-y0)*f;
+      const jag=(Math.sin(i*2.3+time*0.6)*0.5+Math.sin(i*5.1)*0.5)*W*0.012*(1-warm);
+      ctx.lineTo(cx+jag,yy);
+    }
+    // faint cold halo on either side
+    ctx.strokeStyle=rgba([90,90,90],a*0.5+0.05*Math.sin(time*3));
+    ctx.lineWidth=1.4;
+    ctx.shadowColor='rgba(0,0,0,0.9)'; ctx.shadowBlur=6;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawLabels(warm){
+    const col=mix([120,120,120],TEAL,warm);
+    ctx.save();
+    ctx.font="600 13px var(--mono), monospace";
+    ctx.textAlign='center';
+    // anchored near each shore top
+    const lTop=leftNodes[0], rTop=rightNodes[0];
+    ctx.fillStyle=rgba(col,0.55+0.3*warm);
+    ctx.font="700 15px 'JetBrains Mono', monospace";
+    ctx.fillText("현장", lTop.x, lTop.y-26);
+    ctx.fillText("기술", rTop.x, rTop.y-26);
+    ctx.font="500 9.5px 'JetBrains Mono', monospace";
+    ctx.fillStyle=rgba(col,0.4+0.25*warm);
+    ctx.fillText("FIELD · 공정·설비·사람", lTop.x, lTop.y-12);
+    ctx.fillText("TECH · 데이터·AI·시스템", rTop.x, rTop.y-12);
+    ctx.restore();
+  }
+
+  resize();
+  requestAnimationFrame(draw);
+})();
+</script>
+</body>
+</html>

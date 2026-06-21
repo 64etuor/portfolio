@@ -38,10 +38,9 @@ export const profile: Profile = {
 
   contact: {
     email: '64etuor@gmail.com',
-    phone: '010-0000-0000',
     github: 'https://github.com/64etuor',
     githubPage: 'https://64etuor.github.io',
-    url: 'https://64etuor.github.io',
+    url: 'https://yanghapark.com',
   },
 
   projects: [
@@ -88,9 +87,9 @@ export const profile: Profile = {
       ],
     },
     {
-      id: 'mirrorless-beautifly',
+      id: 'startup-beautifly',
       name: 'Beautifly — 뷰티 매장 CRM·키오스크·앱 플랫폼',
-      org: '미러리스',
+      org: '스타트업',
       period: '2025.08 ~ 현재',
       role: '총괄본부장 / 제품 요구사항 정의, 기능 기획, 개발 일정 관리, 백엔드·인프라·HW 프로토타입',
       background:
@@ -122,29 +121,6 @@ export const profile: Profile = {
         'TypeScript',
       ],
       domains: ['개발', 'AI', 'PM', '하드웨어'],
-      links: [],
-    },
-    {
-      id: 'kh-project',
-      name: 'KH Project — 한국 거주 외국인 생활 마켓플레이스',
-      org: '개인 프로젝트',
-      period: '2024.07 ~ 진행/검증',
-      role: '제품 기획, 시장 분석, 기능 스펙, 사업 전략',
-      background:
-        '한국 거주 외국인이 자기 언어로 중고거래·방 구하기·구인구직을 한 곳에서 해결하는 생활 마켓플레이스. 2025년 말 기준 국내 체류외국인 278만 명 규모이지만, 기존 로컬 앱은 동네·한국어·내국인 생활패턴 기반으로 설계되어 외국인 체류자격별 니즈를 담지 못한다는 문제에서 출발. 중고거래 × 베트남어 × 경기 남부 산업단지의 단일 셀 유동성을 먼저 증명한 뒤 버티컬·언어·지역을 순차 확장하는 Phase 0a 전략 수립.',
-      work: [
-        '공개 통계(법무부 체류외국인, 통계청 이민자체류실태조사) 기반 시장 규모·세그먼트 분석',
-        '체류자격(E-9, H-2, F-4, 유학생 등)별 주거·구직·생활 패턴 분석 및 MECE 타깃 정의',
-        'HeyKorean, SFKorean, KLiK, KOWORK 등 벤치마크 구조 분석으로 “중고·방·일을 묶은 외국인 생활 마켓플레이스” 빈 시장 도출',
-        '구인구직 유동성 → 외국인 친화 방 매물 DB → 중고거래 리텐션 엔진의 3단계 사업 목표 및 KPI(유동성·응답속도·신뢰도·재방문율) 설계',
-      ],
-      impact: [
-        { metric: '목표 시장', value: '국내 체류외국인 278만 명 / 상주 외국인 156만 명' },
-        { metric: '핵심 KPI', value: 'GMV 아닌 유동성·응답속도·신뢰도·재방문율' },
-        { metric: '전략', value: 'Phase 0a 단일 셀(중고×베트남어×경기 남부) 유동성 선증명' },
-      ],
-      tech: ['시장 분석', '제품 기획', '웹 서비스', '데이터 기반 세그먼테이션'],
-      domains: ['PM', '데이터', '개발'],
       links: [],
     },
     {
@@ -384,7 +360,7 @@ export const profile: Profile = {
 
   experience: [
     {
-      company: '미러리스',
+      company: '스타트업',
       title: '총괄본부장 / Director',
       period: '2025.08 ~ 현재',
       summary:

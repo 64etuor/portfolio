@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCENE 06 · 충돌 — LEXICAL COLLISION</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+
+  :root{
+    --bg:#050505;
+    --bg2:#0e0e0e;
+    --phos:#e2e2e2;
+    --phos-dim:#8d8d8d;
+    --phos-deep:#3a3a3a;
+    --warm:#d98a3d;        /* 현업 · 제조 */
+    --cold:#4ab3cc;        /* 개발 · 시스템 */
+    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
+  }
+  @font-face{
+    font-family:'JetBrains Mono';font-display:swap;font-weight:400;
+    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff2') format('woff2');
+  }
+  @font-face{
+    font-family:'JetBrains Mono';font-display:swap;font-weight:700;
+    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-700-normal.woff2') format('woff2');
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg);
+    color:var(--phos);
+    font-family:var(--mono);
+    overflow:hidden;
+    word-break:keep-all;
+    -webkit-font-smoothing:antialiased;
+  }
+
+  /* ===== full-bleed stage ===== */
+  #stage{position:fixed;inset:0;overflow:hidden;background:
+    radial-gradient(ellipse 120% 120% at 50% 50%, var(--bg2) 0%, var(--bg) 60%, #000 100%);}
+  #scene{position:absolute;inset:0;display:block;}
+
+  /* ===== CRT shell ===== */
+  #stage::before{ /* scanlines */
+    content:"";position:absolute;inset:0;z-index:40;pointer-events:none;
+    background:repeating-linear-gradient(0deg,
+      rgba(0,0,0,0) 0px,rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0.16) 3px,rgba(0,0,0,0.16) 4px);
+    mix-blend-mode:multiply;
+  }
+  #stage::after{ /* vignette */
+    content:"";position:absolute;inset:0;z-index:41;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 50%, transparent 56%, rgba(0,0,0,.74) 100%);
+    opacity:.9;
+  }
+  #flicker{position:absolute;inset:0;z-index:42;pointer-events:none;
+    background:rgba(255,255,255,.012);animation:flick 5.5s steps(2) infinite;}
+  @keyframes flick{0%,96%{opacity:.0}97%{opacity:.5}98%{opacity:0}99%{opacity:.35}100%{opacity:0}}
+
+  /* ===== HUD overlay (noir) ===== */
+  .hud{position:absolute;z-index:45;pointer-events:none;font-family:var(--mono);
+    letter-spacing:1.5px;text-shadow:0 0 6px rgba(0,0,0,.6);}
+  .hud.tl{top:26px;left:34px;}
+  .hud.tr{top:26px;right:34px;text-align:right;}
+  .hud.bl{bottom:24px;left:34px;}
+  .hud.br{bottom:24px;right:34px;text-align:right;}
+  .hud .k{font-size:10px;color:var(--phos-dim);}
+  .hud .v{font-size:13px;color:var(--phos);margin-top:3px;}
+
+  /* canonical scene eyebrow (matches 28) */
+  .eyebrow{position:absolute;z-index:45;left:5.4%;top:12.2%;pointer-events:none;
+    font-family:var(--mono);font-size:clamp(10px,.82vw,15px);
+    letter-spacing:.42em;color:var(--phos-dim);text-shadow:none;}
+  .eyebrow b{color:var(--cold);text-shadow:0 0 8px rgba(74,179,204,.4);font-weight:700;}
+
+  /* side banners */
+  .side{position:absolute;z-index:45;pointer-events:none;top:50%;transform:translateY(-50%);
+    font-family:'Pretendard';font-weight:700;font-size:13px;letter-spacing:2px;opacity:.85;}
+  .side.l{left:34px;color:var(--warm);text-shadow:0 0 12px rgba(217,138,61,.3);}
+  .side.r{right:34px;color:var(--cold);text-align:right;text-shadow:0 0 12px rgba(74,179,204,.3);}
+  .side .en{font-family:var(--mono);font-weight:400;font-size:9px;letter-spacing:2px;
+    color:var(--phos-dim);margin-top:4px;}
+
+  /* phase readout bottom-center */
+  .phasebar{position:absolute;z-index:45;pointer-events:none;left:50%;bottom:24px;
+    transform:translateX(-50%);font-family:var(--mono);font-size:11px;letter-spacing:4px;
+    color:var(--phos-dim);display:flex;gap:14px;align-items:center;}
+  .phasebar b{color:var(--phos);}
+  .phasebar .dot{width:6px;height:6px;border-radius:50%;background:var(--phos-deep);}
+  .phasebar .dot.on{background:var(--phos);box-shadow:0 0 8px var(--phos);}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="scene"></canvas>
+  <div id="flicker"></div>
+
+  <div class="eyebrow kr"><b>SCENE 06</b> · 충돌 — LEXICAL COLLISION</div>
+  <div class="hud tr">
+    <div class="k">요구사항 무결성</div>
+    <div class="v">REQUIREMENT INTEGRITY</div>
+  </div>
+  <div class="hud bl">
+    <div class="k">CONTACT</div>
+    <div class="v" id="hudContact">STAND-OFF</div>
+  </div>
+  <div class="hud br">
+    <div class="k">DRIFT Δ</div>
+    <div class="v" id="hudDrift">000</div>
+  </div>
+
+  <div class="side l">현업 · 제조<div class="en">FIELD / MANUFACTURING</div></div>
+  <div class="side r">개발 · 시스템<div class="en">DEV / SYSTEM</div></div>
+
+  <div class="phasebar">
+    <span class="dot" data-ph="0"></span>
+    <b id="phaseName">STAND-OFF</b>
+    <span class="dot" data-ph="1"></span>
+    <span class="dot" data-ph="2"></span>
+    <span class="dot" data-ph="3"></span>
+    <span class="dot" data-ph="4"></span>
+    <span class="dot" data-ph="5"></span>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  let W=0,H=0,CX=0,CY=0,DPR=Math.min(window.devicePixelRatio||1,2);
+  const LOOP = 12.0;             // seconds, seamless loop
+  let t0 = performance.now();
+
+  // ---------- message text (the protagonists) ----------
+  const LINE1 = "서로 다른 언어를 사용하는 순간,";
+  const LINE2 = "요구사항은 왜곡되고 프로젝트는 멀어집니다.";
+
+  // ---------- token armies (two language systems) ----------
+  const KO = ['공정','불량률','금형','양산','치수','납기','현장','설비','타발','검사','로트','수율']; // 현업/제조
+  const EN = ['deploy','schema','async','refactor','commit','build','endpoint','latency','cache','rollback','queue','nullable']; // 개발/시스템
+
+  // ---------- color helpers ----------
+  const PHOS=[226,226,226], WARM=[217,138,61], COLD=[74,179,204];
+  function rgba(c,a){return 'rgba('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+','+a+')';}
+  function mix(a,b,t){return [a[0]+(b[0]-a[0])*t, a[1]+(b[1]-a[1])*t, a[2]+(b[2]-a[2])*t];}
+
+  // ---------- easing ----------
+  const clamp=(v,a,b)=>v<a?a:v>b?b:v;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const seg=(p,a,b)=>clamp((p-a)/(b-a),0,1);
+  const eIn =t=>t*t*t;
+  const eOut=t=>1-Math.pow(1-t,3);
+  const eInOut=t=>t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+
+  // ---------- phase timeline (normalized p∈[0,1)) ----------
+  // A standoff  0.00-0.24 | B charge 0.24-0.40 | C impact 0.40-0.47
+  // D scatter   0.47-0.66 | E drift  0.66-0.86 | F reset  0.86-1.00
+  const PH=['STAND-OFF','CHARGE','IMPACT','SCATTER','DRIFT APART','RESET'];
+  function phaseIndex(p){
+    if(p<0.24)return 0; if(p<0.40)return 1; if(p<0.47)return 2;
+    if(p<0.66)return 3; if(p<0.86)return 4; return 5;
+  }
+  function compute(p){
+    // charge: 0 home -> 1 seam -> recoil negative -> far off -> reset 0
+    let charge;
+    if(p<0.24) charge=0;
+    else if(p<0.40) charge=eIn(seg(p,0.24,0.40));
+    else if(p<0.47) charge=1;
+    else if(p<0.66) charge=lerp(1,-0.35,eOut(seg(p,0.47,0.66)));
+    else if(p<0.86) charge=lerp(-0.35,-1.55,seg(p,0.66,0.86));
+    else charge=lerp(-1.55,0,eInOut(seg(p,0.86,1.0)));
+
+    // shatter: 0 -> pop at impact -> drift wider -> reassemble
+    let shatter;
+    if(p<0.40) shatter=0;
+    else if(p<0.47) shatter=eOut(seg(p,0.40,0.47))*0.55;
+    else if(p<0.66) shatter=lerp(0.55,0.82,seg(p,0.47,0.66));
+    else if(p<0.86) shatter=lerp(0.82,1.0,seg(p,0.66,0.86));
+    else shatter=lerp(1.0,0,eInOut(seg(p,0.86,1.0)));
+
+    // shake / seam flash — windowed at impact (0 outside => seamless)
+    const shake=(p>=0.40&&p<0.54)?Math.pow(1-seg(p,0.40,0.54),2):0;
+    const flash=(p>=0.40&&p<0.52)?Math.pow(1-seg(p,0.40,0.52),1.6):0;
+
+    // line1 caption: in during standoff, out before impact (0 at both p=0 & p=1)
+    let l1=seg(p,0.03,0.11)*(1-seg(p,0.30,0.40));
+
+    // hero glyph base alpha: full through impact, eOut fade to 0 during scatter,
+    // fully gone through drift, fade-in from invisible during reset → no pop at seam
+    let gA;
+    if(p<0.47) gA=1;
+    else if(p<0.68) gA=lerp(1,0,eOut(seg(p,0.47,0.68)));
+    else if(p<0.83) gA=0;
+    else gA=lerp(0,1,eInOut(seg(p,0.83,1.0)));
+
+    // army alpha: eOut fade starts at impact, reaches 0 by early drift,
+    // fully invisible through drift, fade-in from invisible during reset → no pop
+    let aA;
+    if(p<0.47) aA=1;
+    else if(p<0.72) aA=lerp(1,0,eOut(seg(p,0.47,0.72)));
+    else if(p<0.84) aA=0;
+    else aA=lerp(0,1,eInOut(seg(p,0.84,1.0)));
+
+    return {charge,shatter,shake,flash,l1,gA,aA};
+  }
+
+  // ---------- hero layout (glyph particles) ----------
+  let glyphs=[], heroFont=64, line1Font=26;
+  function layoutHero(){
+    glyphs=[];
+    const targetW=W*0.80;
+    let fpx=Math.min(H*0.12, W*0.075);
+    ctx.font='800 '+fpx+"px 'Pretendard'";
+    let tw=0; for(const ch of LINE2) tw+=ctx.measureText(ch).width;
+    if(tw>targetW){ fpx*=targetW/tw; ctx.font='800 '+fpx+"px 'Pretendard'";
+      tw=0; for(const ch of LINE2) tw+=ctx.measureText(ch).width; }
+    heroFont=fpx;
+    line1Font=Math.max(15, fpx*0.34);
+    let x=CX-tw/2;
+    const cx=CX;
+    for(const ch of LINE2){
+      const w=ctx.measureText(ch).width;
+      const hx=x+w/2, hy=CY;
+      const sideSign=(hx<cx)?-1:1;
+      const nd=Math.min(1,Math.abs(hx-cx)/(tw/2));
+      // blast: split down the middle, drift apart (= "멀어집니다"), warp (= "왜곡")
+      const g={
+        ch, hx, hy, w,
+        side: sideSign<0?'warm':'cold',
+        bx: sideSign*(0.30+0.55*nd)*W*0.55 + (Math.random()-0.5)*W*0.06,
+        by: (Math.random()-0.5)*H*0.46,
+        rot:(Math.random()-0.5)*1.5,
+        sk:(Math.random()-0.5)*0.85,
+        scl:(Math.random()-0.5)*0.8
+      };
+      glyphs.push(g);
+      x+=w;
+    }
+  }
+
+  // ---------- token armies layout ----------
+  let tokens=[];
+  function layoutArmies(){
+    tokens=[];
+    const colGap=W*0.062, rowGap=H*0.135;
+    const build=(arr,sign)=>{ // sign -1 left, +1 right
+      const homeC = CX + sign*W*0.34;
+      const targetC = CX + sign*W*0.055;       // overlap region at seam
+      arr.forEach((txt,i)=>{
+        const col=i%3, row=(i/3)|0;
+        // front column (nearest seam) leads
+        const ox = sign*((2-col)*colGap) ;     // col0 = front
+        const oy = (row-1.5)*rowGap + (col%2?rowGap*0.18:0);
+        tokens.push({
+          txt, sign, homeC, targetC, ox, oy,
+          ko: sign<0,
+          px:null,
+          jit: Math.random()*Math.PI*2
+        });
+      });
+    };
+    build(KO,-1);
+    build(EN,+1);
+  }
+
+  // ---------- debris (precomputed; active only in window) ----------
+  const DEBRIS=[];
+  (function(){ for(let i=0;i<90;i++){
+    const ang=Math.random()*Math.PI*2;
+    DEBRIS.push({ang, sp:0.25+Math.random()*0.95, sz:1+Math.random()*2.6,
+      tint:Math.random(), vy:(Math.random()-0.5)*0.4});
+  }})();
+
+  function resize(){
+    W=window.innerWidth; H=window.innerHeight;
+    canvas.width=W*DPR; canvas.height=H*DPR;
+    canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    CX=W/2; CY=H*0.52;
+    layoutArmies(); layoutHero();
+  }
+  window.addEventListener('resize', resize);
+
+  // ---------- HUD refs ----------
+  const phaseName=document.getElementById('phaseName');
+  const dots=[...document.querySelectorAll('.phasebar .dot')];
+  const hudContact=document.getElementById('hudContact');
+  const hudDrift=document.getElementById('hudDrift');
+  let lastPh=-1;
+
+  // ---------- draw ----------
+  function draw(now){
+    const tt=((now-t0)/1000)%LOOP;
+    const p=tt/LOOP;
+    const S=compute(p);
+    const ph=phaseIndex(p);
+
+    // HUD (cheap updates)
+    if(ph!==lastPh){
+      lastPh=ph;
+      phaseName.textContent=PH[ph];
+      dots.forEach((d,i)=>d.classList.toggle('on',i===ph));
+      hudContact.textContent = ph<=1?'STAND-OFF':ph===2?'>> IMPACT <<':ph<=4?'DIVERGING':'RE-FORM';
+    }
+    hudDrift.textContent=String(Math.round(Math.abs(S.charge)*100)).padStart(3,'0');
+
+    // screen shake offset
+    const shx=Math.sin(now*0.09)*S.shake*W*0.012;
+    const shy=Math.cos(now*0.11)*S.shake*H*0.012;
+
+    ctx.clearRect(0,0,W,H);
+    ctx.save();
+    ctx.translate(shx,shy);
+
+    drawField(S);
+    drawArmies(S,now);
+    drawShock(p);
+    drawHero(S,now);
+    drawSeam(S,now);
+
+    ctx.restore();
+    requestAnimationFrame(draw);
+  }
+
+  // background field: faint grid + breathing core
+  function drawField(S){
+    // central horizon band glow
+    const g=ctx.createRadialGradient(CX,CY,0,CX,CY,W*0.5);
+    const heat=0.10+S.flash*0.35;
+    g.addColorStop(0,'rgba(70,70,70,'+heat+')');
+    g.addColorStop(0.5,'rgba(30,30,30,'+(heat*0.4)+')');
+    g.addColorStop(1,'rgba(0,0,0,0)');
+    ctx.fillStyle=g; ctx.fillRect(0,0,W,H);
+
+    // sparse vertical reference ticks near seam (tension grid)
+    ctx.save();
+    ctx.strokeStyle='rgba(120,120,120,0.05)';
+    ctx.lineWidth=1;
+    for(let i=-6;i<=6;i++){
+      const x=CX+i*W*0.05;
+      ctx.beginPath();ctx.moveTo(x,H*0.18);ctx.lineTo(x,H*0.86);ctx.stroke();
+    }
+    ctx.restore();
+  }
+
+  // two token armies charging
+  function drawArmies(S,now){
+    const fpx=Math.max(13,Math.min(20,W*0.013));
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    tokens.forEach(tk=>{
+      const cx=lerp(tk.homeC,tk.targetC,S.charge);
+      // standoff micro-jitter (tension)
+      const jit = (S.charge<0.02)? Math.sin(now*0.004+tk.jit)*1.2 : 0;
+      const x=cx+tk.ox+jit;
+      const y=CY+tk.oy+ (S.charge<0.02?Math.cos(now*0.005+tk.jit)*1.0:0);
+      const col = tk.ko?WARM:COLD;
+      const a=S.aA;
+
+      // motion-blur trail during charge
+      if(tk.px!==null){
+        const dx=x-tk.px;
+        if(Math.abs(dx)>2.2){
+          const steps=4;
+          for(let s=1;s<=steps;s++){
+            const tx=x-dx*(s/steps)*0.9;
+            ctx.globalAlpha=a*0.10*(1-s/steps);
+            ctx.fillStyle=rgba(col,1);
+            ctx.font=(tk.ko?'600 ':'400 ')+fpx+"px "+(tk.ko?"'Pretendard'":"'JetBrains Mono'");
+            ctx.fillText(tk.txt,tx,y);
+          }
+        }
+      }
+      tk.px=x;
+
+      ctx.globalAlpha=a;
+      ctx.font=(tk.ko?'600 ':'400 ')+fpx+"px "+(tk.ko?"'Pretendard'":"'JetBrains Mono'");
+      ctx.shadowColor=rgba(col,0.5); ctx.shadowBlur=8;
+      ctx.fillStyle=rgba(col,0.9);
+      ctx.fillText(tk.txt,x,y);
+      ctx.shadowBlur=0;
+    });
+    ctx.globalAlpha=1;
+  }
+
+  // impact shockwave rings + debris
+  function drawShock(p){
+    if(p<0.40||p>0.74) return;
+    // rings
+    const lr=seg(p,0.40,0.60);
+    if(lr>0&&lr<1){
+      ctx.save();
+      for(let k=0;k<2;k++){
+        const r=(lr+k*0.12)*W*0.55;
+        const a=(1-lr)*(0.5-k*0.18);
+        if(a<=0)continue;
+        ctx.strokeStyle='rgba(235,235,235,'+a+')';
+        ctx.lineWidth=2-k;
+        ctx.beginPath();ctx.ellipse(CX,CY,r,r*0.62,0,0,Math.PI*2);ctx.stroke();
+      }
+      ctx.restore();
+    }
+    // debris
+    const dl=seg(p,0.40,0.74);
+    ctx.save();
+    DEBRIS.forEach(d=>{
+      const r=dl*W*0.42*d.sp;
+      const x=CX+Math.cos(d.ang)*r;
+      const y=CY+Math.sin(d.ang)*r*0.7 + dl*dl*H*0.12*d.vy;
+      const a=(1-dl)*0.85;
+      if(a<=0)return;
+      const col = d.tint<0.4?WARM : d.tint<0.8?COLD : PHOS;
+      ctx.fillStyle=rgba(col,a);
+      ctx.fillRect(x,y,d.sz,d.sz);
+    });
+    ctx.restore();
+  }
+
+  // hero message: line1 caption + line2 shattering glyphs
+  function drawHero(S,now){
+    // line1 caption (above)
+    if(S.l1>0.01){
+      ctx.save();
+      ctx.globalAlpha=S.l1;
+      ctx.font='600 '+line1Font+"px 'Pretendard'";
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillStyle=rgba(PHOS,0.92);
+      ctx.shadowColor='rgba(226,226,226,0.25)'; ctx.shadowBlur=12;
+      ctx.fillText(LINE1, CX, CY-heroFont*1.05);
+      ctx.shadowBlur=0;
+      ctx.restore();
+    }
+
+    // line2 hero glyphs
+    ctx.font='800 '+heroFont+"px 'Pretendard'";
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    const sh=S.shatter;
+    glyphs.forEach(g=>{
+      if(g.ch===' '){ return; }
+      const px=g.hx + (g.bx)*sh;
+      const py=g.hy + g.by*sh;
+      const rot=g.rot*sh;
+      const sk=g.sk*sh;
+      const scl=1+g.scl*sh;
+      // breathing brightness at standoff
+      const breathe = (sh<0.01)? 0.85+0.15*Math.sin(now*0.0022+g.hx*0.01) : 1;
+      // per-glyph distance fade: glyphs that fly further dissolve faster
+      const dispMag = Math.sqrt(g.bx*g.bx + g.by*g.by);
+      const glyphFade = sh > 0
+        ? Math.max(0, 1 - sh * dispMag / (W * 0.34))
+        : 1;
+      const tint = mix(PHOS, g.side==='warm'?WARM:COLD, Math.min(1,sh*0.9));
+      ctx.save();
+      ctx.globalAlpha=S.gA*breathe*glyphFade;
+      ctx.translate(px,py);
+      ctx.rotate(rot);
+      ctx.transform(1,0,sk,1,0,0);       // shear warp
+      ctx.scale(scl,scl);
+      ctx.shadowColor=rgba(tint,0.4); ctx.shadowBlur=heroFont*0.10*(1+sh);
+      ctx.fillStyle=rgba(tint,1);
+      ctx.fillText(g.ch,0,0);
+      ctx.restore();
+    });
+    ctx.shadowBlur=0;
+  }
+
+  // seam: tension line (standoff) + chromatic flash (impact)
+  function drawSeam(S,now){
+    ctx.save();
+    // standoff/charge tension: pulsing seam + flickering arcs
+    if(S.charge<0.98 && S.shatter<0.02){
+      const tense=clamp(S.charge*1.4+0.25,0,1);
+      const pulse=0.06+0.05*Math.sin(now*0.006);
+      ctx.strokeStyle='rgba(235,235,235,'+(pulse*tense)+')';
+      ctx.lineWidth=1;
+      ctx.beginPath();ctx.moveTo(CX,H*0.18);ctx.lineTo(CX,H*0.86);ctx.stroke();
+      // flickering micro-arcs across seam
+      const arcN=3;
+      for(let k=0;k<arcN;k++){
+        const fl=Math.sin(now*0.013+k*2.1);
+        if(fl<0.55)continue;
+        const a=(fl-0.55)*0.5*tense;
+        const y0=H*(0.30+k*0.18), y1=y0+H*0.1;
+        ctx.strokeStyle=rgba(k%2?WARM:COLD, a);
+        ctx.lineWidth=1.2;
+        ctx.beginPath();
+        let yy=y0,xx=CX;
+        ctx.moveTo(xx,yy);
+        for(let s=0;s<5;s++){
+          yy+= (y1-y0)/5;
+          xx=CX+(Math.sin(now*0.05+s+k)*0.5)*W*0.018;
+          ctx.lineTo(xx,yy);
+        }
+        ctx.stroke();
+      }
+    }
+    // impact chromatic seam flash
+    if(S.flash>0.01){
+      const f=S.flash;
+      const bw=W*0.012*f;
+      ctx.globalCompositeOperation='screen';
+      ctx.fillStyle=rgba(WARM, f*0.6);
+      ctx.fillRect(CX-bw*2.2, H*0.16, bw, H*0.7);
+      ctx.fillStyle=rgba(COLD, f*0.6);
+      ctx.fillRect(CX+bw*1.2, H*0.16, bw, H*0.7);
+      ctx.fillStyle=rgba(PHOS, f*0.85);
+      ctx.fillRect(CX-bw*0.6, H*0.14, bw*1.2, H*0.74);
+      ctx.globalCompositeOperation='source-over';
+    }
+    ctx.restore();
+  }
+
+  // ---------- boot (fonts ready, safe fallback) ----------
+  function start(){ resize(); requestAnimationFrame(draw); }
+  if(document.fonts && document.fonts.ready){
+    let go=false;
+    const fire=()=>{ if(!go){ go=true; start(); } };
+    document.fonts.ready.then(fire);
+    setTimeout(fire, 700); // headless never stalls
+  } else { start(); }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>관점 · PERSPECTIVES — 현장과 시스템, 하나의 랙포커스</title>
+<!--
+  ════════════════════════════════════════════════════════════════════════════
+  SCENE · 관점 (PERSPECTIVES)  —  씬4(실무자)+씬5(개발자) 통합 (랙포커스 1막)
+  하나의 연속 RACK FOCUS 로 초점이 현장→시스템을 가로지른다.
+    · FIELD 막 : warm·또렷. "현업은 업무를 가장 잘 안다" + 좌측에 제조 시안이
+                 위→아래로 하나씩(동시 1개) 캐스케이드. 배경엔 따뜻한 기어.
+    · RACK     : 초점면이 중앙을 가로질러 이동. warm→cold(코드 블루) 전환.
+                 현장 시안 unmount, 기어 물러남, 시스템 그리드/코드가 차오름.
+    · DEV  막  : cold·또렷(거울 반전). "개발자는 기술을 가장 잘 안다" + 우측에
+                 개발 시안이 하나씩 캐스케이드. 배경은 코드/아키텍처 그리드.
+  성능: 두 막이 시간상 겹치지 않게 게이팅 → 라이브 iframe 은 어느 순간이든 최대 1개.
+  단일 결정적 마스터 클록 — 난수/가짜 수치/로그 없음. 모든 모션은 시간/위상 함수.
+  개인·회사명 없음.
+  ════════════════════════════════════════════════════════════════════════════
+-->
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  :root{
+    --bg:#050505;
+    --phos:#e6e6e6;
+    --phos-dim:#8d8d8d;
+    --phos-deep:#3a3a3a;
+    --warm:#d98a3d; --warm-bright:#f3c184;   /* FIELD */
+    --cold:#6ea8ff; --cold-bright:#cfe0ff;   /* DEV  */
+    --kr:"Pretendard","Pretendard Variable",-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{background:var(--bg);color:var(--phos);font-family:var(--kr);
+    overflow:hidden;-webkit-font-smoothing:antialiased;}
+  .kr{word-break:keep-all;}
+
+  .stage{position:fixed;inset:0;overflow:hidden;background:
+    radial-gradient(128% 118% at 50% 48%, #0c0b0a 0%, #060607 54%, #030303 100%);}
+  #bg{position:absolute;inset:0;display:block;z-index:1;
+    transform:translateZ(0);backface-visibility:hidden;}
+
+  /* ───────── CRT / film shell ───────── */
+  .scan{position:fixed;inset:0;z-index:70;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0px,rgba(0,0,0,0) 2px,rgba(0,0,0,.20) 3px,rgba(0,0,0,0) 4px);
+    mix-blend-mode:multiply;opacity:.5;}
+  .vignette{position:fixed;inset:0;z-index:71;pointer-events:none;
+    background:radial-gradient(ellipse 140% 124% at 50% 50%,rgba(0,0,0,0) 56%,rgba(0,0,0,.62) 100%);}
+  .grain{position:fixed;inset:-50%;z-index:69;pointer-events:none;opacity:.045;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 1.12s steps(3) infinite;}
+  @keyframes grain{0%{transform:translate(0,0);}50%{transform:translate(-3%,2%);}100%{transform:translate(2%,-2%);}}
+
+  /* ───────── kicker (top) ───────── */
+  .kicker{position:absolute;top:5.0vh;left:0;right:0;z-index:40;
+    display:flex;justify-content:center;align-items:center;gap:15px;
+    font-family:var(--mono);font-size:11px;letter-spacing:5px;
+    color:var(--phos-dim);text-transform:uppercase;pointer-events:none;}
+  .kicker .rec{width:8px;height:8px;border-radius:50%;background:var(--warm);
+    box-shadow:0 0 10px var(--warm);animation:beat 2.6s ease-in-out infinite;}
+  @keyframes beat{0%,100%{opacity:.4;}50%{opacity:1;}}
+  .kicker .sep{color:var(--phos-deep);}
+  #vlabel{min-width:230px;text-align:center;letter-spacing:4px;
+    transition:color .5s;color:var(--warm);text-shadow:0 0 12px rgba(217,138,61,.4);
+    will-change:opacity,filter;}
+
+  /* ───────── HERO typography (좌=현장 / 우=개발 고정 두 칼럼, DOF 블러) ───────── */
+  .hero{position:absolute;top:50%;z-index:30;pointer-events:none;
+    width:25vw;transform:translateY(-50%);opacity:0;will-change:opacity,filter;}
+  #fieldHero{left:25.5vw;text-align:left;}
+  #devHero{right:25.5vw;text-align:right;}
+  .l1{font-family:var(--kr);font-weight:800;
+    font-size:clamp(20px,2.4vw,44px);line-height:1.20;letter-spacing:-.020em;
+    color:var(--phos);text-shadow:0 0 4px rgba(255,255,255,.10);}
+  .l1 em{font-style:normal;position:relative;}
+  #fieldHero .l1 em{color:var(--warm-bright);
+    text-shadow:0 0 22px rgba(217,138,61,.5),0 0 54px rgba(217,138,61,.22);}
+  #devHero .l1 em{color:var(--cold-bright);
+    text-shadow:0 0 22px rgba(110,168,255,.5),0 0 50px rgba(110,168,255,.22);}
+  .l1 em::after{content:"";position:absolute;left:8%;right:8%;bottom:-.14em;height:3px;
+    transform:scaleX(var(--rev,1));transform-origin:center;}
+  #fieldHero .l1 em::after{background:linear-gradient(90deg,transparent,var(--warm),transparent);
+    box-shadow:0 0 12px rgba(217,138,61,.6);transform-origin:left;}
+  #devHero .l1 em::after{background:linear-gradient(90deg,transparent,var(--cold),transparent);
+    box-shadow:0 0 12px rgba(110,168,255,.55);transform-origin:right;}
+  .l2{margin:2.4vh 0 0;font-family:var(--kr);font-weight:600;
+    font-size:clamp(13px,1.45vw,23px);line-height:1.46;letter-spacing:-.012em;
+    color:var(--phos-dim);max-width:100%;}
+  .l2 .dim{font-weight:600;display:inline-block;
+    font-family:var(--mono);font-size:.86em;letter-spacing:0;padding:0 .06em;}
+  #fieldHero .l2 .dim{color:var(--cold);text-shadow:0 0 10px rgba(110,168,255,.18);}
+  #devHero   .l2 .dim{color:var(--warm);text-shadow:0 0 10px rgba(217,138,61,.18);}
+  .l2 .strange{color:#b6bcc0;font-weight:700;display:inline-block;}
+
+  /* ───────── montage (live preview cascade) ───────── */
+  .procs{position:absolute;inset:0;z-index:20;pointer-events:none;}
+  .proc{position:absolute;overflow:hidden;border-radius:9px;background:#070707;
+    box-shadow:0 12px 40px rgba(0,0,0,.6);opacity:0;will-change:opacity,transform;}
+  #fieldProcs .proc{border:1px solid rgba(217,138,61,.42);
+    box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 22px rgba(217,138,61,.14);}
+  #devProcs .proc{border:1px solid rgba(110,168,255,.42);
+    box-shadow:0 12px 40px rgba(0,0,0,.6),0 0 22px rgba(110,168,255,.14);}
+  .proc .cap{display:flex;align-items:center;gap:7px;height:26px;padding:0 10px;
+    font-family:var(--mono);font-size:10px;letter-spacing:2px;}
+  #fieldProcs .cap{color:var(--warm);background:linear-gradient(180deg,rgba(217,138,61,.12),rgba(0,0,0,0));
+    border-bottom:1px solid rgba(217,138,61,.20);}
+  #devProcs .cap{color:var(--cold);background:linear-gradient(180deg,rgba(110,168,255,.12),rgba(0,0,0,0));
+    border-bottom:1px solid rgba(110,168,255,.20);}
+  .proc .cap .dot{width:6px;height:6px;border-radius:50%;flex:none;}
+  #fieldProcs .cap .dot{background:var(--warm);box-shadow:0 0 8px var(--warm);}
+  #devProcs .cap .dot{background:var(--cold);box-shadow:0 0 8px var(--cold);}
+  .proc .cap b{font-weight:600;font-family:var(--kr);letter-spacing:0;font-size:12px;white-space:nowrap;}
+  #fieldProcs .cap b{color:var(--warm-bright);}
+  #devProcs .cap b{color:var(--cold-bright);}
+  .proc .cap .tg{margin-left:auto;color:var(--phos-deep);letter-spacing:3px;}
+  .proc .scr{position:relative;overflow:hidden;}
+  .proc .scr iframe{position:absolute;top:0;left:0;width:1280px;height:720px;border:0;
+    transform-origin:top left;pointer-events:none;background:#070707;}
+
+  /* ───────── bottom perspective rail ───────── */
+  .rail{position:absolute;left:50%;bottom:5.2vh;transform:translateX(-50%);
+    z-index:40;width:min(640px,52vw);pointer-events:none;}
+  .rail .ends{display:flex;justify-content:space-between;align-items:baseline;
+    font-family:var(--mono);font-size:11px;letter-spacing:3px;margin-bottom:9px;}
+  .rail .ends .lf{color:var(--warm);text-shadow:0 0 10px rgba(217,138,61,.4);}
+  .rail .ends .rt{color:var(--cold);text-align:right;text-shadow:0 0 10px rgba(110,168,255,.4);}
+  .rail .ends small{display:block;font-size:8.5px;letter-spacing:2px;color:var(--phos-deep);margin-top:3px;}
+  .rail .ends .rt small{text-align:right;}
+  .rail .track{position:relative;height:2px;
+    background:linear-gradient(90deg,rgba(217,138,61,.55),rgba(141,141,141,.16) 50%,rgba(110,168,255,.55));}
+  .rail .tick{position:absolute;top:-3px;width:1px;height:8px;background:var(--phos-deep);}
+  .rail .puck{position:absolute;top:50%;left:0;width:13px;height:13px;border-radius:50%;
+    transform:translate(-50%,-50%);background:var(--warm);box-shadow:0 0 14px rgba(217,138,61,.7);}
+
+  .footer{position:absolute;bottom:2.4vh;left:0;right:0;z-index:40;text-align:center;
+    font-family:var(--mono);font-size:9.5px;letter-spacing:3px;color:var(--phos-deep);pointer-events:none;}
+  .footer b{color:var(--phos-dim);font-weight:500;}
+
+  @media (max-width:820px){
+    .hero{width:42vw;}
+    #fieldHero{left:6vw;}
+    #devHero{right:6vw;}
+    .rail{width:72vw;}
+    .kicker{font-size:9.5px;letter-spacing:3px;gap:9px;}
+    #vlabel{min-width:0;}
+    .procs{display:none;}
+  }
+</style>
+</head>
+<body>
+<div class="stage">
+  <canvas id="bg"></canvas>
+
+  <div class="kicker">
+    <span class="kr">SCENE 05 · 관점 — PERSPECTIVES</span>
+    <span class="sep">/</span>
+    <span class="rec"></span>
+    <span id="vlabel" class="kr">실무자 관점 · FIELD EXPERT</span>
+  </div>
+
+  <div id="fieldHero" class="hero">
+    <h1 class="l1 kr">현업은 <em>업무</em>를 가장 잘 압니다.</h1>
+    <h2 class="l2 kr">하지만 <span class="dim">시스템 언어</span>와
+      <span class="dim">개발 프로세스</span>는
+      <span class="strange">낯설게</span> 느껴집니다.</h2>
+  </div>
+
+  <div id="devHero" class="hero">
+    <h1 class="l1 kr">개발자는 <em>기술</em>을 가장 잘 압니다.</h1>
+    <h2 class="l2 kr">하지만 제조 <span class="dim">현장</span>의 복잡한 업무와
+      <span class="dim">경험</span>은
+      <span class="strange">알기 어렵습니다.</span></h2>
+  </div>
+
+  <div id="fieldProcs" class="procs"></div>
+  <div id="devProcs" class="procs"></div>
+
+  <div class="rail">
+    <div class="ends">
+      <span class="lf">현장<small>FIELD · 제조 / 공정</small></span>
+      <span class="rt">시스템<small>SYSTEM · 코드 / 아키텍처</small></span>
+    </div>
+    <div class="track">
+      <span class="tick" style="left:0%"></span>
+      <span class="tick" style="left:50%"></span>
+      <span class="tick" style="left:100%"></span>
+      <span class="puck" id="puck"></span>
+    </div>
+  </div>
+  <div class="footer kr">두 관점은 서로를 <b>완전히</b> 알지 못합니다 — 그래서 <b>잇는 사람</b>이 필요합니다</div>
+
+  <div class="grain"></div>
+  <div class="scan"></div>
+  <div class="vignette"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ════════ film handshake — 동적 플레이타임: 길이 선언(즉시) + 준비완료 신호 ════════ */
+  const SCENE_FILE=(location.pathname.split('/').pop()||'41-perspectives.html');
+  const FILM_MS=16000;                       // 아크 컷: FIELD→랙→DEV dwell(≈f0.73)에서 컷 — 두 관점 다 보여준 뒤 느린 복귀 꼬리 전에 넘어감
+  function film(extra){ try{ if(parent && parent!==window)
+    parent.postMessage(Object.assign({type:'film-scene',file:SCENE_FILE,ms:FILM_MS},extra||{}),'*'); }catch(_){} }
+  film();                                     // 길이 선언 — 즉시(필름 클록 시작 전에 도착)
+
+  /* ════════ refs ════════ */
+  const cv=document.getElementById('bg'), g=cv.getContext('2d');
+  const fieldHero=document.getElementById('fieldHero');
+  const devHero=document.getElementById('devHero');
+  const fieldWrap=document.getElementById('fieldProcs');
+  const devWrap=document.getElementById('devProcs');
+  const vlabel=document.getElementById('vlabel');
+  const puck=document.getElementById('puck');
+  const fieldDim=Array.from(fieldHero.querySelectorAll('.dim'));   // 외래 단어(시스템언어·개발프로세스)
+  const devDim=Array.from(devHero.querySelectorAll('.dim'));       // 외래 단어(현장·경험)
+
+  let W=0,H=0,DPR=Math.min(window.devicePixelRatio||1,2);
+
+  /* ════════ color helpers ════════ */
+  const WARM=[217,138,61], WARMB=[243,193,132];
+  const COLD=[110,168,255], COLDB=[207,224,255], COLDD=[35,70,127];
+  const DIM=[141,141,141];
+  const mix=(a,b,t)=>[a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];
+  const rgba=(c,a)=>'rgba('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+','+a+')';
+  const clamp=(a,b,v)=>v<a?a:v>b?b:v;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const ease=x=>{x=clamp(0,1,x);return x*x*(3-2*x);};
+
+  /* ════════ screen sets (실제 구현 시안) ════════
+     FIELD : 제조/공정 (좌측 캐스케이드, warm)
+     DEV   : 시스템/개발 (우측 캐스케이드, cold) — 거울 반전           */
+  const FIELD=[
+    {file:'sonar-waterfall.html', title:'초음파 용착',        tag:'ULTRASONIC'},
+    {file:'weld-thermal.html',    title:'Nd:YAG 레이저 용접', tag:'Nd:YAG'},
+    {file:'oscilloscope.html',    title:'스팟 용접 검사',      tag:'SPOT'},
+    {file:'gcode-printer.html',   title:'적층제조',           tag:'AM'},
+    {file:'cmm-metrology.html',   title:'CMM 정밀 측정',       tag:'CMM'},
+  ];
+  const DEV=[
+    {file:'pid-scheme.html',      title:'시스템 토폴로지',     tag:'P&ID'},
+    {file:'db-architecture.html', title:'DB 모델링',           tag:'SCHEMA'},
+    {file:'ide-coding.html',      title:'IDE 코딩',            tag:'EDITOR'},
+    {file:'agent-governance.html',title:'에이전트 거버넌스',    tag:'GOVERN'},
+    {file:'decision-os.html',     title:'Decision OS',         tag:'DECISION'},
+  ];
+
+  let fieldEls=[], devEls=[];
+  function buildProcs(wrap, set, arr){
+    set.forEach((s)=>{
+      const p=document.createElement('div'); p.className='proc';
+      p.innerHTML='<div class="cap"><span class="dot"></span><b></b><span class="tg"></span></div>'
+                 +'<div class="scr"><iframe scrolling="no" title=""></iframe></div>';
+      p.querySelector('b').textContent=s.title;
+      p.querySelector('.tg').textContent=s.tag;
+      p.querySelector('iframe').title=s.title;
+      wrap.appendChild(p); arr.push(p);
+    });
+  }
+
+  /* ════════ layout (현장=좌, 개발=우 거울) ════════ */
+  let PW=300, PH=169;
+  function layoutSide(arr, side){      // side -1 = 좌(현장), +1 = 우(개발)
+    const left = side<0 ? W*0.045 : (W - W*0.045 - PW);
+    arr.forEach((p,i)=>{
+      p.style.left=left+'px';
+      p.style.top=(H*0.115 + i*H*0.158)+'px';
+      p.style.width=PW+'px';
+      const scr=p.querySelector('.scr');
+      scr.style.width=PW+'px'; scr.style.height=PH+'px';
+      p.querySelector('iframe').style.transform='scale('+(PW/1280).toFixed(4)+')';
+    });
+  }
+  function layoutProcs(){
+    PW=Math.min(W*0.19, 320); PH=PW*0.5625;
+    if(fieldEls.length) layoutSide(fieldEls,-1);
+    if(devEls.length)   layoutSide(devEls,+1);
+  }
+
+  function resize(){
+    W=window.innerWidth;H=window.innerHeight;
+    cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';
+    g.setTransform(DPR,0,0,DPR,0,0);
+    layoutProcs();
+    buildBg();
+    buildTokens();
+  }
+  window.addEventListener('resize',resize);
+
+  /* ════════ 떠다니는 토큰 구름 (DOF 포커스 스윕) ════════
+     현장 토큰(좌, warm) ↔ 시스템 토큰(우, cold). 초점면(focalX)이 현장→시스템으로
+     스윕하며, 초점에 가까운 토큰은 또렷, 멀면 보케처럼 흐려진다(34의 핵심 로직). */
+  const FIELDTOK=['공정','설비','치수','공차','불량','작업표준','양산','셋업','수율',
+                  '가공','조립','검사','치공구','사이클타임','설비보전','라인밸런싱'];
+  const SYSTOK=['SELECT *','JOIN … ON','schema','git commit','PR #','branch','merge',
+                'API','{ json }','endpoint','migration','deploy','CI / CD','PRIMARY KEY','FK →','git push'];
+  const hsh=(i,s)=>{const v=Math.sin((i+1)*12.9898+s*78.233)*43758.5453;return v-Math.floor(v);};
+  let toks=[];
+  function buildTokens(){
+    toks=[];
+    FIELDTOK.forEach((t,i)=>{
+      const top=i%2===0;
+      const xf=lerp(0.050,0.450,hsh(i,1));
+      const yf=top?lerp(0.110,0.300,hsh(i,2)):lerp(0.700,0.905,hsh(i,3));
+      toks.push({t,side:'F',xf,yf,sz:lerp(13,21,hsh(i,4)),ph:hsh(i,5)*6.283,drift:lerp(.5,1.4,hsh(i,6))});
+    });
+    SYSTOK.forEach((t,i)=>{
+      const top=i%2===1;
+      const xf=lerp(0.550,0.950,hsh(i,7));
+      const yf=top?lerp(0.110,0.300,hsh(i,8)):lerp(0.700,0.905,hsh(i,9));
+      toks.push({t,side:'S',xf,yf,sz:lerp(12.5,18.5,hsh(i,10)),ph:hsh(i,11)*6.283,drift:lerp(.5,1.3,hsh(i,12))});
+    });
+  }
+  // 블러를 0.5px 스텝으로 양자화 → 같은 버킷 토큰을 모아 그려 g.filter 재설정 횟수를
+  // 프레임당 수십 회 → 최대 ~13회로 줄인다(canvas 재래스터화 비용이 jank 의 주범).
+  const BLUR_MAX=6, BLUR_STEP=0.5, NB=Math.round(BLUR_MAX/BLUR_STEP)+1;
+  const _buckets=Array.from({length:NB},()=>[]);
+  function drawTokens(time, focalX){
+    const depth=W*0.165;
+    for(let b=0;b<NB;b++) _buckets[b].length=0;
+    // 1) READ pass: 위치/블러/색 계산만(DOM/filter 쓰기 없음)
+    for(const o of toks){
+      const px=o.xf*W + Math.cos(time*0.42*o.drift+o.ph)*3.0;
+      const py=o.yf*H + Math.sin(time*0.55*o.drift+o.ph)*4.2;
+      let blur=(Math.abs(px-focalX)/depth-1)*4.0;
+      blur=blur<0?0:blur>BLUR_MAX?BLUR_MAX:blur;
+      const sharp=1-blur/9;
+      const bi=Math.round(blur/BLUR_STEP);
+      _buckets[bi].push({o,px,py,sharp});
+    }
+    // 2) WRITE pass: 버킷(=블러값)별로 한 번만 g.filter 설정 후 일괄 렌더
+    g.textAlign='center'; g.textBaseline='middle';
+    for(let bi=0;bi<NB;bi++){
+      const bucket=_buckets[bi];
+      if(!bucket.length) continue;
+      const bv=bi*BLUR_STEP;
+      g.save();
+      g.filter = bv>0.15 ? 'blur('+bv.toFixed(2)+'px)' : 'none';
+      const heavy=bv>1.5;                      // 흐릿한 보케 버킷: 글로우 생략(필터에 묻힘)
+      for(const e of bucket){
+        const o=e.o, sharp=e.sharp;
+        const a=lerp(0.09,0.86,sharp)*0.92;
+        if(a<0.045) continue;                  // 사실상 안 보이는 토큰은 스킵
+        const col=o.side==='F'?mix([150,150,150],WARMB,sharp):mix([86,98,112],COLD,sharp);
+        g.font=(o.side==='F'?'600 '+o.sz.toFixed(1)+"px 'Pretendard',sans-serif"
+                            :'500 '+o.sz.toFixed(1)+"px 'JetBrains Mono',monospace");
+        if(sharp>0.5&&!heavy){ g.shadowColor=rgba(col,0.5*sharp); g.shadowBlur=10*sharp; }
+        else g.shadowBlur=0;
+        g.fillStyle=rgba(col,a);
+        g.fillText(o.t, e.px, e.py);
+      }
+      g.restore();
+    }
+    g.filter='none';
+  }
+
+  /* ════════ background model (gears + system grid) ════════ */
+  let gears=[], codeCols=[], archBox=[];
+  function buildBg(){
+    // 기어(현장) — 좌측 배경(현장 영역). 상·하 밴드로 분포해 중앙 헤드라인 회피.
+    gears=[
+      {x:W*0.420, y:H*0.215, r:H*0.120, teeth:16, ph:0.0, spd: 0.085},
+      {x:W*0.300, y:H*0.300, r:H*0.072, teeth:11, ph:0.7, spd:-0.124},
+      {x:W*0.340, y:H*0.770, r:H*0.100, teeth:13, ph:1.9, spd:-0.103},
+      {x:W*0.470, y:H*0.800, r:H*0.058, teeth:9,  ph:3.1, spd: 0.150},
+    ];
+    // 코드 컬럼(시스템) — 우측(개발 영역, 개발 막에서 점등)
+    const TOK=['const system = compose(','  pipeline, schema,','  contract, resolver',')',
+      '','function resolve(node){','  return graph.walk(node)','}','',
+      'class Service extends Core {}','','api ⟶ model ⟶ store'];
+    codeCols=[
+      {x:W*0.620, y:H*0.640, lines:TOK, lh:H*0.038},
+    ];
+    // 아키텍처 박스(시스템) — 우측 상단으로 이동(헤드라인과 겹치지 않게)
+    const ax=W*0.590, ay=H*0.120, cw=W*0.070, ch=H*0.072, gx=W*0.096, gy=H*0.126;
+    archBox=[
+      {label:'API',     x:ax,    y:ay},
+      {label:'SERVICE', x:ax+gx, y:ay},
+      {label:'MODEL',   x:ax,    y:ay+gy},
+      {label:'SCHEMA',  x:ax+gx, y:ay+gy},
+    ].map(m=>({...m,w:cw,h:ch,cx:m.x+cw/2,cy:m.y+ch/2}));
+  }
+
+  /* ════════ master timeline (seamless loop) ════════ */
+  const CYCLE=22.0;                       // 필름 노출 ~20s → 루프 봉합(0.91) 전 컷
+  // perspective p : 0 = FIELD … 1 = DEV
+  // 연속 랙포커스: 초점면이 끊임없이 현장↔개발을 가로지른다(정적 X). 한 사이클 안에
+  // dwell(또렷하게 머무름) → pull(가로지름) → dwell → pull(복귀)로 호흡하되, dwell 중에도
+  // 미세한 초점 브리딩(focalBreath)이 살아 블러가 깊어졌다 얕아진다.
+  //   0.00–0.10 : FIELD 정착(intro)
+  //   0.10–0.38 : FIELD dwell (또렷, 미세 브리딩)
+  //   0.38–0.50 : RACK → DEV (focus pull)
+  //   0.50–0.78 : DEV dwell (또렷, 미세 브리딩)
+  //   0.78–0.90 : RACK → FIELD (focus pull back)
+  //   0.90–1.00 : FIELD 정착 → 루프 봉합
+  function persp(f){
+    if(f<0.10) return 0;
+    if(f<0.38) return 0;
+    if(f<0.50) return ease((f-0.38)/0.12);        // PULL → DEV
+    if(f<0.78) return 1;
+    if(f<0.90) return 1-ease((f-0.78)/0.12);      // PULL → FIELD
+    return 0;                                      // 루프 봉합 (FIELD 로 닫힘)
+  }
+  // 초점 브리딩: dwell 구간에서도 focalX 가 살짝 흔들려 블러가 호흡한다(정지 방지).
+  // 정착된 쪽으로 완전히 못 박지 않고 ±breath 만큼 초점면을 흔든다.
+  function focalBreath(f, time){
+    // pull 구간에선 0(메인 모션이 지배), dwell 구간에선 진폭이 살아난다.
+    const inPull = (f>=0.38&&f<0.50)||(f>=0.78&&f<0.90);
+    const amp = inPull ? 0.012 : 0.055;
+    return Math.sin(time*0.9)*amp + Math.sin(time*0.37+1.3)*amp*0.5;
+  }
+  const _off=(parseFloat(new URLSearchParams(location.search).get('t'))||0);
+  let t0=null;
+  const REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* 패널 등장 엔벨로프: fade in → hold → fade out (한 번에 하나) */
+  function panEnv(f,c){
+    const inW=0.026, hold=0.030, outW=0.024;
+    const t=f-(c-inW);
+    if(t<0) return 0;
+    if(t<inW) return ease(t/inW);
+    if(t<inW+hold) return 1;
+    if(t<inW+hold+outW) return 1-ease((t-inW-hold)/outW);
+    return 0;
+  }
+  // 슬롯 중심 — 현장 dwell(0.10–0.38) / 개발 dwell(0.50–0.78) 안에 캐스케이드 배치.
+  const fieldC=i=>0.120+i*0.052;   // 0.120..0.328
+  const devC  =i=>0.540+i*0.052;   // 0.540..0.748
+
+  /* ════════ iframe mount 관리 (보이는 것만 라이브) ════════ */
+  function ensureSrc(p, file){
+    if(p.dataset.loaded) return;
+    p.dataset.loaded='1';
+    p.querySelector('iframe').src=file;
+  }
+  function unloadSrc(p){
+    if(!p.dataset.loaded) return;
+    delete p.dataset.loaded;
+    p.querySelector('iframe').src='about:blank';
+  }
+  function syncSide(arr, set, cOf, gate){
+    // gate: 이 막(현장/개발)의 가시도(0..1) — 막 밖이면 env 0 으로 소거 + iframe unmount
+    // 프리로드 리드를 넓혀(≈0.055 사이클) iframe src 설정(=로드 스파이크)을 패널이
+    // 보이기 한참 전에 끝내, 가시 구간의 프레임에서 jank 가 발생하지 않게 한다.
+    for(let i=0;i<arr.length;i++){
+      const c=cOf(i);
+      const nowV=panEnv(f_g,c);           // 현재 패널 가시도(게이트 무시)
+      const env=nowV*gate;
+      const soon=panEnv(f_g+0.055,c);     // 선로드 리드(전환 직전 막 진입도 선로드 허용)
+      // 지금 보이는 중이거나 곧 보일 때 마운트 유지. soon 만으로 끄면 panEnv 폭(~0.08)이
+      // 리드(0.055)보다 넓어 패널이 풀 가시 상태에 도달하는 순간 iframe 이 about:blank 로
+      // 내려가 패널이 '잠깐 보이다 검게' 비는 버그가 났음.
+      if(nowV>0.001 || soon>0.001) ensureSrc(arr[i], set[i].file); else unloadSrc(arr[i]);
+      arr[i].style.opacity=env.toFixed(3);
+    }
+  }
+  let f_g=0;   // 현재 프레임 f (syncSide 에서 사용)
+
+  /* ════════ draw ════════ */
+  function frame(now){
+    if(t0===null)t0=now;
+    // prefers-reduced-motion: 단일 합성 프레임으로 정착(루프/모션 정지).
+    const time = REDUCED ? (CYCLE*0.22 + _off) : (now-t0)/1000 + _off;
+    const f=(time%CYCLE)/CYCLE;  f_g=f;
+    const p=persp(f);
+    const sf=ease(p);
+    const fieldVis=1-sf, devVis=sf;
+
+    // 초점면: 메인 퍼스펙티브(sf) + dwell 브리딩. 정착 구간에서도 끊임없이 미세 이동.
+    const breath = REDUCED ? 0 : focalBreath(f, time);
+    const focalX = lerp(W*0.30, W*0.70, clamp(0,1,sf+breath));
+
+    g.clearRect(0,0,W,H);
+    drawGears(time, fieldVis);
+    drawSystem(time, devVis);
+    drawTokens(time, focalX);       // 떠다니는 토큰 구름 — DOF 포커스 스윕(연속)
+    drawSeam(time, sf);
+
+    // 타이포 DOF — 두 칼럼 항상 존재. 초점 안 간 쪽은 블러+딤으로 '보여줌'.
+    const intro=ease(f/0.06);                 // 시작 시 현장 materialize
+    applyHero(fieldHero, fieldVis, fieldDim, (1-intro)*3.2, intro);
+    applyHero(devHero,   devVis,   devDim,   0,             1);
+
+    // 몽타주 — 현장(좌), 개발(우). 각 막에서만 마운트(동시 1개).
+    syncSide(fieldEls, FIELD, fieldC, fieldVis);
+    syncSide(devEls,   DEV,   devC,   devVis);
+
+    // HUD rail + label
+    puck.style.left=(sf*100).toFixed(2)+'%';
+    const pc=mix(WARM,COLD,sf);
+    puck.style.background=rgba(mix(WARMB,COLDB,sf),1);
+    puck.style.boxShadow='0 0 14px '+rgba(pc,0.7);
+    setLabel(p, pc);
+
+    if(!REDUCED) requestAnimationFrame(frame);    // reduced-motion: 한 프레임 후 정지
+  }
+
+  /* ── 헤드라인: 그 관점이 하이라이트될 때만 자연스럽게 등장(fade+blur in) ──
+       그 외 시점엔 숨음(opacity→0). '보여주는 흐릿한 다른 관점'은 토큰 구름이 담당.
+       vis 0..1, extraBlur(시작 materialize), opaMul(현장 초기 페이드인) ── */
+  // DOM filter 쓰기 양자화: 블러가 0.25px 이상 변할 때만 style.filter 갱신(중복 쓰기 제거).
+  // 각 el 의 직전 블러/transform 단계를 캐시해 불필요한 레이아웃·재래스터화를 막는다.
+  const _heroState=new WeakMap();
+  function setFilterQ(el, b){
+    const st=_heroState.get(el)||(_heroState.set(el,{fb:-99,ty:-99}),_heroState.get(el));
+    if(Math.abs(b-st.fb)>=0.25 || (b<=0.04)!==(st.fb<=0.04)){
+      el.style.filter = b>0.04 ? 'blur('+b.toFixed(2)+'px)' : 'none';
+      st.fb=b;
+    }
+  }
+  function applyHero(el, vis, dimEls, extraBlur, opaMul){
+    const appear = ease(vis)*opaMul;              // 등장 진행도 0→1
+    el.style.opacity = appear.toFixed(3);
+    const b = (1-vis)*4.0 + extraBlur;            // 등장 시 blur→0 으로 맺힘
+    setFilterQ(el, b);
+    const st=_heroState.get(el);
+    const ty=lerp(18,0,appear);
+    if(Math.abs(ty-st.ty)>=0.5){
+      el.style.transform = 'translateY(-50%) translateY('+ty.toFixed(1)+'px) translateZ(0)';  // 아래서 떠오르며
+      st.ty=ty;
+    }
+    el.style.setProperty('--rev', appear.toFixed(3));   // em 밑줄이 그어지며 등장
+    // 외래 도메인 단어: 또렷해져도 살짝 흐릿(낯섦)
+    const db = lerp(1.4, 4.6, 1-vis) + extraBlur;
+    for(const d of dimEls) setFilterQ(d, db);
+  }
+
+  /* ── 기어(현장): 떠있는 톱니바퀴. 비초점이어도 블러+딤으로 계속 '보여줌' ── */
+  function drawGears(time, vis){
+    if(vis<0.02) return;                   // 완전 비가시면 통째로 스킵(프레임당 큰 절약)
+    const recede=1-vis;
+    const blur=Math.min(recede*5.0, 5.0);  // 비초점 시 보케(상한 캡)
+    const vm=0.30+0.70*vis;                // 알파 플로어 — 흐릿해도 보임
+    const heavyBlur=blur>1.5;              // 이미 흐릿하면 내부 shadowBlur(글로우) 무의미 → 생략
+    g.save();
+    g.filter = blur>0.2 ? 'blur('+blur.toFixed(1)+'px)' : 'none';  // 레이어 1회 설정(기어 공통)
+    for(const ge of gears){
+      const r=ge.r*lerp(0.90,1,vis);
+      const a=(0.05+0.05*Math.sin(time*0.4+ge.ph))*vm;
+      g.save();
+      g.translate(ge.x, ge.y); g.rotate(time*ge.spd+ge.ph);
+      g.strokeStyle=rgba(WARM,0.30*vm); g.lineWidth=lerp(2.4,1.0,recede);
+      if(!heavyBlur){ g.shadowColor=rgba(WARM,0.30*vm); g.shadowBlur=14*vm; }
+      g.beginPath();
+      const ro=r, ri=r*0.80;
+      for(let i=0;i<ge.teeth*2;i++){
+        const ang=i/(ge.teeth*2)*Math.PI*2, rr=(i%2===0)?ro:ri;
+        const px=Math.cos(ang)*rr, py=Math.sin(ang)*rr;
+        i===0?g.moveTo(px,py):g.lineTo(px,py);
+      }
+      g.closePath(); g.stroke(); g.shadowBlur=0;
+      g.strokeStyle=rgba(WARM,0.22*vm); g.lineWidth=1;
+      g.beginPath(); g.arc(0,0,r*0.62,0,Math.PI*2); g.stroke();
+      g.beginPath(); g.arc(0,0,r*0.20,0,Math.PI*2); g.stroke();
+      for(let s=0;s<4;s++){
+        const ang=s/4*Math.PI*2;
+        g.beginPath();
+        g.moveTo(Math.cos(ang)*r*0.20, Math.sin(ang)*r*0.20);
+        g.lineTo(Math.cos(ang)*r*0.62, Math.sin(ang)*r*0.62);
+        g.stroke();
+      }
+      const rg=g.createRadialGradient(0,0,0,0,0,r);
+      rg.addColorStop(0, rgba(WARM, a*0.9)); rg.addColorStop(1, rgba(WARM,0));
+      g.fillStyle=rg; g.beginPath(); g.arc(0,0,r,0,Math.PI*2); g.fill();
+      g.restore();
+    }
+    g.restore();
+    g.filter='none';
+  }
+
+  /* ── 시스템(개발): 도형(아키텍처)+코드는 비초점이어도 블러로 '보여줌',
+       그리드 텍스처는 개발 초점일 때만(흐림 비용 회피) ── */
+  function drawSystem(time, vis){
+    if(vis<0.02) return;                   // 완전 비가시면 통째로 스킵
+    const blur=Math.min((1-vis)*5.0, 5.0), vm=0.26+0.74*vis;
+    const heavyBlur=blur>1.5;              // 이미 흐릿하면 shadowBlur 글로우 생략
+    // 미세 그리드(우측 = 개발 영역) — 개발 초점 시에만
+    if(vis>0.05){
+      g.save();
+      g.strokeStyle=rgba(COLD,0.030*vis); g.lineWidth=1;
+      const step=52, gx0=W*0.46, gx1=W*0.97;
+      for(let x=gx0;x<gx1;x+=step){ g.beginPath(); g.moveTo(x,H*0.12); g.lineTo(x,H*0.90); g.stroke(); }
+      for(let y=H*0.14;y<H*0.90;y+=step){ g.beginPath(); g.moveTo(gx0,y); g.lineTo(gx1,y); g.stroke(); }
+      g.restore();
+    }
+    // 도형(아키텍처 박스+트레이스+패킷) + 코드 — 항상(비초점이면 흐릿하게)
+    g.save();
+    g.filter = blur>0.2 ? 'blur('+blur.toFixed(1)+'px)' : 'none';
+    g.textAlign='center'; g.textBaseline='middle';
+    g.strokeStyle=rgba(COLD,0.26*vm); g.lineWidth=1.3;
+    const link=(a,b,h)=>{const k=h?[b.cx,a.cy]:[a.cx,b.cy];
+      g.beginPath();g.moveTo(a.cx,a.cy);g.lineTo(k[0],k[1]);g.lineTo(b.cx,b.cy);g.stroke();};
+    if(archBox.length){
+      link(archBox[0],archBox[1],true); link(archBox[0],archBox[2],false);
+      link(archBox[3],archBox[1],false); link(archBox[2],archBox[3],true);
+      const a=archBox[0], b=archBox[1], cphase=(time%5.0)/5.0;
+      const px=lerp(a.cx,b.cx,cphase);
+      g.fillStyle=rgba(COLDB,0.85*vm);
+      if(!heavyBlur){ g.shadowColor=rgba(COLD,1); g.shadowBlur=12*vm; }
+      g.beginPath(); g.arc(px,a.cy,2.4,0,Math.PI*2); g.fill(); g.shadowBlur=0;
+    }
+    for(const m of archBox){
+      g.strokeStyle=rgba(COLD,0.55*vm); g.lineWidth=1.4;
+      if(!heavyBlur){ g.shadowColor=rgba(COLD,0.4*vm); g.shadowBlur=12*vm; }
+      roundRect(m.x,m.y,m.w,m.h,6); g.stroke(); g.shadowBlur=0;
+      g.fillStyle=rgba(COLDD,0.14*vm); roundRect(m.x,m.y,m.w,m.h,6); g.fill();
+      g.font="700 "+Math.max(10,Math.min(14,W*0.0084))+"px 'JetBrains Mono',monospace";
+      g.fillStyle=rgba(COLDB,0.85*vm); g.fillText(m.label, m.cx, m.cy);
+    }
+    // 흐르는 코드 컬럼
+    g.textAlign='start'; g.textBaseline='alphabetic';
+    const fs=Math.max(10,Math.min(15,W*0.0090));
+    g.font='500 '+fs+"px 'JetBrains Mono', monospace";
+    for(const col of codeCols){
+      const drift=(time*0.6)%(col.lh*2);
+      for(let li=0;li<col.lines.length;li++){
+        const y=col.y+li*col.lh - drift;
+        if(y<H*0.10||y>H*0.92) continue;
+        const isKw=/^(const|function|class|return)/.test(col.lines[li].trim());
+        const c=isKw?COLD:DIM;
+        g.fillStyle=rgba(c,(isKw?0.55:0.34)*vm);
+        if(isKw&&!heavyBlur){g.shadowColor=rgba(COLD,0.5*vm);g.shadowBlur=8*vm;} else g.shadowBlur=0;
+        g.fillText(col.lines[li], col.x, y);
+      }
+    }
+    g.shadowBlur=0; g.restore();
+    g.filter='none';
+  }
+
+  /* ── 중앙 시임: 또렷한 쪽으로 향하는 부드러운 글로우(하이라이트 이동) ── */
+  function drawSeam(time, sf){
+    const fx = lerp(W*0.49, W*0.51, sf) + Math.sin(time*0.5)*W*0.006;
+    const band=W*0.055, col=mix(WARM,COLD,sf);
+    const gr=g.createLinearGradient(fx-band,0,fx+band,0);
+    gr.addColorStop(0, rgba(col,0)); gr.addColorStop(0.5, rgba(col,0.028)); gr.addColorStop(1, rgba(col,0));
+    g.fillStyle=gr; g.fillRect(fx-band,0,band*2,H);
+    g.strokeStyle=rgba(col,0.07); g.lineWidth=1; g.setLineDash([2,7]);
+    g.beginPath(); g.moveTo(fx,H*0.15); g.lineTo(fx,H*0.85); g.stroke(); g.setLineDash([]);
+  }
+
+  /* ── kicker 라벨: 관점이 가로지를 때 글자가 흐려졌다(focus out) 새 라벨로 맺힌다(focus in) ── */
+  let _lab='', _labA=-1;
+  function setLabel(p, col){
+    // 초점이 한쪽에 가까울수록 또렷, 중앙(전환)일수록 흐려지며 크로스페이드.
+    const dist=Math.abs(p-0.5)*2;                 // 0(중앙)…1(양끝)
+    const focus=ease(clamp(0,1,(dist-0.18)/0.82)); // 중앙 부근 살짝 데드존 후 또렷
+    const txt = p<0.5 ? '실무자 관점 · FIELD EXPERT' : '개발자 관점 · DEVELOPER';
+    // 라벨 텍스트는 가장 흐릿한 순간(focus 최저)에만 교체 → 깜빡임 없이 전환.
+    if(txt!==_lab && focus<0.22){ _lab=txt; vlabel.textContent=txt; }
+    else if(_lab===''){ _lab=txt; vlabel.textContent=txt; }
+    const a=(0.32+0.68*focus);
+    if(_labA<0||Math.abs(a-_labA)>=0.02){
+      vlabel.style.opacity=a.toFixed(3);
+      vlabel.style.filter = focus<0.96 ? 'blur('+((1-focus)*2.6).toFixed(2)+'px)' : 'none';
+      _labA=a;
+    }
+    vlabel.style.color=rgba(col,1);
+    vlabel.style.textShadow='0 0 12px '+rgba(col,0.45);
+  }
+
+  function roundRect(x,y,w,h,r){
+    g.beginPath(); g.moveTo(x+r,y);
+    g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r);
+    g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath();
+  }
+
+  /* ── boot (폰트 준비 후, headless 안전 폴백) ── */
+  // 마스터 클록은 첫 현장 화면이 준비된 뒤(또는 캡) 시작 → 로딩 지연을 아크 밖으로 밀어냄.
+  let booted=false;
+  function startClock(){
+    if(booted) return; booted=true;
+    requestAnimationFrame(frame);
+    film({ready:true});                       // 실제로 볼 준비 완료 → 필름 클록 시작 신호
+  }
+  function boot(){
+    buildProcs(fieldWrap, FIELD, fieldEls);
+    buildProcs(devWrap, DEV, devEls);
+    resize();
+    const first=fieldEls[0] && fieldEls[0].querySelector('iframe');
+    if(first){
+      fieldEls[0].dataset.loaded='1';         // lazy-load 와 중복 방지(이미 로드 표시)
+      first.addEventListener('load', startClock, {once:true});
+      first.src=FIELD[0].file;                 // 첫 현장 화면 선로드
+      setTimeout(startClock, 2500);            // 캡 — 느린 네트워크에서도 멈추지 않게
+    } else {
+      startClock();
+    }
+  }
+  if(document.fonts && document.fonts.ready){
+    let on=false; const go=()=>{if(!on){on=true;boot();}};
+    document.fonts.ready.then(go); setTimeout(go,800);
+  } else boot();
+})();
+</script>
+</body>
+</html>

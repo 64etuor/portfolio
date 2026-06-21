@@ -42,11 +42,10 @@ function deepMerge<T>(base: T, patch: DeepPartial<T>): T {
   return result as T;
 }
 
-export function mergeProfile(base: Profile, patch: DeepPartial<Profile>): Profile {
+function mergeProfile(base: Profile, patch: DeepPartial<Profile>): Profile {
   return deepMerge(base, patch);
 }
 
 /** Canonical, fully-merged profile. Import this everywhere. */
 export const PROFILE = mergeProfile(profile, overrides);
 
-export { profile, overrides };

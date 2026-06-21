@@ -1,15 +1,15 @@
 // SSOT 스키마 — 모든 시안·이력서가 이 타입을 통해 content/ 를 읽는다.
 
-export interface Impact {
+interface Impact {
   metric: string
   value: string
   krw?: string // 원화 절감/효과액 (예: "연 5천만원")
 }
-export interface Link {
+interface Link {
   label: string
   url: string
 }
-export interface Project {
+interface Project {
   id: string
   name: string
   org: string
@@ -23,47 +23,47 @@ export interface Project {
   domains: Array<'제조' | '데이터' | 'AI' | '개발' | 'PM' | '품질' | '하드웨어'>
   links?: Link[]
 }
-export interface ExperienceItem {
+interface ExperienceItem {
   company: string
   title: string
   period: string
   summary?: string
   highlights?: string[]
 }
-export interface SkillGroup {
+interface SkillGroup {
   name: string
   keywords: string[]
 }
-export interface WritingItem {
+interface WritingItem {
   title: string
   kind: 'essay' | 'poem' | 'column'
   quote: string
   year?: string
 }
-export interface PhilosophyLens {
+interface PhilosophyLens {
   name: string
   idea: string
   bridge: string // 엔지니어링 적용
 }
-export interface Metric {
+interface Metric {
   metric: string
   value: string
   krw?: string
   note?: string
 }
-export interface EducationItem {
+interface EducationItem {
   institution: string
   area: string
   period?: string
   note?: string
 }
-export interface TrainingItem {
+interface TrainingItem {
   name: string
   org?: string
   period?: string
   summary?: string
 }
-export interface Identity {
+interface Identity {
   name: string
   nameEn: string
   title: string
@@ -71,7 +71,7 @@ export interface Identity {
   beliefs: string[]
   quotes: Array<{ text: string; source?: string }>
 }
-export interface Contact {
+interface Contact {
   email: string
   phone?: string
   github: string

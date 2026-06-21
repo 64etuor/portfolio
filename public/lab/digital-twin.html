@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>디지털 트윈 — 연결된 도메인 = 조직·공정의 트윈</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<style>
+:root{
+  --bg:#070a0f;
+  --panel:rgba(11,15,22,.88);
+  --line:#1c2333;
+  --line-soft:#151b27;
+  --ink:#e8edf6;
+  --ink-2:#9aa6bd;
+  --ink-3:#5d6a82;
+  --signal:#46e6b0;
+  --amber:#ffb454;
+  --c-mfg:#ff7a8a;
+  --c-dev:#6fb4ff;
+  --c-ai:#c9a3ff;
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --sans:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--sans);
+  word-break:keep-all;
+  -webkit-font-smoothing:antialiased;
+}
+::selection{background:rgba(70,230,176,.28);color:#fff}
+#app{position:fixed;inset:0}
+canvas{display:block;outline:none}
+
+/* boot */
+#boot{
+  position:fixed;inset:0;z-index:60;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px;
+  transition:opacity .7s ease;
+}
+#boot.hide{opacity:0;pointer-events:none}
+.boot-mark{font-family:var(--mono);font-size:11px;letter-spacing:.32em;color:var(--ink-3);text-transform:uppercase}
+.boot-title{font-size:15px;font-weight:700;color:var(--ink);letter-spacing:.02em}
+.boot-sub{font-size:11px;color:var(--ink-3);text-align:center;max-width:320px;line-height:1.55}
+.boot-bar{width:220px;height:3px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:4px}
+.boot-fill{height:100%;width:0%;background:linear-gradient(90deg,var(--c-mfg),var(--c-dev),var(--c-ai));transition:width .3s ease}
+
+/* HUD chrome */
+.hud{position:fixed;z-index:20;pointer-events:none}
+.hud *{pointer-events:auto}
+
+/* top bar */
+#topbar{
+  top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;
+  padding:14px 20px;gap:16px;
+  background:linear-gradient(180deg,rgba(7,10,15,.94),rgba(7,10,15,0));
+}
+.brand{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.brand .nm{font-size:16px;font-weight:800;letter-spacing:-.01em}
+.brand .role{font-size:11.5px;color:var(--ink-2)}
+.brand .tw{
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.28em;text-transform:uppercase;
+  color:var(--signal);border:1px solid rgba(70,230,176,.3);border-radius:5px;padding:3px 8px;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.tw .dot{width:6px;height:6px;border-radius:50%;background:var(--signal);box-shadow:0 0 4px rgba(70,230,176,.65);animation:pulse 1.8s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.top-right{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-2)}
+.top-right .clock{font-family:var(--mono);color:var(--ink);font-size:11.5px}
+
+/* KPI strip */
+#kpis{
+  top:54px;left:0;right:0;display:flex;gap:8px;padding:6px 20px;overflow-x:auto;
+  scrollbar-width:none;
+}
+#kpis::-webkit-scrollbar{display:none}
+.kpi{
+  flex:0 0 auto;background:var(--panel);border:1px solid var(--line);border-radius:9px;
+  padding:7px 11px;backdrop-filter:blur(8px);min-width:96px;
+}
+.kpi .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--ink-3);text-transform:uppercase}
+.kpi .v{font-family:var(--mono);font-size:15px;font-weight:700;margin-top:2px;color:var(--signal)}
+.kpi .v.amber{color:var(--amber)}
+.kpi .v.dev{color:var(--c-dev)}
+.kpi .v.ai{color:var(--c-ai)}
+.kpi .v.mfg{color:var(--c-mfg)}
+
+/* layer legend panel (left) */
+#control{
+  left:20px;bottom:20px;width:256px;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;backdrop-filter:blur(10px);overflow:hidden;
+  box-shadow:0 18px 50px rgba(0,0,0,.5);
+}
+.ctl-h{padding:11px 14px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;justify-content:space-between}
+.ctl-h .t{font-size:12px;font-weight:700}
+.ctl-h .sub{font-family:var(--mono);font-size:8.5px;letter-spacing:.2em;color:var(--ink-3);text-transform:uppercase}
+.ctl-body{padding:12px 14px;display:flex;flex-direction:column;gap:11px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.row .lab{font-size:12px;color:var(--ink-2)}
+.row .lab b{color:var(--ink);font-weight:700}
+.switch{position:relative;width:46px;height:25px;border-radius:25px;background:var(--line);
+  border:1px solid var(--line);cursor:pointer;transition:background .25s;flex:0 0 auto}
+.switch.on{background:linear-gradient(90deg,#1d7a60,var(--signal))}
+.switch .knob{position:absolute;top:2px;left:2px;width:19px;height:19px;border-radius:50%;
+  background:#fff;transition:left .25s;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.switch.on .knob{left:23px}
+.slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;border-radius:4px;
+  background:var(--line);outline:none;cursor:pointer}
+.slider::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;
+  background:var(--c-dev);box-shadow:0 0 4px rgba(111,180,255,.45);cursor:pointer}
+.slider::-moz-range-thumb{width:15px;height:15px;border:0;border-radius:50%;background:var(--c-dev);cursor:pointer}
+.btn{
+  width:100%;text-align:center;font-family:var(--mono);font-size:10px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--ink);background:rgba(255,255,255,.03);
+  border:1px solid var(--line);border-radius:8px;padding:9px;cursor:pointer;
+  transition:border-color .15s,color .15s,background .15s;
+}
+.btn:hover{border-color:var(--signal);color:var(--signal);background:rgba(70,230,176,.06)}
+.legend{display:flex;flex-direction:column;gap:5px;margin-top:2px}
+.legend .li{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--ink-2);cursor:pointer;padding:3px 0}
+.legend .li:hover{color:var(--ink)}
+.legend .sw{width:9px;height:9px;border-radius:2px;flex:0 0 auto}
+.divider{height:1px;background:var(--line-soft);margin:2px 0}
+.layer-row{display:flex;align-items:center;gap:7px;padding:4px 0}
+.layer-dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+.layer-label{font-size:11px;font-weight:700}
+.layer-sub{font-size:9.5px;color:var(--ink-3);margin-top:1px}
+
+/* hint */
+#hint{
+  right:20px;bottom:20px;font-family:var(--mono);font-size:10px;letter-spacing:.06em;
+  color:var(--ink-3);text-align:right;line-height:1.7;
+}
+#hint b{color:var(--ink-2)}
+
+/* cross-domain sync panel (right) */
+#xdpanel{
+  right:20px;top:96px;width:278px;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;backdrop-filter:blur(10px);overflow:hidden;
+  box-shadow:0 18px 50px rgba(0,0,0,.5);
+}
+.xd-h{padding:11px 14px;border-bottom:1px solid var(--line-soft)}
+.xd-h .t{font-size:12px;font-weight:700;display:flex;align-items:center;gap:7px}
+.xd-h .t .badge{font-family:var(--mono);font-size:8px;letter-spacing:.14em;color:var(--c-ai);
+  border:1px solid rgba(201,163,255,.3);border-radius:4px;padding:2px 6px;text-transform:uppercase}
+.xd-h .sub{font-family:var(--mono);font-size:8.5px;letter-spacing:.16em;color:var(--ink-3);text-transform:uppercase;margin-top:4px}
+.xd-body{padding:12px 14px;display:flex;flex-direction:column;gap:11px}
+
+/* 3-layer fusion diagram */
+.fusion{display:flex;flex-direction:column;gap:5px}
+.fusion-layer{border-radius:9px;padding:8px 10px;border:1px solid;display:flex;align-items:center;gap:9px}
+.fusion-layer.mfg{border-color:rgba(255,122,138,.35);background:rgba(255,122,138,.05)}
+.fusion-layer.dev{border-color:rgba(111,180,255,.35);background:rgba(111,180,255,.05)}
+.fusion-layer.ai{border-color:rgba(201,163,255,.35);background:rgba(201,163,255,.05)}
+.fl-icon{
+  width:28px;height:18px;border-radius:5px;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  font-family:var(--mono);font-size:8px;font-weight:800;letter-spacing:.08em;
+  border:1px solid currentColor;background:rgba(255,255,255,.025)
+}
+.fl-icon.mfg{color:var(--c-mfg)}
+.fl-icon.dev{color:var(--c-dev)}
+.fl-icon.ai{color:var(--c-ai)}
+.fl-info{flex:1;min-width:0}
+.fl-label{font-size:11px;font-weight:700}
+.fl-label.mfg{color:var(--c-mfg)}
+.fl-label.dev{color:var(--c-dev)}
+.fl-label.ai{color:var(--c-ai)}
+.fl-sub{font-size:9px;color:var(--ink-3);margin-top:2px;line-height:1.4}
+.fl-val{font-family:var(--mono);font-size:11px;font-weight:700;flex:0 0 auto}
+.fl-val.mfg{color:var(--c-mfg)}
+.fl-val.dev{color:var(--c-dev)}
+.fl-val.ai{color:var(--c-ai)}
+
+.xd-cap{font-size:10.5px;color:var(--ink-2);line-height:1.55;border-left:2px solid var(--c-ai);padding-left:9px}
+.xd-cap b{color:var(--ink)}
+
+/* sync stream */
+.xd-stream{display:flex;flex-direction:column;gap:5px}
+.xd-stream .rqh{font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;margin-bottom:6px}
+.stream-row{display:flex;align-items:center;gap:7px;font-size:10.5px;color:var(--ink-2);padding:2px 0}
+.stream-row .sc{width:6px;height:6px;border-radius:50%;flex:0 0 auto}
+.stream-row b{color:var(--ink);font-weight:600}
+.xd-state{display:flex;align-items:center;justify-content:space-between;gap:8px;
+  font-family:var(--mono);font-size:9px;letter-spacing:.04em;padding-top:2px;border-top:1px solid var(--line-soft);padding-top:8px}
+.xd-state .lbl{color:var(--ink-3);text-transform:uppercase;letter-spacing:.14em}
+.xd-state .val{color:var(--signal);transition:color .2s}
+.xd-state .val.pend{color:var(--amber)}
+.xd-state .val.ai{color:var(--c-ai)}
+.xd-port{font-family:var(--mono);font-size:9px;color:var(--ink-3);line-height:1.55;border-top:1px solid var(--line-soft);padding-top:9px}
+.xd-port b{color:var(--ink-2);font-weight:700}
+.xd-port .ph{color:var(--c-ai)}
+
+@media (max-width:980px){ #xdpanel{display:none} }
+@media (max-width:640px){
+  #control{width:calc(100vw - 40px)}
+  #kpis{top:50px}
+  .brand .nm{font-size:14px}
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<!-- boot -->
+<div id="boot">
+  <div class="boot-mark">Digital Twin · Connected Domains</div>
+  <div class="boot-title">도메인 연결 상태 초기화 중</div>
+  <div class="boot-sub">제조 · 데이터 · AI 도메인이 한 사람 안에서 연결되면 — 그 자체가 조직·공정의 디지털 트윈이 된다</div>
+  <div class="boot-bar"><div class="boot-fill" id="bootFill"></div></div>
+</div>
+
+<!-- top bar -->
+<div class="hud" id="topbar">
+  <div class="brand">
+    <span class="nm">도메인 트윈</span>
+    <span class="role">연결된 도메인 = 조직·공정의 디지털 트윈</span>
+    <span class="tw"><span class="dot"></span>DOMAIN TWIN · SILO→CONNECTED LIVE</span>
+  </div>
+  <div class="top-right">
+    <span>Silo→Connected State</span>
+    <span class="clock" id="clock">--:--:--</span>
+  </div>
+</div>
+
+<!-- KPI strip -->
+<div class="hud" id="kpis"></div>
+
+<!-- layer legend + control panel (left) -->
+<div class="hud" id="control">
+  <div class="ctl-h">
+    <span class="t">도메인 연결 상태</span>
+    <span class="sub">Silo→Connected Overlay</span>
+  </div>
+  <div class="ctl-body">
+    <!-- 3-layer legend -->
+    <div>
+      <div style="font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;margin-bottom:8px">Domain Layers — 사일로 시 오류[ERR], 연결 시 정합[OK]</div>
+      <div class="layer-row">
+        <div class="layer-dot" style="background:var(--c-mfg);box-shadow:0 0 4px rgba(255,122,138,.55)"></div>
+        <div>
+          <div class="layer-label" style="color:var(--c-mfg)">제조 현장</div>
+          <div class="layer-sub">설비·공정·OEE·물류 — 제조 현장 도메인</div>
+        </div>
+      </div>
+      <div class="layer-row">
+        <div class="layer-dot" style="background:var(--c-dev);box-shadow:0 0 4px rgba(111,180,255,.55)"></div>
+        <div>
+          <div class="layer-label" style="color:var(--c-dev)">데이터 / 개발</div>
+          <div class="layer-sub">MES·파이프라인·SSOT — 현장을 코드로 구조화</div>
+        </div>
+      </div>
+      <div class="layer-row">
+        <div class="layer-dot" style="background:var(--c-ai);box-shadow:0 0 4px rgba(201,163,255,.55)"></div>
+        <div>
+          <div class="layer-label" style="color:var(--c-ai)">AI 도메인</div>
+          <div class="layer-sub">예측·이상탐지·에이전트 — 모델로 도메인을 연결</div>
+        </div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="row">
+      <span class="lab">라인 가동 <b id="lineState">ON</b></span>
+      <div class="switch on" id="swLine"><div class="knob"></div></div>
+    </div>
+    <div class="row">
+      <span class="lab">라인 속도 <b id="spdVal">1.0x</b></span>
+    </div>
+    <input type="range" class="slider" id="spd" min="0" max="200" value="100" />
+    <button class="btn" id="syncBtn">Sync Pulse : 사일로 → 연결</button>
+    <div class="divider"></div>
+    <div style="font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:var(--ink-3);text-transform:uppercase;margin-bottom:4px">Stations</div>
+    <div class="legend" id="legend"></div>
+  </div>
+</div>
+
+<!-- hint -->
+<div class="hud" id="hint">
+  <div><b>드래그</b> 궤도 회전 · <b>휠</b> 줌</div>
+  <div><b>노드 클릭</b> 포커스 + 상세</div>
+</div>
+
+<!-- cross-domain sync panel (right) -->
+<div class="hud" id="xdpanel">
+  <div class="xd-h">
+    <div class="t">도메인 트윈 상태 <span class="badge">LIVE</span></div>
+    <div class="sub">사일로 → 연결 · 오류 → 정합 전파</div>
+  </div>
+  <div class="xd-body">
+    <!-- 3-layer fusion diagram -->
+    <div class="fusion">
+      <div class="fusion-layer mfg">
+        <div class="fl-icon mfg">MFG</div>
+        <div class="fl-info">
+          <div class="fl-label mfg">제조 현장</div>
+          <div class="fl-sub">사일로 시: 공정 문제가 데이터에 미반영 · 누락</div>
+        </div>
+        <div class="fl-val mfg" id="flMfg">연결</div>
+      </div>
+      <div class="fusion-layer dev">
+        <div class="fl-icon dev">DEV</div>
+        <div class="fl-info">
+          <div class="fl-label dev">데이터 / 개발</div>
+          <div class="fl-sub">사일로 시: 현장 맥락 없는 지표 — 판단 오류</div>
+        </div>
+        <div class="fl-val dev" id="flDev">LIVE</div>
+      </div>
+      <div class="fusion-layer ai">
+        <div class="fl-icon ai">AI</div>
+        <div class="fl-info">
+          <div class="fl-label ai">AI 도메인</div>
+          <div class="fl-sub">사일로 시: 도메인 없는 모델 — 오탐·오분류</div>
+        </div>
+        <div class="fl-val ai" id="flAi">ON</div>
+      </div>
+    </div>
+
+    <div class="xd-cap">
+      세 도메인이 한 사람 안에서 연결되면<br>
+      <b>부서 간 통역 + 경계의 숨은 문제 식별</b>이 가능해진다.<br>
+      단일 도메인 전문가는 보지 못하는 영역이다.
+    </div>
+
+    <!-- live sync stream (rolling, JS-driven) -->
+    <div class="xd-stream">
+      <div class="rqh">Domain Link Stream — 사일로 해제 피드</div>
+      <div id="streamRows"></div>
+    </div>
+
+    <div class="xd-state">
+      <span class="lbl">Twin State</span>
+      <span class="val" id="xdState">SYNCED</span>
+    </div>
+    <div class="xd-port">
+      <b>LOG:</b> 세 도메인이 연결될 때 — 경계의 문제가 비로소 보인다.<br>제조 현장 → 데이터/SW → AI —<br><span class="ph">도메인을 코드와 모델로 잇는 허브</span>가 조직의 트윈이 된다.
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import * as THREE from "https://esm.sh/three@0.184.0";
+import { OrbitControls } from "https://esm.sh/three@0.184.0/examples/jsm/controls/OrbitControls.js";
+import { CSS2DRenderer, CSS2DObject } from "https://esm.sh/three@0.184.0/examples/jsm/renderers/CSS2DRenderer.js";
+
+/* ───────────────────── DATA: 3-layer cross-domain stations ───────────────────── */
+const STATIONS = [
+  {
+    id:"mfg-cell", station:"MFG CELL 01", label:"제조 현장 레이어", color:0xff7a8a, css:"--c-mfg", layer:"mfg",
+    role:"공정·설비·품질·물류 — 제조 현장 도메인", period:"제조 현장 레이어 — 공정·설비 도메인",
+    kind:"machine",
+    metrics:[
+      {v:"OEE 92%", l:"종합설비효율"},
+      {v:"Takt 42s", l:"표준 사이클타임"},
+      {v:"사일로 시", l:"데이터에 공정 맥락 미반영"},
+      {v:"연결 시", l:"현장 변수가 모델·코드로 전파"},
+    ],
+    log:[
+      "사일로 시: 공정 이상이 <b>데이터 레이어에 도달하지 않음</b> — 누락·오분류",
+      "연결 시: 현장 OEE·Takt·안돈 신호가 <b>파이프라인으로 즉시 반영</b>",
+      "제조 현장 경험 — <b>공정 변수의 실제 의미</b>를 안다",
+      "수기 관리 → 디지털 전환 — <b>현장 도메인 지식이 설계를 결정</b>",
+      "단일 데이터 전문가는 이 맥락 없이 <b>지표 해석 오류 발생</b>",
+    ],
+    chips:["OEE","Andon","Takt Time","LOB","PFMEA/CP","공정표준화","현장 도메인"],
+    kpis:[{k:"OEE",v:"92.4%",c:"mfg"},{k:"Takt",v:"42s",c:""},{k:"가동률",v:"98.1%",c:""}],
+  },
+  {
+    id:"dev-cell", station:"DEV CELL 02", label:"데이터 / 개발 레이어", color:0x6fb4ff, css:"--c-dev", layer:"dev",
+    role:"MES · 파이프라인 · SSOT — 현장을 코드로 구조화", period:"데이터 엔지니어링 — 현장을 코드로 구조화",
+    kind:"data",
+    metrics:[
+      {v:"MES", l:"현장 공정을 코드로 구조화"},
+      {v:"SSOT", l:"단일 진실 출처 — 사일로 제거"},
+      {v:"사일로 시", l:"현장 맥락 없는 지표 — 판단 오류"},
+      {v:"연결 시", l:"공정 변수가 파이프라인에 정합 반영"},
+    ],
+    log:[
+      "사일로 시: <b>현장 맥락 없는 BI 지표</b> — 수치는 있으나 해석 오류",
+      "연결 시: 제조 도메인 지식이 <b>스키마 설계·ETL 로직에 반영</b>",
+      "<b>MES 자체 개발</b> — 현장을 아는 사람만 설계 가능한 구조",
+      "검사성적서 자동발행 · S/N 추적성 — <b>공정 도메인이 코드를 결정</b>",
+      "데이터 전문가만으로는 <b>현장 변수의 의미를 파이프라인에 담지 못함</b>",
+    ],
+    chips:["MES","SQL","BI 대시보드","FastAPI","CI/CD","SSOT","ETL","도메인 기반 설계"],
+    kpis:[{k:"파이프라인",v:"OK",c:"dev"},{k:"SSOT",v:"LIVE",c:"dev"},{k:"동기화",v:"<40ms",c:"amber"}],
+  },
+  {
+    id:"ai-cell", station:"AI CELL 03", label:"AI 도메인 레이어", color:0xc9a3ff, css:"--c-ai", layer:"ai",
+    role:"예측 · 이상탐지 · 에이전트 — 모델로 도메인을 연결", period:"AI 도메인 — 예측·이상탐지·에이전트",
+    kind:"ax",
+    metrics:[
+      {v:"사일로 시", l:"도메인 없는 모델 — 오탐·오분류"},
+      {v:"연결 시", l:"공정 맥락 주입 — 정합 추론"},
+      {v:"RPA", l:"반복업무 자동화 (경계 업무 식별)"},
+      {v:"MCP", l:"현장 컨텍스트 주입 에이전트"},
+    ],
+    log:[
+      "사일로 시: <b>현장·데이터 맥락 없는 AI</b> — 오탐·무의미한 예측",
+      "연결 시: 공정 변수·도메인 지식이 <b>모델 피처·프롬프트에 반영</b>",
+      "<b>경계에 숨은 문제</b>: 현장⟷코드⟷데이터 접점에서 단독 전문가가 놓치는 오류",
+      "<b>MCP 컨텍스트 주입</b> — 현장 도메인 지식이 AI 판단의 검증 레이어",
+      "도메인을 코드와 모델로 잇는 사람 — <b>조직·공정의 디지털 트윈</b>",
+    ],
+    chips:["AI MCP","RPA","이상탐지","예측모델","Claude API","도메인 컨텍스트","AX"],
+    kpis:[{k:"AI 정확도",v:"94.1%",c:"ai"},{k:"이상탐지",v:"<2s",c:"ai"},{k:"RPA",v:"ON",c:""}],
+  },
+  {
+    id:"fusion-hub", station:"DOMAIN TWIN HUB", label:"연결된 도메인 = 조직의 트윈", color:0x46e6b0, css:"--signal", layer:"hub",
+    role:"제조 · 데이터 · AI 도메인 연결 — 사일로 오류를 잡는 허브", period:"시대는 변한다, 사람도 변해야 한다",
+    kind:"hub",
+    metrics:[
+      {v:"3", l:"연결된 도메인 수"},
+      {v:"LIVE", l:"사일로→연결 상태"},
+      {v:"SSOT", l:"단일 진실 출처"},
+      {v:"트윈", l:"조직·공정의 거울"},
+    ],
+    log:[
+      "디지털 트윈이 현실을 거울처럼 비추듯 — <b>연결된 도메인이 조직을 비춘다</b>",
+      "효과 ①: 부서 간 통역 — <b>사일로 커뮤니케이션 오류</b>를 줄인다",
+      "효과 ②: 현장⟷코드⟷데이터 <b>경계에 숨은 문제 식별</b> (단일 전문가는 못 보는)",
+      "레이어가 끊기면(사일로) — 오류·누락 발생 / 연결되면 — <b>정합·전파</b>",
+      "시대는 변한다, 사람도 변해야 한다 — <b>변해서 도메인을 전부 연결함</b>",
+    ],
+    chips:["사일로→연결","도메인 트윈","부서 간 통역","경계 문제 식별","크로스도메인","AX","실행"],
+    kpis:[{k:"Twin",v:"LIVE",c:""},{k:"도메인",v:"3/3",c:""},{k:"상태",v:"SYNCED",c:""}],
+  },
+];
+
+const PLANT_KPIS = [
+  {k:"제조 레이어",v:"연결",c:"mfg"},
+  {k:"OEE",v:"92.4%",c:"mfg"},
+  {k:"데이터 레이어",v:"LIVE",c:"dev"},
+  {k:"SSOT",v:"정합",c:"dev"},
+  {k:"AI 레이어",v:"ON",c:"ai"},
+  {k:"이상탐지",v:"<2s",c:"ai"},
+  {k:"사일로 오류",v:"0",c:""},
+  {k:"경계 식별",v:"ACTIVE",c:"amber"},
+  {k:"도메인",v:"3/3",c:""},
+  {k:"Twin State",v:"SYNCED",c:""},
+];
+
+/* ───────────────────── HUD build ───────────────────── */
+(function buildHUD(){
+  const kpiWrap = document.getElementById("kpis");
+  PLANT_KPIS.forEach(k=>{
+    const d=document.createElement("div");d.className="kpi";
+    d.innerHTML=`<div class="k">${k.k}</div><div class="v ${k.c}">${k.v}</div>`;
+    kpiWrap.appendChild(d);
+  });
+  const leg = document.getElementById("legend");
+  STATIONS.forEach((s,i)=>{
+    const li=document.createElement("div");li.className="li";
+    const hex="#"+s.color.toString(16).padStart(6,"0");
+    li.innerHTML=`<span class="sw" style="background:${hex}"></span>${s.station}`;
+    li.addEventListener("click",()=>focusStation(i));
+    leg.appendChild(li);
+  });
+})();
+
+/* ───────────────────── THREE setup ───────────────────── */
+const app = document.getElementById("app");
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x070a0f);
+scene.fog = new THREE.Fog(0x070a0f, 42, 100);
+
+const camera = new THREE.PerspectiveCamera(38, innerWidth/innerHeight, 0.1, 400);
+camera.position.set(34, 30, 34);
+
+const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:false, powerPreference:"high-performance" });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+app.appendChild(renderer.domElement);
+
+const labelRenderer = new CSS2DRenderer();
+labelRenderer.setSize(innerWidth, innerHeight);
+labelRenderer.domElement.style.position = "fixed";
+labelRenderer.domElement.style.top = "0";
+labelRenderer.domElement.style.left = "0";
+labelRenderer.domElement.style.pointerEvents = "none";
+labelRenderer.domElement.style.zIndex = "15";
+app.appendChild(labelRenderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.08;
+controls.target.set(0, 1.5, 0);
+controls.minDistance = 16;
+controls.maxDistance = 80;
+controls.maxPolarAngle = Math.PI*0.49;
+controls.minPolarAngle = Math.PI*0.12;
+controls.rotateSpeed = 0.7;
+
+/* ───────────────────── lighting ───────────────────── */
+const hemi = new THREE.HemisphereLight(0x9fb6ff, 0x0a0d14, 0.55);
+scene.add(hemi);
+const key = new THREE.DirectionalLight(0xfff2dd, 1.15);
+key.position.set(22, 34, 14);
+key.castShadow = true;
+key.shadow.mapSize.set(2048, 2048);
+key.shadow.camera.near = 1; key.shadow.camera.far = 110;
+const sc = 40;
+key.shadow.camera.left=-sc; key.shadow.camera.right=sc; key.shadow.camera.top=sc; key.shadow.camera.bottom=-sc;
+key.shadow.bias = -0.0004;
+scene.add(key);
+const fill = new THREE.DirectionalLight(0x6fb4ff, 0.35);
+fill.position.set(-20, 16, -18);
+scene.add(fill);
+const amb = new THREE.AmbientLight(0x404a60, 0.4);
+scene.add(amb);
+
+/* ───────────────────── ground + grid ───────────────────── */
+const groundMat = new THREE.MeshStandardMaterial({ color:0x0d1119, roughness:0.95, metalness:0.05 });
+const ground = new THREE.Mesh(new THREE.PlaneGeometry(140,140), groundMat);
+ground.rotation.x = -Math.PI/2;
+ground.position.y = 0;
+ground.receiveShadow = true;
+scene.add(ground);
+
+const grid = new THREE.GridHelper(140, 70, 0x1c2740, 0x121826);
+grid.position.y = 0.02;
+grid.material.transparent = true; grid.material.opacity = 0.5;
+scene.add(grid);
+
+/* ───────────────────── helpers ───────────────────── */
+function box(w,h,d,color,opts={}){
+  const m = new THREE.MeshStandardMaterial({
+    color, roughness:opts.rough??0.6, metalness:opts.metal??0.25,
+    emissive:opts.emissive??0x000000, emissiveIntensity:opts.emi??0
+  });
+  const mesh = new THREE.Mesh(new THREE.BoxGeometry(w,h,d), m);
+  mesh.castShadow = opts.cast??true; mesh.receiveShadow = opts.recv??true;
+  return mesh;
+}
+function cyl(rt,rb,h,seg,color,opts={}){
+  const m = new THREE.MeshStandardMaterial({
+    color, roughness:opts.rough??0.5, metalness:opts.metal??0.4,
+    emissive:opts.emissive??0x000000, emissiveIntensity:opts.emi??0
+  });
+  const mesh = new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg), m);
+  mesh.castShadow = opts.cast??true; mesh.receiveShadow = opts.recv??true;
+  return mesh;
+}
+
+/* ───────────────────── station positions (diamond layout) ───────────────────── */
+const STATION_POS = [
+  new THREE.Vector3(-13, 0, -6),   // MFG - top-left
+  new THREE.Vector3(-4,  0, 8),    // DEV - bottom-left
+  new THREE.Vector3(10,  0, 6),    // AI  - bottom-right
+  new THREE.Vector3(14,  0, -10),  // HUB - top-right
+];
+
+const machineGroups = [];
+const statusNodes = [];
+const pulsers = [];
+const graphAnimators = [];
+
+/* ───────────────────── 3-layer domain rings (ground) ───────────────────── */
+// Each station gets a muted ground ring to visualize the domain layer.
+const layerRingColors = [0xff7a8a, 0x6fb4ff, 0xc9a3ff, 0x46e6b0];
+const layerRings = [];
+STATION_POS.forEach((pos, i)=>{
+  const ringGeo = new THREE.RingGeometry(4.2, 4.8, 64);
+  const ringMat = new THREE.MeshBasicMaterial({
+    color: layerRingColors[i], transparent: true, opacity: 0.07, side: THREE.DoubleSide
+  });
+  const ring = new THREE.Mesh(ringGeo, ringMat);
+  ring.rotation.x = -Math.PI/2;
+  ring.position.set(pos.x, 0.04, pos.z);
+  scene.add(ring);
+  layerRings.push({mesh:ring, mat:ringMat, base:0.07});
+});
+
+/* ───────────────────── inter-domain data flow lines ───────────────────── */
+// Small, quiet particles flow along links between domain nodes.
+const flowLines = [];
+const pairs = [[0,1],[1,2],[2,3],[0,3],[1,3]]; // domain connections
+pairs.forEach(([a,b])=>{
+  const pa = STATION_POS[a].clone().setY(2.5);
+  const pb = STATION_POS[b].clone().setY(2.5);
+  const pts = [];
+  for(let t=0;t<=1;t+=0.05){
+    pts.push(new THREE.Vector3().lerpVectors(pa,pb,t));
+  }
+  const geo = new THREE.BufferGeometry().setFromPoints(pts);
+  const mat = new THREE.LineBasicMaterial({
+    color: layerRingColors[a], transparent: true, opacity: 0.12
+  });
+  const line = new THREE.Line(geo, mat);
+  scene.add(line);
+
+  const pGeo = new THREE.SphereGeometry(0.07, 8, 8);
+  const pMat = new THREE.MeshBasicMaterial({color: layerRingColors[a], transparent:true, opacity:0.45});
+  const particle = new THREE.Mesh(pGeo, pMat);
+  scene.add(particle);
+  flowLines.push({pa, pb, particle, t: a*0.2, speed: 0.08+Math.random()*0.04, mat});
+});
+
+/* ───────────────────── sync ripple ───────────────────── */
+const ripple = new THREE.Mesh(
+  new THREE.RingGeometry(0.5, 0.7, 64),
+  new THREE.MeshBasicMaterial({color:0x46e6b0, transparent:true, opacity:0, side:THREE.DoubleSide})
+);
+ripple.rotation.x = -Math.PI/2;
+ripple.position.y = 0.06;
+scene.add(ripple);
+let rippleT = -1;
+
+/* ───────────────────── AI context rings (muted expansion at AI cell) ───────────────────── */
+const aiRings = [];
+for(let r=0;r<3;r++){
+  const rGeo = new THREE.RingGeometry(0.3, 0.5, 48);
+  const rMat = new THREE.MeshBasicMaterial({color:0xc9a3ff, transparent:true, opacity:0, side:THREE.DoubleSide});
+  const rm = new THREE.Mesh(rGeo, rMat);
+  rm.rotation.x = -Math.PI/2;
+  rm.position.set(STATION_POS[2].x, 0.05, STATION_POS[2].z);
+  scene.add(rm);
+  aiRings.push({mesh:rm, mat:rMat, offset: r/3});
+}
+
+/* ───────────────────── build each station ───────────────────── */
+STATIONS.forEach((st, i)=>{
+  const g = new THREE.Group();
+  g.position.copy(STATION_POS[i]);
+  g.userData.index = i;
+  g.userData.station = st;
+
+  // platform pad
+  const pad = box(7.2, 0.5, 6.4, 0x0f1622, {metal:0.1, rough:0.85});
+  pad.position.y = 0.25;
+  g.add(pad);
+  const padTrim = box(7.4, 0.08, 6.6, st.color, {emissive:st.color, emi:0.16, metal:0.25, cast:false});
+  padTrim.position.y = 0.06;
+  g.add(padTrim);
+
+  // main domain node body
+  const body = box(4.2, 2.8, 3.4, 0x242b3a, {metal:0.45, rough:0.55});
+  body.position.y = 0.5 + 1.6;
+  g.add(body);
+  const stripe = box(4.3, 0.28, 3.5, st.color, {emissive:st.color, emi:0.18, metal:0.15, cast:false});
+  stripe.position.y = 0.5 + 2.7;
+  g.add(stripe);
+  const ctlbox = box(1.1, 1.3, 0.25, 0x10151f, {metal:0.4, rough:0.5});
+  ctlbox.position.set(0, 1.7, 1.75);
+  const screen = box(0.85, 0.85, 0.04, st.color, {emissive:st.color, emi:0.22, cast:false});
+  screen.position.set(0,1.85,1.88);
+  pulsers.push(screen);
+  g.add(ctlbox, screen);
+
+  // compact status nodes, replacing factory-style stack lights
+  for(let l=0;l<3;l++){
+    const nodeMat = new THREE.MeshStandardMaterial({color:l===i%3?st.color:0x2a3344,emissive:l===i%3?st.color:0x000000,emissiveIntensity:l===i%3?0.18:0,roughness:0.5});
+    const node = new THREE.Mesh(new THREE.SphereGeometry(0.14,12,12), nodeMat);
+    node.position.set(-1.35+l*0.34, 3.42, -1.35);
+    node.castShadow=true;
+    g.add(node);
+    statusNodes.push({mesh:node, mat:nodeMat, color:st.color, active:l===i%3});
+  }
+
+  // KIND-specific geometry
+  if(st.kind==="machine"){
+    // field-signal probes
+    for(let s=0;s<3;s++){
+      const probe = cyl(0.08,0.1,1.4,10,0x39414f,{metal:0.45});
+      probe.position.set(0.75+s*0.55, 3.15, -1.0);
+      g.add(probe);
+      const cap = new THREE.Mesh(new THREE.IcosahedronGeometry(0.18,0),
+        new THREE.MeshStandardMaterial({color:st.color,emissive:st.color,emissiveIntensity:0.14,roughness:0.45}));
+      cap.position.set(0.75+s*0.55, 3.9, -1.0);
+      g.add(cap);
+    }
+    const cam = box(0.5,0.5,0.7,0x14181f,{metal:0.35});
+    cam.position.set(1.4,1.9,1.4);
+    const lens = cyl(0.18,0.18,0.2,16,st.color,{emissive:st.color,emi:0.18});
+    lens.rotation.x=Math.PI/2; lens.position.set(1.4,1.9,1.85);
+    g.add(cam,lens);
+  } else if(st.kind==="data"){
+    // schema panels (DEV/DATA)
+    for(let r=0;r<3;r++){
+      const panel = box(0.9,2.1,0.18,0x161d2a,{metal:0.25,rough:0.6});
+      panel.position.set(-1.4+r*1.1, 0.5+1.25, 1.15);
+      g.add(panel);
+      for(let u=0;u<5;u++){
+        const led = box(0.55,0.045,0.04, u%2? st.color:0x46e6b0,{emissive:u%2?st.color:0x46e6b0,emi:0.18,cast:false});
+        led.position.set(-1.4+r*1.1, 0.8+u*0.34, 1.28);
+        pulsers.push(led);
+        g.add(led);
+      }
+    }
+    // floating dashboard
+    const dash = box(2.4,1.5,0.08, 0x0c1320,{emissive:st.color,emi:0.08,metal:0.15});
+    dash.position.set(0,0.5+4.4,0); dash.rotation.x=-0.12;
+    g.add(dash);
+    graphAnimators.push({mesh:dash, axis:"none", baseY:0.5+4.4});
+  } else if(st.kind==="ax"){
+    // inference graph nodes
+    const graph = new THREE.Group(); graph.position.set(-0.9,1.35,1.0); g.add(graph);
+    const graphPts = [new THREE.Vector3(0,0,0),new THREE.Vector3(.8,.7,.2),new THREE.Vector3(1.2,-.1,-.35),new THREE.Vector3(.25,1.25,-.45)];
+    graphPts.forEach((p,idx)=>{
+      const node = new THREE.Mesh(new THREE.IcosahedronGeometry(idx===0?0.28:0.18,0),
+        new THREE.MeshStandardMaterial({color:idx===0?st.color:0x39414f,emissive:idx===0?st.color:0x000000,emissiveIntensity:0.16,roughness:0.4}));
+      node.position.copy(p);
+      graph.add(node);
+      if(idx>0){
+        const geo = new THREE.BufferGeometry().setFromPoints([graphPts[0], p]);
+        const ln = new THREE.Line(geo, new THREE.LineBasicMaterial({color:st.color,transparent:true,opacity:.18}));
+        graph.add(ln);
+      }
+    });
+    graphAnimators.push({mesh:graph, axis:"float", baseY:1.35});
+    // orbiting AI nodes
+    const ring = new THREE.Group(); ring.position.set(0,0.5+4.3,0); g.add(ring);
+    for(let n=0;n<6;n++){
+      const a=n/6*Math.PI*2;
+      const node = new THREE.Mesh(new THREE.IcosahedronGeometry(0.26,0),
+        new THREE.MeshStandardMaterial({color:st.color,emissive:st.color,emissiveIntensity:0.16,roughness:0.35}));
+      node.position.set(Math.cos(a)*1.6,0,Math.sin(a)*1.6);
+      ring.add(node);
+    }
+    graphAnimators.push({mesh:ring, axis:"y", speed:0.22});
+  } else if(st.kind==="hub"){
+    // fusion hub: central core + 3-domain rings
+    const core = new THREE.Mesh(
+      new THREE.OctahedronGeometry(1.2, 0),
+      new THREE.MeshStandardMaterial({color:st.color, emissive:st.color, emissiveIntensity:0.16, roughness:0.35, metalness:0.35})
+    );
+    core.position.y = 0.5+3.0;
+    g.add(core);
+    pulsers.push(core);
+    // 3 rotating rings = 3 domains
+    const ringColors = [0xff7a8a, 0x6fb4ff, 0xc9a3ff];
+    for(let r=0;r<3;r++){
+      const rMesh = new THREE.Mesh(
+        new THREE.TorusGeometry(1.6+r*0.5, 0.05, 8, 48),
+        new THREE.MeshStandardMaterial({color:ringColors[r], emissive:ringColors[r], emissiveIntensity:0.16, roughness:0.35})
+      );
+      rMesh.position.y = 0.5+3.0;
+      rMesh.rotation.x = (r/3)*Math.PI;
+      rMesh.rotation.z = (r/3)*Math.PI*0.5;
+      g.add(rMesh);
+      graphAnimators.push({mesh:rMesh, axis:"hub", idx:r, speed: 0.18+r*0.08});
+    }
+  }
+
+  // floor plate
+  const plate = box(1.6,0.05,0.9, 0x0a0e15,{emissive:st.color,emi:0.06,cast:false});
+  plate.position.set(0,0.07,2.8);
+  g.add(plate);
+
+  // ── SCADA HUD label (CSS2D) ──
+  const hud = document.createElement("div");
+  hud.className = "scada";
+  const hex = "#"+st.color.toString(16).padStart(6,"0");
+  const layerTag = {mfg:"MFG", dev:"DEV", ai:"AI", hub:"HUB"}[st.layer];
+  hud.style.cssText = `
+    transform:translate(-50%,-100%);background:rgba(10,14,21,.88);
+    border:1px solid rgba(255,255,255,.10);border-left:3px solid ${hex};
+    border-radius:9px;padding:8px 11px;min-width:160px;backdrop-filter:blur(8px);
+    box-shadow:0 12px 30px rgba(0,0,0,.5);font-family:var(--sans);user-select:none;cursor:pointer;`;
+  hud.innerHTML = `
+    <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">
+      <span style="width:7px;height:7px;border-radius:50%;background:${hex};box-shadow:0 0 4px ${hex}99"></span>
+      <span style="font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:#5d6a82">${st.station}</span>
+      <span style="font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:${hex};border:1px solid ${hex}33;border-radius:3px;padding:1px 5px">${layerTag}</span>
+    </div>
+    <div style="font-size:12px;font-weight:800;color:#e8edf6;line-height:1.15">${st.label}</div>
+    <div style="font-size:9.5px;color:#9aa6bd;margin-top:2px">${st.role}</div>
+    <div style="display:flex;gap:8px;margin-top:7px">
+      <div><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${hex}" data-m0>${st.metrics[0].v}</div>
+        <div style="font-size:8px;color:#5d6a82">${st.metrics[0].l}</div></div>
+      <div><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#e8edf6" data-thr>--</div>
+        <div style="font-size:8px;color:#5d6a82">throughput/h</div></div>
+    </div>`;
+  hud.addEventListener("click",()=>focusStation(i));
+  const hudObj = new CSS2DObject(hud);
+  hudObj.position.set(0, 0.5+5.8, 0);
+  g.add(hudObj);
+  g.userData.hud = hud;
+
+  scene.add(g);
+  machineGroups.push(g);
+});
+
+/* ───────────────────── domain link path ───────────────────── */
+const pathPts = [];
+STATION_POS.forEach(p=>pathPts.push(new THREE.Vector3(p.x, 0.55, p.z)));
+pathPts.push(STATION_POS[0].clone().setY(0.55));
+const curve = new THREE.CatmullRomCurve3(pathPts, true, "catmullrom", 0.4);
+
+const linkMat = new THREE.MeshStandardMaterial({color:0x172235, roughness:0.82, metalness:0.12});
+const linkMesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 180, 0.08, 8, true), linkMat);
+linkMesh.castShadow=false; linkMesh.receiveShadow=true;
+scene.add(linkMesh);
+
+/* ───────────────────── cross-domain signal nodes ───────────────────── */
+const WIP_N = 10;
+const wipColors = [0xff7a8a,0x6fb4ff,0xc9a3ff,0x46e6b0,0xffb454];
+const wips = [];
+const wipGeo = new THREE.SphereGeometry(0.18, 12, 12);
+for(let i=0;i<WIP_N;i++){
+  const c = wipColors[i%wipColors.length];
+  const mat = new THREE.MeshStandardMaterial({color:c, emissive:c, emissiveIntensity:0.08, roughness:0.5, metalness:0.15});
+  const m = new THREE.Mesh(wipGeo, mat);
+  m.castShadow=true;
+  const t = i/WIP_N;
+  scene.add(m);
+  wips.push({mesh:m, t, mat});
+}
+
+/* ───────────────────── detail panel (right slide-in) ───────────────────── */
+// inject detail panel CSS inline (self-contained)
+const dpStyle = document.createElement("style");
+dpStyle.textContent = `
+#detail{
+  position:fixed;z-index:30;top:0;right:-460px;width:440px;max-width:92vw;height:100%;
+  background:linear-gradient(180deg,#0c1019,#080b12);
+  border-left:1px solid #1c2333;box-shadow:-30px 0 80px rgba(0,0,0,.6);
+  transition:right .42s cubic-bezier(.22,.61,.36,1);overflow-y:auto;
+  display:flex;flex-direction:column;
+}
+#detail.open{right:0}
+.dt-head{position:relative;padding:24px 24px 20px;border-bottom:1px solid #151b27;overflow:hidden}
+.dt-head .accentbar{position:absolute;top:0;left:0;width:4px;height:100%}
+.dt-close{position:absolute;top:16px;right:18px;width:30px;height:30px;border-radius:8px;
+  border:1px solid #1c2333;background:rgba(255,255,255,.02);color:#9aa6bd;cursor:pointer;
+  font-size:15px;line-height:1;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.dt-close:hover{color:#e8edf6;border-color:#5d6a82}
+.dt-station{font-family:var(--mono);font-size:9.5px;letter-spacing:.26em;text-transform:uppercase;color:#5d6a82}
+.dt-co{font-size:22px;font-weight:800;margin-top:7px;letter-spacing:-.01em}
+.dt-role{font-size:12.5px;color:#9aa6bd;margin-top:5px}
+.dt-period{font-family:var(--mono);font-size:10.5px;color:#5d6a82;margin-top:9px}
+.dt-status{display:inline-flex;align-items:center;gap:7px;margin-top:12px;font-family:var(--mono);
+  font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;padding:4px 9px;border-radius:20px;
+  border:1px solid #1c2333}
+.dt-status .lamp{width:7px;height:7px;border-radius:50%}
+.dt-body{padding:20px 24px 40px;display:flex;flex-direction:column;gap:20px}
+.dt-sec .h{font-family:var(--mono);font-size:9px;letter-spacing:.22em;text-transform:uppercase;color:#5d6a82;margin-bottom:10px}
+.dt-metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.metric{border:1px solid #1c2333;border-radius:10px;padding:11px 12px;background:rgba(255,255,255,.015)}
+.metric .mv{font-family:var(--mono);font-size:17px;font-weight:700;line-height:1}
+.metric .ml{font-size:10.5px;color:#9aa6bd;margin-top:6px}
+.dt-list{display:flex;flex-direction:column;gap:9px}
+.dt-list .it{display:flex;gap:10px;font-size:12.5px;color:#9aa6bd;line-height:1.55}
+.dt-list .it::before{content:"";flex:0 0 auto;width:6px;height:6px;border-radius:2px;margin-top:7px;background:#5d6a82}
+.dt-list .it b{color:#e8edf6;font-weight:700}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:var(--mono);font-size:10px;letter-spacing:.04em;color:#9aa6bd;
+  border:1px solid #1c2333;border-radius:6px;padding:4px 8px;background:rgba(255,255,255,.015)}
+.dt-foot{margin-top:auto;padding:16px 24px;border-top:1px solid #151b27;
+  font-family:var(--mono);font-size:10.5px;color:#5d6a82;display:flex;flex-direction:column;gap:5px}
+.dt-foot a{color:#9aa6bd;text-decoration:none}
+.dt-foot a:hover{color:#46e6b0}
+`;
+document.head.appendChild(dpStyle);
+
+const detailEl = document.createElement("div");
+detailEl.id = "detail";
+detailEl.innerHTML = `
+  <div class="dt-head">
+    <div class="accentbar" id="dtAccent"></div>
+    <button class="dt-close" id="dtClose">x</button>
+    <div class="dt-station" id="dtStation">STATION 01</div>
+    <div class="dt-co" id="dtCo">--</div>
+    <div class="dt-role" id="dtRole">--</div>
+    <div class="dt-period" id="dtPeriod">--</div>
+    <div class="dt-status" id="dtStatus"><span class="lamp"></span><span class="txt">RUNNING</span></div>
+  </div>
+  <div class="dt-body">
+    <div class="dt-sec">
+      <div class="h">Layer Metrics</div>
+      <div class="dt-metrics" id="dtMetrics"></div>
+    </div>
+    <div class="dt-sec">
+      <div class="h">Domain Log</div>
+      <div class="dt-list" id="dtList"></div>
+    </div>
+    <div class="dt-sec">
+      <div class="h">Tooling</div>
+      <div class="chips" id="dtChips"></div>
+    </div>
+  </div>
+  <div class="dt-foot">
+    <span>연결된 도메인 = 조직·공정의 디지털 트윈</span>
+  </div>
+`;
+document.body.appendChild(detailEl);
+
+/* ───────────────────── interaction: raycaster ───────────────────── */
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+let hovered = -1;
+let activeIdx = -1;
+let lineOn = true;
+let speed = 1.0;
+
+function setPointerFromEvent(e){
+  const r = renderer.domElement.getBoundingClientRect();
+  mouse.x = ((e.clientX - r.left)/r.width)*2 - 1;
+  mouse.y = -((e.clientY - r.top)/r.height)*2 + 1;
+}
+renderer.domElement.addEventListener("pointermove",(e)=>{
+  setPointerFromEvent(e);
+  raycaster.setFromCamera(mouse, camera);
+  const hits = raycaster.intersectObjects(machineGroups, true);
+  let idx=-1;
+  if(hits.length){
+    let o=hits[0].object;
+    while(o && o.userData.index===undefined) o=o.parent;
+    if(o) idx=o.userData.index;
+  }
+  if(idx!==hovered){
+    hovered=idx;
+    renderer.domElement.style.cursor = idx>=0?"pointer":"default";
+  }
+});
+let downXY=null;
+renderer.domElement.addEventListener("pointerdown",(e)=>{ downXY=[e.clientX,e.clientY]; });
+renderer.domElement.addEventListener("pointerup",(e)=>{
+  if(!downXY) return;
+  const moved = Math.hypot(e.clientX-downXY[0], e.clientY-downXY[1]);
+  downXY=null;
+  if(moved>6) return;
+  setPointerFromEvent(e);
+  raycaster.setFromCamera(mouse,camera);
+  const hits = raycaster.intersectObjects(machineGroups, true);
+  if(hits.length){
+    let o=hits[0].object; while(o && o.userData.index===undefined) o=o.parent;
+    if(o) focusStation(o.userData.index);
+  }
+});
+
+/* ───────────────────── camera focus + detail panel ───────────────────── */
+let camTween = null;
+function focusStation(i){
+  const st = STATIONS[i]; const pos = STATION_POS[i];
+  activeIdx = i;
+  const tgt = new THREE.Vector3(pos.x, 2.2, pos.z);
+  const off = new THREE.Vector3(9, 9, 9);
+  const camTo = tgt.clone().add(off);
+  camTween = { fromT: controls.target.clone(), toT: tgt, fromP: camera.position.clone(), toP: camTo, t:0 };
+  triggerCrossDomainPulse(i);
+  openDetail(st);
+}
+
+function openDetail(st){
+  const hex = "#"+st.color.toString(16).padStart(6,"0");
+  document.getElementById("dtAccent").style.background = hex;
+  document.getElementById("dtStation").textContent = st.station;
+  document.getElementById("dtCo").textContent = st.label;
+  document.getElementById("dtRole").textContent = st.role;
+  document.getElementById("dtPeriod").textContent = st.period;
+  const statusEl = document.getElementById("dtStatus");
+  statusEl.querySelector(".lamp").style.background = lineOn?"#46e6b0":"#ffb454";
+  statusEl.querySelector(".lamp").style.boxShadow = lineOn?"0 0 4px rgba(70,230,176,.55)":"0 0 4px rgba(255,180,84,.55)";
+  statusEl.querySelector(".txt").textContent = lineOn?"RUNNING":"IDLE";
+  statusEl.style.color = lineOn?"#46e6b0":"#ffb454";
+  const mw = document.getElementById("dtMetrics"); mw.innerHTML="";
+  st.metrics.forEach(m=>{
+    const d=document.createElement("div"); d.className="metric";
+    d.innerHTML=`<div class="mv" style="color:${hex}">${m.v}</div><div class="ml">${m.l}</div>`;
+    mw.appendChild(d);
+  });
+  const lw = document.getElementById("dtList"); lw.innerHTML="";
+  st.log.forEach(t=>{const d=document.createElement("div");d.className="it";d.innerHTML=`<span>${t}</span>`;lw.appendChild(d);});
+  const cw = document.getElementById("dtChips"); cw.innerHTML="";
+  st.chips.forEach(c=>{const d=document.createElement("div");d.className="chip";d.textContent=c;cw.appendChild(d);});
+  document.getElementById("detail").classList.add("open");
+}
+document.getElementById("dtClose").addEventListener("click",()=>{
+  document.getElementById("detail").classList.remove("open");
+  activeIdx=-1;
+  camTween = { fromT: controls.target.clone(), toT: new THREE.Vector3(0,1.5,0),
+               fromP: camera.position.clone(), toP: new THREE.Vector3(34,30,34), t:0 };
+});
+
+/* ───────────────────── cross-domain sync pulse ───────────────────── */
+let xdSyncT = -1;
+const xdStateEl = document.getElementById("xdState");
+
+// perpetual sync heartbeat (independent of camera auto-cycle / user interaction)
+let syncBeatT = 0;
+let syncBeatIdx = 0;
+const SYNC_BEAT_INTERVAL = 3.0; // seconds between station sync pulses
+
+function triggerCrossDomainPulse(){
+  rippleT = 0;
+  xdSyncT = 0.8;
+  xdStateEl.textContent = "SYNCING...";
+  xdStateEl.classList.add("pend");
+  xdStateEl.classList.remove("ai");
+  // pulse flow lines (boost, then perpetual breathing resumes)
+  flowLines.forEach(fl=>{ fl.mat.opacity = 0.28; fl.pulseBoost = true; });
+  // animate layer values
+  const flAiEl = document.getElementById("flAi");
+  const frames = ["LINK","SYNC","TWIN","OK"];
+  let k=0;
+  const iv = setInterval(()=>{
+    if(flAiEl) flAiEl.textContent = frames[k++]||"ON";
+    if(k>=frames.length){ clearInterval(iv); }
+  }, 180);
+}
+
+function reconcileXD(){
+  xdSyncT = -1;
+  xdStateEl.textContent = "SYNCED";
+  xdStateEl.classList.remove("pend");
+  xdStateEl.classList.add("ai");
+  // release boost — perpetual breathing resumes in the loop
+  flowLines.forEach(fl=>{ fl.pulseBoost = false; });
+  const flAiEl = document.getElementById("flAi");
+  if(flAiEl) flAiEl.textContent = "ON";
+}
+
+/* ───────────────────── Domain Sync Stream (rolling live feed) ───────────────────── */
+const STREAM_MSGS = [
+  {c:"var(--c-mfg)", t:"<b>제조</b> OEE {oee}% — 공정 변수 데이터 레이어로 전파"},
+  {c:"var(--c-dev)", t:"<b>데이터</b> MES WIP {wip}ea — 현장 맥락 포함 SSOT 반영"},
+  {c:"var(--c-ai)",  t:"<b>AI</b> 도메인 컨텍스트 주입 — 오탐 {acc}% 감소"},
+  {c:"var(--signal)",t:"<b>연결</b> 사일로 해제 — 3-Domain 동기 지연 &lt;{lag}ms"},
+  {c:"var(--c-mfg)", t:"<b>제조</b> Takt {takt}s — 단일 전문가 미식별 경계 신호 감지"},
+  {c:"var(--c-dev)", t:"<b>데이터</b> 파이프라인 API {api}ms — 현장→코드 정합"},
+  {c:"var(--c-ai)",  t:"<b>AI</b> 경계 이상 식별 — 현장⟷코드⟷데이터 접점"},
+  {c:"var(--c-mfg)", t:"<b>제조</b> 안돈 신호 — AI 레이어로 즉시 연결"},
+  {c:"var(--signal)",t:"<b>Twin</b> 도메인 연결 완료 — 조직 거울 상태 SYNCED"},
+  {c:"var(--c-dev)", t:"<b>데이터</b> CI/CD 배포 — 공정 도메인 지식 반영 완료"},
+  {c:"var(--c-ai)",  t:"<b>AI</b> 모델 갱신 v{ver} — 제조 피처 재적용"},
+  {c:"var(--c-mfg)", t:"<b>제조</b> WIP {wip}ea — 부서 간 통역 오류 0건"},
+  {c:"var(--signal)",t:"<b>Twin</b> 사일로→연결 전환 — 경계 오류 차단 {lag}ms"},
+  {c:"var(--c-ai)",  t:"<b>RPA</b> 경계 업무 자동화 — 도메인 식별 기반"},
+  {c:"var(--c-dev)", t:"<b>BI</b> 현장 맥락 포함 대시보드 갱신 — OEE {oee}%"},
+];
+function renderStreamMsg(tmpl){
+  return tmpl
+    .replace(/{takt}/g, ()=>"42")
+    .replace(/{wip}/g,  ()=>"14")
+    .replace(/{acc}/g,  ()=>"94.2")
+    .replace(/{lag}/g,  ()=>"38")
+    .replace(/{oee}/g,  ()=>"92.4")
+    .replace(/{api}/g,  ()=>"24")
+    .replace(/{ver}/g,  ()=>"2.4");
+}
+const streamWrap = document.getElementById("streamRows");
+const MAX_STREAM_ROWS = 4;
+let streamMsgIdx = 0;
+let streamIntervalT = 0;
+const STREAM_INTERVAL = 2.1; // seconds between new messages
+function pushStreamRow(){
+  const msg = STREAM_MSGS[streamMsgIdx % STREAM_MSGS.length];
+  streamMsgIdx++;
+  const row = document.createElement("div");
+  row.className = "stream-row";
+  row.style.opacity = "0";
+  row.style.transition = "opacity 0.45s ease";
+  row.innerHTML = `<span class="sc" style="background:${msg.c}"></span><span>${renderStreamMsg(msg.t)}</span>`;
+  streamWrap.appendChild(row);
+  // fade in
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ row.style.opacity="1"; }));
+  // trim to max rows, fade out oldest
+  const rows = streamWrap.querySelectorAll(".stream-row");
+  if(rows.length > MAX_STREAM_ROWS){
+    const oldest = rows[0];
+    oldest.style.opacity = "0";
+    setTimeout(()=>{ if(oldest.parentNode) oldest.parentNode.removeChild(oldest); }, 460);
+  }
+}
+// seed initial rows
+for(let s=0;s<MAX_STREAM_ROWS;s++) pushStreamRow();
+
+function updateStream(dt){
+  streamIntervalT += dt;
+  if(streamIntervalT >= STREAM_INTERVAL){
+    streamIntervalT -= STREAM_INTERVAL;
+    pushStreamRow();
+  }
+}
+
+/* ───────────────────── controls ───────────────────── */
+const swLine = document.getElementById("swLine");
+const lineStateEl = document.getElementById("lineState");
+swLine.addEventListener("click",()=>{
+  lineOn=!lineOn;
+  swLine.classList.toggle("on",lineOn);
+  lineStateEl.textContent = lineOn?"ON":"OFF";
+  if(activeIdx>=0) openDetail(STATIONS[activeIdx]);
+});
+const spd = document.getElementById("spd");
+const spdVal = document.getElementById("spdVal");
+spd.addEventListener("input",()=>{
+  speed = spd.value/100;
+  spdVal.textContent = speed.toFixed(1)+"x";
+});
+document.getElementById("syncBtn").addEventListener("click",()=>{
+  rippleT = 0;
+  triggerCrossDomainPulse(-1);
+});
+
+/* ───────────────────── live KPI lerp (dt-based, no snap) ───────────────────── */
+const kpiEls = document.querySelectorAll("#kpis .kpi .v");
+const kpiBase  = [null, 92.4, null, null, null, 1.8, null, null, null, null];
+// displayed values lerp toward targets
+const kpiCur   = [null, 92.4, null, null, null, 1.8, null, null, null, null];
+const kpiTarget= [null, 92.4, null, null, null, 1.8, null, null, null, null];
+let kpiRefreshT = 0;
+function refreshKpiTargets(){
+  kpiBase.forEach((base,i)=>{
+    if(base===null) return;
+    const jitter = (Math.random()-0.5)*0.6;
+    kpiTarget[i] = base + jitter;
+  });
+}
+refreshKpiTargets();
+function updateKpis(dt){
+  kpiRefreshT -= dt;
+  if(kpiRefreshT<=0){ refreshKpiTargets(); kpiRefreshT = 3.2; }
+  kpiEls.forEach((el, i)=>{
+    if(kpiBase[i]===null) return;
+    kpiCur[i] += (kpiTarget[i] - kpiCur[i]) * Math.min(1, dt*1.2);
+    const v = kpiCur[i];
+    if(i===5) el.textContent = "<"+v.toFixed(1)+"s";
+    else el.textContent = v.toFixed(1)+"%";
+  });
+}
+
+/* ───────────────────── clock ───────────────────── */
+const clockEl = document.getElementById("clock");
+function tickClock(){
+  const d=new Date();
+  clockEl.textContent = [d.getHours(),d.getMinutes(),d.getSeconds()].map(n=>String(n).padStart(2,"0")).join(":");
+}
+setInterval(tickClock,1000);
+tickClock();
+
+/* ───────────────────── auto-cycle focus (no click needed) ───────────────────── */
+let autoCycleT = 0;
+let autoCycleIdx = 0;
+let autoCycleEnabled = true;
+// User interaction disables auto-cycle
+renderer.domElement.addEventListener("pointerdown",()=>{ autoCycleEnabled=false; });
+
+/* ───────────────────── animation loop ───────────────────── */
+const clock = new THREE.Clock();
+let throughputShown = STATIONS.map(()=>0);
+
+function animate(){
+  requestAnimationFrame(animate);
+  const dt = Math.min(clock.getDelta(), 0.08);
+  const time = clock.elapsedTime;
+  const eff = lineOn ? speed : 0;
+
+  // cross-domain signal nodes travel
+  wips.forEach((w,i)=>{
+    w.t = (w.t + dt*0.044*eff) % 1;
+    const p = curve.getPointAt(w.t);
+    w.mesh.position.set(p.x, p.y+0.25, p.z);
+    w.mesh.rotation.y += dt*0.8*eff;
+    w.mesh.position.y += Math.sin(time*2+i)*0.014;
+  });
+
+  // muted emissive shimmer
+  pulsers.forEach((m,i)=>{
+    const base = 0.14;
+    m.material.emissiveIntensity = base + (lineOn? (0.12*Math.abs(Math.sin(time*2.2*speed + i*0.6))) : 0);
+  });
+
+  // compact status nodes: domain color breathing
+  statusNodes.forEach((a,i)=>{
+    if(lineOn){
+      a.mat.color.setHex(a.active?a.color:0x2a3344); a.mat.emissive.setHex(a.active?a.color:0x000000);
+      a.mat.emissiveIntensity = a.active ? 0.16 + 0.08*Math.abs(Math.sin(time*1.5 + i)) : 0;
+    } else {
+      const blink = Math.sin(time*5)>0;
+      a.mat.color.setHex(0xffb454); a.mat.emissive.setHex(0xffb454);
+      a.mat.emissiveIntensity = blink?0.28:0.04;
+    }
+  });
+
+  // graph panels / rings
+  graphAnimators.forEach((f,i)=>{
+    if(f.axis==="y") f.mesh.rotation.y += dt*(f.speed||0.2)*(0.25+eff);
+    else if(f.axis==="hub"){
+      f.mesh.rotation.x += dt*f.speed*(lineOn?1:0.1);
+      f.mesh.rotation.z += dt*f.speed*0.7*(lineOn?1:0.1);
+    } else if(f.axis==="float"){
+      f.mesh.position.y = (f.baseY||1.35) + Math.sin(time*1.1+i)*0.04;
+      f.mesh.rotation.y = Math.sin(time*0.35)*0.12;
+    } else {
+      // float dashboard bob
+      f.mesh.position.y = (f.baseY||5.0) + Math.sin(time*1.2+i)*0.06;
+      f.mesh.rotation.y = Math.sin(time*0.35)*0.1;
+    }
+  });
+
+  // domain layer rings pulse
+  layerRings.forEach((lr,i)=>{
+    const pulse = lr.base + 0.025*Math.abs(Math.sin(time*1.0 + i*1.1));
+    lr.mat.opacity = lineOn ? pulse : lr.base*0.4;
+  });
+
+  // AI rings expand (dt-accumulated, no modulo snap)
+  aiRings.forEach((ar,i)=>{
+    ar.phase = (ar.phase||ar.offset) + dt*0.5;
+    if(ar.phase>=1) ar.phase -= 1;
+    const t = ar.phase;
+    ar.mesh.scale.setScalar(1 + t*6);
+    ar.mat.opacity = (1-t)*0.12*(lineOn?1:0.2);
+  });
+
+  // inter-domain flow particles (one-way, no ping-pong snap) + continuous pulse
+  flowLines.forEach((fl,i)=>{
+    fl.t = (fl.t + dt*fl.speed) % 1;
+    fl.particle.position.lerpVectors(fl.pa, fl.pb, fl.t);
+    fl.particle.scale.setScalar(lineOn?1:0.35);
+    // perpetual line-opacity breathing so flow never reads as "stopped"
+    const wave = 0.5 + 0.5*Math.sin(time*1.6 + i*1.2);
+    fl.mat.opacity = fl.pulseBoost
+      ? fl.mat.opacity + (0.12 - fl.mat.opacity)*Math.min(1, dt*1.4)
+      : (lineOn ? 0.10 + wave*0.10 : 0.05);
+  });
+
+  // throughput readouts
+  STATIONS.forEach((st,i)=>{
+    const target = lineOn ? Math.round((160 + i*45)*speed) : 0;
+    throughputShown[i] += (target - throughputShown[i]) * Math.min(1, dt*3);
+    const hudEl = machineGroups[i].userData.hud;
+    const thr = hudEl.querySelector("[data-thr]");
+    if(thr) thr.textContent = Math.round(throughputShown[i]);
+  });
+
+  // machine scale breathing
+  machineGroups.forEach((g,i)=>{
+    const pulse = lineOn ? (1 + 0.004*Math.sin(time*2*speed + i)) : 1;
+    g.scale.setScalar(pulse);
+    const isHover = (i===hovered) && i!==activeIdx;
+    g.position.y = STATION_POS[i].y + (isHover ? 0.15 : 0);
+  });
+
+  // sync ripple expand
+  if(rippleT>=0){
+    rippleT += dt*0.65;
+    const rr = rippleT*60;
+    ripple.scale.setScalar(rr/0.6);
+    ripple.material.opacity = Math.max(0, 0.18*(1-rippleT));
+    if(rippleT>=1){ rippleT=-1; ripple.material.opacity=0; }
+  }
+
+  // xd sync timer
+  if(xdSyncT>0){
+    xdSyncT -= dt;
+    if(xdSyncT<=0) reconcileXD();
+  }
+
+  // perpetual sync heartbeat — station pulse + ripple keep looping forever,
+  // even after user interaction stops the camera auto-cycle
+  syncBeatT += dt;
+  if(syncBeatT >= SYNC_BEAT_INTERVAL){
+    syncBeatT = 0;
+    syncBeatIdx = (syncBeatIdx+1) % STATIONS.length;
+    triggerCrossDomainPulse(syncBeatIdx);
+  }
+
+  // KPI lerp update
+  updateKpis(dt);
+
+  // Domain Sync Stream rolling feed
+  updateStream(dt);
+
+  // auto-cycle focus (orbit through stations if user has not interacted)
+  if(autoCycleEnabled){
+    autoCycleT += dt;
+    if(autoCycleT > 6.0){
+      autoCycleT = 0;
+      autoCycleIdx = (autoCycleIdx+1) % STATIONS.length;
+      const pos = STATION_POS[autoCycleIdx];
+      const tgt = new THREE.Vector3(pos.x, 2.2, pos.z);
+      const off = new THREE.Vector3(9, 9, 9);
+      const camTo = tgt.clone().add(off);
+      camTween = { fromT: controls.target.clone(), toT: tgt, fromP: camera.position.clone(), toP: camTo, t:0 };
+      triggerCrossDomainPulse(autoCycleIdx);
+    }
+  }
+
+  // camera tween
+  if(camTween){
+    camTween.t += dt*1.5;
+    const k = Math.min(1, camTween.t);
+    const e = 1 - Math.pow(1-k, 3);
+    controls.target.lerpVectors(camTween.fromT, camTween.toT, e);
+    camera.position.lerpVectors(camTween.fromP, camTween.toP, e);
+    if(k>=1) camTween=null;
+  }
+
+  controls.update();
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+}
+
+/* ───────────────────── resize ───────────────────── */
+addEventListener("resize",()=>{
+  camera.aspect = innerWidth/innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+  labelRenderer.setSize(innerWidth, innerHeight);
+});
+
+/* ───────────────────── boot sequence ───────────────────── */
+const bootFill = document.getElementById("bootFill");
+let bootP = 0;
+const bootIv = setInterval(()=>{ bootP=Math.min(96, bootP+Math.random()*22); bootFill.style.width=bootP+"%"; }, 120);
+
+async function start(){
+  try{ if(document.fonts && document.fonts.ready) await document.fonts.ready; }catch(e){}
+  controls.update();
+  renderer.render(scene, camera);
+  labelRenderer.render(scene, camera);
+  // rAF loop start
+  animate();
+  clearInterval(bootIv);
+  bootFill.style.width="100%";
+  // layout gate: fade boot after fonts settle
+  setTimeout(()=>{
+    document.getElementById("boot").classList.add("hide");
+    // intro sync ripple
+    rippleT = 0;
+    // start auto-cycle after brief delay
+    setTimeout(()=>{
+      autoCycleT = 4.5; // first auto-focus fires at ~1.5s
+    }, 1500);
+  }, 480);
+}
+start();
+
+window.__twin = { scene, camera, renderer, STATIONS, focusStation };
+</script>
+</body>
+</html>

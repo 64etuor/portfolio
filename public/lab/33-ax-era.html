@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCENE 02 · 선언 — AX ERA / 데이터·지식의 시대</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+  :root{
+    --bg:#050505;
+    --phos:#d7d7d7;        /* 제조의 물성 — 인광 그레이 */
+    --phos-dim:#8d8d8d;
+    --phos-deep:#3a3a3a;
+    --ax:#4ea3f0;          /* 단 하나의 액센트 — 데이터·지식이 솟는 일렉트릭 애저(새 시대) */
+    --ax-hot:#cfe8ff;
+    --kr:"Pretendard","Pretendard Variable",-apple-system,sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg);
+    color:var(--phos);
+    font-family:var(--kr);
+    overflow:hidden;
+    -webkit-font-smoothing:antialiased;
+  }
+  .kr{word-break:keep-all;}
+
+  .stage{position:fixed;inset:0;overflow:hidden;background:
+    radial-gradient(135% 100% at 50% 30%, #0c0c0e 0%, #070708 52%, #030303 100%);}
+  #scene{position:absolute;inset:0;display:block;}
+
+  /* ---------- CRT shell ---------- */
+  .scan{
+    position:fixed;inset:0;z-index:60;pointer-events:none;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0px,rgba(0,0,0,0) 2px,rgba(0,0,0,0.20) 3px,rgba(0,0,0,0) 4px);
+    mix-blend-mode:multiply;opacity:.5;
+  }
+  .vignette{
+    position:fixed;inset:0;z-index:61;pointer-events:none;
+    background:radial-gradient(ellipse at center,rgba(0,0,0,0) 54%,rgba(0,0,0,0.64) 100%);
+  }
+  .grain{
+    position:fixed;inset:-50%;z-index:59;pointer-events:none;opacity:.04;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 1.1s steps(3) infinite;
+  }
+  @keyframes grain{0%{transform:translate(0,0);}50%{transform:translate(-3%,2%);}100%{transform:translate(2%,-2%);}}
+
+  /* canonical scene eyebrow (matches 28) */
+  .scene-id{position:absolute;z-index:65;left:5.4%;top:12.2%;pointer-events:none;
+    font-family:var(--mono);font-size:clamp(10px,.82vw,15px);
+    letter-spacing:.42em;color:var(--phos-dim);text-shadow:none;}
+  .scene-id b{color:var(--ax);text-shadow:0 0 8px rgba(78,163,240,.4);font-weight:700;}
+
+  /* ---------- kicker / footer ---------- */
+  .kicker{
+    position:absolute;top:7vh;left:0;right:0;z-index:30;
+    display:flex;justify-content:center;align-items:center;gap:18px;
+    font-family:var(--mono);font-size:11px;letter-spacing:5px;
+    color:var(--phos-dim);text-transform:uppercase;
+  }
+  .kicker .dot{width:7px;height:7px;border-radius:50%;background:var(--ax);
+    box-shadow:0 0 10px var(--ax);animation:beat 2.6s ease-in-out infinite;}
+  @keyframes beat{0%,100%{opacity:.35;}50%{opacity:1;}}
+  .kicker .sep{color:var(--phos-deep);}
+  #status{color:var(--ax);min-width:108px;text-align:left;letter-spacing:3px;
+    text-shadow:0 0 12px rgba(78,163,240,.4);transition:color .5s;}
+
+  .footer{
+    position:absolute;bottom:4.4vh;left:0;right:0;z-index:30;
+    display:flex;justify-content:center;gap:16px;align-items:center;
+    font-family:var(--mono);font-size:10.5px;letter-spacing:3px;color:var(--phos-deep);
+  }
+  .footer b{color:var(--phos-dim);font-weight:500;}
+  .footer .ar{color:var(--ax);opacity:.7;}
+
+  /* ---------- HERO TYPOGRAPHY (the star) ---------- */
+  .hero{
+    position:absolute;top:50%;left:0;right:0;z-index:25;
+    transform:translateY(-50%);
+    display:flex;flex-direction:column;align-items:center;gap:3.0vh;
+    text-align:center;pointer-events:none;padding:0 6vw;
+  }
+  .l1{
+    font-family:var(--kr);font-weight:800;
+    font-size:clamp(34px,5.6vw,92px);letter-spacing:-1.6px;line-height:1.06;
+    color:var(--phos);display:flex;align-items:baseline;justify-content:center;
+    gap:0.20em;flex-wrap:wrap;
+  }
+  .l1 .w{display:inline-block;opacity:0;transform-origin:center bottom;
+    will-change:transform,opacity,filter;}
+  .l1 .dx{color:var(--phos-deep);transition:none;display:inline-block;
+    transform-origin:center bottom;}
+  .l1 .ax{color:var(--ax);position:relative;display:inline-block;
+    transform-origin:center bottom;
+    text-shadow:0 0 26px rgba(78,163,240,.55),0 0 70px rgba(78,163,240,.28);}
+  .l1 .muted{color:var(--phos-dim);font-weight:700;
+    font-size:0.62em;letter-spacing:-0.5px;}
+  .l1 .beyond{color:var(--phos-dim);font-weight:700;font-size:0.62em;
+    position:relative;letter-spacing:-0.5px;}
+  .l1 .beyond::after{
+    content:"";position:absolute;left:0;right:0;bottom:-0.14em;height:2px;
+    background:linear-gradient(90deg,var(--ax),rgba(78,163,240,0));
+    transform:scaleX(var(--cross,0));transform-origin:left;
+    box-shadow:0 0 10px rgba(78,163,240,.5);
+  }
+
+  .l2{
+    font-family:var(--kr);font-weight:600;
+    font-size:clamp(16px,2.3vw,38px);letter-spacing:-0.4px;line-height:1.4;
+    color:var(--phos-dim);
+  }
+  .l2 .now{color:var(--phos-dim);}
+  .l2 .core{color:var(--phos);font-weight:800;position:relative;}
+  .l2 .core.hot{color:var(--ax-hot);
+    text-shadow:0 0 18px rgba(78,163,240,.55),0 0 46px rgba(78,163,240,.22);}
+  .l2 .ln{display:block;opacity:0;will-change:transform,opacity,filter;}
+</style>
+</head>
+<body>
+<div class="stage">
+  <canvas id="scene"></canvas>
+
+  <div class="scene-id kr"><b>SCENE 02</b> · 선언 — AX ERA</div>
+
+  <div class="kicker">
+    <span class="dot"></span>
+    <span id="status" class="kr">선언 — DX</span>
+  </div>
+
+  <div class="hero">
+    <div class="l1 kr">
+      <span class="w dx">DX</span><span class="w muted">를</span>
+      <span class="w beyond" id="beyond">넘어</span>
+      <span class="w ax" id="ax">AX</span><span class="w muted">의 시대.</span>
+    </div>
+    <div class="l2 kr">
+      <span class="ln a now" id="l2a">이제 제조업의 경쟁력은</span>
+      <span class="ln b" id="l2b"><span class="core hot">데이터</span>와 <span class="core hot">지식</span>에서 시작됩니다.</span>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span><b>제조 · 설비 · 공정</b> <span class="ar">↑ 솟다 ↑</span> <b>데이터 · 지식</b></span>
+  </div>
+
+  <div class="grain"></div>
+  <div class="scan"></div>
+  <div class="vignette"></div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════
+   SCENE · 선언 — AX ERA
+   메타포: 화면을 가로지르는 '지층(strata)'.
+     · 하단 = 제조의 물성(회색 인광 격자: 설비·공정) — 기반.
+     · 중앙 = 주인공 타이포(선언).
+     · 상단 = 비어 있던 하늘.
+   정적 선언 → 동적 전환. 제조 격자에서 데이터·지식이 입자로 솟아올라
+   지평선(=새 시대의 문)을 넘어 상층에 푸른 '지식 지층(네트워크)'으로
+   결정화된다. 'DX'는 가라앉고 'AX'가 점화. 물성은 기반으로 남되
+   경쟁력은 위로 이주한다.
+   단 하나의 액센트(일렉트릭 애저)는 오직 데이터·지식·새 시대에만 스민다.
+   루프: 입자 상승은 단조 시간으로 영구 매끄럽게 순환. 서사(점화·결정화)는
+   주기마다 한 번, 끝 구간 CRT 밝기 침강(dip)으로 봉합돼 매끄럽게 닫힌다.
+   ※ 가짜 수치/난수 텔레메트리 없음 — 모든 모션은 의도된 시간함수.
+   ════════════════════════════════════════════════════════════════ */
+(function(){
+  "use strict";
+
+  const canvas = document.getElementById('scene');
+  const ctx = canvas.getContext('2d');
+  const axEl     = document.getElementById('ax');
+  const dxEl     = document.querySelector('.l1 .dx');
+  const beyondEl = document.getElementById('beyond');
+  const l1words  = Array.from(document.querySelectorAll('.l1 .w'));
+  const l2aEl    = document.getElementById('l2a');
+  const l2bEl    = document.getElementById('l2b');
+  const statusEl = document.getElementById('status');
+
+  let W=0,H=0,DPR=Math.min(window.devicePixelRatio||1,2);
+
+  // ---- color helpers ----
+  const COLD=[215,215,215], DIMC=[141,141,141], AZ=[78,163,240], AZH=[207,232,255];
+  function mix(a,b,t){return [a[0]+(b[0]-a[0])*t,a[1]+(b[1]-a[1])*t,a[2]+(b[2]-a[2])*t];}
+  function rgba(c,a){return 'rgba('+(c[0]|0)+','+(c[1]|0)+','+(c[2]|0)+','+a+')';}
+  function ease(x){return x<=0?0:x>=1?1:x*x*(3-2*x);}
+  function ramp(a,b,x){return ease((x-a)/(b-a));}
+  // deterministic pseudo-scatter (no Math.random — seamless & repeatable)
+  function hash(i){const s=Math.sin(i*12.9898)*43758.5453;return s-Math.floor(s);}
+
+  // ---- geometry ----
+  let yHorizon=0, subRows=[], strRows=[], parts=[];
+  const COLS=11;            // lattice columns
+  const SUB_Y=[0.70,0.795,0.89];   // substrate rows (제조 물성)
+  const STR_Y=[0.235,0.135];       // stratum rows (지식 지층)
+  const PCOUNT=78;          // rising data motes
+
+  function lerp(a,b,t){return a+(b-a)*t;}
+
+  function build(){
+    yHorizon = H*0.625;
+    const x0=W*0.115, x1=W*0.885;
+
+    // substrate lattice: rows widen & rise toward viewer (subtle perspective)
+    subRows = SUB_Y.map((fy,r)=>{
+      const spread = 1 + r*0.055;              // lower rows spread wider
+      const cx=(x0+x1)/2, half=(x1-x0)/2*spread;
+      const row=[];
+      for(let c=0;c<COLS;c++){
+        const f=c/(COLS-1);
+        row.push({x:lerp(cx-half,cx+half,f), y:H*fy, c, r, ph:hash(r*31+c)*6.28});
+      }
+      return row;
+    });
+
+    // stratum lattice: two thin bands, gentle bow
+    strRows = STR_Y.map((fy,r)=>{
+      const row=[];
+      for(let c=0;c<COLS;c++){
+        const f=c/(COLS-1);
+        const bow=Math.sin(f*Math.PI)*H*(r===0?0.022:0.012);
+        row.push({x:lerp(x0,x1,f), y:H*fy - bow, c, r, ph:hash(100+r*17+c)*6.28});
+      }
+      return row;
+    });
+
+    // rising motes: emitted from a substrate top-row node, ascend to a stratum node
+    const top=subRows[0], dst=strRows[0];
+    parts=[];
+    for(let i=0;i<PCOUNT;i++){
+      const c=i%COLS;
+      const a=top[c], b=dst[c];
+      parts.push({
+        i,
+        x0:a.x, x1:b.x,
+        yA:H*0.665, yB:b.y,          // emit just above substrate top → stratum lower band
+        sway:(hash(i)*2-1)*W*0.018,  // lateral drift amplitude
+        swf:0.6+hash(i*3)*0.9,       // sway freq
+        speed:0.052+hash(i*7)*0.040, // rise speed (prog/sec)
+        phase:hash(i*11),            // start offset
+        glyph:i%5                    // deterministic mote shape
+      });
+    }
+  }
+
+  function resize(){
+    W=window.innerWidth; H=window.innerHeight;
+    canvas.width=W*DPR; canvas.height=H*DPR;
+    canvas.style.width=W+'px'; canvas.style.height=H+'px';
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    build();
+  }
+  window.addEventListener('resize',resize);
+
+  // ---- timeline ----
+  const CYCLE=15.0;
+  // optional ?t=SECONDS to jump the loop clock (verification / deep-linking)
+  const _off=(parseFloat(new URLSearchParams(location.search).get('t'))||0)*1000;
+  let t0=performance.now()-_off;
+
+  // ── message-synced timeline ──────────────────────────────────────
+  // 문장이 말하는 순서대로 비주얼이 그 의미를 그린다.
+  //  ① "DX"                  → 제조 기반 격자 점등
+  //  ② "를 넘어 AX의 시대"    → 임계(문)가 열리고 DX 침강·AX 점화 (도약)
+  //  ③ "이제 제조업의 경쟁력은" → 기반 재확인
+  //  ④ "데이터와 지식에서 시작됩니다" → 입자 부상→상층 지식 지층 결정화 (응집=힘)
+  // 모든 스칼라는 f(주기 위상)의 매끄러운 시간함수 — 난수/가짜로그 없음.
+  function scalars(f){
+    return {
+      seam : 1 - ramp(0.86,0.975,f),     // 루프 봉합용 전역 디졸브
+      wRev : [ ramp(0.02,0.10,f),         // DX
+               ramp(0.06,0.13,f),         // 를
+               ramp(0.11,0.19,f),         // 넘어
+               ramp(0.17,0.27,f),         // AX
+               ramp(0.23,0.31,f) ],       // 의 시대.
+      cross: ramp(0.15,0.27,f),           // 임계를 넘는 도약(크로싱)
+      ax   : ramp(0.18,0.36,f),           // AX 시대 점화 레벨
+      l2a  : ramp(0.36,0.45,f),           // 2번 문장 전반
+      l2b  : ramp(0.46,0.60,f),           // 데이터·지식 (페이로드)
+      data : ramp(0.47,0.66,f)            // 입자 부상 + 지층 결정화
+    };
+  }
+
+  let lastStatus="";
+  function setStatus(txt,col){
+    if(txt===lastStatus)return; lastStatus=txt;
+    statusEl.textContent=txt;
+    statusEl.style.color=col;
+    statusEl.style.textShadow='0 0 12px '+col.replace('1)','0.45)');
+  }
+
+  function draw(now){
+    const elapsed=(now-t0)/1000;
+    const f=(elapsed%CYCLE)/CYCLE;
+    const S=scalars(f); S.time=elapsed;   // monotonic time → seamless flux
+    const seam=S.seam;
+
+    // ---- status (phase narration, message-synced) ----
+    if(f<0.15)       setStatus('선언 — DX','rgba(141,141,141,1)');
+    else if(f<0.34)  setStatus('전환 — AX로','rgba(78,163,240,1)');
+    else if(f<0.62)  setStatus('부상 — 데이터·지식','rgba(78,163,240,1)');
+    else             setStatus('새 시대 — AX','rgba(141,141,141,1)');
+
+    // ---- TYPOGRAPHY: the sentence comes into being, word by word ----
+    // line 1 — each word fades / rises / unblurs in reading order
+    for(let i=0;i<l1words.length;i++){
+      const el=l1words[i], r=S.wRev[i];
+      let op=r*seam, ty=(1-r)*14, sc=1;
+      if(el===dxEl){                                   // DX 침강(구시대가 기반으로 가라앉음)
+        op*=(1-0.45*S.ax); ty+=S.ax*5; sc=1-0.06*S.ax;
+        el.style.color=rgba(mix([90,90,90],[42,42,42],S.ax),1);
+      }
+      if(el===axEl){                                   // AX 점화·상승
+        ty-=S.ax*4; sc=0.92+0.12*S.ax;
+        el.style.textShadow='0 0 '+(10+30*S.ax).toFixed(0)+'px rgba(78,163,240,'+(0.25+0.45*S.ax).toFixed(2)+
+          '),0 0 '+(34+64*S.ax).toFixed(0)+'px rgba(78,163,240,'+(0.10+0.22*S.ax).toFixed(2)+')';
+      }
+      el.style.opacity=op.toFixed(3);
+      el.style.transform='translateY('+ty.toFixed(1)+'px) scale('+sc.toFixed(3)+')';
+      el.style.filter='blur('+((1-r)*5).toFixed(2)+'px)';
+    }
+    beyondEl.style.setProperty('--cross', S.cross.toFixed(3));   // "넘어" 밑줄이 임계를 긋다
+
+    // line 2 — clause by clause; 데이터·지식 lands as the payload
+    l2aEl.style.opacity=(S.l2a*seam).toFixed(3);
+    l2aEl.style.transform='translateY('+((1-S.l2a)*12).toFixed(1)+'px)';
+    l2aEl.style.filter='blur('+((1-S.l2a)*4).toFixed(2)+'px)';
+    l2bEl.style.opacity=(S.l2b*seam).toFixed(3);
+    l2bEl.style.transform='translateY('+((1-S.l2b)*12).toFixed(1)+'px)';
+    l2bEl.style.filter='blur('+((1-S.l2b)*4).toFixed(2)+'px)';
+
+    // ---- CANVAS: each layer draws the meaning of the words it backs ----
+    ctx.clearRect(0,0,W,H);
+    drawSubstrate(S);   // ① 제조 기반
+    drawThreshold(S);   // ② 도약(문)
+    drawMotes(S);       // ④ 데이터 부상
+    drawStratum(S);     // ④ 지식 결정화
+    drawLabels(S);
+
+    requestAnimationFrame(draw);
+  }
+
+  /* ===== 제조 물성: 하단 격자(기반) ===== */
+  function drawSubstrate(S){
+    const time=S.time, seam=S.seam;
+    const appear=S.wRev[0];                    // 'DX'와 함께 기반이 점등된다 (검은 화면에서 생성)
+    if(appear<=0.001) return;
+    const glow=(0.85-0.30*S.ax)*seam*appear;   // 에너지가 위로 이주 → 살짝 가라앉음
+    // links
+    ctx.lineWidth=1;
+    for(let r=0;r<subRows.length;r++){
+      const row=subRows[r];
+      // horizontal
+      for(let c=0;c<row.length-1;c++){
+        ctx.strokeStyle=rgba(DIMC,0.07*glow);
+        ctx.beginPath();ctx.moveTo(row[c].x,row[c].y);ctx.lineTo(row[c+1].x,row[c+1].y);ctx.stroke();
+      }
+      // vertical to next row
+      if(r<subRows.length-1){
+        const nx=subRows[r+1];
+        for(let c=0;c<row.length;c++){
+          ctx.strokeStyle=rgba(DIMC,0.05*glow);
+          ctx.beginPath();ctx.moveTo(row[c].x,row[c].y);ctx.lineTo(nx[c].x,nx[c].y);ctx.stroke();
+        }
+      }
+    }
+    // machine nodes (small squares — 설비/공정)
+    for(let r=0;r<subRows.length;r++){
+      const row=subRows[r], depth=1-(r/ (subRows.length));
+      row.forEach(n=>{
+        const b=0.5+0.5*Math.sin(time*1.3+n.ph);
+        const s=(2.2+0.9*depth)+0.5*b;
+        const a=(0.18+0.30*b)*glow*(0.7+0.3*depth);
+        ctx.fillStyle=rgba(COLD,a);
+        ctx.fillRect(n.x-s, n.y-s, s*2, s*2);
+        // emitter ticks on top row: fire when DATA rises (④) — 기반에서 데이터가 솟는다
+        if(r===0 && S.data>0.05){
+          ctx.strokeStyle=rgba(AZ,0.18*S.data*(0.4+0.6*b)*seam);
+          ctx.beginPath();ctx.moveTo(n.x,n.y);ctx.lineTo(n.x,n.y-7-5*S.data);ctx.stroke();
+        }
+      });
+    }
+  }
+
+  /* ===== 새 시대의 문: 지평선 임계 ===== */
+  function drawThreshold(S){
+    const time=S.time, seam=S.seam;
+    const open=S.ax;                           // 지속되는 새벽(문이 열린 상태) = AX 시대
+    const y=yHorizon, x0=W*0.10, x1=W*0.90;
+    // base seam — emerges from black with the scene (gated by DX appear)
+    const baseA=0.18*seam*S.wRev[0];
+    const g=ctx.createLinearGradient(x0,0,x1,0);
+    g.addColorStop(0,rgba(DIMC,0)); g.addColorStop(0.5,rgba(DIMC,baseA)); g.addColorStop(1,rgba(DIMC,0));
+    ctx.strokeStyle=g; ctx.lineWidth=1; ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke();
+
+    if(open>0.01){
+      // luminous dawn line — the door opens as we cross into AX
+      const puls=0.85+0.15*Math.sin(time*2.0);
+      const ga=ctx.createLinearGradient(x0,0,x1,0);
+      ga.addColorStop(0,rgba(AZ,0)); ga.addColorStop(0.5,rgba(AZ,0.55*open*puls*seam)); ga.addColorStop(1,rgba(AZ,0));
+      ctx.save();
+      ctx.shadowColor=rgba(AZ,0.6*open); ctx.shadowBlur=18*open;
+      ctx.strokeStyle=ga; ctx.lineWidth=1.6;
+      ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke();
+      ctx.restore();
+      // soft upward dawn glow into the new-era sky
+      const gg=ctx.createLinearGradient(0,y,0,y-H*0.20);
+      gg.addColorStop(0,rgba(AZ,0.10*open*seam)); gg.addColorStop(1,rgba(AZ,0));
+      ctx.fillStyle=gg; ctx.fillRect(x0,y-H*0.20,x1-x0,H*0.20);
+    }
+
+    // CROSSING SURGE — a bright wavefront sweeps the horizon exactly as "넘어" lands
+    const surge=S.cross*(1-S.cross)*4;         // peaks at the midpoint of the crossing
+    if(surge>0.02){
+      const px=lerp(x0,x1,S.cross);            // wavefront rides left→right across the threshold
+      const gw=ctx.createRadialGradient(px,y,0,px,y,W*0.16);
+      gw.addColorStop(0,rgba(AZH,0.5*surge*seam)); gw.addColorStop(1,rgba(AZ,0));
+      ctx.save(); ctx.shadowColor=rgba(AZ,0.8*surge); ctx.shadowBlur=24;
+      ctx.fillStyle=gw; ctx.beginPath();ctx.arc(px,y,W*0.16,0,6.2832);ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  /* ===== 데이터·지식: 솟아오르는 입자 ===== */
+  function drawMotes(S){
+    const time=S.time, seam=S.seam, data=S.data;
+    if(data<=0.01) return;                              // '데이터·지식' 구절에서만 부상
+    ctx.save();
+    for(const p of parts){
+      let prog=(time*p.speed + p.phase) % 1;          // 0(substrate)→1(stratum)
+      // ease the rise so motes accelerate then settle into the stratum
+      const e=prog<0.5 ? 2*prog*prog : 1-Math.pow(-2*prog+2,2)/2;
+      const x=lerp(p.x0,p.x1,e) + Math.sin(time*p.swf + p.i)*p.sway*(1-prog);
+      const y=lerp(p.yA,p.yB,e);
+      // fade in at emit, fade out as it merges into the stratum → hides loop wrap
+      const edge=ease(prog/0.08)*ease((1-prog)/0.10);
+      // gray near the floor → azure as it ascends; intensity gated by data level
+      const col=mix(DIMC,AZH,ease((prog-0.15)/0.7));
+      const liveliness=0.30+0.70*data;
+      const a=edge*liveliness*(0.45+0.35*Math.sin(time*3+p.i))*seam;
+      if(a<=0.01) continue;
+      const r=1.0 + 1.8*prog + (p.glyph===0?0.6:0);
+      // glow
+      if(prog>0.25){
+        const gr=ctx.createRadialGradient(x,y,0,x,y,r*5);
+        gr.addColorStop(0,rgba(col,0.5*a)); gr.addColorStop(1,rgba(col,0));
+        ctx.fillStyle=gr; ctx.beginPath();ctx.arc(x,y,r*5,0,6.2832);ctx.fill();
+      }
+      ctx.fillStyle=rgba(col,Math.min(1,a*1.5));
+      if(p.glyph===1){ ctx.fillRect(x-r*0.8,y-r*0.8,r*1.6,r*1.6); }   // data square
+      else { ctx.beginPath();ctx.arc(x,y,r,0,6.2832);ctx.fill(); }     // mote
+      // occasional vertical micro-streak (rising data)
+      if(p.glyph===2 && prog>0.3){
+        ctx.strokeStyle=rgba(col,0.4*a); ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+6+4*prog);ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  /* ===== 지식 지층: 상단 네트워크(결정화) ===== */
+  function drawStratum(S){
+    const time=S.time, seam=S.seam, data=S.data;
+    if(data<0.02) return;
+    const form=ease((data-0.05)/0.7);   // links draw in as knowledge crystallizes
+
+    // inter-row + intra-row links
+    ctx.save();
+    ctx.lineCap='round';
+    for(let r=0;r<strRows.length;r++){
+      const row=strRows[r];
+      for(let c=0;c<row.length-1;c++){
+        const grow=ease((form - c*0.012));   // gentle left→right draw-in
+        if(grow<=0.01) continue;
+        const a=row[c], b=row[c+1];
+        const bx=lerp(a.x,b.x,grow), by=lerp(a.y,b.y,grow);
+        const shim=0.6+0.4*Math.sin(time*1.8+a.ph);
+        ctx.strokeStyle=rgba(AZ,(0.10+0.16*shim)*data*seam);
+        ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(bx,by);ctx.stroke();
+      }
+    }
+    // cross links between the two stratum bands (network depth)
+    if(strRows.length>1){
+      const a=strRows[0], b=strRows[1];
+      for(let c=0;c<COLS;c+=2){
+        const shim=0.5+0.5*Math.sin(time*1.4+c);
+        ctx.strokeStyle=rgba(AZ,0.07*form*data*shim*seam);
+        ctx.beginPath();ctx.moveTo(a[c].x,a[c].y);ctx.lineTo(b[c].x,b[c].y);ctx.stroke();
+      }
+    }
+    ctx.restore();
+
+    // nodes
+    for(let r=0;r<strRows.length;r++){
+      const row=strRows[r];
+      row.forEach(n=>{
+        const b=0.5+0.5*Math.sin(time*2.0+n.ph);
+        const r0=(r===0?2.6:1.9)+0.9*b;
+        const rr=r0*(0.7+0.6*data);
+        const a=(0.30+0.45*b)*data*seam;
+        const gr=ctx.createRadialGradient(n.x,n.y,0,n.x,n.y,rr*6);
+        gr.addColorStop(0,rgba(AZH,0.40*a)); gr.addColorStop(1,rgba(AZ,0));
+        ctx.fillStyle=gr; ctx.beginPath();ctx.arc(n.x,n.y,rr*6,0,6.2832);ctx.fill();
+        ctx.fillStyle=rgba(mix(AZ,AZH,0.4+0.4*b),Math.min(1,a*1.6));
+        ctx.beginPath();ctx.arc(n.x,n.y,rr,0,6.2832);ctx.fill();
+      });
+    }
+
+    // travelling pulses along the lower stratum band (future hinted)
+    if(data>0.6){
+      const row=strRows[0];
+      for(let k=0;k<3;k++){
+        let pp=((time*0.16 + k*0.34)%1);
+        const seg=pp*(COLS-1);
+        const c=Math.floor(seg), t=seg-c;
+        if(c>=COLS-1) continue;
+        const x=lerp(row[c].x,row[c+1].x,t), y=lerp(row[c].y,row[c+1].y,t);
+        const fade=Math.sin(pp*Math.PI);
+        ctx.fillStyle=rgba(AZH,0.85*data*fade*seam);
+        ctx.shadowColor=rgba(AZ,0.9); ctx.shadowBlur=12;
+        ctx.beginPath();ctx.arc(x,y,2.4*fade+1,0,6.2832);ctx.fill();
+        ctx.shadowBlur=0;
+      }
+    }
+  }
+
+  /* ===== 영역 라벨(추상 — 수치 없음) ===== */
+  function drawLabels(S){
+    const seam=S.seam;
+    ctx.save();
+    ctx.textAlign='left';
+    // substrate label — appears with the manufacturing base ('DX')
+    const subA=(0.45-0.15*S.ax)*seam*S.wRev[0];
+    ctx.font="700 13px 'JetBrains Mono', monospace";
+    ctx.fillStyle=rgba(DIMC,subA);
+    ctx.fillText("MANUFACTURING SUBSTRATE", W*0.115, H*0.955);
+    ctx.font="600 11px 'JetBrains Mono', monospace";
+    ctx.fillStyle=rgba([90,90,90],subA);
+    ctx.fillText("제조 · 설비 · 공정 — 물성(기반)", W*0.115, H*0.974);
+
+    // stratum label — emerges with data·knowledge (④)
+    const strA=0.75*S.data*seam;
+    ctx.font="700 13px 'JetBrains Mono', monospace";
+    ctx.fillStyle=rgba(AZ,strA);
+    ctx.fillText("KNOWLEDGE STRATUM", W*0.115, H*0.066);
+    ctx.font="600 11px 'JetBrains Mono', monospace";
+    ctx.fillStyle=rgba(mix([90,90,90],AZ,S.data),strA*0.85);
+    ctx.fillText("데이터 · 지식 — 경쟁력(상층)", W*0.115, H*0.086);
+    ctx.restore();
+  }
+
+  /* boot — 폰트 준비 후 시작 (headless 안전 폴백) */
+  function boot(){ resize(); requestAnimationFrame(draw); }
+  if(document.fonts && document.fonts.ready){
+    let on=false; const go=()=>{ if(!on){on=true;boot();} };
+    document.fonts.ready.then(go);
+    setTimeout(go, 600);
+  } else boot();
+})();
+</script>
+</body>
+</html>

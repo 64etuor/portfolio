@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>SCENE 01 · 시대 — THE ACCELERATION / 시대는 빠르게 변하고 있습니다</title>
+<style>
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
+  @font-face{font-family:'JetBrains Mono';font-display:swap;font-weight:400;
+    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff2') format('woff2');}
+  @font-face{font-family:'JetBrains Mono';font-display:swap;font-weight:700;
+    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-700-normal.woff2') format('woff2');}
+
+  :root{
+    --bg:#050505;
+    --phos:#e8e8e8; --phos-dim:#8d8d8d; --phos-deep:#3a3a3a;
+    --accent:#6fb6ff;                /* the one electric accent — reserved for 빠르게 / 가속 */
+    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,Menlo,Consolas,monospace;
+    --s: min(1vw, 1.778vh);          /* 16:9-locked sizing unit */
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:#000;color:var(--phos);font-family:var(--mono);overflow:hidden;
+    word-break:keep-all;-webkit-font-smoothing:none;}
+  .kr{font-family:'Pretendard',var(--mono);}
+
+  /* ===== stage ===== */
+  #stage{position:fixed;inset:0;overflow:hidden;background:var(--bg);}
+
+  /* photo layers (two, for crossfade) — graded to fit the dark CRT-noir film */
+  .slide{position:absolute;inset:0;background-position:center;background-size:cover;
+    background-repeat:no-repeat;opacity:0;will-change:opacity,transform;
+    filter:grayscale(.42) contrast(1.04) brightness(.95) sepia(.10);
+    transform:scale(1.06);}
+  /* moody numbered placeholders — used only until real photos are added */
+  .ph{position:absolute;inset:0;opacity:0;will-change:opacity,transform;transform:scale(1.06);
+    background:
+      radial-gradient(60% 80% at 32% 32%, rgba(255,255,255,.05), transparent 70%),
+      linear-gradient(135deg,#0a0c10,#070708 60%,#0b0d12);}
+  .ph .pn{position:absolute;left:6%;bottom:14%;font-size:calc(var(--s)*8);font-weight:700;
+    color:rgba(255,255,255,.05);letter-spacing:.04em;font-family:var(--mono);}
+
+  /* tint wash so any source photo reads as part of the near-black film */
+  #wash{position:absolute;inset:0;z-index:5;pointer-events:none;mix-blend-mode:multiply;
+    background:radial-gradient(ellipse 130% 130% at 50% 46%, #6a6f78 0%, #2a2d34 64%, #0a0b0e 100%);}
+  #washacc{position:absolute;inset:0;z-index:6;pointer-events:none;mix-blend-mode:soft-light;opacity:.16;
+    background:linear-gradient(180deg, rgba(111,182,255,0), rgba(111,182,255,.10) 60%, rgba(111,182,255,0));}
+
+  /* ===== CRT shell ===== */
+  #scan{position:absolute;inset:0;z-index:30;pointer-events:none;mix-blend-mode:multiply;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0 2px,rgba(0,0,0,.16) 3px 4px);}
+  #vig{position:absolute;inset:0;z-index:31;pointer-events:none;
+    background:radial-gradient(ellipse at 50% 50%,transparent 58%,rgba(0,0,0,.72) 100%);opacity:.7;}
+  #grain{position:absolute;inset:-50%;z-index:32;pointer-events:none;opacity:.05;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    animation:grain 1.1s steps(3) infinite;}
+  @keyframes grain{0%{transform:translate(0,0)}50%{transform:translate(-3%,2%)}100%{transform:translate(2%,-2%)}}
+  #flash{position:absolute;inset:0;z-index:33;pointer-events:none;background:#fff;opacity:0;mix-blend-mode:screen;}
+
+  /* ===== title caption (28-style eyebrow) ===== */
+  .eyebrow{position:absolute;top:7vh;left:5.4%;z-index:40;font-family:var(--mono);
+    font-size:clamp(10px,.82vw,15px);letter-spacing:.42em;text-transform:uppercase;
+    color:var(--phos-dim);text-shadow:0 0 8px rgba(0,0,0,.6);pointer-events:none;}
+  .eyebrow b{color:var(--accent);font-weight:700;text-shadow:0 0 10px rgba(111,182,255,.4);}
+
+  /* ===== headline ===== */
+  #center{position:absolute;inset:0;z-index:35;display:flex;flex-direction:column;
+    align-items:center;justify-content:center;text-align:center;pointer-events:none;padding:0 6vw;}
+  #headline{font-family:'Pretendard',var(--mono);font-weight:800;
+    font-size:calc(var(--s)*6.4);line-height:1.16;color:#fff;letter-spacing:-.01em;
+    text-shadow:0 2px 30px rgba(0,0,0,.7);will-change:opacity,transform,filter;}
+  #headline .fast{color:var(--accent);text-shadow:0 0 26px rgba(111,182,255,.55);}
+  #sub{margin-top:calc(var(--s)*1.6);font-family:var(--mono);font-size:calc(var(--s)*1.15);
+    letter-spacing:.34em;text-transform:uppercase;color:var(--phos-dim);will-change:opacity;}
+  #sub b{color:var(--accent);font-weight:700;}
+
+  #rate{position:absolute;left:5.4%;bottom:7vh;z-index:36;font-family:var(--mono);
+    font-size:calc(var(--s)*0.78);letter-spacing:.26em;color:var(--phos-deep);text-transform:uppercase;}
+  #rate b{color:var(--phos-dim);font-weight:400;}
+
+  @media (prefers-reduced-motion: reduce){ #grain{animation:none} }
+</style>
+</head>
+<body>
+<div id="stage" aria-label="SCENE 01 · 시대 — THE ACCELERATION">
+  <div class="slide" id="slideA"></div>
+  <div class="slide" id="slideB"></div>
+  <div class="ph" id="phA"><span class="pn" id="phAn">01</span></div>
+  <div class="ph" id="phB"><span class="pn" id="phBn">02</span></div>
+
+  <div id="wash"></div>
+  <div id="washacc"></div>
+  <div id="scan"></div>
+  <div id="vig"></div>
+  <div id="grain"></div>
+  <div id="flash"></div>
+
+  <div class="eyebrow"><b>SCENE 01</b> · 시대 — THE ACCELERATION</div>
+
+  <div id="center">
+    <div id="headline" class="kr">시대는 <span class="fast">빠르게</span> 변하고 있습니다</div>
+    <div id="sub">THE ERA IS CHANGING <b>— FASTER EVERY DAY</b></div>
+  </div>
+
+  <div id="rate" class="kr">변화의 속도 · <b>가속</b> — RATE OF CHANGE</div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════════════════
+   SCENE 01 — "시대는 빠르게 변하고 있습니다"  ·  사진 넘기는(montage) 씬.
+   시대를 상징하는 사진이 점점 빠르게 넘어가고(가속), 막판에 헤드라인이 박힌다.
+
+   ▶ 사진 추가 (둘 중 택1):
+     1) public/lab/assets/eras/ 에 01.jpg, 02.jpg, 03.jpg … 순서대로(오래된→최신) 넣기.
+        아래 PHOTOS 를 그대로 두면 01~12.jpg 중 "있는 것만" 자동으로 사용.
+     2) 파일명/포맷이 다르면 아래 PHOTOS 배열을 직접 수정(png 등 무관, 경로만 맞추면 됨).
+   - 권장: 가로(16:9) 사진. 로드 실패 항목은 자동 skip.
+   - 사진이 하나도 없어도 어두운 플레이스홀더 슬라이드로 정상 재생됨(지금 상태).
+   ════════════════════════════════════════════════════════════════════════ */
+  // 시대순(오래된→최신) — 01~30 제조업 변천사 + 31~32 현재(AI/휴머노이드, AX).
+  const PHOTOS = [
+    'assets/eras/01.jpg','assets/eras/02.jpg','assets/eras/03.jpg','assets/eras/04.jpg',
+    'assets/eras/05.jpg','assets/eras/06.jpg','assets/eras/07.jpg','assets/eras/08.jpg',
+    'assets/eras/09.jpg','assets/eras/10.jpg','assets/eras/11.jpg','assets/eras/12.jpg',
+    'assets/eras/13.jpg','assets/eras/14.jpg','assets/eras/15.jpg','assets/eras/16.jpg',
+    'assets/eras/17.jpg','assets/eras/18.jpg','assets/eras/19.jpg','assets/eras/20.jpg',
+    'assets/eras/21.jpg','assets/eras/22.jpg','assets/eras/23.jpg','assets/eras/24.png',
+    'assets/eras/25.jpg','assets/eras/26.jpg','assets/eras/27.jpg','assets/eras/28.jpg',
+    'assets/eras/29.jpg','assets/eras/30.jpg','assets/eras/31.jpg','assets/eras/32.webp','assets/eras/33.png',
+  ];
+
+  const CYCLE = 8200;                 // 필름 노출 길이(ms) — acts.ts 와 일치
+  const SCENE_FILE = '42-era-shift.html';
+  const REDUCED = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  const slideA=document.getElementById('slideA'), slideB=document.getElementById('slideB');
+  const phA=document.getElementById('phA'), phB=document.getElementById('phB');
+  const phAn=document.getElementById('phAn'), phBn=document.getElementById('phBn');
+  const flash=document.getElementById('flash');
+  const headline=document.getElementById('headline'), sub=document.getElementById('sub');
+  const clamp=(a,b,v)=>v<a?a:v>b?b:v;
+  const ease=t=>t<0?0:t>1?1:t*t*(3-2*t);
+
+  /* ── preload: keep only the photos that actually load ── */
+  let FRAMES = [];                    // {url,i} for real photos, or {placeholder:n}
+  let ready = false;
+  function boot(){
+    if(ready) return; ready = true;
+    if(FRAMES.length === 0)
+      FRAMES = Array.from({length:8}, (_,i)=>({placeholder:i+1}));   // no photos yet → placeholders
+    buildSchedule();
+    try{ if(parent && parent!==window)
+      parent.postMessage({type:'film-scene', file:SCENE_FILE, ms:CYCLE, ready:true}, '*'); }catch(e){}
+    requestAnimationFrame(frame);
+  }
+  // Use the photo list immediately and start on time — blocking boot on a full
+  // preload drifted the clock with many/large images (the 8.2s timeline desynced).
+  // Warm the browser cache in the background; a missing file just shows a dark frame.
+  FRAMES = PHOTOS.map((url, i)=>({url, i}));
+  PHOTOS.forEach(url=>{ const im = new Image(); im.src = url; });
+  // boot() is called at the very end — after the schedule state (let N/durs/cum) below initializes.
+
+  function setFrame(img, ph, phn, idx){
+    const f = FRAMES[idx % FRAMES.length];
+    if(f.url){ img.style.backgroundImage = "url('"+f.url+"')"; }
+    else     { phn.textContent = String(f.placeholder).padStart(2,'0'); }
+    return f.url ? img : ph;
+  }
+
+  /* ── accelerating montage schedule: cuts start slow, speed up, then settle.
+        N = number of frames, so every photo flashes once per loop (oldest→newest),
+        with the recent eras blurring past fastest. ── */
+  const ACCEL_END = 0.80;            // last 20% = headline hold
+  let N = 1, durs = [], total = 1, cum = [];
+  function buildSchedule(){
+    N = Math.min(FRAMES.length, 40);
+    durs = []; for(let k=0;k<N;k++) durs.push(1 - 0.62*(k/Math.max(1,N-1)));   // slow → fast
+    total = durs.reduce((a,b)=>a+b,0) || 1;
+    cum = []; let acc=0; for(let k=0;k<N;k++){ cum.push(acc/total*ACCEL_END); acc+=durs[k]; }
+  }
+
+  let lastCut=-1, front=0;
+  function showCut(ci){
+    front ^= 1;
+    const A = front===0 ? {img:slideA,ph:phA,phn:phAn} : {img:slideB,ph:phB,phn:phBn};
+    const B = front===0 ? {img:slideB,ph:phB} : {img:slideA,ph:phA};
+    const on = setFrame(A.img, A.ph, A.phn, ci);
+    on.style.transition='opacity .22s ease, transform 1.7s ease-out';
+    on.style.opacity='1'; on.style.transform='scale(1.0)';
+    // hide the other layer's both kinds
+    B.img.style.transition='opacity .42s ease'; B.img.style.opacity='0';
+    B.ph.style.transition='opacity .42s ease'; B.ph.style.opacity='0';
+    // also hide the inactive kind in the front layer
+    (on===A.img ? A.ph : A.img).style.opacity='0';
+    // cut flash
+    flash.style.transition='none'; flash.style.opacity='0.5';
+    requestAnimationFrame(()=>{ flash.style.transition='opacity .26s ease'; flash.style.opacity='0'; });
+  }
+
+  let t0=null;
+  function frame(now){
+    if(t0===null)t0=now;
+    const time = REDUCED ? CYCLE*0.86 : (now-t0);
+    const f = (time % CYCLE)/CYCLE;
+
+    let ci=0; for(let k=0;k<N;k++){ if(f>=cum[k]) ci=k; }
+    if(ci!==lastCut && f<ACCEL_END){ lastCut=ci; showCut(ci); }
+
+    // headline detonates as the cuts slow (~0.60→0.86), holds, fades at the loop seam
+    const hv = clamp(0,1,(f-0.60)/0.10);
+    const hOut = clamp(0,1,(f-0.94)/0.05);
+    const appear = ease(hv)*(1-hOut);
+    headline.style.opacity = appear.toFixed(3);
+    const hb = (1-ease(hv))*7 + hOut*5;
+    headline.style.filter = hb>0.05 ? 'blur('+hb.toFixed(2)+'px)' : 'none';
+    headline.style.transform = 'scale('+(1.10-0.10*ease(hv)).toFixed(3)+')';
+    sub.style.opacity = (appear*0.9).toFixed(3);
+
+    if(!REDUCED) requestAnimationFrame(frame);
+  }
+
+  boot();   // all top-level state initialized — start the scene
+</script>
+</body>
+</html>

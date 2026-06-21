@@ -1,0 +1,7 @@
+/* Scene phosphor palette — shared CSS custom properties.
+   Imported once via SceneHost.tsx; var() resolves globally across all scene.module.css files. */
+:root {
+  --scene-phos: #d7d7d7;
+  --scene-phos-dim: #8d8d8d;
+  --scene-phos-deep: #3a3a3a;
+}

@@ -1,0 +1,343 @@
+/* Cinematic shell — 랜딩(Spline)·랜딩 전환·목적지 진입·필름 컷 전환. globals.css 에서 분리. */
+
+/* ===== Landing (Spline robot + actions, dark CRT-noir tone) ===== */
+.lp-root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #050505;
+}
+.lp-spline {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  z-index: 0;
+  /* shown at the embed's default rendering — background is handled inside the Spline model */
+}
+/* film-tone veil: vignette + bottom fade so the actions stay legible over the 3D scene */
+.lp-veil {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 90% at 50% 36%, transparent 46%, rgba(0, 0, 0, 0.55) 100%),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.45) 0%, transparent 24%, transparent 50%, rgba(5, 5, 5, 0.88) 100%);
+  box-shadow: inset 0 0 220px rgba(0, 0, 0, 0.75);
+}
+.lp-scan {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  pointer-events: none;
+  opacity: 0.4;
+  mix-blend-mode: overlay;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.16) 3px);
+}
+/* dark box covering the Spline "Built with Spline" badge in the bottom-right */
+.lp-mask {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 340px;
+  height: 170px;
+  /* soft corner shadow → solid black over the badge, fading out (no hard edge) */
+  background: radial-gradient(120% 120% at 100% 100%, #000 0%, #000 40%, rgba(0, 0, 0, 0.6) 58%, transparent 78%);
+  z-index: 6;
+  pointer-events: none;
+}
+/* content sits just below center so the robot (upper-middle) stays the hero */
+.lp-content {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 57%;
+  z-index: 4;
+  pointer-events: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 0 24px;
+}
+.lp-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.42em;
+  color: #8d8d8d;
+  margin: 0 0 14px;
+}
+.lp-tagline {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  font-size: clamp(40px, 5.4vw, 72px);
+  line-height: 1.04;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  color: #f1f4f8;
+  margin: 0 0 12px;
+  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.85);
+}
+.lp-sub {
+  font-family: var(--font-sans);
+  font-size: clamp(12px, 1.2vw, 15px);
+  letter-spacing: 0.02em;
+  color: #aab0b8;
+  margin: 0 0 30px;
+  text-shadow: 0 1px 16px rgba(0, 0, 0, 0.85);
+}
+
+/* entrance — staggered fade/slide/blur-in, timed to settle with the robot zoom-in */
+@keyframes lp-in {
+  from { opacity: 0; transform: translateY(16px); filter: blur(8px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+.lp-eyebrow,
+.lp-tagline,
+.lp-actions { opacity: 0; }
+.lp-eyebrow { animation: lp-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s forwards; }
+.lp-tagline { animation: lp-in 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) 0.35s forwards; }
+/* buttons: plain fade, no delay (opacity-only so it never fights the hover transform) */
+.lp-actions { animation: lp-fade 0.6s ease 0.1s forwards; }
+@keyframes lp-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .lp-eyebrow,
+  .lp-tagline,
+  .lp-actions { animation: none !important; opacity: 1 !important; transform: none !important; filter: none !important; }
+}
+.lp-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  pointer-events: auto;
+}
+.lp-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #8b909a;
+  background: transparent;
+  border: 1px solid rgba(233, 233, 236, 0.12);
+  border-radius: 7px;
+  padding: 7px 13px;
+  backdrop-filter: blur(8px);
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+.lp-btn .lp-ic {
+  display: inline-flex;
+  color: #6b7280;
+  transition: color 160ms ease;
+}
+.lp-btn:hover {
+  border-color: rgba(224, 122, 95, 0.5);
+  background: rgba(255, 255, 255, 0.06);
+  color: #e9e9ec;
+  box-shadow: 0 0 14px rgba(224, 122, 95, 0.2);
+}
+.lp-btn:hover .lp-ic {
+  color: #e07a5f;
+}
+/* Primary variant — Portfolio button, accent-tinted with CRT cyan */
+.lp-btn-primary {
+  color: #eafcff;
+  border-color: rgba(95, 181, 194, 0.45);
+  background: rgba(95, 181, 194, 0.04);
+}
+.lp-btn-primary .lp-ic {
+  color: #5fb5c2;
+}
+.lp-btn-primary:hover {
+  border-color: rgba(95, 181, 194, 0.9);
+  color: #fff;
+  background: rgba(95, 181, 194, 0.07);
+  box-shadow: 0 0 18px rgba(95, 181, 194, 0.28);
+}
+.lp-btn-primary:hover .lp-ic {
+  color: #7fe3ef;
+}
+
+/* 갤러리 정지 카드 — 캔버스 freeze 와 함께 씬 CSS 애니메이션(grain/scan/beat)도 멈춰
+   "재생 안 되는" 완전 정지 상태로. 호버하면 클래스가 빠지며 즉시 재생된다. */
+.scene-frozen,
+.scene-frozen *,
+.scene-frozen *::before,
+.scene-frozen *::after {
+  animation-play-state: paused !important;
+}
+
+/* ===== Film controls — hover language matches .lp-btn (accent border + glow) ===== */
+.film-ctrl {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 8px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.film-ctrl:hover {
+  border-color: rgba(224, 122, 95, 0.6);
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 14px rgba(224, 122, 95, 0.25);
+}
+.film-ctrl:active {
+  transform: scale(0.94);
+}
+.film-skip {
+  color: #fff;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  padding: 6px 14px;
+  font-size: 12px;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+}
+.film-skip:hover {
+  border-color: rgba(224, 122, 95, 0.6);
+  background: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 0 14px rgba(224, 122, 95, 0.22);
+}
+
+/* ===== Landing navigation transition — glitch slash + bloom on button press ===== */
+.lp-tx { position: fixed; inset: 0; z-index: 30; pointer-events: none; opacity: 0; }
+.lp-tx--on { opacity: 1; }
+.lp-tx-bloom {
+  position: absolute; inset: 0; opacity: 0; mix-blend-mode: screen;
+  background: radial-gradient(60% 50% at 50% 46%, rgba(200, 238, 255, 0.55) 0%, rgba(120, 190, 255, 0.18) 38%, transparent 72%);
+}
+.lp-tx--on .lp-tx-bloom { animation: lptx-bloom 720ms ease forwards; }
+.lp-tx-slash {
+  position: absolute; left: 0; right: 0; top: 50%; height: 2px; opacity: 0;
+  transform: translateY(-50%) scaleX(0); transform-origin: center;
+  background: linear-gradient(90deg, transparent, rgba(176, 226, 255, 0.9) 22%, #fff 50%, rgba(176, 226, 255, 0.9) 78%, transparent);
+  box-shadow: 0 0 36px 6px rgba(150, 218, 255, 0.6), 0 0 120px 28px rgba(120, 200, 255, 0.3);
+}
+.lp-tx--on .lp-tx-slash { animation: lptx-slash 720ms cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.lp-tx-noise {
+  position: absolute; inset: 0; opacity: 0; mix-blend-mode: overlay;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0 2px, rgba(255, 255, 255, 0.05) 3px);
+}
+.lp-tx--on .lp-tx-noise { animation: lptx-noise 720ms steps(3) forwards; }
+@keyframes lptx-bloom {
+  0% { opacity: 0; transform: scale(0.96); }
+  30% { opacity: 0.9; }
+  60% { opacity: 0.5; transform: scale(1.04); }
+  100% { opacity: 0; transform: scale(1.12); }
+}
+@keyframes lptx-slash {
+  0% { transform: translateY(-50%) scaleX(0); opacity: 0; height: 2px; }
+  14% { opacity: 1; }
+  46% { transform: translateY(-50%) scaleX(1); height: 3px; }
+  100% { transform: translateY(-50%) scaleX(1); opacity: 0; height: 1px; }
+}
+@keyframes lptx-noise {
+  0%, 100% { opacity: 0; }
+  20% { opacity: 0.5; }
+  50% { opacity: 0.2; }
+  80% { opacity: 0.4; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lp-tx, .lp-tx * { animation: none !important; }
+  .lp-tx--on { opacity: 0; }
+}
+/* dark cover rises over the last ~half of the transition → we navigate under
+   black, and the destination page reveals from black (continuous, no pop). */
+.lp-tx-fade { position: absolute; inset: 0; background: #050505; opacity: 0; }
+.lp-tx--on .lp-tx-fade { animation: lptx-fade 720ms ease-in forwards; }
+@keyframes lptx-fade { 0%, 45% { opacity: 0; } 100% { opacity: 1; } }
+
+/* ===== Destination page entrance — reveal from black (no abrupt pop) ===== */
+@keyframes page-enter-fade { from { opacity: 0; } to { opacity: 1; } }
+/* opacity-only (no transform/filter) so it never creates a containing block for
+   the résumé's fixed dragon canvas. */
+.rz-root { animation: page-enter-fade 760ms ease both; }
+@media (prefers-reduced-motion: reduce) { .rz-root { animation: none; } }
+
+/* ===== Film: cinematic scene-cut transition (light-slash + bloom) ===== */
+.film-tx {
+  position: fixed;
+  inset: 0;
+  z-index: 25;
+  pointer-events: none;
+  overflow: hidden;
+}
+.film-tx-slash {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 2px;
+  transform: translateY(-50%) scaleX(0);
+  transform-origin: center;
+  background: linear-gradient(90deg, transparent 0%, rgba(176, 226, 255, 0.85) 22%, #ffffff 50%, rgba(176, 226, 255, 0.85) 78%, transparent 100%);
+  box-shadow: 0 0 36px 6px rgba(150, 218, 255, 0.65), 0 0 120px 28px rgba(120, 200, 255, 0.3);
+  animation: ftx-slash 560ms cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.film-tx-bloom {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  mix-blend-mode: screen;
+  background: radial-gradient(70% 46% at 50% 50%, rgba(190, 235, 255, 0.45) 0%, transparent 70%);
+  animation: ftx-bloom 560ms ease forwards;
+}
+@keyframes ftx-slash {
+  0% { transform: translateY(-50%) scaleX(0); opacity: 0; height: 2px; }
+  16% { opacity: 1; }
+  44% { transform: translateY(-50%) scaleX(1); height: 3px; }
+  64% { height: 2px; }
+  100% { transform: translateY(-50%) scaleX(1); opacity: 0; height: 1px; }
+}
+@keyframes ftx-bloom {
+  0%, 12% { opacity: 0; }
+  40% { opacity: 0.7; }
+  100% { opacity: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .film-tx, .film-tx * { animation: none !important; opacity: 0 !important; }
+}
+
+/* --- per-beat cut variants --- */
+/* 충돌(s6): 디지털 글리치 — 화이트 플래시 + 색 분리 슬라이스(앰버/시안) + 스태틱 */
+.film-tx--glitch { background: #05060c; animation: ftxg-base 520ms steps(1, end) forwards; }
+@keyframes ftxg-base { 0% { opacity: 0; } 6% { opacity: 0.9; } 40% { opacity: 0.82; } 70% { opacity: 0.3; } 100% { opacity: 0; } }
+.film-tx--glitch .ftx-flash { position: absolute; inset: 0; background: #fff; mix-blend-mode: screen; opacity: 0; animation: ftxg-flash 520ms steps(2, end) forwards; }
+@keyframes ftxg-flash { 0%, 4% { opacity: 0; } 8% { opacity: 0.85; } 16% { opacity: 0; } 30% { opacity: 0.4; } 36% { opacity: 0; } 100% { opacity: 0; } }
+.film-tx--glitch .ftx-slice { position: absolute; left: -6%; right: -6%; height: 13%; mix-blend-mode: screen; opacity: 0; filter: blur(0.5px); }
+.film-tx--glitch .ftx-slice.a { top: 32%; background: linear-gradient(90deg, transparent, rgba(217, 138, 61, 0.7), transparent); animation: ftxg-a 520ms steps(3, end) forwards; }
+.film-tx--glitch .ftx-slice.b { top: 55%; background: linear-gradient(90deg, transparent, rgba(74, 179, 204, 0.7), transparent); animation: ftxg-b 520ms steps(3, end) forwards; }
+@keyframes ftxg-a { 0%, 6% { opacity: 0; transform: translateX(0); } 10% { opacity: 1; transform: translateX(-5%); } 24% { transform: translateX(4%); } 40% { opacity: 0.8; transform: translateX(-3%); } 60% { opacity: 0; transform: translateX(2%); } 100% { opacity: 0; } }
+@keyframes ftxg-b { 0%, 6% { opacity: 0; transform: translateX(0); } 12% { opacity: 1; transform: translateX(5%); } 26% { transform: translateX(-4%); } 42% { opacity: 0.8; transform: translateX(3%); } 62% { opacity: 0; transform: translateX(-2%); } 100% { opacity: 0; } }
+.film-tx--glitch .ftx-noise { position: absolute; inset: -20%; opacity: 0; mix-blend-mode: overlay; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); background-size: 160px 160px; animation: ftxg-noise 520ms steps(3, end) forwards, ftx-jit2 70ms steps(2) infinite; }
+@keyframes ftxg-noise { 0%, 6% { opacity: 0; } 16% { opacity: 0.5; } 44% { opacity: 0.4; } 100% { opacity: 0; } }
+@keyframes ftx-jit2 { 0% { background-position: 0 0; } 50% { background-position: 40px -28px; } 100% { background-position: -30px 22px; } }
+
+/* 연결/해결/크로스도메인(s8·s9·s10): 봉합 — 따뜻한 좌 + 차가운 우가 중앙에서 만나 빛 봉합선 */
+.film-tx--weave .ftx-wl, .film-tx--weave .ftx-wr { position: absolute; top: 0; bottom: 0; width: 56%; opacity: 0; }
+.film-tx--weave .ftx-wl { left: 0; transform: translateX(-100%); background: linear-gradient(90deg, transparent 0%, rgba(217, 138, 61, 0.12) 55%, rgba(255, 214, 150, 0.85) 100%); animation: ftxw-l 640ms cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+.film-tx--weave .ftx-wr { right: 0; transform: translateX(100%); background: linear-gradient(270deg, transparent 0%, rgba(74, 179, 204, 0.12) 55%, rgba(160, 235, 255, 0.85) 100%); animation: ftxw-r 640ms cubic-bezier(0.4, 0, 0.2, 1) forwards; }
+@keyframes ftxw-l { 0% { transform: translateX(-100%); opacity: 0; } 14% { opacity: 1; } 50% { transform: translateX(0); opacity: 1; } 72% { opacity: 0.5; } 100% { transform: translateX(8%); opacity: 0; } }
+@keyframes ftxw-r { 0% { transform: translateX(100%); opacity: 0; } 14% { opacity: 1; } 50% { transform: translateX(0); opacity: 1; } 72% { opacity: 0.5; } 100% { transform: translateX(-8%); opacity: 0; } }
+.film-tx--weave .ftx-merge { position: absolute; left: 50%; top: 0; bottom: 0; width: 3px; transform: translateX(-50%) scaleY(0); background: #fff; box-shadow: 0 0 60px 16px rgba(190, 235, 255, 0.7), 0 0 18px 4px rgba(255, 255, 255, 0.9); opacity: 0; animation: ftxw-merge 640ms ease forwards; }
+@keyframes ftxw-merge { 0%, 40% { opacity: 0; transform: translateX(-50%) scaleY(0); } 52% { opacity: 1; transform: translateX(-50%) scaleY(1); } 66% { opacity: 0.9; } 100% { opacity: 0; transform: translateX(-50%) scaleY(1); } }
+
+/* 엔딩: 중앙에서 빛이 바깥으로 열림 */
+.film-tx--bloom .ftx-b { position: absolute; left: 50%; top: 50%; width: 46vmax; height: 46vmax; transform: translate(-50%, -50%) scale(0); border-radius: 50%; mix-blend-mode: screen; opacity: 0; background: radial-gradient(circle, rgba(220, 245, 255, 0.55) 0%, rgba(150, 210, 255, 0.2) 40%, transparent 68%); animation: ftxb 720ms cubic-bezier(0.3, 0.7, 0.2, 1) forwards; }
+@keyframes ftxb { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 16% { opacity: 0.8; } 100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; } }
+

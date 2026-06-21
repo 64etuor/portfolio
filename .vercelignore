@@ -1,0 +1,11 @@
+# Non-app source/archive dirs — not needed at runtime (served assets live in public/).
+/assets/
+/references/
+/scripts/
+/_vite_archive/
+/docs/
+/*.jpeg
+/*.png
+.DS_Store
+HANDOFF_NEXT.md
+/_to-delete/

@@ -1,35 +1,38 @@
 import type { Metadata } from 'next'
+// Self-hosted web fonts — single source of truth in ./fonts (must load before globals).
+import './fonts'
 import './globals.css'
-import { ThemeProvider } from '@/components/ThemeProvider'
-import { ThemeSwitcher } from '@/components/ThemeSwitcher'
-import Link from 'next/link'
+import './cinematic.css' // 랜딩/필름/전환 (globals 에서 분리)
+import './resume.css' // /resume 전용 (globals 에서 분리)
+import { SiteHeader } from '@/components/SiteHeader'
 import { PROFILE } from '@content/index'
+import { SITE } from '@content/site'
+import { SpeedInsights } from '@vercel/speed-insights/next'
+import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
-  title: '박양하 · Portfolio',
+  title: SITE.title,
   description: PROFILE.identity.tagline,
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+    ],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+  },
+  manifest: '/site.webmanifest',
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
       <body>
-        <ThemeProvider>
-          <header
-            className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 md:px-10"
-            style={{ background: 'color-mix(in oklab, var(--bg) 80%, transparent)', backdropFilter: 'blur(8px)', borderBottom: '1px solid var(--line)' }}
-          >
-            <Link href="/" className="font-serif text-lg font-semibold" style={{ color: 'var(--ink)' }}>
-              Park&nbsp;Yangha
-            </Link>
-            <nav className="flex items-center gap-5 text-sm" style={{ color: 'var(--muted)' }}>
-              <Link href="/" className="hover:opacity-80">시안</Link>
-              <Link href="/c/overview" className="hover:opacity-80">조합</Link>
-              <ThemeSwitcher />
-            </nav>
-          </header>
-          {children}
-        </ThemeProvider>
+        <SiteHeader />
+        {children}
+        <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   )

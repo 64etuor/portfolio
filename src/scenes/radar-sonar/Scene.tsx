@@ -3,6 +3,7 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
 import {
@@ -158,13 +159,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   // canvas interaction needs current W/H/CX/CY/R derived from f.w/f.h each frame
   const scopeGeom = useRef({ W: 0, H: 0, CX: 0, CY: 0, R: 0 })
 
-  const readyFired = useRef(false)
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   // --- helpers ---
   const setTicker = useCallback((text: string) => {

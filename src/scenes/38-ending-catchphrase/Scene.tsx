@@ -1,9 +1,12 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import type { Frame, SceneProps } from '../_host/types'
+import { type RGB, rgba, mix } from '../_host/color'
+import { clamp, smoothstep } from '../_host/math'
+import { useSceneReady } from '../_host/useSceneReady'
 import s from './scene.module.css'
 
 const ACC: RGB = [82, 230, 207]
@@ -11,8 +14,6 @@ const ACCH: RGB = [199, 251, 241]
 const WARM: RGB = [224, 163, 90]
 const RINGS = 5
 const LOOP = 13.0
-
-type RGB = [number, number, number]
 
 interface Streak {
   ang: number
@@ -22,20 +23,7 @@ interface Streak {
   warm: boolean
 }
 
-const clamp = (v: number, a: number, b: number) => (v < a ? a : v > b ? b : v)
-
-function smooth(a: number, b: number, x: number) {
-  const t = clamp((x - a) / (b - a), 0, 1)
-  return t * t * (3 - 2 * t)
-}
-
-function rgba(c: RGB, a: number) {
-  return `rgba(${c[0] | 0},${c[1] | 0},${c[2] | 0},${a})`
-}
-
-function mix(a: RGB, b: RGB, t: number): RGB {
-  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
-}
+const smooth = smoothstep
 
 function buildStreaks() {
   const streaks: Streak[] = []
@@ -59,14 +47,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const statusRef = useRef<HTMLSpanElement | null>(null)
   const lastStatusRef = useRef('')
   const streaksRef = useRef<Streak[]>([])
-  const readyFired = useRef(false)
-
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   const ref = useSceneCanvas((ctx: CanvasRenderingContext2D, f: Frame) => {
     if (streaksRef.current.length === 0) streaksRef.current = buildStreaks()

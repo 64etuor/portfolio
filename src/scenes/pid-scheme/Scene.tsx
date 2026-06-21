@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { SceneHost } from '../_host/SceneHost'
+import { useSceneReady } from '../_host/useSceneReady'
 import type { SceneProps } from '../_host/types'
 import { subscribe } from '../_host/raf'
 import { DATA } from './data'
@@ -74,13 +75,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   }, [closePanel])
 
   /* ── onReady ── */
-  const readyFired = useRef(false)
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   /* ── rAF animations ── */
   useEffect(() => {

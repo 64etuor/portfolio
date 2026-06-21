@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
 import type { Frame, SceneProps } from '../_host/types'
 import { CHANNELS, EVENT_POOL, LUT_STOPS, type EventTone } from './data'
 import s from './scene.module.css'
@@ -494,7 +495,6 @@ function updateReadouts(engine: Engine, refs: ReadoutRefs, t: number, dt: number
 export default function Scene({ running = true, onReady }: SceneProps) {
   const [selected, setSelected] = useState<number | null>(null)
   const engineRef = useRef<Engine | null>(null)
-  const readyFired = useRef(false)
   const lutRef = useRef<HTMLCanvasElement | null>(null)
   const feedRef = useRef<HTMLDivElement | null>(null)
   const gainRef = useRef<HTMLSpanElement | null>(null)
@@ -505,12 +505,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const ampStatRef = useRef<HTMLElement | null>(null)
   const sweepRef = useRef<HTMLElement | null>(null)
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   useEffect(() => {
     drawLut(lutRef.current)

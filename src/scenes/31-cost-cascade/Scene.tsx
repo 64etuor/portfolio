@@ -7,9 +7,12 @@
    지나간 격자 노드 붕괴 → 균열 역재봉으로 한 점 리셋 → 무한 루프.
    ════════════════════════════════════════════════════════════════ */
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
+import { mulberry32 } from '../_host/random'
+import { clamp } from '../_host/math'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
 
@@ -21,16 +24,6 @@ const TARGETS_F = [
   { x: 0.820, y: 0.715, arrive: 0.83 }, // 현장 불만족    (lands middle)
 ]
 
-/* ---- seeded PRNG (intentional, repeatable geometry per loop) ---- */
-function mulberry32(a: number) {
-  return function () {
-    a |= 0; a = (a + 0x6D2B79F5) | 0
-    let t = Math.imul(a ^ (a >>> 15), 1 | a)
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
-
 /* ---- timeline (ms) ---- */
 const PH = { idle: 1700, charge: 620, rupture: 2650, hold: 2250, heal: 1550 }
 const TOTAL = PH.idle + PH.charge + PH.rupture + PH.hold + PH.heal
@@ -38,7 +31,6 @@ const TOTAL = PH.idle + PH.charge + PH.rupture + PH.hold + PH.heal
 /* ---- easing ---- */
 const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4)
 const easeInOutQuad = (t: number) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
-const clamp = (v: number, a: number, b: number) => v < a ? a : v > b ? b : v
 
 type Point = [number, number]
 interface Branch {
@@ -121,13 +113,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     useRef<HTMLDivElement | null>(null),
   ]
 
-  const readyFired = useRef(false)
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   /* ---- mutable scene state (preserved across frames, reset on regen) ---- */
   const sceneState = useRef({

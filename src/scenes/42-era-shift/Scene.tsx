@@ -4,6 +4,8 @@ import { useEffect, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import type { Frame, SceneProps } from '../_host/types'
+import { clamp, ease } from '../_host/math'
+import { useSceneReady } from '../_host/useSceneReady'
 import s from './scene.module.css'
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -68,8 +70,6 @@ const CUM = DURS.map((dur) => {
   return v
 })
 
-const clamp = (a: number, b: number, v: number) => (v < a ? a : v > b ? b : v)
-const ease = (t: number) => (t < 0 ? 0 : t > 1 ? 1 : t * t * (3 - 2 * t))
 const assetUrl = (url: string) => (url.startsWith('/') ? url : `/lab/${url}`)
 
 function setFrame(img: HTMLDivElement, ph: HTMLDivElement, phn: HTMLSpanElement, idx: number) {
@@ -95,7 +95,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const lastCut = useRef(-1)
   const flashStart = useRef(-1) // 컷 셔터 플래시 시작 시각(초); draw 에서 시간기반 감쇠
   const front = useRef(0)
-  const readyFired = useRef(false)
 
   useEffect(() => {
     PHOTOS.forEach((url) => {
@@ -104,12 +103,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     })
   }, [])
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   const showCut = (ci: number) => {
     const slideA = slideARef.current
@@ -163,8 +157,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       flash.style.opacity = flashStart.current >= 0 && age >= 0 && age < 0.26 ? (0.5 * (1 - age / 0.26)).toFixed(3) : '0'
     }
 
-    const hv = clamp(0, 1, (f - 0.6) / 0.1)
-    const hOut = clamp(0, 1, (f - 0.94) / 0.05)
+    const hv = clamp((f - 0.6) / 0.1, 0, 1)
+    const hOut = clamp((f - 0.94) / 0.05, 0, 1)
     const appear = ease(hv) * (1 - hOut)
     const hb = (1 - ease(hv)) * 7 + hOut * 5
 

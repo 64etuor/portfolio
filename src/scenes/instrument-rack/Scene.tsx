@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
 import type { Frame, SceneProps } from '../_host/types'
 import { CHIPS, INVENTORY, LEDGER, LEVERS, STEPS } from './data'
 import s from './scene.module.css'
@@ -389,7 +390,7 @@ function moduleEars() {
 }
 
 export default function Scene({ running = true, onReady }: SceneProps) {
-  const readyFired = useRef(false)
+  useSceneReady(onReady)
   const rowRefs = useRef<Array<HTMLButtonElement | null>>([])
   const qRef = useRef<HTMLDivElement | null>(null)
   const aRef = useRef<HTMLDivElement | null>(null)
@@ -434,13 +435,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     finalStepRef.current?.classList.remove(s.land)
     showInterro(i)
   }
-
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
 
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')

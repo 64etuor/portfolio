@@ -3,6 +3,9 @@
 import { useEffect, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { useSceneReady } from '../_host/useSceneReady'
+import { clamp } from '../_host/math'
+import { scrollIntoNearestScrollable } from '../_host/dom-util'
 import type { Frame, SceneProps } from '../_host/types'
 import {
   BG_EVENTS,
@@ -77,8 +80,6 @@ interface Point {
 
 const LOG_MAX = 4
 
-const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v))
-
 function byRef<T extends HTMLElement = HTMLElement>(rt: Runtime, name: string) {
   return rt.root.querySelector<T>(`[data-ref="${name}"]`)
 }
@@ -139,22 +140,6 @@ function createRuntime(root: HTMLDivElement): Runtime {
   }
 }
 
-function scrollLocal(el: Element | null) {
-  if (!el) return
-  let p = el.parentElement
-  while (p) {
-    const oy = window.getComputedStyle(p).overflowY
-    if ((oy === 'auto' || oy === 'scroll') && p.scrollHeight > p.clientHeight + 1) {
-      const er = el.getBoundingClientRect()
-      const pr = p.getBoundingClientRect()
-      if (er.top < pr.top) p.scrollTop -= pr.top - er.top
-      else if (er.bottom > pr.bottom) p.scrollTop += er.bottom - pr.bottom
-      return
-    }
-    p = p.parentElement
-  }
-}
-
 function ioGridHtml(rt: Runtime) {
   return IO_MAP.map((io) => {
     const on = !!rt.iost[io.k]
@@ -191,7 +176,7 @@ function setPlcStep(rt: Runtime, i: number) {
   all<HTMLElement>(rt, '.plcrow').forEach((row) => {
     const act = Number(row.dataset.step) === rt.plcActStep
     row.classList.toggle('act', act)
-    if (act) scrollLocal(row)
+    if (act) scrollIntoNearestScrollable(row)
   })
 }
 
@@ -249,7 +234,7 @@ function selectLine(rt: Runtime, i: number, fromUser: boolean) {
   const el = rt.progScroll.querySelector<HTMLElement>(`.pline[data-idx="${i}"]`)
   if (el) {
     el.classList.add('sel')
-    scrollLocal(el)
+    scrollIntoNearestScrollable(el)
   }
 
   const c = COMPANY[wp.co]
@@ -1077,14 +1062,8 @@ function initRuntime(rt: Runtime) {
 export default function Scene({ running = true, onReady }: SceneProps) {
   const rootRef = useRef<HTMLDivElement | null>(null)
   const runtimeRef = useRef<Runtime | null>(null)
-  const readyFired = useRef(false)
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   useEffect(() => {
     const root = rootRef.current

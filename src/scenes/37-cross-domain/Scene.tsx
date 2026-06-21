@@ -1,9 +1,13 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import type { Frame, SceneProps } from '../_host/types'
+import { type RGB, rgba, mix } from '../_host/color'
+import { clamp, lerp, smooth01 } from '../_host/math'
+import { mulberry32 } from '../_host/random'
+import { useSceneReady } from '../_host/useSceneReady'
 import s from './scene.module.css'
 
 /* ════════════════════════════════════════════════════════════════
@@ -17,7 +21,7 @@ import s from './scene.module.css'
    복귀(seamless). 모든 모션은 의도된 시간함수 — 난수 텔레메트리·가짜수치 없음.
    ════════════════════════════════════════════════════════════════ */
 
-/* ---- color arrays + helpers ---- */
+/* ---- color arrays ---- */
 const PHOS: [number, number, number] = [215, 215, 215]
 const DIM: [number, number, number] = [141, 141, 141]
 const DEEP: [number, number, number] = [58, 58, 58]
@@ -26,33 +30,7 @@ const COOL: [number, number, number] = [98, 176, 204]
 const GOLD: [number, number, number] = [240, 200, 121]
 const GOLDH: [number, number, number] = [255, 241, 207]
 
-function rgba(c: [number, number, number], a: number): string {
-  return 'rgba(' + (c[0] | 0) + ',' + (c[1] | 0) + ',' + (c[2] | 0) + ',' + a + ')'
-}
-function mix(
-  a: [number, number, number],
-  b: [number, number, number],
-  t: number
-): [number, number, number] {
-  return [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
-}
-const clamp = (v: number, lo: number, hi: number) => (v < lo ? lo : v > hi ? hi : v)
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t
-const smooth = (t: number) => {
-  t = clamp(t, 0, 1)
-  return t * t * (3 - 2 * t)
-}
-
-/* ---- seeded PRNG (deterministic, repeatable geometry) ---- */
-function mulberry32(a: number): () => number {
-  return function () {
-    a |= 0
-    a = (a + 0x6d2b79f5) | 0
-    let t = Math.imul(a ^ (a >>> 15), 1 | a)
-    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
+const smooth = smooth01
 
 /* ---- domain vocabularies (generic — no names/numbers) ---- */
 const TERMS_MFG = ['공정', '설비', '양산', '수율', '금형', '품질', '계측', '현장']
@@ -151,14 +129,8 @@ function conv(f: number): number {
 export default function Scene({ running = true, onReady }: SceneProps) {
   const l1Ref = useRef<HTMLHeadingElement | null>(null)
   const l2Ref = useRef<HTMLHeadingElement | null>(null)
-  const readyFired = useRef(false)
 
-  useEffect(() => {
-    if (!readyFired.current) {
-      readyFired.current = true
-      onReady?.()
-    }
-  }, [onReady])
+  useSceneReady(onReady)
 
   const ref = useSceneCanvas(
     (g: CanvasRenderingContext2D, fr: Frame) => {

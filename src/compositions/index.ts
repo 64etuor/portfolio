@@ -1,12 +1,17 @@
 // 조합(Composition) — 청중/메시지별 시안 시퀀스. 각 조합은 "한 문장 결론"을 가진다.
 // 4관점(프로젝트+경력 / 스킬 / 철학 / 지식관리) 위에서 owner 시안 위주로 구성.
 
+import { SCENE_CATALOG } from '@/scenes/catalog'
+
+// scene id = registry 시안 번호("01" 등). catalog 의 id 만 허용 — sceneById 로 해석된다.
+type SceneId = NonNullable<Extract<(typeof SCENE_CATALOG)[number], { id: string }>['id']>
+
 export interface Composition {
   slug: string
   title: string
   audience: string
   blurb: string // 한 문장 결론(메시지 아크)
-  scenes: string[] // scene id 순서
+  scenes: SceneId[] // scene id 순서
 }
 
 export const COMPOSITIONS: Composition[] = [

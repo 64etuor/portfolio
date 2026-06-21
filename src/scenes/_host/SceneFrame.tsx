@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense, lazy, useMemo, useState, type ComponentType } from 'react'
+import { Suspense, lazy, useMemo, useRef, useState, type ComponentType } from 'react'
 import { ErrorBoundary } from 'react-error-boundary'
 import { useIntersectionObserver } from 'usehooks-ts'
 import type { SceneProps } from './types'
@@ -32,16 +32,20 @@ export function SceneFrame({
   keepMounted?: boolean
   hoverPlay?: boolean
 }) {
+  // freezeOnceVisible 을 쓰지 않고, 실제 교차 상태를 항상 추적한다.
   const { ref, isIntersecting } = useIntersectionObserver({
     rootMargin,
     threshold: 0,
-    freezeOnceVisible: keepMounted,
   })
   const [hovered, setHovered] = useState(false)
+  // keepMounted: 한번이라도 보인 적 있으면 true 로 래치 — 이후 마운트를 유지.
+  const hasEverIntersectedRef = useRef(false)
+  if (isIntersecting) hasEverIntersectedRef.current = true
 
   const Lazy = useMemo(() => lazy(load), [load])
-  // freezeOnceVisible(=keepMounted) 면 한번 보이면 isIntersecting 이 고정돼 계속 마운트 유지.
-  const mounted = isIntersecting
+  // keepMounted 면 한 번 보인 후에는 마운트를 유지(pause 만). 아니면 교차 중에만 마운트.
+  const mounted = keepMounted ? hasEverIntersectedRef.current : isIntersecting
+  // running 은 항상 실제 교차 여부에 따른다 — keepMounted 씬도 화면 밖이면 멈춘다.
   // hoverPlay 면 호버 중에만 재생(SceneHost 가 freeze-resume → 떠날 때 마지막 프레임에서 정지).
   const running = hoverPlay ? isIntersecting && hovered : isIntersecting
   // 정지 상태: 캔버스(running=false)뿐 아니라 씬 CSS 오버레이(grain/scan/beat 등)도 멈춰

@@ -2,7 +2,7 @@
   "name": "portfolio",
   "private": true,
   "version": "0.2.0",
-  "description": "박양하 포트폴리오 — Next.js 통합 셸. SSOT(content/) + 27 시안(public/lab) + 테마 스위처 + 조합(composition).",
+  "description": "박양하 포트폴리오 — Next.js 통합 셸. 씬 SSOT(src/scenes/catalog.ts) + 32 씬(public/lab) + 테마 스위처 + 조합(composition).",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

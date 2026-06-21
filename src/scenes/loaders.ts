@@ -6,7 +6,8 @@ import type { SceneProps } from './_host/types'
 
 export type SceneLoader = () => Promise<{ default: ComponentType<SceneProps> }>
 
-const SCENE_LOADERS: Record<string, SceneLoader> = {
+// import() 리터럴은 Next 코드스플릿을 위해 반드시 정적 문자열로 남는다(catalog 로 추출 금지).
+const SCENE_LOADERS = {
   '05-bios-boot': () => import('./05-bios-boot/Scene'),
   '28-gap-reality': () => import('./28-gap-reality/Scene'),
   '29-lost-in-translation': () => import('./29-lost-in-translation/Scene'),
@@ -39,9 +40,14 @@ const SCENE_LOADERS: Record<string, SceneLoader> = {
   'scada-hmi': () => import('./scada-hmi/Scene'),
   'sonar-waterfall': () => import('./sonar-waterfall/Scene'),
   'weld-thermal': () => import('./weld-thermal/Scene'),
-}
+} satisfies Record<string, SceneLoader>
+
+/** 정본 씬 키 = 로더 키 = 씬 디렉토리명 = public/lab basename(.html 제거). */
+export type SceneKey = keyof typeof SCENE_LOADERS
+
+export { SCENE_LOADERS }
 
 /** "pipeline-dag.html" | "pipeline-dag" → loader (없으면 undefined). */
 export function loaderFor(fileOrName: string): SceneLoader | undefined {
-  return SCENE_LOADERS[fileOrName.replace(/\.html$/, '')]
+  return (SCENE_LOADERS as Record<string, SceneLoader>)[fileOrName.replace(/\.html$/, '')]
 }

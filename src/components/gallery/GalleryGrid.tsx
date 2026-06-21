@@ -3,23 +3,19 @@
 import Link from 'next/link'
 import { SceneFrame } from '@/scenes/_host/SceneFrame'
 import { loaderFor } from '@/scenes/loaders'
-import { SCENES, sceneById } from '@/scenes/registry'
+import { catalogEntry } from '@/scenes/catalog'
 import type { GalleryCard } from './data'
 import styles from './gallery.module.css'
 
-// 카드 file → 단독 라우트 slug. registry 는 slug 와 file basename 양쪽으로 색인되지만
-// 필름 비트(예: 42-era-shift)는 registry 에 없으므로 file basename 으로 폴백.
+// 카드 file → 단독 라우트 slug. catalog 가 모든 씬(필름 비트 포함)을 색인하므로
+// 항상 /s 가 해석 가능한 slug 로 매핑된다.
 function slugFor(file: string): string {
   const base = file.replace(/\.html$/, '')
-  const byFile = SCENES.find((s) => s.file === file || s.file === `${base}.html`)
-  if (byFile) return byFile.slug
-  return sceneById(base)?.slug ?? base
+  return catalogEntry(file)?.slug ?? base
 }
 
 function isFilmBeat(file: string): boolean {
-  // 필름 비트는 registry 에 등록되지 않은 씬들(숫자 prefix + 내러티브 전용).
-  const base = file.replace(/\.html$/, '')
-  return !SCENES.some((s) => s.file === `${base}.html` || s.slug === base)
+  return catalogEntry(file)?.filmBeat ?? false
 }
 
 export function GalleryGrid({ cards }: { cards: GalleryCard[] }) {
@@ -29,7 +25,7 @@ export function GalleryGrid({ cards }: { cards: GalleryCard[] }) {
         const load = loaderFor(card.file)
         const slug = slugFor(card.file)
         const film = isFilmBeat(card.file)
-        const bg = sceneById(card.file.replace(/\.html$/, ''))?.bg ?? '#000'
+        const bg = catalogEntry(card.file)?.bg ?? '#000'
         return (
           <article key={card.file} className={`${styles.card}${film ? ` ${styles.cardFilm}` : ''}`}>
             <div className={styles.bar}>

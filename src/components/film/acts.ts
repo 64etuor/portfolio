@@ -8,8 +8,13 @@
 // actually shows before we cut. Beats s9/s10 intercut tech demos as evidence.
 // After the ending beat the film returns to the landing (see Film.tsx onFilmEnd).
 
+import { SCENE_CATALOG } from '@/scenes/catalog'
+
+// file = catalog 의 "<key>.html" 만 허용 — 오타/구식 키는 컴파일 실패.
+type SceneFile = (typeof SCENE_CATALOG)[number]['file']
+
 interface Shot {
-  file: string // file under /lab/
+  file: SceneFile // file under /lab/
   ms: number // on-screen duration for this scene
 }
 
@@ -18,7 +23,7 @@ export interface Act {
   scenes: Shot[]
 }
 
-export const ACTS: Act[] = [
+export const ACTS = [
   // 0. 콜드 오픈 — 시스템 부팅 (POST→SYSTEM READY ~3.85s 후 핸드오프; 자체 ms 선언)
   { id: 's0-boot', scenes: [{ file: '05-bios-boot.html', ms: 6200 }] },
   // 1. 시대(SCENE 01) — "시대는 빠르게 변하고 있습니다" 가속하는 시대 스트림 (arc 8.2s; 자체 ms 선언)
@@ -69,6 +74,6 @@ export const ACTS: Act[] = [
   },
   // 엔딩 — 캐치프레이즈 (arc 13s) → 랜딩 복귀
   { id: 'ending', scenes: [{ file: '38-ending-catchphrase.html', ms: 12000 }] },
-]
+] satisfies Act[]
 
 // Total runtime ≈ 164.5s (~2:45). Tune individual `ms` values above to taste.

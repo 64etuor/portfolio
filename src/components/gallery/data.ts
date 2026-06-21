@@ -1,8 +1,13 @@
 // 갤러리 정본 데이터 — public/lab/scenes.html + skills*.html 에서 한국어 카피 그대로 옮김.
-// file = 씬 basename(loaders.ts / registry.ts 키와 동일).
+// file = 씬 basename(catalog key 와 동일).
+
+import { SCENE_CATALOG } from '@/scenes/catalog'
+
+// file = catalog key — 오타/구식 키는 컴파일 실패.
+type SceneFileKey = (typeof SCENE_CATALOG)[number]['key']
 
 export interface GalleryCard {
-  file: string
+  file: SceneFileKey
   title: string
   tag: string
   desc: string

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { subscribe } from './raf'
 import type { Frame, TickFn, UseSceneCanvasOptions } from './types'
 
@@ -29,7 +29,8 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
   // 누적 재생 시간(초). running 토글(일시정지/재개·뷰포트 진출입) 사이에 보존되어
   // 재개 시 t 가 0 으로 리셋되지 않고 멈춘 지점부터 이어진다(freeze-resume).
   const elapsedRef = useRef(0)
-  const reducedRef = useRef(false)
+  // reduced-motion 을 state 로 관리 — OS 설정 변경 시 tick effect 가 재실행된다.
+  const [reduced, setReduced] = useState(false)
 
   // 최신 draw 를 항상 참조(의존성으로 인한 재구독 없이).
   drawRef.current = draw
@@ -42,6 +43,9 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
     const w = parent?.clientWidth || cv.clientWidth || window.innerWidth
     const h = parent?.clientHeight || cv.clientHeight || window.innerHeight
     const dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP)
+    // 실제로 값이 바뀔 때만 캔버스를 건드린다(불필요한 픽셀 버퍼 재할당 방지).
+    const prev = sizeRef.current
+    if (prev.w === w && prev.h === h && prev.dpr === dpr) return
     cv.width = Math.max(1, Math.round(w * dpr))
     cv.height = Math.max(1, Math.round(h * dpr))
     cv.style.width = w + 'px'
@@ -79,19 +83,17 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
     if (!cv) return
     const ro = new ResizeObserver(() => {
       applySize()
-      if (!running || reducedRef.current) renderStatic()
+      if (!running || reduced) renderStatic()
     })
     if (cv.parentElement) ro.observe(cv.parentElement)
     ro.observe(cv)
     return () => ro.disconnect()
-  }, [applySize, renderStatic, running])
+  }, [applySize, renderStatic, running, reduced])
 
-  // reduced-motion 감지.
+  // reduced-motion 감지 — state 로 관리해 변경 시 tick effect 재실행.
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const set = () => {
-      reducedRef.current = mq.matches
-    }
+    const set = () => setReduced(mq.matches)
     set()
     mq.addEventListener('change', set)
     return () => mq.removeEventListener('change', set)
@@ -101,7 +103,7 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
   useEffect(() => {
     if (!canvasRef.current || !ctxRef.current) return
 
-    if (reducedRef.current && reducedMotionStatic) {
+    if (reduced && reducedMotionStatic) {
       renderStatic()
       return
     }
@@ -133,7 +135,7 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
         elapsedRef.current += (lastRef.current - startRef.current) / 1000
       }
     }
-  }, [running, reducedMotionStatic, renderStatic])
+  }, [running, reduced, reducedMotionStatic, renderStatic])
 
   return ref
 }

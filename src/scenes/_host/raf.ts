@@ -12,11 +12,18 @@ let lastHiddenPause = false
 
 function loop(now: number) {
   rafId = null
+  // 다음 프레임을 먼저 예약 — 콜백이 throw 해도 루프가 죽지 않는다.
+  schedule()
   // 복사본 순회 — 콜백이 도중에 구독 해제해도 안전.
   for (const cb of Array.from(subs)) {
-    if (subs.has(cb)) cb(now)
+    if (subs.has(cb)) {
+      try {
+        cb(now)
+      } catch (err) {
+        console.error('[raf] subscriber threw, continuing loop:', err)
+      }
+    }
   }
-  schedule()
 }
 
 function schedule() {

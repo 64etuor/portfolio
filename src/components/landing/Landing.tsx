@@ -2,11 +2,16 @@
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
-import Spline from '@splinetool/react-spline'
+import dynamic from 'next/dynamic'
 import type { Application } from '@splinetool/runtime'
 import { PretextText } from './PretextText'
 import { LandingAmbientWords } from './LandingAmbientWords'
 import { SITE } from '@content/site'
+
+// The Spline 3D runtime (~the whole landing JS budget) is loaded client-only and
+// mounted on idle, so it never blocks the landing's FCP/LCP/TTI. The dark CRT-noir
+// backdrop (.lp-root + veil/scan) is already the placeholder; the robot fades in.
+const Spline = dynamic(() => import('./SplineClient'), { ssr: false })
 
 const [HERO_PORTFOLIO, HERO_ITS_ME, HERO_NAME, HERO_TAGLINE] = SITE.landing.hero
 
@@ -88,6 +93,21 @@ export function Landing() {
     return () => cancelAnimationFrame(r)
   }, [])
 
+  // Defer mounting the heavy Spline 3D runtime until the browser is idle (or a
+  // 1.5s cap), so the landing paints + becomes interactive on the lightweight
+  // content first. The robot then loads off the critical path.
+  const [showSpline, setShowSpline] = useState(false)
+  useEffect(() => {
+    type RIC = (cb: () => void, opts?: { timeout: number }) => number
+    const ric = (window as unknown as { requestIdleCallback?: RIC }).requestIdleCallback
+    if (ric) {
+      const id = ric(() => setShowSpline(true), { timeout: 1500 })
+      return () => (window as unknown as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(id)
+    }
+    const t = window.setTimeout(() => setShowSpline(true), 300)
+    return () => clearTimeout(t)
+  }, [])
+
   function onLoad(app: Application) {
     splineRef.current = app
     // expose for scene inspection (objects / variables / events) during dev
@@ -140,7 +160,7 @@ export function Landing() {
 
   return (
     <main className="lp-root">
-      <Spline scene={SPLINE_SCENE} onLoad={onLoad} className="lp-spline" />
+      {showSpline && <Spline scene={SPLINE_SCENE} onLoad={onLoad} className="lp-spline" />}
 
       {/* vignette + bottom fade for legibility + faint scanlines over the scene */}
       <div className="lp-veil" aria-hidden />

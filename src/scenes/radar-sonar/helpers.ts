@@ -1,46 +1,7 @@
 // Work Radar — radar-sonar 씬 순수 헬퍼 (클로저 없음)
 
 import { CONTACTS_DEF, PHASE_BY_TYPE } from './data'
-import type { ContactDef } from './data'
-
-/* ────────────────────────────────────────────────────
-   Static constants
-   ──────────────────────────────────────────────────── */
-export const RINGS = 4
-export const SWEEP_SPEED = (12 / 60) * Math.PI * 2 // 12 rpm -> rad/s
-
-/* ────────────────────────────────────────────────────
-   Type definitions
-   ──────────────────────────────────────────────────── */
-export interface Contact extends ContactDef {
-  _glow: number
-  _detected: boolean
-  _verified: boolean
-  _phase: number
-  _trk: number
-  _baseA: number
-  _a: number
-  _baseRing: number
-  _driftT: number
-  _driftSpeed: number
-  _driftAmp: number
-  _driftRingAmp: number
-  _liveDriftT: number
-}
-
-export interface Ping {
-  r: number
-  life: number
-}
-
-export interface FakeRow {
-  el: HTMLDivElement
-  brgBase: number
-  rngBase: number
-  driftT: number
-  statusIdx: number
-  statusT: number
-}
+import type { Contact } from './types'
 
 /* ────────────────────────────────────────────────────
    Pure formatters

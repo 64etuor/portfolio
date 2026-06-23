@@ -48,6 +48,24 @@
     color: inherit;
     text-decoration: none;
   }
+
+  /* ===== Keyboard focus indicator (a11y) =====
+     Provides a visible ring for all keyboard-navigable elements.
+     Uses the site accent token; falls back to CRT-cyan for themes
+     that override --accent to a low-visibility value.             */
+  :focus-visible {
+    outline: 2px solid var(--accent, #5fb5c2);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  a:focus-visible,
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  [tabindex]:focus-visible {
+    outline: 2px solid var(--accent, #5fb5c2);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
 }
 
 /* ===== Shared instrument-chrome button language ===== */

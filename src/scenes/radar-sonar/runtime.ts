@@ -2,16 +2,10 @@
 // 클로저 상태는 SceneRefs/SceneState 로 명시적으로 주입한다.
 // 동작/타이밍/rAF/캔버스 출력은 원본 Scene.tsx 와 1:1 동일.
 
-import {
-  SWEEP_SPEED,
-  pad3,
-  typeAbbr,
-  typeKo,
-  type Contact,
-  type FakeRow,
-} from './helpers'
+import { SWEEP_SPEED } from './constants'
+import { pad3, typeAbbr, typeKo } from './helpers'
 import { PHASE_LABEL, PHASE_KO, FAKE_SIGNALS } from './data'
-import type { SceneRefs, SceneState } from './types'
+import type { Contact, FakeRow, SceneRefs, SceneState } from './types'
 
 type Styles = Record<string, string>
 

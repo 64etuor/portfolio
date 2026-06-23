@@ -11,8 +11,24 @@ import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://yanghapark.com'),
   title: SITE.title,
   description: PROFILE.identity.tagline,
+  openGraph: {
+    type: 'website',
+    title: SITE.title,
+    description: PROFILE.identity.tagline,
+    url: 'https://yanghapark.com',
+    siteName: SITE.title,
+    locale: 'ko_KR',
+    images: ['/opengraph-image'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: SITE.title,
+    description: PROFILE.identity.tagline,
+    images: ['/opengraph-image'],
+  },
   icons: {
     icon: [
       { url: '/favicon.ico', sizes: 'any' },
@@ -25,10 +41,25 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
 }
 
+const personJsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'Person',
+  name: PROFILE.identity.name,
+  alternateName: PROFILE.identity.nameEn,
+  jobTitle: PROFILE.identity.title,
+  description: PROFILE.identity.tagline,
+  url: PROFILE.contact.url,
+  sameAs: [PROFILE.contact.github, PROFILE.contact.githubPage],
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+        />
         <SiteHeader />
         {children}
         <SpeedInsights />

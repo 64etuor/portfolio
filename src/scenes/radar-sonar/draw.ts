@@ -1,7 +1,8 @@
 // Work Radar — radar-sonar 씬 캔버스 렌더 함수 (클로저 상태는 SceneState params 로 주입)
 // 출력/타이밍은 원본 Scene.tsx 와 1:1 동일하게 유지
 
-import { RINGS, pad3, typeColRgb } from './helpers'
+import { RINGS } from './constants'
+import { pad3, typeColRgb } from './helpers'
 import type { SceneState } from './types'
 
 export function drawGrid(g: CanvasRenderingContext2D, CX: number, CY: number, R: number) {

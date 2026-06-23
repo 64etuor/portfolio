@@ -373,7 +373,7 @@ export const profile: Profile = {
       ],
     },
     {
-      company: '솔라엣지테크놀로지스코리아',
+      company: '솔라엣지테크놀로지스 코리아',
       title: '공정기술 엔지니어',
       period: '2023.09 ~ 2024.12',
       summary:

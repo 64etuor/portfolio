@@ -6,7 +6,21 @@ import { useSceneReady } from '../_host/useSceneReady'
 import type { SceneProps } from '../_host/types'
 import s from './scene.module.css'
 import { STATIONS, PLANT_KPIS, STREAM_MSGS, renderStreamMsg } from './data'
-import { STATION_POS_RAW, STREAM_INTERVAL, MAX_STREAM_ROWS, SYNC_BEAT_INTERVAL } from './constants'
+import {
+  STATION_POS_RAW,
+  STREAM_INTERVAL,
+  MAX_STREAM_ROWS,
+  SYNC_BEAT_INTERVAL,
+  LAYER_RING_COLORS,
+  FLOW_PAIRS,
+  WIP_COLORS,
+  PULSE_FRAMES,
+  HUB_RING_COLORS,
+  LAYER_TAG,
+  KPI_BASE,
+} from './constants'
+import type { AnyMod, ThreeCtx, CamTween, FlowLineRef } from './types'
+import { Hud } from './view'
 
 /* ══════════════════════════════════════════════════════════════════
    Digital Twin — 연결된 도메인 = 조직·공정의 트윈
@@ -15,10 +29,6 @@ import { STATION_POS_RAW, STREAM_INTERVAL, MAX_STREAM_ROWS, SYNC_BEAT_INTERVAL }
    useSceneCanvas 를 사용하지 않음: Three.js 가 WebGL renderer + rAF 를 직접 소유.
    SceneHost + SceneProps 계약은 동일하게 준수.
    ══════════════════════════════════════════════════════════════════ */
-
-// CDN Three.js 모듈 타입 — 런타임 전용, tsc 는 any 로 취급.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type AnyMod = any
 
 export default function Scene({ running = true, onReady }: SceneProps) {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -256,9 +266,9 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
     // ── KPI live lerp ──
     const kpiEls = kpisEl ? kpisEl.querySelectorAll<HTMLElement>('.' + s.kpiV) : null
-    const kpiBase: (number | null)[] = [null, 92.4, null, null, null, 1.8, null, null, null, null]
-    const kpiCur: (number | null)[] = [null, 92.4, null, null, null, 1.8, null, null, null, null]
-    const kpiTarget: (number | null)[] = [null, 92.4, null, null, null, 1.8, null, null, null, null]
+    const kpiBase: (number | null)[] = [...KPI_BASE]
+    const kpiCur: (number | null)[] = [...KPI_BASE]
+    const kpiTarget: (number | null)[] = [...KPI_BASE]
     let kpiRefreshT = 0
 
     function refreshKpiTargets() {
@@ -288,12 +298,12 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     let xdSyncT = -1
 
     // threeCtx populated after async Three.js load
-    let threeCtx: { THREE: AnyMod; controls: AnyMod; camera: AnyMod } | null = null
+    let threeCtx: ThreeCtx | null = null
     // camTween — plain object, no Three.js types needed here
-    let camTween: { fromT: AnyMod; toT: AnyMod; fromP: AnyMod; toP: AnyMod; t: number } | null = null
+    let camTween: CamTween | null = null
 
     // flowLines ref for pulse boost
-    let flowLinesRef: Array<{ mat: AnyMod; pulseBoost: boolean }> = []
+    let flowLinesRef: FlowLineRef[] = []
 
     function triggerCrossDomainPulse() {
       rippleT = 0
@@ -305,11 +315,10 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       }
       flowLinesRef.forEach((fl) => { fl.mat.opacity = 0.28; fl.pulseBoost = true })
       const flAiEl = flAiRef.current
-      const frames = ['LINK', 'SYNC', 'TWIN', 'OK']
       let k = 0
       const iv = track(setInterval(() => {
-        if (flAiEl) flAiEl.textContent = frames[k++] || 'ON'
-        if (k >= frames.length) { clearInterval(iv); intervals.delete(iv) }
+        if (flAiEl) flAiEl.textContent = PULSE_FRAMES[k++] || 'ON'
+        if (k >= PULSE_FRAMES.length) { clearInterval(iv); intervals.delete(iv) }
       }, 180), 'interval')
     }
 
@@ -435,7 +444,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       const graphAnimators: AnyMod[] = []
 
       // domain layer rings
-      const layerRingColors = [0xff7a8a, 0x6fb4ff, 0xc9a3ff, 0x46e6b0]
+      const layerRingColors = LAYER_RING_COLORS
       const layerRings: AnyMod[] = []
       STATION_POS.forEach((pos: AnyMod, i: number) => {
         const mat = new THREE.MeshBasicMaterial({ color: layerRingColors[i], transparent: true, opacity: 0.07, side: THREE.DoubleSide })
@@ -448,8 +457,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
       // flow lines + particles
       const flowLines: AnyMod[] = []
-      const pairs = [[0, 1], [1, 2], [2, 3], [0, 3], [1, 3]]
-      pairs.forEach(([a, b]) => {
+      FLOW_PAIRS.forEach(([a, b]) => {
         const pa = new THREE.Vector3(STATION_POS[a].x, 2.5, STATION_POS[a].z)
         const pb = new THREE.Vector3(STATION_POS[b].x, 2.5, STATION_POS[b].z)
         const pts = []
@@ -555,9 +563,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         } else if (st.kind === 'hub') {
           const core = new THREE.Mesh(new THREE.OctahedronGeometry(1.2, 0), new THREE.MeshStandardMaterial({ color: st.color, emissive: st.color, emissiveIntensity: 0.16, roughness: 0.35, metalness: 0.35 }))
           core.position.y = 0.5 + 3.0; g.add(core); pulsers.push(core)
-          const ringColors = [0xff7a8a, 0x6fb4ff, 0xc9a3ff]
           for (let r = 0; r < 3; r++) {
-            const rMesh = new THREE.Mesh(new THREE.TorusGeometry(1.6 + r * 0.5, 0.05, 8, 48), new THREE.MeshStandardMaterial({ color: ringColors[r], emissive: ringColors[r], emissiveIntensity: 0.16, roughness: 0.35 }))
+            const rMesh = new THREE.Mesh(new THREE.TorusGeometry(1.6 + r * 0.5, 0.05, 8, 48), new THREE.MeshStandardMaterial({ color: HUB_RING_COLORS[r], emissive: HUB_RING_COLORS[r], emissiveIntensity: 0.16, roughness: 0.35 }))
             rMesh.position.y = 0.5 + 3.0
             rMesh.rotation.x = (r / 3) * Math.PI
             rMesh.rotation.z = (r / 3) * Math.PI * 0.5
@@ -572,7 +579,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         // CSS2D HUD label
         const hud = document.createElement('div')
         const hex = '#' + st.color.toString(16).padStart(6, '0')
-        const layerTag = ({ mfg: 'MFG', dev: 'DEV', ai: 'AI', hub: 'HUB' } as Record<string, string>)[st.layer]
+        const layerTag = LAYER_TAG[st.layer]
         hud.style.cssText = `transform:translate(-50%,-100%);background:rgba(10,14,21,.88);border:1px solid rgba(255,255,255,.10);border-left:3px solid ${hex};border-radius:9px;padding:8px 11px;min-width:160px;backdrop-filter:blur(8px);box-shadow:0 12px 30px rgba(0,0,0,.5);font-family:var(--sans);user-select:none;cursor:pointer;`
         hud.innerHTML = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px"><span style="width:7px;height:7px;border-radius:50%;background:${hex};box-shadow:0 0 4px ${hex}99"></span><span style="font-family:var(--mono);font-size:8px;letter-spacing:.18em;color:#5d6a82">${st.station}</span><span style="font-family:var(--mono);font-size:8px;letter-spacing:.1em;color:${hex};border:1px solid ${hex}33;border-radius:3px;padding:1px 5px">${layerTag}</span></div><div style="font-size:12px;font-weight:800;color:#e8edf6;line-height:1.15">${st.label}</div><div style="font-size:9.5px;color:#9aa6bd;margin-top:2px">${st.role}</div><div style="display:flex;gap:8px;margin-top:7px"><div><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:${hex}" data-m0>${st.metrics[0].v}</div><div style="font-size:8px;color:#5d6a82">${st.metrics[0].l}</div></div><div><div style="font-family:var(--mono);font-size:12px;font-weight:700;color:#e8edf6" data-thr>--</div><div style="font-size:8px;color:#5d6a82">throughput/h</div></div></div>`
         hud.addEventListener('click', () => focusStation(i))
@@ -593,7 +600,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       linkMesh.castShadow = false; linkMesh.receiveShadow = true; scene.add(linkMesh)
 
       // WIP signal nodes
-      const wipColors = [0xff7a8a, 0x6fb4ff, 0xc9a3ff, 0x46e6b0, 0xffb454]
+      const wipColors = WIP_COLORS
       const wips: AnyMod[] = []
       const wipGeo = new THREE.SphereGeometry(0.18, 12, 12)
       for (let i = 0; i < 10; i++) {
@@ -888,194 +895,31 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       {/* Three.js renderer canvas mounts here */}
       <div ref={containerRef} className={s.c} />
 
-      {/* boot overlay */}
-      <div className={`${s.hud} ${s.boot}`} ref={bootRef}>
-        <div className={s.bootMark}>Digital Twin · Connected Domains</div>
-        <div className={s.bootTitle}>도메인 연결 상태 초기화 중</div>
-        <div className={s.bootSub}>
-          제조 · 데이터 · AI 도메인이 한 사람 안에서 연결되면 — 그 자체가 조직·공정의 디지털
-          트윈이 된다
-        </div>
-        <div className={s.bootBar}>
-          <div className={s.bootFill} ref={bootFillRef} />
-        </div>
-      </div>
-
-      {/* top bar */}
-      <div className={`${s.hud} ${s.topbar}`}>
-        <div className={s.brand}>
-          <span className={s.brandNm}>도메인 트윈</span>
-          <span className={s.brandRole}>연결된 도메인 = 조직·공정의 디지털 트윈</span>
-          <span className={s.brandTw}>
-            <span className={s.dot} />
-            DOMAIN TWIN · SILO→CONNECTED LIVE
-          </span>
-        </div>
-        <div className={s.topRight}>
-          <span>Silo→Connected State</span>
-          <span className={s.clock} ref={clockElRef}>--:--:--</span>
-        </div>
-      </div>
-
-      {/* KPI strip */}
-      <div className={`${s.hud} ${s.kpis}`} ref={kpisRef} />
-
-      {/* left control panel */}
-      <div className={`${s.hud} ${s.control}`}>
-        <div className={s.ctlH}>
-          <span className={s.ctlHT}>도메인 연결 상태</span>
-          <span className={s.ctlHSub}>Silo→Connected Overlay</span>
-        </div>
-        <div className={s.ctlBody}>
-          <div>
-            <div className={s.monoLabel}>
-              Domain Layers — 사일로 시 오류[ERR], 연결 시 정합[OK]
-            </div>
-            <div className={s.layerRow}>
-              <div className={s.layerDot} style={{ background: '#ff7a8a', boxShadow: '0 0 4px rgba(255,122,138,.55)' }} />
-              <div>
-                <div className={s.layerLabel} style={{ color: '#ff7a8a' }}>제조 현장</div>
-                <div className={s.layerSub}>설비·공정·OEE·물류 — 제조 현장 도메인</div>
-              </div>
-            </div>
-            <div className={s.layerRow}>
-              <div className={s.layerDot} style={{ background: '#6fb4ff', boxShadow: '0 0 4px rgba(111,180,255,.55)' }} />
-              <div>
-                <div className={s.layerLabel} style={{ color: '#6fb4ff' }}>데이터 / 개발</div>
-                <div className={s.layerSub}>MES·파이프라인·SSOT — 현장을 코드로 구조화</div>
-              </div>
-            </div>
-            <div className={s.layerRow}>
-              <div className={s.layerDot} style={{ background: '#c9a3ff', boxShadow: '0 0 4px rgba(201,163,255,.55)' }} />
-              <div>
-                <div className={s.layerLabel} style={{ color: '#c9a3ff' }}>AI 도메인</div>
-                <div className={s.layerSub}>예측·이상탐지·에이전트 — 모델로 도메인을 연결</div>
-              </div>
-            </div>
-          </div>
-          <div className={s.divider} />
-          <div className={s.row}>
-            <span className={s.rowLab}>
-              라인 가동 <b ref={lineStateRef}>ON</b>
-            </span>
-            <div className={`${s.switch} ${s.switchOn}`} ref={swLineRef}>
-              <div className={s.knob} />
-            </div>
-          </div>
-          <div className={s.row}>
-            <span className={s.rowLab}>
-              라인 속도 <b ref={spdValRef}>1.0x</b>
-            </span>
-          </div>
-          <input type="range" className={s.slider} ref={spdRef} min="0" max="200" defaultValue="100" />
-          <button className={s.btn} ref={syncBtnRef}>
-            Sync Pulse : 사일로 → 연결
-          </button>
-          <div className={s.divider} />
-          <div className={s.monoLabelSm}>Stations</div>
-          <div className={s.legend} ref={legendRef} />
-        </div>
-      </div>
-
-      {/* hint */}
-      <div className={`${s.hud} ${s.hint}`}>
-        <div><b>드래그</b> 궤도 회전 · <b>휠</b> 줌</div>
-        <div><b>노드 클릭</b> 포커스 + 상세</div>
-      </div>
-
-      {/* cross-domain sync panel (right) */}
-      <div className={`${s.hud} ${s.xdpanel}`}>
-        <div className={s.xdH}>
-          <div className={s.xdHT}>
-            도메인 트윈 상태 <span className={s.badge}>LIVE</span>
-          </div>
-          <div className={s.xdHSub}>사일로 → 연결 · 오류 → 정합 전파</div>
-        </div>
-        <div className={s.xdBody}>
-          <div className={s.fusion}>
-            <div className={`${s.fusionLayer} ${s.mfg}`}>
-              <div className={`${s.flIcon} ${s.mfg}`}>MFG</div>
-              <div className={s.flInfo}>
-                <div className={`${s.flLabel} ${s.mfg}`}>제조 현장</div>
-                <div className={s.flSub}>사일로 시: 공정 문제가 데이터에 미반영 · 누락</div>
-              </div>
-              <div className={`${s.flVal} ${s.mfg}`}>연결</div>
-            </div>
-            <div className={`${s.fusionLayer} ${s.dev}`}>
-              <div className={`${s.flIcon} ${s.dev}`}>DEV</div>
-              <div className={s.flInfo}>
-                <div className={`${s.flLabel} ${s.dev}`}>데이터 / 개발</div>
-                <div className={s.flSub}>사일로 시: 현장 맥락 없는 지표 — 판단 오류</div>
-              </div>
-              <div className={`${s.flVal} ${s.dev}`}>LIVE</div>
-            </div>
-            <div className={`${s.fusionLayer} ${s.ai}`}>
-              <div className={`${s.flIcon} ${s.ai}`}>AI</div>
-              <div className={s.flInfo}>
-                <div className={`${s.flLabel} ${s.ai}`}>AI 도메인</div>
-                <div className={s.flSub}>사일로 시: 도메인 없는 모델 — 오탐·오분류</div>
-              </div>
-              <span className={`${s.flVal} ${s.ai}`} ref={flAiRef}>ON</span>
-            </div>
-          </div>
-          <div className={s.xdCap}>
-            세 도메인이 한 사람 안에서 연결되면
-            <br />
-            <b>부서 간 통역 + 경계의 숨은 문제 식별</b>이 가능해진다.
-            <br />
-            단일 도메인 전문가는 보지 못하는 영역이다.
-          </div>
-          <div className={s.xdStream}>
-            <div className={s.streamRqh}>Domain Link Stream — 사일로 해제 피드</div>
-            <div ref={streamRowsRef} />
-          </div>
-          <div className={s.xdState}>
-            <span className={s.xdStateLbl}>Twin State</span>
-            <span className={s.xdStateVal} ref={xdStateRef}>SYNCED</span>
-          </div>
-          <div className={s.xdPort}>
-            <b>LOG:</b> 세 도메인이 연결될 때 — 경계의 문제가 비로소 보인다.
-            <br />
-            제조 현장 → 데이터/SW → AI —
-            <br />
-            <span className={s.xdPortPh}>도메인을 코드와 모델로 잇는 허브</span>가 조직의
-            트윈이 된다.
-          </div>
-        </div>
-      </div>
-
-      {/* detail panel */}
-      <div className={s.detail} ref={detailRef}>
-        <div className={s.dtHead}>
-          <div className={s.dtAccentbar} ref={dtAccentRef} />
-          <button className={s.dtClose}>x</button>
-          <span className={s.dtStation} ref={dtStationRef}>STATION 01</span>
-          <div className={s.dtCo} ref={dtCoRef}>--</div>
-          <div className={s.dtRole} ref={dtRoleRef}>--</div>
-          <div className={s.dtPeriod} ref={dtPeriodRef}>--</div>
-          <div className={s.dtStatus} ref={dtStatusRef}>
-            <span className={s.dtStatusLamp} />
-            <span className={s.dtStatusTxt}>RUNNING</span>
-          </div>
-        </div>
-        <div className={s.dtBody}>
-          <div className={s.dtSec}>
-            <div className={s.dtSecH}>Layer Metrics</div>
-            <div className={s.dtMetrics} ref={dtMetricsRef} />
-          </div>
-          <div className={s.dtSec}>
-            <div className={s.dtSecH}>Domain Log</div>
-            <div className={s.dtList} ref={dtListRef} />
-          </div>
-          <div className={s.dtSec}>
-            <div className={s.dtSecH}>Tooling</div>
-            <div className={s.chips} ref={dtChipsRef} />
-          </div>
-        </div>
-        <div className={s.dtFoot}>
-          <span>연결된 도메인 = 조직·공정의 디지털 트윈</span>
-        </div>
-      </div>
+      <Hud
+        bootRef={bootRef}
+        bootFillRef={bootFillRef}
+        clockElRef={clockElRef}
+        kpisRef={kpisRef}
+        lineStateRef={lineStateRef}
+        spdValRef={spdValRef}
+        swLineRef={swLineRef}
+        spdRef={spdRef}
+        syncBtnRef={syncBtnRef}
+        legendRef={legendRef}
+        flAiRef={flAiRef}
+        streamRowsRef={streamRowsRef}
+        xdStateRef={xdStateRef}
+        detailRef={detailRef}
+        dtAccentRef={dtAccentRef}
+        dtStationRef={dtStationRef}
+        dtCoRef={dtCoRef}
+        dtRoleRef={dtRoleRef}
+        dtPeriodRef={dtPeriodRef}
+        dtStatusRef={dtStatusRef}
+        dtMetricsRef={dtMetricsRef}
+        dtListRef={dtListRef}
+        dtChipsRef={dtChipsRef}
+      />
     </SceneHost>
   )
 }

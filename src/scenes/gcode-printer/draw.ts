@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'react'
 import { LAYER_H, PLATE, T_TARGET, jigWorld, type Point } from './data'
-import { TOTAL_MOVES } from './constants'
 import type { Cam, FixtureAnnotation, SimState } from './types'
 
 export function fmt(n: number, d = 1) {
@@ -9,24 +8,6 @@ export function fmt(n: number, d = 1) {
 
 export function cssVarStyle(name: string, value: string): CSSProperties {
   return { [name]: value } as CSSProperties
-}
-
-export function createInitialState(): SimState {
-  return {
-    layer: 0,
-    moveIdx: 0,
-    prevPos: null,
-    segT: 0,
-    nozzle: { x: PLATE.w / 2, y: PLATE.d / 2, z: LAYER_H },
-    eTotal: 0,
-    gline: 0,
-    temp: 25,
-    bed: 25,
-    running: true,
-    done: false,
-    totalMoves: TOTAL_MOVES,
-    doneAt: null,
-  }
 }
 
 export function setupCam(W: number, H: number): Cam {

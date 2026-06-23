@@ -25,7 +25,7 @@ import { Hud } from './view'
 /* ══════════════════════════════════════════════════════════════════
    Digital Twin — 연결된 도메인 = 조직·공정의 트윈
    Three.js (OrbitControls + CSS2DRenderer) 씬을 React 컴포넌트로 이식.
-   Three.js 는 npm 패키지 없음 → esm.sh CDN dynamic import(클라이언트 전용).
+   Three.js 는 로컬 의존성(three@0.184) dynamic import(클라이언트 전용).
    useSceneCanvas 를 사용하지 않음: Three.js 가 WebGL renderer + rAF 를 직접 소유.
    SceneHost + SceneProps 계약은 동일하게 준수.
    ══════════════════════════════════════════════════════════════════ */

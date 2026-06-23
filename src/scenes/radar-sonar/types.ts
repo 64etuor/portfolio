@@ -1,7 +1,37 @@
 // Work Radar — radar-sonar 씬 공유 타입 (클로저 상태를 명시적 params 로 전달)
 
 import type { RefObject, MutableRefObject } from 'react'
-import type { Contact, Ping, FakeRow } from './helpers'
+import type { ContactDef } from './data'
+
+export interface Contact extends ContactDef {
+  _glow: number
+  _detected: boolean
+  _verified: boolean
+  _phase: number
+  _trk: number
+  _baseA: number
+  _a: number
+  _baseRing: number
+  _driftT: number
+  _driftSpeed: number
+  _driftAmp: number
+  _driftRingAmp: number
+  _liveDriftT: number
+}
+
+export interface Ping {
+  r: number
+  life: number
+}
+
+export interface FakeRow {
+  el: HTMLDivElement
+  brgBase: number
+  rngBase: number
+  driftT: number
+  statusIdx: number
+  statusT: number
+}
 
 /* ────────────────────────────────────────────────────
    Canvas scope geometry (frame 마다 갱신)

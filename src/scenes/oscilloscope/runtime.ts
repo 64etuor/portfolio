@@ -3,39 +3,19 @@
 // Functions close over an OscRefs bundle (threaded explicitly) instead of
 // the component body, preserving the original ref-mutation semantics.
 // ============================================================
-import { SCH, TOTAL, WELD, WELD_END } from './constants'
-import { arcTex, envAmp, expulsionTerm, spotVar } from './draw'
+import {
+  DIVX,
+  SCH,
+  TOTAL,
+  TREND_MAX,
+  WELD,
+  WELD_END,
+  arcTex,
+  envAmp,
+  expulsionTerm,
+  spotVar,
+} from './constants'
 import type { Meas, OscRefs, SceneStyles } from './types'
-
-// ----- scope geometry (per-spot acquisition canvas) -----
-export const SW = 620
-export const SH = 460
-export const DIVX = 10
-export const DIVY = 8
-export const cellW = SW / DIVX
-export const cellH = SH / DIVY
-
-// ----- live oscilloscope geometry -----
-export const LVW = 820
-export const LVH = 460
-export const LDIVX = 12
-export const LDIVY = 8
-export const LcellW = LVW / LDIVX
-export const LcellH = LVH / LDIVY
-export const STREAM_SPEED = 13
-
-// ----- schedule timeline geometry -----
-export const DW = 640
-export const DH = 300
-
-// ----- trend geometry -----
-export const TW = 640
-export const TH = 220
-export const TREND_MAX = 28
-
-// ----- nugget geometry -----
-export const NW = 300
-export const NH = 220
 
 // ----- spot-state timing -----
 const T_ACQ = 2.3
@@ -157,10 +137,6 @@ export function viewRange(r: OscRefs) {
     start = Math.max(0, Math.min(revealC - win * 0.82, tot - win))
   }
   return { start, win }
-}
-
-export function LWIN() {
-  return TOTAL() * 1.25
 }
 
 export function streamPeak(r: OscRefs, idx: number) {

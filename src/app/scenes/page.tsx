@@ -2,7 +2,11 @@ import { GalleryGrid } from '@/components/gallery/GalleryGrid'
 import { SCENES_GALLERY } from '@/components/gallery/data'
 import { GalleryPageShell } from '@/components/gallery/GalleryPageShell'
 
-export const metadata = { title: 'Scenes · 필름 서사 — Lab' }
+export const metadata = {
+  title: 'Scenes · 필름 서사 — Lab',
+  description:
+    'DX→AX 매니페스토 필름 — 부팅 + SCENE 01–10 + 엔딩. 박양하 포트폴리오의 인터랙티브 씬을 서사 순서대로 탐색합니다.',
+}
 
 export default function ScenesPage() {
   return (

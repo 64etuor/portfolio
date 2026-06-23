@@ -38,10 +38,8 @@ import '@fontsource/cormorant-garamond/700.css'
 import '@fontsource/cormorant-garamond/500-italic.css'
 import '@fontsource/cormorant-garamond/600-italic.css'
 
-// Noto Serif KR — KR serif. Family: 'Noto Serif KR'.
-import '@fontsource/noto-serif-kr/500.css'
+// Noto Serif KR — KR serif. Family: 'Noto Serif KR'. Weight 600 only (Playfair fallback; one weight sufficient).
 import '@fontsource/noto-serif-kr/600.css'
-import '@fontsource/noto-serif-kr/700.css'
 
 // Playfair Display — hero serif. Family: 'Playfair Display'.
 import '@fontsource/playfair-display/500.css'

@@ -1,7 +1,19 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { COMPOSITIONS, compBySlug } from '@/compositions'
 import { sceneById, type Scene } from '@/scenes/registry'
 import { CompositionViewer } from '@/components/CompositionViewer'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ comp: string }>
+}): Promise<Metadata> {
+  const { comp } = await params
+  const c = compBySlug(comp)
+  if (!c) return {}
+  return { title: `${c.title} · Composition`, description: c.blurb }
+}
 
 export function generateStaticParams() {
   return COMPOSITIONS.map((c) => ({ comp: c.slug }))

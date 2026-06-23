@@ -53,45 +53,49 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const detailTxtRef = useRef<HTMLDivElement | null>(null)
   const passRefs = useRef<HTMLDivElement[]>([])
 
-  const domRefs = (): DomRefs => ({
-    modeTxt: modeTxtRef.current,
-    fiberTxt: fiberTxtRef.current,
-    gasTxt: gasTxtRef.current,
-    focal: focalRef.current,
-    spotDia: spotDiaRef.current,
-    passNo: passNoRef.current,
-    modeChip: modeChipRef.current,
-    mtSpatter: mtSpatterRef.current,
-    gPe: gPeRef.current,
-    gPk: gPkRef.current,
-    gAvg: gAvgRef.current,
-    duty: dutyRef.current,
-    pdens: pdensRef.current,
-    penet: penetRef.current,
-    beadw: beadwRef.current,
-    aspect: aspectRef.current,
-    mtPrf: mtPrfRef.current,
-    mtPw: mtPwRef.current,
-    mtTravel: mtTravelRef.current,
-    mtDefocus: mtDefocusRef.current,
-    mtPitch: mtPitchRef.current,
-    mtBead: mtBeadRef.current,
-    arcTime: arcTimeRef.current,
-    frame: frameRef.current,
-    fps: fpsRef.current,
-    clock: clockRef.current,
-    cross: crossRef.current,
-    spotTemp: spotTempRef.current,
-    spotName: spotNameRef.current,
-    laserOn: laserOnRef.current,
-    arcPhase: arcPhaseRef.current,
-    arcBar: arcBarRef.current,
-    thPeak: thPeakRef.current,
-    thHaz: thHazRef.current,
-    thermCv: thermCvRef.current,
-    detailTxt: detailTxtRef.current,
-    passEls: passRefs.current,
-  })
+  const domRefsRef = useRef<DomRefs | null>(null)
+  if (!domRefsRef.current) {
+    domRefsRef.current = {
+      get modeTxt() { return modeTxtRef.current },
+      get fiberTxt() { return fiberTxtRef.current },
+      get gasTxt() { return gasTxtRef.current },
+      get focal() { return focalRef.current },
+      get spotDia() { return spotDiaRef.current },
+      get passNo() { return passNoRef.current },
+      get modeChip() { return modeChipRef.current },
+      get mtSpatter() { return mtSpatterRef.current },
+      get gPe() { return gPeRef.current },
+      get gPk() { return gPkRef.current },
+      get gAvg() { return gAvgRef.current },
+      get duty() { return dutyRef.current },
+      get pdens() { return pdensRef.current },
+      get penet() { return penetRef.current },
+      get beadw() { return beadwRef.current },
+      get aspect() { return aspectRef.current },
+      get mtPrf() { return mtPrfRef.current },
+      get mtPw() { return mtPwRef.current },
+      get mtTravel() { return mtTravelRef.current },
+      get mtDefocus() { return mtDefocusRef.current },
+      get mtPitch() { return mtPitchRef.current },
+      get mtBead() { return mtBeadRef.current },
+      get arcTime() { return arcTimeRef.current },
+      get frame() { return frameRef.current },
+      get fps() { return fpsRef.current },
+      get clock() { return clockRef.current },
+      get cross() { return crossRef.current },
+      get spotTemp() { return spotTempRef.current },
+      get spotName() { return spotNameRef.current },
+      get laserOn() { return laserOnRef.current },
+      get arcPhase() { return arcPhaseRef.current },
+      get arcBar() { return arcBarRef.current },
+      get thPeak() { return thPeakRef.current },
+      get thHaz() { return thHazRef.current },
+      get thermCv() { return thermCvRef.current },
+      get detailTxt() { return detailTxtRef.current },
+      get passEls() { return passRefs.current },
+    }
+  }
+  const domRefs = domRefsRef.current
 
   useSceneReady(onReady)
 
@@ -113,7 +117,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
   const jumpTo = (index: number) => {
     const engine = engineRef.current
-    const refs = domRefs()
+    const refs = domRefs
     if (engine.gw > 0 && engine.gh > 0) beginPass(engine, index, refs)
     else engine.activePass = index
     engine.arc.phase = 'reset'
@@ -122,14 +126,14 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
   const nudgeProgram = () => {
     const engine = engineRef.current
-    if (engine.gw > 0 && engine.gh > 0) advancePass(engine, domRefs())
+    if (engine.gw > 0 && engine.gh > 0) advancePass(engine, domRefs)
     engine.arc.phase = 'reset'
     engine.arc.t = 0
   }
 
   const ref = useSceneCanvas((ctx: CanvasRenderingContext2D, fr: Frame) => {
     const engine = engineRef.current
-    const refs = domRefs()
+    const refs = domRefs
     ensureSize(engine, fr.w, fr.h)
     if (!engine.initialized) bootstrap(engine, refs)
 

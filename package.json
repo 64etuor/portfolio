@@ -7,7 +7,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
+    "test:e2e": "playwright test",
     "gen:resume": "tsx scripts/gen-resume.ts",
     "audit:react": "react-doctor ./src",
     "audit:lh": "lighthouse http://localhost:3000 --only-categories=performance,accessibility,best-practices,seo --preset=desktop --view"
@@ -36,12 +37,16 @@
     "usehooks-ts": "^3.1.1"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.3.5",
+    "@playwright/test": "^1.61.0",
     "@tailwindcss/postcss": "^4.3.1",
     "@types/node": "^24.12.3",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@types/three": "^0.184.1",
     "babel-plugin-react-compiler": "^1.0.0",
+    "eslint": "^9.39.4",
+    "eslint-config-next": "^15.5.19",
     "lighthouse": "^13.4.0",
     "react-doctor": "^0.5.8",
     "tailwindcss": "^4.3.1",

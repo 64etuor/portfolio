@@ -102,7 +102,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     renderFleet(ctx)
     renderReg(ctx)
     prepaint(ctx)
-  })
+  }, [ctx])
 
   const pipeRef = useSceneCanvas((g: CanvasRenderingContext2D, fr: Frame) => drawPipe(ctx, g, fr), { running })
   const hbRef = useSceneCanvas((g: CanvasRenderingContext2D, fr: Frame) => drawHeartbeat(ctx, g, fr), { running })

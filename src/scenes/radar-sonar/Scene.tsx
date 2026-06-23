@@ -6,7 +6,7 @@ import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
-import { pad3, initContacts, type Contact, type Ping, type FakeRow } from './helpers'
+import { pad3, initContacts } from './helpers'
 import {
   drawGrid,
   drawSweep,
@@ -21,6 +21,9 @@ import type {
   ScopeGeom,
   MouseState,
   ActiveFilters,
+  Contact,
+  FakeRow,
+  Ping,
   SceneRefs,
   SceneState,
 } from './types'

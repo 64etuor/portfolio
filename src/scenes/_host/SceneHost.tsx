@@ -26,31 +26,45 @@ function useFitWidth(hostRef: React.RefObject<HTMLDivElement | null>) {
       const cw = hostEl.clientWidth
       const wrap = hostEl.firstElementChild as HTMLElement | null
       const prev = scaledRef.current
-      if (!cw || cw > FIT_MAX_W || !wrap || wrap.querySelector('iframe')) {
-        clear(prev) // iframe 씬(41-perspectives 등)·데스크톱은 스케일 안 함
+      if (!cw || cw > FIT_MAX_W || !wrap || wrap.tagName === 'CANVAS' || wrap.querySelector('iframe')) {
+        clear(prev) // iframe 씬(41-perspectives)·캔버스 풀필 씬·데스크톱은 스케일 안 함
         scaledRef.current = null
         return
       }
-      // 씬 래퍼의 직속 자식 중 가장 넓은 블록 = 설계 스테이지(예: width:1600px)
-      let stage: HTMLElement | null = null
-      let maxW = 0
-      for (const c of Array.from(wrap.children) as HTMLElement[]) {
-        const w = c.scrollWidth || c.offsetWidth
-        if (w > maxW) {
-          maxW = w
-          stage = c
+      // 스케일 대상 = "초과 콘텐츠를 담은 가장 바깥 요소". 클리핑 컨테이너(overflow!=visible)는
+      // 자신을 스케일하면 이미 잘린 내용을 줄이게 되므로, 클리퍼를 타고 내려가 실제 콘텐츠 요소를 찾는다.
+      // (robot-pendant: wrap 자신이 고정폭 스테이지 / cmm-metrology: 클리퍼 안쪽 손자 / pid-scheme: .stage)
+      let stage: HTMLElement = wrap
+      let descended = false
+      for (let depth = 0; depth < 5; depth++) {
+        if (getComputedStyle(stage).overflowX === 'visible') break // 클리핑 안 하면 그대로 스케일
+        let widest: HTMLElement | null = null
+        let mw = 0
+        for (const c of Array.from(stage.children) as HTMLElement[]) {
+          const w = c.scrollWidth || c.offsetWidth
+          if (w > mw) {
+            mw = w
+            widest = c
+          }
         }
+        if (!widest || mw <= cw + 1) break // 클리퍼 안에 초과 콘텐츠 없음
+        stage = widest
+        descended = true
       }
+      const natural = stage.scrollWidth || stage.offsetWidth
       // ── WRITE ──
-      if (!stage || maxW <= cw + 1 || stage.tagName === 'CANVAS') {
-        clear(prev) // 캔버스 씬·이미 맞는 씬은 스케일 불필요
+      // descended=false → firstElementChild 자신이 초과폭 스테이지(예: robot-pendant .device).
+      // 클리핑 컨텍스트가 없어 정렬을 일반화할 수 없으니(좌상단 origin 이 중앙정렬 스테이지를 구석으로 보냄)
+      // 스케일하지 않고 원래대로 둔다(SceneHost overflow:hidden 이 클립). 클리퍼를 타고 내려간 경우만 안전하게 스케일.
+      if (!descended || natural <= cw + 1 || stage.tagName === 'CANVAS') {
+        clear(prev) // 이미 맞거나·캔버스·정렬불명 스테이지 → 스케일 불필요
         scaledRef.current = null
         return
       }
       if (prev && prev !== stage) clear(prev)
       // over-wide 요소라 margin:auto 는 0 으로 계산됨 → origin top-left 로 좌상단 기준 축소.
       stage.style.transformOrigin = 'top left'
-      stage.style.transform = `scale(${cw / maxW})`
+      stage.style.transform = `scale(${cw / natural})`
       scaledRef.current = stage
     }
     // ResizeObserver 버스트(방향전환·URL바 토글)를 rAF 한 프레임으로 합쳐 thrash 방지.

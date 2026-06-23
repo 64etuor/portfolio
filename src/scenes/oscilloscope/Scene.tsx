@@ -13,7 +13,7 @@ import {
   singleShot,
   updateMeasureDOM,
 } from './runtime'
-import { spotVar } from './draw'
+import { spotVar } from './constants'
 import type { Channel, Disp, Meas, OscRefs, SpotVar, State, TrendItem } from './types'
 
 /* ════════════════════════════════════════════════════════════════

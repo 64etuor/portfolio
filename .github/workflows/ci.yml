@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+      - 'feat/**'
+  pull_request:
+    branches:
+      - main
+      - 'feat/**'
+
+jobs:
+  build:
+    name: typecheck · lint · build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npx tsc --noEmit
+
+      # 기존 씬 lint 위반 다수(의도적 명령형 스타일) — advisory 로만 두고 파이프라인을 막지 않는다.
+      # 타입(tsc)·빌드가 실제 차단 게이트.
+      - name: Lint (advisory)
+        run: npm run lint
+        continue-on-error: true
+
+      - name: Build
+        run: npm run build
+
+  e2e:
+    name: playwright smoke (non-blocking)
+    runs-on: ubuntu-latest
+    needs: build
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run smoke tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7

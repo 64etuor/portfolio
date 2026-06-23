@@ -6,6 +6,9 @@ import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
+import { COL, MONO, SCH, TOTAL, WELD, WELD_END, WELD_START } from './constants'
+import { arcTex, envAmp, expulsionTerm, roundRectS, segColor, spotVar } from './draw'
+import type { Meas, SpotVar, State, TrendItem } from './types'
 
 /* ════════════════════════════════════════════════════════════════
    스팟 용접 2차 전류 모니터 · oscilloscope.html 이식 (레퍼런스 포팅)
@@ -13,104 +16,8 @@ import s from './scene.module.css'
    스케줄 / 트렌드 / 너깃) + 계측 DOM + 우측 컨트롤 랙.
    하네스는 1px 드라이버 캔버스로 프레임 클럭만 제공하고, 5 캔버스는
    고정 해상도로 imperative 렌더(원본 픽셀 좌표 그대로 유지).
+   · 상수/스케줄 → constants.ts, 순수 헬퍼 → draw.ts, 타입 → types.ts
    ════════════════════════════════════════════════════════════════ */
-
-const MONO = '"JetBrains Mono","SF Mono",ui-monospace,monospace'
-const COL = {
-  c1: '#ffb300',
-  c2: '#54d6ff',
-  c3: '#ff8a1e',
-  c4: '#7af0b0',
-  amber: '#ffb300',
-  amber2: '#ff8a1e',
-  red: '#ff4d4d',
-  ink: '#d7d7d7',
-  ink2: '#8d8d8d',
-  ink3: '#3a3a3a',
-  grid: '#1f2a27',
-  gridminor: '#131a18',
-}
-
-// ============================================================
-// WELD SCHEDULE (deterministic) — cycles @ 60Hz, 1 cycle = 16.67 ms
-// ============================================================
-const SCH = { squeeze: 6, up: 3, pulses: [{ w: 5, c: 2 }, { w: 5, c: 2 }, { w: 6, c: 0 }], down: 2, hold: 5 }
-interface Seg {
-  t0: number
-  t1: number
-  a0: number
-  a1: number
-  kind: string
-}
-function buildWeld() {
-  const segs: Seg[] = []
-  let t = 0
-  segs.push({ t0: 0, t1: SCH.up, a0: 0, a1: 1, kind: 'up' })
-  t = SCH.up
-  SCH.pulses.forEach((p) => {
-    segs.push({ t0: t, t1: t + p.w, a0: 1, a1: 1, kind: 'pulse' })
-    t += p.w
-    if (p.c > 0) {
-      segs.push({ t0: t, t1: t + p.c, a0: 0, a1: 0, kind: 'cool' })
-      t += p.c
-    }
-  })
-  segs.push({ t0: t, t1: t + SCH.down, a0: 1, a1: 0, kind: 'down' })
-  t += SCH.down
-  return { segs, dur: t }
-}
-const WELD = buildWeld()
-function TOTAL() {
-  return SCH.squeeze + WELD.dur + SCH.hold
-}
-const WELD_START = SCH.squeeze
-const WELD_END = SCH.squeeze + WELD.dur
-
-function envAmp(c: number) {
-  const lc = c - SCH.squeeze
-  if (lc < 0 || lc > WELD.dur) return 0
-  for (const seg of WELD.segs) {
-    if (lc >= seg.t0 && lc <= seg.t1) {
-      const f = (lc - seg.t0) / ((seg.t1 - seg.t0) || 1)
-      return seg.a0 + (seg.a1 - seg.a0) * f
-    }
-  }
-  return 0
-}
-
-interface State {
-  running: boolean
-  mode: 'AC' | 'MFDC'
-  heat: number
-  forceKN: number
-  cyclePerDiv: number
-  kaPerDiv: number
-  trigEdge: 'rise' | 'fall'
-  trigKA: number
-  t: number
-}
-interface SpotVar {
-  idx: number
-  peakBase: number
-  forceJit: number
-  expulsion: boolean
-}
-interface Meas {
-  rms: number
-  peak: number
-  kJ: number
-  tWeld: number
-  cum: Float32Array
-  N: number
-  tot: number
-  nuggetMM: number
-  expulsion: boolean
-}
-interface TrendItem {
-  kA: number
-  exp: boolean
-  n: number
-}
 
 export default function Scene({ running = true, onReady }: SceneProps) {
   // ===== canvas refs (fixed-resolution, imperative) =====
@@ -194,15 +101,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const seededRef = useRef(false)
   const singleWatchRef = useRef(false)
   const clockStrRef = useRef('--:--:--')
-
-  function spotVar(i: number): SpotVar {
-    return {
-      idx: i,
-      peakBase: 9.55 + Math.sin(i * 1.27) * 0.32 + Math.cos(i * 0.63) * 0.16,
-      forceJit: Math.sin(i * 0.9) * 0.04,
-      expulsion: i % 7 === 5,
-    }
-  }
 
   useSceneReady(onReady)
 
@@ -436,20 +334,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     if (st.mode === 'AC') return base * (0.78 + 0.22 * st.heat)
     return base * (0.7 + 0.34 * st.heat)
   }
-  function expulsionTerm(c: number, exp: boolean) {
-    if (!exp) return 0
-    const center = SCH.squeeze + WELD.dur * 0.58
-    const d = c - center
-    if (Math.abs(d) > 1.1) return 0
-    return Math.exp(-(d * d) / 0.06) * (d < 0 ? 1.0 : -0.7)
-  }
-  function arcTex(c: number) {
-    return (
-      0.06 * Math.sin(c * Math.PI * 2 * 5.3) +
-      0.034 * Math.sin(c * Math.PI * 2 * 11.7) +
-      0.02 * Math.sin(c * Math.PI * 2 * 23.1)
-    )
-  }
   function curr(c: number, pk: number, exp: boolean) {
     const st = stateRef.current
     const a = envAmp(c)
@@ -544,16 +428,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     if (c <= WELD_END) return Math.min(1, (c - SCH.squeeze) / WELD.dur)
     const hc = (c - WELD_END) / SCH.hold
     return Math.max(0.72, 1 - hc * 0.28)
-  }
-
-  function roundRectS(c: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-    c.beginPath()
-    c.moveTo(x + r, y)
-    c.arcTo(x + w, y, x + w, y + h, r)
-    c.arcTo(x + w, y + h, x, y + h, r)
-    c.arcTo(x, y + h, x, y, r)
-    c.arcTo(x, y, x + w, y, r)
-    c.closePath()
   }
 
   // ============================================================
@@ -1304,11 +1178,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   // ============================================================
   const DW = 640
   const DH = 300
-  function segColor(kind: string) {
-    if (kind === 'pulse') return COL.amber
-    if (kind === 'up' || kind === 'down') return COL.amber2
-    return '#3a3f3d'
-  }
   function renderSched() {
     const cv = schedRef.current
     if (!cv) return

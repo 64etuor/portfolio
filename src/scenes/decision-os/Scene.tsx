@@ -12,13 +12,13 @@ import {
   LEDGER,
   NODES,
   PRESERVED,
-  capScore,
   computeRanking,
-  rawScore,
   tsToMin,
   type NodeT,
   type RankRow,
 } from './data'
+import { SVGNS, NODE_W, NODE_H, MAX_LIVE_ENTRIES } from './constants'
+import { gColor, treePositions, rankPositions, LIVE_TEMPLATES, wrapTitle, nodeCenter } from './draw'
 
 /* ════════════════════════════════════════════════════════════════
    Decision OS — 가치 변위 콘솔  (decision-os.html 이식 / 레퍼런스 포팅)
@@ -29,13 +29,6 @@ import {
    값은 결정론적(같은 입력=같은 출력). 라이브 느낌은 RUN 스윕·레저 스트림·노드
    하트비트로만 — 수치/카피/색/모션 원본과 동일.
    ════════════════════════════════════════════════════════════════ */
-
-const SVGNS = 'http://www.w3.org/2000/svg'
-const NODE_W = 176,
-  NODE_H = 58,
-  GAP_Y = 78,
-  COL_X = [120, 470]
-const MAX_LIVE_ENTRIES = 28
 
 export default function Scene({ running = true, onReady }: SceneProps) {
   const rootRef = useRef<HTMLDivElement | null>(null)
@@ -58,29 +51,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     let curCtx = 'complicated'
     let lastRanking = computeRanking()
 
-    function treePositions() {
-      const pos: Record<string, { x: number; y: number }> = {}
-      NODES.forEach((n, i) => {
-        const col = i % 2
-        pos[n.id] = { x: COL_X[col], y: 26 + n.row * GAP_Y }
-      })
-      return pos
-    }
-    function rankPositions(ranking: { rows: RankRow[] }) {
-      const pos: Record<string, { x: number; y: number }> = {}
-      ranking.rows.forEach((r, i) => {
-        const col = i % 2
-        pos[r.n.id] = { x: COL_X[col], y: 26 + i * GAP_Y }
-      })
-      return pos
-    }
     let positions = treePositions()
-
-    function gColor(n: NodeT) {
-      if (n.state === 'decided') return { stroke: '#1f6058', txt: '#4fd6c8', fill: '#0c1a1a' }
-      if (n.state === 'deferred') return { stroke: '#5a4a2a', txt: '#e6a64b', fill: '#19150d' }
-      return { stroke: '#30405a', txt: '#9fb0c4', fill: '#0e141d' } // proposed
-    }
 
     function renderDAG() {
       while ($svg.firstChild) $svg.removeChild($svg.firstChild)
@@ -101,7 +72,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       rootG.appendChild(edgeLayer)
       rootG.appendChild(nodeLayer)
 
-      const center = (id: string) => ({ x: positions[id].x + NODE_W / 2, y: positions[id].y + NODE_H / 2 })
+      const center = (id: string) => nodeCenter(positions, id)
 
       // dependency edges (solid)
       NODES.forEach((n) =>
@@ -179,9 +150,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         g.appendChild(idt)
 
         // title (wrapped to 2 lines)
-        const words = n.title
-        const line1 = words.length > 20 ? words.slice(0, 20) : words
-        const line2 = words.length > 20 ? words.slice(20, 40) + (words.length > 40 ? '…' : '') : ''
+        const { line1, line2 } = wrapTitle(n.title)
         const t1 = document.createElementNS(SVGNS, 'text')
         t1.setAttribute('x', '13')
         t1.setAttribute('y', '35')
@@ -465,42 +434,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     }
 
     /* ---------- LIVE LEDGER STREAMING ---------- */
-    const LIVE_TEMPLATES: (() => { kind: string; node: string; msg: string })[] = [
-      () => {
-        const n = NODES[Math.floor(Math.random() * NODES.length)]
-        return { kind: 'decided', node: n.id, msg: `Gate PASS · ${n.id} scored ${rawScore(n).toFixed(1)} (cap=${n.axes.irr >= CAP_THRESHOLD ? 'YES' : 'NO'})` }
-      },
-      () => {
-        const n = NODES.filter((x) => x.state === 'decided')[Math.floor(Math.random() * 5)]
-        return { kind: 'decided', node: n.id, msg: `Score confirmed · ${n.id} eff=${capScore(n, rawScore(n)).value.toFixed(1)}` }
-      },
-      () => {
-        const n = NODES[Math.floor(Math.random() * NODES.length)]
-        return { kind: 'proposed', node: n.id, msg: `Tiebreaker resolved · topo-order enforced (${n.id})` }
-      },
-      () => {
-        const n = NODES.filter((x) => x.state === 'decided')[Math.floor(Math.random() * 5)]
-        return { kind: 'decided', node: n.id, msg: `Gate→Score→Cap pipeline: ${n.id} irr=${n.axes.irr} ev=${n.axes.ev}` }
-      },
-      () => ({ kind: 'proposed', node: 'D-08', msg: 'Value displacement POSITIVE logged: 트레이드오프 명시 완료' }),
-      () => ({ kind: 'proposed', node: 'D-06', msg: 'Deferred ≠ pruned — defer trigger set, assumptions preserved' }),
-      () => ({ kind: 'decided', node: 'D-03', msg: 'Append-only state: Proposed→Decided (L-new) written to ledger' }),
-      () => ({ kind: 'decided', node: 'D-05', msg: 'Pruning BLOCKED: evidence_readiness<85 — engine enforced' }),
-      () => ({ kind: 'proposed', node: 'D-07', msg: 'Reconcile check: Last Edited At > Last Agent Sync At — PROTECT' }),
-      () => ({ kind: 'decided', node: 'D-04', msg: 'Topo sort stable: dependency-first ordering confirmed' }),
-      () => ({ kind: 'decided', node: 'D-01', msg: 'Context lock: COMPLICATED · Pre-mortem flagged as HOT' }),
-      () => ({ kind: 'proposed', node: 'D-08', msg: 'Value displacement NEGATIVE logged: 변위 추정 편향 가능성 기록' }),
-      () => {
-        const n = NODES[Math.floor(Math.random() * NODES.length)]
-        const vd = n.pos[Math.floor(Math.random() * n.pos.length)]
-        return { kind: 'decided', node: n.id, msg: `VD+ ${n.id}: ${vd.slice(0, 42)}` }
-      },
-      () => {
-        const n = NODES[Math.floor(Math.random() * NODES.length)]
-        const vd = n.neg[Math.floor(Math.random() * n.neg.length)]
-        return { kind: 'proposed', node: n.id, msg: `VD- ${n.id}: ${vd.slice(0, 42)}` }
-      },
-    ]
+    // LIVE_TEMPLATES imported from ./draw
     let _liveSeq = 7
     let _liveTimer: ReturnType<typeof setTimeout> | null = null
 

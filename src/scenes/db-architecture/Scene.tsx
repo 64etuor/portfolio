@@ -21,6 +21,8 @@ import {
   REC_TREE,
   type DdlRow,
 } from './data'
+import { edgePoint, crowFoot, smEdge, bez, fmtRows } from './draw'
+import { KEYWORDS, TYPES, CDC_MAX_LINES, ERD_AUTO_INTERVAL, PACKET_SEG_MS } from './constants'
 
 /* ════════════════════════════════════════════════════════════════
    DB 모델링 & 데이터 아키텍처 (db-architecture.html 이식 / 실용적 포팅)
@@ -109,10 +111,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     /* ============================================================
        SQL SYNTAX HIGHLIGHTER (lightweight)
        ============================================================ */
-    const KEYWORDS =
-      /\b(CREATE|TABLE|PRIMARY|KEY|FOREIGN|REFERENCES|NOT|NULL|DEFAULT|CHECK|IN|UNIQUE|INDEX|ON|CASCADE|DELETE|WITH|RECURSIVE|SELECT|FROM|WHERE|UNION|ALL|JOIN|AS|AND|OR|IS|USING|BETWEEN|GIN|LIKE|SET|BEGIN|END|RETURN|CALL|SIGNAL|SQLSTATE|PARTITION|BY|RANGE|VALUES|FOR|STORED|EXTENSION|IF|EXISTS|GENERATED|ALWAYS|ALTER|ADD|COLUMN)\b/g
-    const TYPES =
-      /\b(TEXT|INTEGER|INT|BIGINT|BIGSERIAL|SERIAL|SMALLINT|REAL|JSON|JSONB|UUID|CITEXT|NUMERIC|VARCHAR|CHAR|TIMESTAMPTZ|TSVECTOR|BOOLEAN|BOOLEAN)\b/g
     const esc = (str: string) => str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     function hi(line: string): string {
       if (/^\s*--/.test(line)) return '<span class="' + s.com + '">' + esc(line) + '</span>'
@@ -362,41 +360,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       })
       relSvg.innerHTML = svg
     }
-    function edgePoint(box: { x: number; y: number; w: number; h: number }, tx: number, ty: number) {
-      const cx = box.x + box.w / 2,
-        cy = box.y + box.h / 2
-      const dx = tx - cx,
-        dy = ty - cy
-      if (dx === 0 && dy === 0) return { x: cx, y: cy }
-      const hw = box.w / 2,
-        hh = box.h / 2
-      const sx = dx === 0 ? Infinity : hw / Math.abs(dx)
-      const sy = dy === 0 ? Infinity : hh / Math.abs(dy)
-      const sc = Math.min(sx, sy)
-      return { x: cx + dx * sc, y: cy + dy * sc }
-    }
-    function crowFoot(
-      p1: { x: number; y: number },
-      p2: { x: number; y: number },
-      col: string,
-      hi: boolean
-    ) {
-      const ang = Math.atan2(p2.y - p1.y, p2.x - p1.x)
-      const len = hi ? 13 : 10,
-        spread = hi ? 7 : 5
-      const bx = p1.x + Math.cos(ang) * len,
-        by = p1.y + Math.sin(ang) * len
-      const perp = ang + Math.PI / 2
-      const o1x = bx + Math.cos(perp) * spread,
-        o1y = by + Math.sin(perp) * spread
-      const o2x = bx - Math.cos(perp) * spread,
-        o2y = by - Math.sin(perp) * spread
-      return (
-        '<line x1="' + p1.x + '" y1="' + p1.y + '" x2="' + o1x + '" y2="' + o1y + '" stroke="' + col + '" stroke-width="' + (hi ? 2 : 1.3) + '"/>' +
-        '<line x1="' + p1.x + '" y1="' + p1.y + '" x2="' + o2x + '" y2="' + o2y + '" stroke="' + col + '" stroke-width="' + (hi ? 2 : 1.3) + '"/>' +
-        '<line x1="' + p1.x + '" y1="' + p1.y + '" x2="' + bx + '" y2="' + by + '" stroke="' + col + '" stroke-width="' + (hi ? 2 : 1.3) + '"/>'
-      )
-    }
 
     /* pan + zoom */
     let dragging = false,
@@ -468,10 +431,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       erdQpsBase = 1240,
       erdTxBase = 14,
       erdLagBase = 12
-    function fmtRows(n: number) {
-      if (n >= 1e6) return (n / 1e6).toFixed(2) + 'M'
-      return n.toLocaleString()
-    }
     function updateErdStats() {
       if (!runningRef.current) return
       erdRowBase += Math.floor(Math.random() * 7)
@@ -497,7 +456,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       erdAutoElapsed = 0
     // running-gate 로 멈췄는지 추적(사용자 상호작용 pause 와 구분 → 재가동 충돌 방지).
     let erdAutoPausedByGate = false
-    const ERD_AUTO_INTERVAL = 2800
     function erdAutoStep(ts: number) {
       if (!runningRef.current) {
         // 화면 밖: 다음 프레임 스케줄 중단(일시정지). 재가동은 resumeRef 가 처리.
@@ -547,7 +505,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
        SAMPLE CHANGE EVENT STREAM
        ============================================================ */
     let cdcEvtIdx = 0
-    const CDC_MAX_LINES = 8
     const cdcLogBody = $id('cdcLogBody')
     const cdcQpsEl = $id('cdcQps')
 
@@ -646,7 +603,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     let packets: Packet[] = []
     let flowPrevTs = 0
     const nodePos: Record<string, { x: number; y: number; w: number; h: number; el: HTMLElement }> = {}
-
     function layoutFlow() {
       flowSvg.innerHTML = ''
       archStage.querySelectorAll('.' + s.node).forEach((n) => n.remove())
@@ -707,13 +663,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       const mx = (x1 + x2) / 2
       return { x1, y1, x2, y2, mx }
     }
-    function bez(t: number, e: { x1: number; y1: number; x2: number; y2: number; mx: number }) {
-      const { x1, y1, x2, y2, mx } = e
-      const u = 1 - t
-      const x = u * u * u * x1 + 3 * u * u * t * mx + 3 * u * t * t * mx + t * t * t * x2
-      const y = u * u * u * y1 + 3 * u * u * t * y1 + 3 * u * t * t * y2 + t * t * t * y2
-      return { x, y }
-    }
     function spawnPacket() {
       const proj = (['redis', 'es', 'bq'] as const)[Math.floor(Math.random() * 3)]
       const route: [string, string, string][] = [
@@ -725,7 +674,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       packets.push({ route, seg: 0, t: 0, counted: false })
     }
     let lastSpawn = 0
-    const PACKET_SEG_MS = 1200
     function flowTick(ts: number) {
       if (!flowRunning) return
       if (!runningRef.current) {
@@ -847,8 +795,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           pb = smPos(b)
         const dx = pb.cx - pa.cx,
           dy = pb.cy - pa.cy
-        const ea = smEdge(pa, pb.cx, pb.cy),
-          eb = smEdge(pb, pa.cx, pa.cy)
+        const ea = smEdge(pa, pb.cx, pb.cy, SM_W / 2, SM_H / 2),
+          eb = smEdge(pb, pa.cx, pa.cy, SM_W / 2, SM_H / 2)
         const hot = a === smCur
         const col = hot ? '#00e0a4' : '#34465e'
         const mx = (ea.x + eb.x) / 2,
@@ -873,18 +821,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       str +=
         '<filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>'
       smSvg.innerHTML = str
-    }
-    function smEdge(box: { cx: number; cy: number }, tx: number, ty: number) {
-      const cx = box.cx,
-        cy = box.cy,
-        hw = SM_W / 2,
-        hh = SM_H / 2
-      const dx = tx - cx,
-        dy = ty - cy
-      const ex = dx === 0 ? 1e9 : hw / Math.abs(dx),
-        ey = dy === 0 ? 1e9 : hh / Math.abs(dy)
-      const sc = Math.min(ex, ey)
-      return { x: cx + dx * sc, y: cy + dy * sc }
     }
     function smUpdateInfo() {
       $id('smState')!.textContent = smCur

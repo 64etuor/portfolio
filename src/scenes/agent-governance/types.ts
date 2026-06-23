@@ -1,3 +1,5 @@
+import type { MutableRefObject } from 'react'
+
 export type CounterKey = 'ev' | 'tool'
 export type EventKind = 'emit' | 'gate' | 'ok' | 'tool' | 'deny'
 export type BuiltEvent = { id: string; type: EventKind; msg: string; counterKey: CounterKey; ts: string }
@@ -110,3 +112,39 @@ export type ElementKey =
   | 'sig4'
   | 'auditPin'
   | 'auditFeed'
+
+/** CSS module 매핑(scene.module.css). */
+export type Styles = Record<string, string>
+
+/**
+ * 모든 클로저 상태/헬퍼를 명시적으로 묶은 컨트롤러.
+ * Scene.tsx 가 ref 들을 생성해 1회 구성하고, draw/runtime/dom 모듈 함수에 첫 인자로 전달한다.
+ * 동작·타이밍·refs 정체성은 기존 클로저와 동일 — 단지 캡처 대신 명시적 전달.
+ */
+export type SceneCtx = {
+  s: Styles
+  rootRef: MutableRefObject<HTMLDivElement | null>
+  elRefs: MutableRefObject<Partial<Record<ElementKey, HTMLElement | null>>>
+  prepainted: MutableRefObject<boolean>
+  timeouts: MutableRefObject<ReturnType<typeof setTimeout>[]>
+  stateRef: MutableRefObject<RuntimeState>
+  agentsRef: MutableRefObject<Agent[]>
+  regsRef: MutableRefObject<Reg[]>
+  pipeNodes: MutableRefObject<PipeNode[]>
+  pipeEvents: MutableRefObject<PipeEvent[]>
+  pipeSize: MutableRefObject<{ w: number; h: number }>
+  hbData: MutableRefObject<number[]>
+  graphNodes: MutableRefObject<GraphNode[]>
+  graphEdges: MutableRefObject<GraphEdge[]>
+  graphSize: MutableRefObject<{ w: number; h: number }>
+  trace: MutableRefObject<number[]>
+  traceProg: MutableRefObject<number>
+  traceTimer: MutableRefObject<number>
+  lintState: MutableRefObject<{ pass: number; total: number }>
+  lintFailActive: MutableRefObject<boolean>
+  nzIdx: MutableRefObject<number>
+  auditIdx: MutableRefObject<number>
+  jobP: MutableRefObject<number>
+  turns: MutableRefObject<number>
+  liveRef: MutableRefObject<LiveState>
+}

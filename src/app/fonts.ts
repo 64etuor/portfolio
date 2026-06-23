@@ -69,21 +69,4 @@ import '@fontsource/playfair-display/700.css'
 import '@fontsource/playfair-display/500-italic.css'
 import '@fontsource/playfair-display/600-italic.css'
 
-/**
- * Font manifest (documentation / SSOT reference). The CSS `@font-face` family
- * names above are what tokens and canvas strings must reference. Keep this in
- * sync with the imports; it is the single declaration of what the app ships.
- */
-export const FONTS = {
-  'Pretendard Variable': { role: 'kr/sans (primary)', weights: ['variable'] },
-  'JetBrains Mono': { role: 'mono (primary)', weights: [400, 500, 700, 800] },
-  'Share Tech Mono': { role: 'terminal/HUD', weights: [400] },
-  'DM Mono': { role: 'instrument mono', weights: [400, 500] },
-  'IBM Plex Sans KR': { role: 'kr UI', weights: [400, 500, 600, 700] },
-  'IBM Plex Mono': { role: 'mono (secondary)', weights: [400, 500, 600] },
-  Oswald: { role: 'condensed display', weights: [400, 600, 700] },
-  Inter: { role: 'ui sans', weights: [400, 500, 600, 700] },
-  'Cormorant Garamond': { role: 'editorial serif', weights: [500, 600, 700], italic: [500, 600] },
-  'Noto Serif KR': { role: 'kr serif', weights: [500, 600, 700] },
-  'Playfair Display': { role: 'hero serif', weights: [500, 600, 700], italic: [500, 600] },
-} as const
+// Family/weight inventory is documented inline above (one comment per family).

@@ -123,28 +123,32 @@
   font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: #8b909a;
+  color: var(--shell-btn-muted);
   background: transparent;
-  border: 1px solid rgba(233, 233, 236, 0.12);
+  border: 1px solid var(--shell-btn-line);
   border-radius: 7px;
   padding: 7px 13px;
   backdrop-filter: blur(8px);
   cursor: pointer;
-  transition: border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
+  transition:
+    border-color var(--shell-btn-transition-duration) var(--shell-btn-transition-easing),
+    background var(--shell-btn-transition-duration) var(--shell-btn-transition-easing),
+    color var(--shell-btn-transition-duration) var(--shell-btn-transition-easing),
+    box-shadow var(--shell-btn-transition-duration) var(--shell-btn-transition-easing);
 }
 .lp-btn .lp-ic {
   display: inline-flex;
   color: #6b7280;
-  transition: color 160ms ease;
+  transition: color var(--shell-btn-transition-duration) var(--shell-btn-transition-easing);
 }
 .lp-btn:hover {
-  border-color: rgba(224, 122, 95, 0.5);
-  background: rgba(255, 255, 255, 0.06);
-  color: #e9e9ec;
-  box-shadow: 0 0 14px rgba(224, 122, 95, 0.2);
+  border-color: var(--shell-btn-hover-border);
+  background: var(--shell-btn-hover-bg);
+  color: var(--shell-btn-ink);
+  box-shadow: var(--shell-btn-hover-glow);
 }
 .lp-btn:hover .lp-ic {
-  color: #e07a5f;
+  color: var(--shell-btn-accent);
 }
 /* Primary variant — Portfolio button, accent-tinted with CRT cyan */
 .lp-btn-primary {

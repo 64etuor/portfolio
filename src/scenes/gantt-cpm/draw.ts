@@ -2,9 +2,19 @@
 // Extracted module-scope helpers from Scene.tsx — no DOM closures, no scene state.
 // Date/scale math reads the timeline window (T0/T1) from the data CANON.
 
-import { T0, T1 } from './data'
+import { T0, T1, type Row } from './data'
 
 export const NS = 'http://www.w3.org/2000/svg'
+
+// Effective progress %: ongoing rows derive from elapsed time clamped to [start,end];
+// finished rows use their static pct. Pure — caller passes `now` (TODAY.getTime()).
+export function rowPct(t: Row, now: number) {
+  if (!t.ongoing) return t.pct
+  const st = t.start.getTime(),
+    e = t.end.getTime()
+  const tdy = Math.max(st, Math.min(now, e))
+  return Math.round(((tdy - st) / (e - st)) * 100)
+}
 
 export function fmtYM(d: Date) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}`

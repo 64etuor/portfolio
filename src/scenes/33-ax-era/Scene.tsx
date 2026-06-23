@@ -285,7 +285,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       <div className={`${s.footer} ${s.kr}`}>
         <span>
           <b>제조 · 설비 · 공정</b>{' '}
-          <span className={s.footerAr}>↑ 솟다 ↑</span>{' '}
+          <span className={s.footerAr}>↑ AX ↑</span>{' '}
           <b>데이터 · 지식</b>
         </span>
       </div>

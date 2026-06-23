@@ -80,7 +80,9 @@ function compute(p: number): SceneState {
 
   let gA: number
   if (p < 0.47) gA = 1
-  else if (p < 0.68) gA = lerp(1, 0, eOut(seg(p, 0.47, 0.68)))
+  // 충돌 직후 더 빠르고 또렷한 fade-out (0.47~0.60). 이후 0.83 까지 완전 소멸 유지 →
+  // "흩어져 날아감"이 아니라 "사라짐"으로 읽히도록 강화.
+  else if (p < 0.6) gA = lerp(1, 0, eOut(seg(p, 0.47, 0.6)))
   else if (p < 0.83) gA = 0
   else gA = lerp(0, 1, eInOut(seg(p, 0.83, 1.0)))
 

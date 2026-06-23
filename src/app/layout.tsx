@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import './fonts'
 import './globals.css'
 import './cinematic.css' // 랜딩/필름/전환 (globals 에서 분리)
-import './resume.css' // /resume 전용 (globals 에서 분리)
+// resume.css 는 /resume 세그먼트(app/resume/layout.tsx)에서만 로드 — 글로벌 페이로드 축소
 import { SiteHeader } from '@/components/SiteHeader'
 import { PROFILE } from '@content/index'
 import { SITE } from '@content/site'

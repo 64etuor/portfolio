@@ -114,14 +114,22 @@ export function PretextText({
       build()
     }
 
+    // 루프는 글자가 (a) 등장/스프링 중이거나 (b) 커서가 위에 있을 때만 돈다.
+    // 모두 제자리에 안착하고 커서가 떠나면 스스로 멈춰(raf=0) 홈 화면에서 4개의
+    // 영구 60fps 캔버스 redraw 가 도는 것을 막는다. pointermove/resize 시 재개.
     function frame(now: number) {
       const t = now - t0
       ctx.clearRect(0, 0, W, H)
       ctx.font = curFont
       ctx.textBaseline = 'middle'
+      let active = false // 이번 프레임에 아직 움직이거나 페이드 중인 글자가 있나
+      const hovering = mouse.x > -9000
       for (const g of glyphs) {
         const age = t - g.born
-        if (age < 0) continue
+        if (age < 0) {
+          active = true // 아직 등장 전 → 계속 진행
+          continue
+        }
         if (!reduced) {
           g.vx += (g.hx - g.x) * 0.014
           g.vy += (g.hy - g.y) * 0.014
@@ -140,24 +148,36 @@ export function PretextText({
           g.vy *= 0.8
           g.x += g.vx
           g.y += g.vy
+          // 속도/오차가 남아 있으면 아직 움직이는 중
+          if (g.vx * g.vx + g.vy * g.vy > 0.01 || (g.hx - g.x) ** 2 + (g.hy - g.y) ** 2 > 0.25) active = true
         } else {
           g.x = g.hx
           g.y = g.hy
         }
-        ctx.globalAlpha = Math.min(1, age / 460)
+        const alpha = Math.min(1, age / 460)
+        if (alpha < 1) active = true // 아직 페이드인 중
+        ctx.globalAlpha = alpha
         ctx.fillStyle = color
         ctx.fillText(g.ch, g.x, g.y)
       }
       ctx.globalAlpha = 1
-      raf = requestAnimationFrame(frame)
+      raf = active || hovering ? requestAnimationFrame(frame) : 0
+    }
+    const ensureRunning = () => {
+      if (!raf) raf = requestAnimationFrame(frame)
     }
 
     resize()
-    window.addEventListener('resize', resize)
+    const onResizeRun = () => {
+      resize()
+      ensureRunning() // 리사이즈로 레이아웃이 바뀌면 다시 안착 애니메이션
+    }
+    window.addEventListener('resize', onResizeRun)
     const onPointer = (e: PointerEvent) => {
       const r = canvas.getBoundingClientRect()
       mouse.x = e.clientX - r.left
       mouse.y = e.clientY - r.top
+      ensureRunning() // 멈춰 있었다면 hover 상호작용을 위해 재개
     }
     const onLeave = () => {
       mouse.x = -9999
@@ -169,12 +189,13 @@ export function PretextText({
       document.fonts.ready.then(() => {
         resetPretextCache()
         build()
+        ensureRunning()
       })
     }
-    raf = requestAnimationFrame(frame)
+    ensureRunning()
     return () => {
       cancelAnimationFrame(raf)
-      window.removeEventListener('resize', resize)
+      window.removeEventListener('resize', onResizeRun)
       canvas.removeEventListener('pointermove', onPointer)
       canvas.removeEventListener('pointerleave', onLeave)
     }

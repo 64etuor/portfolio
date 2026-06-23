@@ -14,23 +14,22 @@ function useFitWidth(hostRef: React.RefObject<HTMLDivElement | null>) {
   useEffect(() => {
     const hostEl = hostRef.current
     if (!hostEl) return
-    const reset = () => {
-      const prev = scaledRef.current
-      if (prev) {
-        prev.style.removeProperty('transform')
-        prev.style.removeProperty('transform-origin')
-        prev.style.removeProperty('margin-left')
-        prev.style.removeProperty('margin-right')
-        scaledRef.current = null
-      }
+    const clear = (el: HTMLElement | null) => {
+      if (!el) return
+      el.style.removeProperty('transform')
+      el.style.removeProperty('transform-origin')
     }
-    const fit = () => {
-      reset()
+    // 강제 동기 reflow 방지: 측정(read)을 모두 끝낸 뒤에만 스타일을 쓴다(write).
+    const apply = () => {
+      // ── READ ──
       const cw = hostEl.clientWidth
-      if (!cw || cw > FIT_MAX_W) return
       const wrap = hostEl.firstElementChild as HTMLElement | null
-      if (!wrap) return
-      if (wrap.querySelector('iframe')) return // 자체 스케일하는 iframe 씬(41-perspectives 등)
+      const prev = scaledRef.current
+      if (!cw || cw > FIT_MAX_W || !wrap || wrap.querySelector('iframe')) {
+        clear(prev) // iframe 씬(41-perspectives 등)·데스크톱은 스케일 안 함
+        scaledRef.current = null
+        return
+      }
       // 씬 래퍼의 직속 자식 중 가장 넓은 블록 = 설계 스테이지(예: width:1600px)
       let stage: HTMLElement | null = null
       let maxW = 0
@@ -41,24 +40,35 @@ function useFitWidth(hostRef: React.RefObject<HTMLDivElement | null>) {
           stage = c
         }
       }
-      if (!stage || maxW <= cw + 1) return
-      if (stage.tagName === 'CANVAS') return // 캔버스 씬은 자체 리사이즈
-      if (getComputedStyle(stage).transform !== 'none') return // 이미 자체 스케일
-      const scale = cw / maxW
-      // origin top-left + margin 0 → 좌상단 기준으로 축소(가로 중앙정렬 margin:auto 무력화)
+      // ── WRITE ──
+      if (!stage || maxW <= cw + 1 || stage.tagName === 'CANVAS') {
+        clear(prev) // 캔버스 씬·이미 맞는 씬은 스케일 불필요
+        scaledRef.current = null
+        return
+      }
+      if (prev && prev !== stage) clear(prev)
+      // over-wide 요소라 margin:auto 는 0 으로 계산됨 → origin top-left 로 좌상단 기준 축소.
       stage.style.transformOrigin = 'top left'
-      stage.style.transform = `scale(${scale})`
-      stage.style.marginLeft = '0'
-      stage.style.marginRight = '0'
+      stage.style.transform = `scale(${cw / maxW})`
       scaledRef.current = stage
     }
-    const raf = requestAnimationFrame(fit) // 씬 DOM 빌드 후 측정
-    const ro = new ResizeObserver(fit)
+    // ResizeObserver 버스트(방향전환·URL바 토글)를 rAF 한 프레임으로 합쳐 thrash 방지.
+    let raf = 0
+    const schedule = () => {
+      if (raf) return
+      raf = requestAnimationFrame(() => {
+        raf = 0
+        apply()
+      })
+    }
+    schedule() // 씬 DOM 빌드 후 1회 측정
+    const ro = new ResizeObserver(schedule)
     ro.observe(hostEl)
     return () => {
-      cancelAnimationFrame(raf)
+      if (raf) cancelAnimationFrame(raf)
       ro.disconnect()
-      reset()
+      clear(scaledRef.current)
+      scaledRef.current = null
     }
   }, [hostRef])
 }

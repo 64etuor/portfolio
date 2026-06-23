@@ -7,3 +7,10 @@ export const NODE_H = 58
 export const GAP_Y = 78
 export const COL_X = [120, 470] as const
 export const MAX_LIVE_ENTRIES = 28
+
+// Pan/zoom clamp (scroll=zoom in the canvas shell)
+export const ZOOM_MIN = 0.5
+export const ZOOM_MAX = 2.2
+
+// Canvas HUD copy (tree mode default — restored on view reset)
+export const HUD_TREE = 'DAG = SSOT · tree = projection<br>drag=pan · scroll=zoom'

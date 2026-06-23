@@ -1,108 +1,47 @@
 'use client'
 
 import { useEffect, useRef } from 'react'
-import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
 import {
-  NODES,
-  EDGES,
-  SCHEMAS,
-  LOG_TEMPLATES,
-  METRIC_DEFS,
-  doLayout,
-  worldBounds,
-  type NodeDef,
+  NODES, EDGES, SCHEMAS, LOG_TEMPLATES, METRIC_DEFS,
+  doLayout, worldBounds, type NodeDef,
 } from './data'
+import {
+  NS, TYPE_LABEL, statusPill, edgePath, topoOrder, padTs,
+  AI_MAX, aiSample, initAICanvas, drawAIChart, drawGridBackground,
+} from './draw'
+import type { EdgeEl, SweepState } from './types'
+import { PipelineDagView } from './view'
 
 /* ═══════════════════════════════════════════════════════════════════
    pipeline-dag — Notion OS : 조직 운영 시스템 DAG
-   public/lab/pipeline-dag.html → React 이식
-   하네스: useSceneCanvas (grid bg canvas + token animation draw loop)
-   DOM: nodes/edges/panel/minimap 은 useEffect imperative (복잡 DOM)
+   Scene.tsx: orchestrator only — wires refs, rAF callbacks, effects.
+   Draw helpers → draw.ts  |  Types → types.ts  |  JSX shell → view.tsx
    ═══════════════════════════════════════════════════════════════════ */
 
-// ── helpers ──────────────────────────────────────────────────────────
-
-const NS = 'http://www.w3.org/2000/svg'
-const TYPE_LABEL: Record<string, string> = {
-  extract: 'EXTRACT', transform: 'TRANSFORM', load: 'LOAD', ml: 'AI.AUTO', deploy: 'DEPLOY',
-}
-
-function statusPill(status: string): string {
-  const map: Record<string, [string, string]> = {
-    success: ['success','SUCCESS'], running: ['running','RUNNING'],
-    queued: ['queued','QUEUED'], idle: ['idle','IDLE'],
-  }
-  const [c, t] = map[status] ?? map.idle
-  return `<span class="pill ${c}"><span class="d"></span>${t}</span>`
-}
-
-function edgePath(a: NodeDef, b: NodeDef): string {
-  const x1 = a.x + a.w, y1 = a.y + a.h / 2
-  const x2 = b.x,       y2 = b.y + b.h / 2
-  const dx = Math.max(40, (x2 - x1) * 0.5)
-  return `M ${x1},${y1} C ${x1+dx},${y1} ${x2-dx},${y2} ${x2},${y2}`
-}
-
-function topoOrder(nodes: NodeDef[], edges: [string,string][]): string[] {
-  const indeg: Record<string, number> = {}
-  const adj: Record<string, string[]> = {}
-  nodes.forEach(n => { indeg[n.id] = 0; adj[n.id] = [] })
-  edges.forEach(([a, b]) => { if (adj[a] && indeg[b] != null) { adj[a].push(b); indeg[b]++ } })
-  const q = nodes.filter(n => indeg[n.id] === 0).map(n => n.id)
-  const order: string[] = []
-  while (q.length) {
-    const id = q.shift()!; order.push(id)
-    ;(adj[id] ?? []).forEach(t => { if (--indeg[t] === 0) q.push(t) })
-  }
-  return order
-}
-
-function padTs(): string {
-  const d = new Date()
-  return [d.getHours(), d.getMinutes(), d.getSeconds()]
-    .map(v => String(v).padStart(2, '0')).join(':')
-}
-
-// AI chart sample — time-based oscillation (same formula as original)
-function aiSample(tMs: number): number {
-  const s = tMs * 0.001
-  const v = 0.38 + 0.48 * (
-    Math.sin(s * 2.1) * 0.38 +
-    Math.cos(s * 3.7 + 1.2) * 0.28 +
-    Math.sin(s * 5.9 + 2.5) * 0.18 +
-    (Math.random() - 0.5) * 0.08
-  )
-  return Math.max(0.04, Math.min(0.96, v))
-}
-
-const AI_MAX = 80
-
-// ── Scene ──────────────────────────────────────────────────────────
-
 export default function Scene({ running = true, onReady }: SceneProps) {
-  // DOM refs (imperative containers)
-  const stageRef    = useRef<HTMLDivElement | null>(null)
-  const worldRef    = useRef<HTMLDivElement | null>(null)
-  const edgesSvgRef = useRef<SVGSVGElement | null>(null)
-  const nodesLayRef = useRef<HTMLDivElement | null>(null)
-  const panelRef    = useRef<HTMLDivElement | null>(null)
-  const pbodyRef    = useRef<HTMLDivElement | null>(null)
-  const piconRef    = useRef<HTMLDivElement | null>(null)
-  const pnameRef    = useRef<HTMLDivElement | null>(null)
-  const pmetaRef    = useRef<HTMLDivElement | null>(null)
+  // ── DOM refs ──────────────────────────────────────────────────────
+  const stageRef      = useRef<HTMLDivElement | null>(null)
+  const worldRef      = useRef<HTMLDivElement | null>(null)
+  const edgesSvgRef   = useRef<SVGSVGElement | null>(null)
+  const nodesLayRef   = useRef<HTMLDivElement | null>(null)
+  const panelRef      = useRef<HTMLDivElement | null>(null)
+  const pbodyRef      = useRef<HTMLDivElement | null>(null)
+  const piconRef      = useRef<HTMLDivElement | null>(null)
+  const pnameRef      = useRef<HTMLDivElement | null>(null)
+  const pmetaRef      = useRef<HTMLDivElement | null>(null)
   const minimapSvgRef = useRef<SVGSVGElement | null>(null)
-  const schemaRef   = useRef<HTMLDivElement | null>(null)
-  const runbarRef   = useRef<HTMLDivElement | null>(null)
-  const runBtnRef   = useRef<HTMLButtonElement | null>(null)
-  const zlabelRef   = useRef<HTMLDivElement | null>(null)
-  const hintRef     = useRef<HTMLDivElement | null>(null)
-  const legendRef   = useRef<HTMLDivElement | null>(null)
+  const schemaRef     = useRef<HTMLDivElement | null>(null)
+  const runbarRef     = useRef<HTMLDivElement | null>(null)
+  const runBtnRef     = useRef<HTMLButtonElement | null>(null)
+  const zlabelRef     = useRef<HTMLDivElement | null>(null)
+  const hintRef       = useRef<HTMLDivElement | null>(null)
+  const legendRef     = useRef<HTMLDivElement | null>(null)
 
-  // Animation state refs (survive re-renders)
+  // ── Pan/zoom state ────────────────────────────────────────────────
   const scaleRef  = useRef(1)
   const txRef     = useRef(0)
   const tyRef     = useRef(0)
@@ -113,45 +52,44 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const runningRef = useRef(false)
   const movedRef  = useRef(false)
 
-  // Edge token animation state
-  interface EdgeEl {
-    a: string; b: string
-    path: SVGPathElement; len: number; tok: SVGCircleElement
-    phase: number; speed: number; targetSpeed: number; active: boolean
-  }
+  // ── Edge token animation state ────────────────────────────────────
   const edgeElsRef = useRef<EdgeEl[]>([])
 
-  // AI chart state
-  const aiCanvasRef    = useRef<HTMLCanvasElement | null>(null)
+  // ── AI chart state ────────────────────────────────────────────────
   const aiCtxRef       = useRef<CanvasRenderingContext2D | null>(null)
+  const aiCanvasRef    = useRef<HTMLCanvasElement | null>(null)
   const aiDataRef      = useRef<number[]>([])
-  const aiNextSampleAt = useRef(0)
+  const aiNextSampleAt = useRef({ value: 0 })
 
-  // Sweep state
-  interface SweepState {
-    order: string[]; total: number; idx: number; accum: number
-    phase: string; nodeRunDur: number; finishing: boolean; finishAccum: number
-  }
+  // ── Sweep state ───────────────────────────────────────────────────
   const sweepRef = useRef<SweepState | null>(null)
 
-  // Metric tick
+  // ── Metric tick ───────────────────────────────────────────────────
   const metricNextTickRef = useRef(0)
 
-  // Log state
-  const logElRef      = useRef<HTMLDivElement | null>(null)
+  // ── Event log state ───────────────────────────────────────────────
+  const logElRef       = useRef<HTMLDivElement | null>(null)
   const logNextTimeRef = useRef(0)
   const LOG_INTERVAL_BASE = 2800
 
-  // Node/layout state (built once)
-  const nodes = useRef<NodeDef[]>([])
+  // ── Layout state (built once) ─────────────────────────────────────
+  const nodes    = useRef<NodeDef[]>([])
   const nodeById = useRef<Record<string, NodeDef>>({})
-  const WB = useRef({ w: 0, h: 0 })
+  const WB       = useRef({ w: 0, h: 0 })
 
-  // onReady
   useSceneReady(onReady)
 
-  // ── grid background + token/AI animation draw callback ────────────
-  const ref = useSceneCanvas((g: CanvasRenderingContext2D, fr: Frame) => {
+  // ── initAI wrapper ────────────────────────────────────────────────
+  function initAI(canvas: HTMLCanvasElement) {
+    const ctx = initAICanvas(canvas, aiDataRef.current)
+    if (!ctx) return
+    aiCtxRef.current = ctx
+    aiCanvasRef.current = canvas
+    aiNextSampleAt.current.value = performance.now()
+  }
+
+  // ── rAF draw callback ─────────────────────────────────────────────
+  const canvasRef = useSceneCanvas((g: CanvasRenderingContext2D, fr: Frame) => {
     const tMs = fr.t * 1000
     const dt = fr.dt
 
@@ -159,31 +97,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     const stage = stageRef.current
     const W = stage?.clientWidth ?? fr.w
     const H = stage?.clientHeight ?? fr.h
-    const sc = scaleRef.current
-    const tx = txRef.current
-    const ty = tyRef.current
-
-    g.clearRect(0, 0, fr.w, fr.h)
-    const step = 40 * sc
-    if (step >= 6) {
-      const ox = ((tx % step) + step) % step
-      const oy = ((ty % step) + step) % step
-      g.strokeStyle = 'rgba(255,255,255,.025)'
-      g.lineWidth = 1
-      g.beginPath()
-      for (let x = ox; x < W; x += step) { g.moveTo(x, 0); g.lineTo(x, H) }
-      for (let y = oy; y < H; y += step) { g.moveTo(0, y); g.lineTo(W, y) }
-      g.stroke()
-      const mstep = step * 5
-      const mox = ((tx % mstep) + mstep) % mstep
-      const moy = ((ty % mstep) + mstep) % mstep
-      g.fillStyle = 'rgba(94,227,161,.10)'
-      for (let xi = mox; xi < W; xi += mstep) {
-        for (let yi = moy; yi < H; yi += mstep) {
-          g.beginPath(); g.arc(xi, yi, 1.3, 0, 7); g.fill()
-        }
-      }
-    }
+    drawGridBackground(g, W, H, scaleRef.current, txRef.current, tyRef.current, fr.w, fr.h)
 
     // 2) Edge token animation
     const edges = edgeElsRef.current
@@ -201,7 +115,9 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     }
 
     // 3) AI mini chart
-    drawAI(tMs)
+    if (aiCtxRef.current) {
+      drawAIChart(tMs, aiCtxRef.current, aiDataRef.current, aiNextSampleAt.current)
+    }
 
     // 4) Run sweep tick
     tickRunSweep(dt)
@@ -212,66 +128,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     // 6) Event log tick
     tickEventLog(tMs)
   }, { running })
-
-  // ── AI chart helpers ──────────────────────────────────────────────
-
-  function initAI(canvas: HTMLCanvasElement) {
-    const dpr = window.devicePixelRatio || 1
-    canvas.width = 206 * dpr; canvas.height = 54 * dpr
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
-    ctx.scale(dpr, dpr)
-    aiCtxRef.current = ctx
-    aiCanvasRef.current = canvas
-    const now = performance.now()
-    aiDataRef.current = []
-    for (let i = 0; i < AI_MAX; i++) aiDataRef.current.push(aiSample(now - (AI_MAX - i) * 83))
-    aiNextSampleAt.current = now
-  }
-
-  function drawAI(tMs: number) {
-    const ctx = aiCtxRef.current
-    if (!ctx) return
-    if (tMs >= aiNextSampleAt.current) {
-      aiDataRef.current.push(aiSample(tMs))
-      if (aiDataRef.current.length > AI_MAX) aiDataRef.current.shift()
-      aiNextSampleAt.current = tMs + 83
-    }
-    const W = 206, H = 54, pad = 4
-    ctx.clearRect(0, 0, W, H)
-    ctx.strokeStyle = 'rgba(255,255,255,.04)'; ctx.lineWidth = 1
-    for (let gg = 1; gg < 4; gg++) {
-      const gy = pad + (H - 2 * pad) * gg / 4
-      ctx.beginPath(); ctx.moveTo(pad, gy); ctx.lineTo(W - pad, gy); ctx.stroke()
-    }
-    const n = aiDataRef.current.length
-    if (n < 2) return
-    ctx.beginPath()
-    for (let i = 0; i < n; i++) {
-      const x = pad + (W - 2 * pad) * i / (AI_MAX - 1)
-      const y = pad + (H - 2 * pad) * (1 - aiDataRef.current[i])
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y)
-    }
-    const lxA = pad + (W - 2 * pad) * (n - 1) / (AI_MAX - 1)
-    ctx.lineTo(lxA, H - pad); ctx.lineTo(pad, H - pad); ctx.closePath()
-    const grad = ctx.createLinearGradient(0, 0, 0, H)
-    grad.addColorStop(0, 'rgba(240,180,41,.28)'); grad.addColorStop(1, 'rgba(240,180,41,0)')
-    ctx.fillStyle = grad; ctx.fill()
-    ctx.beginPath()
-    for (let j = 0; j < n; j++) {
-      const xj = pad + (W - 2 * pad) * j / (AI_MAX - 1)
-      const yj = pad + (H - 2 * pad) * (1 - aiDataRef.current[j])
-      if (j === 0) ctx.moveTo(xj, yj); else ctx.lineTo(xj, yj)
-    }
-    ctx.strokeStyle = '#f0b429'; ctx.lineWidth = 1.6; ctx.lineJoin = 'round'; ctx.stroke()
-    const hx = pad + (W - 2 * pad) * (n - 1) / (AI_MAX - 1)
-    const hy = pad + (H - 2 * pad) * (1 - aiDataRef.current[n - 1])
-    ctx.beginPath(); ctx.arc(hx, hy, 2.4, 0, 7); ctx.fillStyle = '#5ee3a1'; ctx.fill()
-    ctx.fillStyle = 'rgba(201,212,227,.5)'; ctx.font = '8px monospace'
-    ctx.fillText('ai.pipelines · throughput', 6, 11)
-    ctx.fillStyle = '#5ee3a1'
-    ctx.fillText('AUTO', W - 34, 11)
-  }
 
   // ── Run sweep ─────────────────────────────────────────────────────
 
@@ -364,8 +220,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
   function tickMetrics(tMs: number) {
     if (tMs < metricNextTickRef.current) return
-    metricNextTickRef.current = tMs + 4200 + Math.random() * 2000;
-    (['m1', 'm2'] as const).forEach(id => {
+    metricNextTickRef.current = tMs + 4200 + Math.random() * 2000
+    ;(['m1', 'm2'] as const).forEach(id => {
       const n = nodeById.current[id]; if (!n?.el) return
       const def = METRIC_DEFS[id]; if (!def) return
       const v = def.variants[Math.floor(Math.random() * def.variants.length)]
@@ -483,10 +339,10 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     const view = mmsvg.querySelector('#mmview'); if (!view) return
     const sc = mmSRef.current, offx = mmOxRef.current, offy = mmOyRef.current
     const stage = stageRef.current; if (!stage) return
-    const s = scaleRef.current
-    if (!isFinite(sc) || !s || !isFinite(s)) return
-    const vx = -txRef.current / s, vy = -tyRef.current / s
-    const vw = stage.clientWidth / s, vh = stage.clientHeight / s
+    const sc2 = scaleRef.current
+    if (!isFinite(sc) || !sc2 || !isFinite(sc2)) return
+    const vx = -txRef.current / sc2, vy = -tyRef.current / sc2
+    const vw = stage.clientWidth / sc2, vh = stage.clientHeight / sc2
     view.setAttribute('x', String(offx + vx * sc)); view.setAttribute('y', String(offy + vy * sc))
     view.setAttribute('width', String(vw * sc)); view.setAttribute('height', String(vh * sc))
   }
@@ -577,7 +433,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
   useEffect(() => {
     // 1) Layout
-    const ns = NODES.map(n => ({ ...n })) // shallow clone for mutation safety
+    const ns = NODES.map(n => ({ ...n }))
     doLayout(ns)
     const nb: Record<string, NodeDef> = {}
     ns.forEach(n => { nb[n.id] = n })
@@ -775,7 +631,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     // Auto-start sweep
     setTimeout(runPipeline, 800)
 
-    // Cleanup
     return () => {
       stage.removeEventListener('mousedown', onMouseDown)
       window.removeEventListener('mousemove', onMouseMove)
@@ -792,89 +647,26 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ── JSX ───────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────
 
   return (
-    <SceneHost className={s.root} bg="#0a0e14">
-      {/* Toolbar */}
-      <div className={s.toolbar}>
-        <div className={s.brand}>
-          <span className={s.brandDot} />
-          <b className={s.brandB}>notion-os</b>
-          <span className={s.brandPath}>/ notion-os.dag</span>
-        </div>
-        <div className={s.tbSep} />
-        <div className={s.tbMeta}>
-          <span><span className="k">project:</span> <span className="v">Notion OS</span></span>
-          <span><span className="k">domain:</span> <span className="v">조직 운영 시스템 · 의사결정 OS</span></span>
-          <span><span className="k">schedule:</span> <span className="v">@continuous</span></span>
-        </div>
-        <div className={s.spacer} />
-        <div className={s.banner}><span className={s.bannerOk} />SSOT: Notion · GitHub · Drive · 운영 중</div>
-        <button ref={runBtnRef} className={`${s.btn} ${s.btnRun}`}>
-          <span className={s.btnTri}>&#9654;</span> RUN PIPELINE
-        </button>
-        <button className={s.btnGhost} onClick={fit} title="reset view">&#10562; fit</button>
-      </div>
-
-      {/* Run progress bar */}
-      <div ref={runbarRef} className={s.runbar} />
-
-      {/* Stage */}
-      <div ref={stageRef} className={s.stage}>
-        {/* Grid background canvas */}
-        <canvas ref={ref} className={s.c} />
-        {/* World (pan/zoom container) */}
-        <div ref={worldRef} className={s.world}>
-          <svg ref={edgesSvgRef} className={s.edgesSvg} />
-          <div ref={nodesLayRef} className={s.nodesLayer} />
-        </div>
-      </div>
-
-      {/* Zoom controls */}
-      <div className={s.zoomCtl}>
-        <button className={s.zoomBtn} onClick={() => zoomBtn(1.2)}>+</button>
-        <button className={s.zoomBtn} onClick={() => zoomBtn(0.83)}>&#8722;</button>
-        <button className={`${s.zoomBtn} ${s.zoomBtnLast}`} onClick={fit}>FIT</button>
-      </div>
-      <div ref={zlabelRef} className={s.zLabel}>100%</div>
-
-      {/* Hint */}
-      <div ref={hintRef} className={s.hint}>
-        드래그로 이동 · 휠로 줌 · 노드 클릭으로 상세 · <span className={s.kbd}>RUN</span> 으로 파이프라인 실행
-      </div>
-
-      {/* Schema tooltip */}
-      <div ref={schemaRef} className={s.schema} style={{ display: 'none', position: 'fixed' }} />
-
-      {/* Minimap */}
-      <div className={s.minimap}>
-        <div className={s.minimapH}><span>MINIMAP</span><span>overview</span></div>
-        <svg ref={minimapSvgRef} className={s.mmSvg} />
-      </div>
-
-      {/* Legend */}
-      <div ref={legendRef} className={s.legend}>
-        <span className={s.leg}><span className={s.legD} style={{ background: '#4aa8ff' }} />input</span>
-        <span className={s.leg}><span className={s.legD} style={{ background: '#b08cff' }} />decision</span>
-        <span className={s.leg}><span className={s.legD} style={{ background: '#36d9d9' }} />execution</span>
-        <span className={s.leg}><span className={s.legD} style={{ background: '#f0b429' }} />ai</span>
-        <span className={s.leg}><span className={s.legD} style={{ background: '#5ee3a1' }} />metric</span>
-        <span className={s.leg}><span className={s.legD} style={{ background: '#ff7eb6' }} />sink</span>
-      </div>
-
-      {/* Detail panel — static structure; body filled imperatively */}
-      <aside ref={panelRef} className={s.panel}>
-        <div style={{ display:'flex', alignItems:'flex-start', gap:11, padding:'18px 18px 14px', borderBottom:'1px solid #1f2733' }}>
-          <div ref={piconRef} style={{ width:40, height:40, borderRadius:9, display:'flex', alignItems:'center', justifyContent:'center', fontSize:19, background:'rgba(255,255,255,.04)', border:'1px solid #1f2733', flexShrink:0 }}>&#11041;</div>
-          <div style={{ flex:1, minWidth:0 }}>
-            <div ref={pnameRef} style={{ fontSize:15, fontWeight:700, color:'#fff', lineHeight:1.3 }}>node</div>
-            <div ref={pmetaRef} style={{ fontSize:10.5, color:'#6b7787', marginTop:4, display:'flex', gap:8, flexWrap:'wrap' }} />
-          </div>
-          <div id="pclose" style={{ marginLeft:'auto', cursor:'pointer', color:'#6b7787', fontSize:18, lineHeight:1, width:28, height:28, display:'flex', alignItems:'center', justifyContent:'center', borderRadius:6, flexShrink:0 }}>&#10005;</div>
-        </div>
-        <div ref={pbodyRef} style={{ overflowY:'auto', padding:'16px 18px 28px', flex:1 }} />
-      </aside>
-    </SceneHost>
+    <PipelineDagView
+      canvasRef={canvasRef}
+      stageRef={stageRef}
+      worldRef={worldRef}
+      edgesSvgRef={edgesSvgRef}
+      nodesLayRef={nodesLayRef}
+      runbarRef={runbarRef}
+      runBtnRef={runBtnRef}
+      zlabelRef={zlabelRef}
+      hintRef={hintRef}
+      schemaRef={schemaRef}
+      minimapSvgRef={minimapSvgRef}
+      legendRef={legendRef}
+      panel={{ panelRef, piconRef, pnameRef, pmetaRef, pbodyRef }}
+      onFit={fit}
+      onZoomIn={() => zoomBtn(1.2)}
+      onZoomOut={() => zoomBtn(0.83)}
+    />
   )
 }

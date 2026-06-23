@@ -198,7 +198,35 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     const dReplay = detail!.querySelector<HTMLButtonElement>('[data-d="replay"]')!
     const dX = detail!.querySelector<HTMLElement>('[data-d="x"]')!
 
-    function openDetail(t: Row) {
+    // 클릭한 위치 근처에 패널을 띄우되, 패널 기준 요소(offsetParent) 안으로 클램프
+    function positionDetail(e?: MouseEvent) {
+      if (!detail) return
+      const parent = (detail.offsetParent as HTMLElement) || detail.parentElement
+      if (!parent) return
+      const pRect = parent.getBoundingClientRect()
+      const pad = 16
+      const pr = detail.getBoundingClientRect()
+      const w = pr.width || 430
+      const h = pr.height || Math.min(pRect.height - 48, 520)
+      let left: number, top: number
+      if (e) {
+        left = e.clientX - pRect.left + 20
+        top = e.clientY - pRect.top + 16
+        // 오른쪽으로 넘치면 커서 왼편으로 뒤집어 배치 (세로는 클램프로 처리)
+        if (left + w > pRect.width - pad) left = e.clientX - pRect.left - w - 20
+      } else {
+        left = pRect.width - w - 24
+        top = pRect.height - h - 24
+      }
+      left = Math.max(pad, Math.min(left, pRect.width - w - pad))
+      top = Math.max(pad, Math.min(top, pRect.height - h - pad))
+      detail.style.left = left + 'px'
+      detail.style.top = top + 'px'
+      detail.style.right = 'auto'
+      detail.style.bottom = 'auto'
+    }
+
+    function openDetail(t: Row, e?: MouseEvent) {
       dBar.style.background = t.kind === 'study' ? COLORS.self : t.color
       dCo.textContent = t.co
       dTi.textContent = t.role
@@ -239,6 +267,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       })
 
       dRewind.dataset.rewind = t.rewind || ''
+      positionDetail(e)
       detail!.classList.add(s.show)
       startVerificationReplay()
     }
@@ -490,7 +519,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           el('rect', { x: sx, y: cy - 4, width: Math.max(0, sx2 - sx), height: 8, rx: 3, fill: t.color, 'fill-opacity': 0.14, stroke: t.color, 'stroke-opacity': 0.4, 'stroke-dasharray': '2 3', 'stroke-width': 1 }, g)
         }
 
-        g.addEventListener('click', () => openDetail(t))
+        g.addEventListener('click', (e) => openDetail(t, e))
         g.addEventListener('mousemove', (e) => showTip(e, t))
         g.addEventListener('mouseleave', hideTip)
       })

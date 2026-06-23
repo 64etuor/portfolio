@@ -341,9 +341,11 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     async function initThree() {
       if (destroyed) return
 
-      const THREE: AnyMod = await import(/* webpackIgnore: true */ 'https://esm.sh/three@0.184.0' as AnyMod)
-      const { OrbitControls }: AnyMod = await import(/* webpackIgnore: true */ 'https://esm.sh/three@0.184.0/examples/jsm/controls/OrbitControls.js' as AnyMod)
-      const { CSS2DRenderer, CSS2DObject }: AnyMod = await import(/* webpackIgnore: true */ 'https://esm.sh/three@0.184.0/examples/jsm/renderers/CSS2DRenderer.js' as AnyMod)
+      // 로컬 의존성(three@0.184)으로 code-split import — esm.sh CDN(외부 SPOF·크로스오리진) 제거.
+      // webpackIgnore 없이 번들러가 별도 청크로 분리하므로 digital-twin 마운트 시에만 로드된다.
+      const THREE: AnyMod = await import('three')
+      const { OrbitControls }: AnyMod = await import('three/examples/jsm/controls/OrbitControls.js')
+      const { CSS2DRenderer, CSS2DObject }: AnyMod = await import('three/examples/jsm/renderers/CSS2DRenderer.js')
 
       if (destroyed || !containerRef.current) return
       const container = containerRef.current

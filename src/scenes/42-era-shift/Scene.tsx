@@ -172,7 +172,15 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   }, { running })
 
   return (
-    <SceneHost className={s.stage} bg="#050505">
+    <SceneHost
+      className={s.stage}
+      bg="#050505"
+      overlay={{
+        scan: { bg: 'repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.26) 3px 4px)', z: 30 },
+        vignette: { bg: 'radial-gradient(ellipse at 50% 50%, transparent 58%, rgba(0, 0, 0, 0.72) 100%)', z: 31, opacity: 0.7 },
+        grain: { opacity: 0.12, z: 32 },
+      }}
+    >
       <canvas ref={ref} className={s.c} />
 
       <div className={s.slide} ref={slideARef} />
@@ -190,9 +198,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
       <div className={s.wash} />
       <div className={s.washacc} />
-      <div className={s.scan} />
-      <div className={s.vig} />
-      <div className={s.grain} />
+      {/* scan·vignette·grain 은 SceneHost overlay prop 으로 통합(공통 오버레이) */}
       <div className={s.flash} ref={flashRef} />
 
       <div className={s.eyebrow}>

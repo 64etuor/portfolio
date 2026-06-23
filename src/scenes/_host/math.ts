@@ -1,26 +1,8 @@
 /**
  * Shared math helpers for scene animation.
  *
- * CANONICAL ARGUMENT ORDER FOR clamp: clamp(v, min, max)
- *
- * ⚠ WAVE-2 MIGRATION NOTE — clamp argument-order split:
- *   The following scenes define clamp as (v, min, max) — MATCHES canonical:
- *     30-collision/Scene.tsx:42    clamp(v, a, b)
- *     31-cost-cascade/Scene.tsx:41 clamp(v, a, b)
- *     37-cross-domain/Scene.tsx:39 clamp(v, lo, hi)
- *     38-ending-catchphrase/Scene.tsx:25 clamp(v, a, b)
- *     29-lost-in-translation/Scene.tsx:68 clamp(v, a=0, b=1)  [default args]
- *     robot-pendant/Scene.tsx:80   clamp(v, a, b)
- *     mes-console/Scene.tsx:21     clamp(v, a, b)
- *
- *   The following scenes define clamp as (min, max, v) — INVERTED ORDER,
- *   call sites MUST swap arguments when migrating:
- *     28-gap-reality/Scene.tsx:24  clamp(a, b, v)
- *     41-perspectives/Scene.tsx:122 clamp(a, b, v)
- *     42-era-shift/Scene.tsx:71    clamp(a, b, v)
- *
- *   When migrating those scenes, change every call from:
- *     clamp(min, max, v)  →  clamp(v, min, max)
+ * CANONICAL ARGUMENT ORDER FOR clamp: clamp(v, min, max) — value first, bounds second.
+ * 모든 씬이 이 헬퍼를 import 해 정규 순서로 통일된 상태다(과거 (min,max,v) 역순 정의는 마이그레이션 완료).
  */
 
 /**

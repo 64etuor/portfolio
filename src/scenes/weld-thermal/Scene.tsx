@@ -8,140 +8,19 @@ import { setText } from '../_host/dom-util'
 import type { Frame, SceneProps } from '../_host/types'
 import { LUT, PROGRAMS, type WeldProgram } from './data'
 import s from './scene.module.css'
+import {
+  GRID_TARGET, AMB, TMAX_SCALE,
+  STITCH_N, STITCH_DUTY,
+  STRIKE_SECS, CRATER_SECS, RESET_SECS, TRAVEL_SPEEDUP,
+  paramKeys,
+  type ArcPhase, type ParamKey, type ParamTrack,
+  type BeadSpot, type Spatter, type Plume,
+  type ArcState, type Engine, type DomRefs,
+} from './types'
+import { pad, arcPt, roundedRectPoint, stitchOn } from './draw'
 
 /* Nd:YAG LASER WELDER — weld-thermal.html 이식.
    하네스가 resize/DPR/rAF 를 소유하고, 이 컴포넌트는 원본 frame 본문과 HUD DOM만 유지한다. */
-
-const GRID_TARGET = 200
-const AMB = 24
-const TMAX_SCALE = 2400
-const STITCH_N = 7
-const STITCH_DUTY = 0.58
-const STRIKE_SECS = 0.55
-const CRATER_SECS = 0.9
-const RESET_SECS = 0.45
-const TRAVEL_SPEEDUP = 4.2
-
-type ArcPhase = 'reset' | 'strike' | 'run' | 'crater'
-type ParamKey = 'pulseE' | 'peakKW' | 'prf' | 'pulseMs' | 'travel' | 'defocus'
-
-interface ParamTrack {
-  disp: number
-  base: number
-}
-
-interface BeadSpot {
-  x: number
-  y: number
-  r: number
-  born: number
-  heat: number
-  keyhole: boolean
-}
-
-interface Spatter {
-  x: number
-  y: number
-  vx: number
-  vy: number
-  life: number
-  age: number
-  r: number
-}
-
-interface Plume {
-  x: number
-  y: number
-  r: number
-  age: number
-  life: number
-}
-
-interface ArcState {
-  gx: number
-  gy: number
-  power: number
-  pulse: number
-  phase: ArcPhase
-  t: number
-  beadProgress: number
-  beadMM: number
-  runSecs: number
-  arcSeconds: number
-  pulseClock: number
-  pulseGate: number
-}
-
-interface Engine {
-  sw: number
-  sh: number
-  gw: number
-  gh: number
-  heat: Float32Array
-  heat2: Float32Array
-  off: HTMLCanvasElement | null
-  offCtx: CanvasRenderingContext2D | null
-  img: ImageData | null
-  thermalImg: ImageData | null
-  thermalW: number
-  thermalH: number
-  mouseX: number
-  mouseY: number
-  mouseInside: boolean
-  activePass: number
-  passNo: number
-  arc: ArcState
-  bead: BeadSpot[]
-  spatter: Spatter[]
-  plume: Plume[]
-  params: Record<ParamKey, ParamTrack>
-  frame: number
-  lastFps: number
-  fpsCount: number
-  initialized: boolean
-}
-
-interface DomRefs {
-  modeTxt: HTMLElement | null
-  fiberTxt: HTMLElement | null
-  gasTxt: HTMLElement | null
-  focal: HTMLElement | null
-  spotDia: HTMLElement | null
-  passNo: HTMLElement | null
-  modeChip: HTMLElement | null
-  mtSpatter: HTMLElement | null
-  gPe: HTMLElement | null
-  gPk: HTMLElement | null
-  gAvg: HTMLElement | null
-  duty: HTMLElement | null
-  pdens: HTMLElement | null
-  penet: HTMLElement | null
-  beadw: HTMLElement | null
-  aspect: HTMLElement | null
-  mtPrf: HTMLElement | null
-  mtPw: HTMLElement | null
-  mtTravel: HTMLElement | null
-  mtDefocus: HTMLElement | null
-  mtPitch: HTMLElement | null
-  mtBead: HTMLElement | null
-  arcTime: HTMLElement | null
-  frame: HTMLElement | null
-  fps: HTMLElement | null
-  clock: HTMLElement | null
-  cross: HTMLElement | null
-  spotTemp: HTMLElement | null
-  spotName: HTMLElement | null
-  laserOn: HTMLElement | null
-  arcPhase: HTMLElement | null
-  arcBar: HTMLElement | null
-  thPeak: HTMLElement | null
-  thHaz: HTMLElement | null
-  thermCv: HTMLCanvasElement | null
-  detailTxt: HTMLElement | null
-  passEls: HTMLDivElement[]
-}
-
-const paramKeys: ParamKey[] = ['pulseE', 'peakKW', 'prf', 'pulseMs', 'travel', 'defocus']
 
 function createEngine(): Engine {
   return {
@@ -194,12 +73,6 @@ function createEngine(): Engine {
   }
 }
 
-function pad(value: number | string, length: number) {
-  let n = String(value)
-  while (n.length < length) n = '0' + n
-  return n
-}
-
 function ensureSize(e: Engine, w: number, h: number) {
   if (e.sw === w && e.sh === h && e.offCtx && e.img) return
 
@@ -215,47 +88,6 @@ function ensureSize(e: Engine, w: number, h: number) {
   e.off.height = e.gh
   e.offCtx = e.off.getContext('2d')
   e.img = e.offCtx?.createImageData(e.gw, e.gh) ?? null
-}
-
-function roundedRectPoint(cx: number, cy: number, w: number, h: number, r: number, u: number) {
-  const hw = w / 2
-  const hh = h / 2
-  const sLine = Math.max(0.0001, w - 2 * r)
-  const vLine = Math.max(0.0001, h - 2 * r)
-  const cArc = (Math.PI / 2) * r
-  const seg = [sLine, cArc, vLine, cArc, sLine, cArc, vLine, cArc]
-  let total = 0
-  for (const length of seg) total += length
-  let d = u * total
-  let i = 0
-  while (i < seg.length && d > seg[i]) {
-    d -= seg[i]
-    i++
-  }
-  const f = d / seg[Math.min(i, seg.length - 1)]
-  switch (i) {
-    case 0:
-      return { x: cx - hw + r + sLine * f, y: cy - hh }
-    case 1:
-      return arcPt(cx + hw - r, cy - hh + r, r, -Math.PI / 2, f)
-    case 2:
-      return { x: cx + hw, y: cy - hh + r + vLine * f }
-    case 3:
-      return arcPt(cx + hw - r, cy + hh - r, r, 0, f)
-    case 4:
-      return { x: cx + hw - r - sLine * f, y: cy + hh }
-    case 5:
-      return arcPt(cx - hw + r, cy + hh - r, r, Math.PI / 2, f)
-    case 6:
-      return { x: cx - hw, y: cy + hh - r - vLine * f }
-    default:
-      return arcPt(cx - hw + r, cy - hh + r, r, Math.PI, f)
-  }
-}
-
-function arcPt(ox: number, oy: number, r: number, a0: number, f: number) {
-  const a = a0 + (Math.PI / 2) * f
-  return { x: ox + Math.cos(a) * r, y: oy + Math.sin(a) * r }
 }
 
 function pathPoint(e: Engine, p: WeldProgram, u: number) {
@@ -279,12 +111,6 @@ function pathPoint(e: Engine, p: WeldProgram, u: number) {
       return roundedRectPoint(cx, cy, w, h, r, u)
     }
   }
-}
-
-function stitchOn(u: number) {
-  if (u <= 0 || u >= 1) return true
-  const ph = (u * STITCH_N) % 1
-  return ph < STITCH_DUTY
 }
 
 function inject(e: Engine, cx: number, cy: number, radius: number, amount: number) {

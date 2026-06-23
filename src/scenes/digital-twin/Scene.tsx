@@ -6,6 +6,7 @@ import { useSceneReady } from '../_host/useSceneReady'
 import type { SceneProps } from '../_host/types'
 import s from './scene.module.css'
 import { STATIONS, PLANT_KPIS, STREAM_MSGS, renderStreamMsg } from './data'
+import { STATION_POS_RAW, STREAM_INTERVAL, MAX_STREAM_ROWS, SYNC_BEAT_INTERVAL } from './constants'
 
 /* ══════════════════════════════════════════════════════════════════
    Digital Twin — 연결된 도메인 = 조직·공정의 트윈
@@ -224,8 +225,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     const streamWrapEl = streamRowsRef.current
     let streamMsgIdx = 0
     let streamIntervalT = 0
-    const STREAM_INTERVAL = 2.1
-    const MAX_STREAM_ROWS = 4
 
     function pushStreamRow() {
       if (!streamWrapEl) return
@@ -333,9 +332,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       const camTo = tgt.clone().add(new THREE.Vector3(9, 9, 9))
       camTween = { fromT: controls.target.clone(), toT: tgt, fromP: camera.position.clone(), toP: camTo, t: 0 }
     }
-
-    // station positions as plain arrays (no Three.js dep needed at declaration time)
-    const STATION_POS_RAW: [number, number][] = [[-13, -6], [-4, 8], [10, 6], [14, -10]]
 
     // ── async Three.js init ──
     async function initThree() {
@@ -658,7 +654,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       let autoCycleEnabled = true
       let syncBeatT = 0
       let syncBeatIdx = 0
-      const SYNC_BEAT_INTERVAL = 3.0
 
       const throughputShown = STATIONS.map(() => 0)
       const clock = new THREE.Clock()

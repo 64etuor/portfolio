@@ -5,6 +5,7 @@ import { SceneHost } from '../_host/SceneHost'
 import { useSceneReady } from '../_host/useSceneReady'
 import type { SceneProps } from '../_host/types'
 import s from './scene.module.css'
+import { NS, eio, fmtYM, span, sparkSVG } from './draw'
 import {
   COLORS,
   COMPANIES,
@@ -28,37 +29,6 @@ import {
    복잡한 SVG/스코어카드/디테일 패널은 ref 컨테이너에 imperative 로 빌드(실용적).
    삭제됨: resize/DPR/rAF boot/fonts.ready. running false → 멱등(빌드 1회).
    ════════════════════════════════════════════════════════════════ */
-
-const NS = 'http://www.w3.org/2000/svg'
-
-function fmtYM(d: Date) {
-  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}`
-}
-function span(d: Date) {
-  return (d.getTime() - T0.getTime()) / (T1.getTime() - T0.getTime())
-}
-function eio(t: number) {
-  return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1
-}
-
-function sparkSVG(data: number[], color: string, w = 46, h = 16) {
-  const min = Math.min(...data),
-    max = Math.max(...data),
-    rng = max - min || 1
-  const pts = data
-    .map((d, i) => {
-      const px = (i / (data.length - 1)) * (w - 2) + 1
-      const py = h - 1 - ((d - min) / rng) * (h - 2)
-      return `${px.toFixed(1)},${py.toFixed(1)}`
-    })
-    .join(' ')
-  const last = data[data.length - 1]
-  const lx = w - 2 + 1,
-    ly = h - 1 - ((last - min) / rng) * (h - 2)
-  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}">
-    <polyline points="${pts}" fill="none" stroke="${color}" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" opacity="0.85"/>
-    <circle cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="1.8" fill="${color}"/></svg>`
-}
 
 export default function Scene({ running = true, onReady }: SceneProps) {
   void running // 이 씬은 캔버스 tick 이 없는 정적 인터랙티브 보드 — DOM 빌드는 멱등 1회.

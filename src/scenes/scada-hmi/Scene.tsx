@@ -7,6 +7,7 @@ import { useSceneReady } from '../_host/useSceneReady'
 import { cx, setText } from '../_host/dom-util'
 import { lerp } from '../_host/math'
 import type { Frame, SceneProps } from '../_host/types'
+import { SCM_AREA_MAX } from './constants'
 import {
   ACTION_DEFS,
   ALM_POOL,
@@ -23,161 +24,9 @@ import {
   type AlarmEvent,
   type TabId,
 } from './data'
+import { drawTrendCanvas, makeTrendRuntime, pad, renderAlarms, round2, setAttr } from './draw'
 import s from './scene.module.css'
-
-type AckPhase = 'active' | 'ramping' | 'cleared'
-type TrendId = 'trend' | 'trend2' | 'trendInv' | 'trendScm'
-
-interface ProcessState {
-  invCost: number
-  invCostSP: number
-  turnRate: number
-  whEff: number
-  acked: boolean
-}
-
-interface MimicState {
-  pumpAngle1: number
-  pumpAngle2: number
-  convX: number
-  tk1Cur: number
-  tk2Cur: number
-  weldWidthCur: number
-  phase1: number
-  phase2: number
-}
-
-interface TrendSeriesState {
-  color: string
-  start: number
-  buf: number[]
-  cur: number
-  acc: number
-}
-
-type TrendRuntime = Record<TrendId, TrendSeriesState[]>
-
-const NBUF = 180
-const SAMPLE_INTERVAL = 333
-
-const TREND_CONFIG: Record<TrendId, Array<{ color: string; start: number }>> = {
-  trend: [
-    { color: '#ff3b3b', start: 40 },
-    { color: '#39d6ff', start: 62 },
-  ],
-  trend2: [
-    { color: '#21d07a', start: 62 },
-    { color: '#39d6ff', start: 72 },
-  ],
-  trendInv: [
-    { color: '#21d07a', start: 62 },
-    { color: '#39d6ff', start: 50 },
-  ],
-  trendScm: [
-    { color: '#21d07a', start: 62 },
-    { color: '#39d6ff', start: 70 },
-  ],
-}
-
-const SCM_AREA_MAX = Math.max(...SCM_AREAS.map((p) => p.cnt))
-
-const pad = (n: number) => String(n).padStart(2, '0')
-const round2 = (n: number) => n.toFixed(2)
-
-function makeTrendRuntime(): TrendRuntime {
-  return Object.fromEntries(
-    Object.entries(TREND_CONFIG).map(([id, series]) => [
-      id,
-      series.map((entry) => ({
-        ...entry,
-        buf: new Array(NBUF).fill(entry.start),
-        cur: entry.start,
-        acc: 0,
-      })),
-    ])
-  ) as TrendRuntime
-}
-
-function setAttr(node: Element | null | undefined, name: string, value: string) {
-  if (node) node.setAttribute(name, value)
-}
-
-function fmtAlarmRow(a: AlarmEvent) {
-  const op = Math.max(0.35, 1 - Math.min(a.age, 12) * 0.05)
-  return `<div class="alm-item" style="opacity:${op.toFixed(2)}"><span class="sev" style="background:${a.sev}"></span><span class="ts">${a.ts}</span><span class="desc">${a.desc}</span><span class="st ${a.st}">${a.st}</span></div>`
-}
-
-function renderAlarms(events: AlarmEvent[], mini: HTMLDivElement | null, full: HTMLDivElement | null) {
-  if (mini) mini.innerHTML = events.slice(0, 4).map(fmtAlarmRow).join('')
-  if (full) full.innerHTML = events.slice(0, 18).map(fmtAlarmRow).join('')
-}
-
-function drawTrendCanvas(
-  canvas: HTMLCanvasElement | null,
-  series: TrendSeriesState[],
-  dtMs: number,
-  target: (i: number) => number,
-  markerY: ((height: number) => number) | null
-) {
-  if (!canvas) return
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return
-  const W = canvas.width
-  const H = canvas.height
-
-  ctx.clearRect(0, 0, W, H)
-  ctx.strokeStyle = 'rgba(57,182,255,0.07)'
-  ctx.lineWidth = 1
-  for (let x = 0; x <= W; x += W / 12) {
-    ctx.beginPath()
-    ctx.moveTo(x, 0)
-    ctx.lineTo(x, H)
-    ctx.stroke()
-  }
-  for (let y = 0; y <= H; y += H / 6) {
-    ctx.beginPath()
-    ctx.moveTo(0, y)
-    ctx.lineTo(W, y)
-    ctx.stroke()
-  }
-
-  series.forEach((entry, seriesIndex) => {
-    entry.acc += dtMs
-    while (entry.acc >= SAMPLE_INTERVAL) {
-      entry.acc -= SAMPLE_INTERVAL
-      entry.cur = lerp(entry.cur, target(seriesIndex), 0.12)
-      entry.cur = Math.max(0, Math.min(100, entry.cur))
-      entry.buf.shift()
-      entry.buf.push(entry.cur)
-    }
-
-    ctx.strokeStyle = entry.color
-    ctx.lineWidth = 2
-    ctx.shadowColor = entry.color
-    ctx.shadowBlur = 6
-    ctx.beginPath()
-    for (let i = 0; i < entry.buf.length; i++) {
-      const x = i * (W / (entry.buf.length - 1))
-      const y = H - (entry.buf[i] / 100) * H
-      if (i === 0) ctx.moveTo(x, y)
-      else ctx.lineTo(x, y)
-    }
-    ctx.stroke()
-    ctx.shadowBlur = 0
-  })
-
-  if (markerY) {
-    const y = markerY(H)
-    ctx.strokeStyle = '#ffd23f'
-    ctx.setLineDash([6, 5])
-    ctx.lineWidth = 1.4
-    ctx.beginPath()
-    ctx.moveTo(0, y)
-    ctx.lineTo(W, y)
-    ctx.stroke()
-    ctx.setLineDash([])
-  }
-}
+import type { AckPhase, MimicState, ProcessState, TrendRuntime } from './types'
 
 export default function Scene({ running = true, onReady }: SceneProps) {
   const [activeTab, setActiveTab] = useState<TabId>('overview')

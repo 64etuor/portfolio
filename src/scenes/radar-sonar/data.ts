@@ -364,6 +364,13 @@ export const PHASE_KO = [
   'Control Room(Boule Governance gate)',
 ]
 
+export const SURFACE_STACK = [
+  { px: 'S0', label: 'CAPTURE BOARD', sub: 'Eisenhower · 루틴 · Agent Bar' },
+  { px: 'S1', label: 'TODAY TIMELINE', sub: 'drag 배치 · Work Debt chip' },
+  { px: 'S2', label: 'PR RADAR', sub: 'CI · Review · Stale 버킷' },
+  { px: 'S3', label: 'CONTROL ROOM', sub: 'Boule Governance gate' },
+] as const
+
 export const FAKE_SIGNALS = [
   { id: 'NOTION-WEBHOOK', sub: 'API SIGNAL', type: 'signal', brg: 188, ring: 0.92 },
   { id: 'SLACK-EVENT', sub: 'NOTIFICATION', type: 'agent', brg: 47, ring: 0.94 },

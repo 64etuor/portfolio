@@ -7,92 +7,34 @@ import { useSceneReady } from '../_host/useSceneReady'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
 import {
-  CONTACTS_DEF,
-  PHASE_BY_TYPE,
   PHASE_LABEL,
   PHASE_KO,
   FAKE_SIGNALS,
-  type ContactDef,
+  SURFACE_STACK,
 } from './data'
+import {
+  RINGS,
+  SWEEP_SPEED,
+  pad3,
+  typeAbbr,
+  typeKo,
+  typeColRgb,
+  initContacts,
+  type Contact,
+  type Ping,
+  type FakeRow,
+} from './helpers'
 
 /* ════════════════════════════════════════════════════════════════
    Work Radar — radar-sonar.html 이식
    PPI 소나 스코프 + 신호 탐지 관제 콕핏
    ════════════════════════════════════════════════════════════════ */
 
-const RINGS = 4
-const SWEEP_SPEED = (12 / 60) * Math.PI * 2 // 12 rpm -> rad/s
-
-function pad3(n: number) {
-  return String(Math.round(n)).padStart(3, '0')
-}
-function typeAbbr(t: string) {
-  return t === 'signal' ? 'SIG' : t === 'surface' ? 'SRF' : t === 'agent' ? 'AGT' : 'GATE'
-}
-function typeKo(t: string) {
-  return t === 'signal' ? '외부 신호' : t === 'surface' ? '서피스' : t === 'agent' ? '에이전트' : '거버넌스 게이트'
-}
-function typeColRgb(type: string) {
-  if (type === 'signal') return '46,255,163'
-  if (type === 'surface') return '63,224,255'
-  if (type === 'agent') return '255,176,49'
-  return '255,255,255'
-}
 function typCls(type: string) {
   if (type === 'signal') return s.typSignal
   if (type === 'surface') return s.typSurface
   if (type === 'agent') return s.typAgent
   return s.typGate
-}
-
-// Runtime contact state (mutable, lives in ref)
-interface Contact extends ContactDef {
-  _glow: number
-  _detected: boolean
-  _verified: boolean
-  _phase: number
-  _trk: number
-  _baseA: number
-  _a: number
-  _baseRing: number
-  _driftT: number
-  _driftSpeed: number
-  _driftAmp: number
-  _driftRingAmp: number
-  _liveDriftT: number
-}
-
-interface Ping {
-  r: number
-  life: number
-}
-
-interface FakeRow {
-  el: HTMLDivElement
-  brgBase: number
-  rngBase: number
-  driftT: number
-  statusIdx: number
-  statusT: number
-}
-
-function initContacts(): Contact[] {
-  return CONTACTS_DEF.map((def, i) => ({
-    ...def,
-    _glow: 0,
-    _detected: false,
-    _verified: false,
-    _phase: PHASE_BY_TYPE[def.type] ?? 3,
-    _trk: i + 1,
-    _baseA: (def.brg - 90) * (Math.PI / 180),
-    _a: (def.brg - 90) * (Math.PI / 180),
-    _baseRing: def.ring,
-    _driftT: Math.random() * Math.PI * 2,
-    _driftSpeed: 0.18 + Math.random() * 0.14,
-    _driftAmp: 0.004 + Math.random() * 0.006,
-    _driftRingAmp: 0.006 + Math.random() * 0.006,
-    _liveDriftT: Math.random() * Math.PI * 2,
-  }))
 }
 
 export default function Scene({ running = true, onReady }: SceneProps) {
@@ -1021,14 +963,9 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
           <div className={s.sectionH}>SURFACE STACK <span>운영 레이어</span></div>
           <div className={s.ladder}>
-            {[
-              { px: 'S0', label: 'CAPTURE BOARD', sub: 'Eisenhower · 루틴 · Agent Bar' },
-              { px: 'S1', label: 'TODAY TIMELINE', sub: 'drag 배치 · Work Debt chip' },
-              { px: 'S2', label: 'PR RADAR', sub: 'CI · Review · Stale 버킷' },
-              { px: 'S3', label: 'CONTROL ROOM', sub: 'Boule Governance gate' },
-            ].map((item, i) => (
+            {SURFACE_STACK.map((item, i) => (
               <div
-                key={i}
+                key={item.px}
                 className={s.lad}
                 ref={(el) => { ladRefs.current[i] = el }}
               >

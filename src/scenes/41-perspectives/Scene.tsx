@@ -650,7 +650,22 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   }, { running })
 
   return (
-    <SceneHost className={s.stage} bg="#050505">
+    <SceneHost
+      className={s.stage}
+      bg="#050505"
+      overlay={{
+        grain: { opacity: 0.045, z: 69, dur: '1.12s' },
+        scan: {
+          bg: 'repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0.2) 3px, rgba(0, 0, 0, 0) 4px)',
+          z: 70,
+          opacity: 0.5,
+        },
+        vignette: {
+          bg: 'radial-gradient(ellipse 140% 124% at 50% 50%, rgba(0, 0, 0, 0) 56%, rgba(0, 0, 0, 0.62) 100%)',
+          z: 71,
+        },
+      }}
+    >
       <canvas ref={ref} className={s.c} />
 
       <div className={s.kicker}>
@@ -748,9 +763,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         두 관점은 서로를 <b>완전히</b> 알지 못합니다 — 그래서 <b>잇는 사람</b>이 필요합니다
       </div>
 
-      <div className={s.grain} />
-      <div className={s.scan} />
-      <div className={s.vignette} />
     </SceneHost>
   )
 }

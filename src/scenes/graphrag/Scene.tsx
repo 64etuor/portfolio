@@ -504,7 +504,22 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   }, { running })
 
   return (
-    <SceneHost className={s.root} bg="#050505">
+    <SceneHost
+      className={s.root}
+      bg="#050505"
+      overlay={{
+        grain: { opacity: 0.04, z: 59, dur: '1.1s' },
+        scan: {
+          bg: 'repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0px, rgba(0, 0, 0, 0) 2px, rgba(0, 0, 0, 0.22) 3px, rgba(0, 0, 0, 0) 4px)',
+          z: 60,
+          opacity: 0.5,
+        },
+        vignette: {
+          bg: 'radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 50%, rgba(0, 0, 0, 0.64) 100%)',
+          z: 61,
+        },
+      }}
+    >
       <canvas ref={ref} className={s.c} />
 
       <div className={s.kicker}>
@@ -528,9 +543,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         </div>
       </div>
 
-      <div className={s.grain} />
-      <div className={s.scan} />
-      <div className={s.vignette} />
     </SceneHost>
   )
 }

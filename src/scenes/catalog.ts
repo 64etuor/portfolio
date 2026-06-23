@@ -9,7 +9,7 @@
 //   → SceneKey 리터럴 유니온으로 타입 안전성을 강제(오타/구식 키는 컴파일 실패).
 //
 // 플래그
-//   registry  : registry.SCENES 로 노출 + 조합(compositions) 후보. 4관점 메타 포함.
+//   registry  : registry.SCENES 로 노출 + 조합(compositions) 후보.
 //   filmBeat  : 필름 내러티브 비트(film/acts.ts).
 //   gallery   : 갤러리 카드로 노출(scenes.html / skills-*.html).
 //   route 는 별도 플래그 없이 "catalog 의 모든 씬은 /s 단독 라우트를 가진다"로 통일
@@ -19,23 +19,15 @@ import type { SceneKey } from './loaders'
 
 export type { SceneKey }
 
-export type ScenePerspective = 'entry' | 'project-career' | 'skill' | 'philosophy' | 'knowledge' | 'film'
-
 export interface SceneEntry {
   key: SceneKey
   file: string // "<key>.html"
   slug: string // 단독 라우트 /s/<slug>
   title: string
   bg: string
-  // --- registry(4관점) 메타: registry:true 인 씬만 채운다 ---
+  // --- registry 메타: registry:true 인 씬만 채운다 ---
   id?: string // "01" 등 시안 번호(조합/레거시 색인 키)
   domain?: string
-  perspective?: ScenePerspective
-  cluster?: 'project' | 'career'
-  status?: 'active' | 'parked'
-  featured?: boolean
-  owns?: string
-  blurb?: string
   // --- 위치 플래그 ---
   registry?: boolean // registry.SCENES + 조합 후보
   filmBeat?: boolean // 필름 내러티브 비트
@@ -48,54 +40,54 @@ const f = <K extends SceneKey>(key: K): `${K}.html` => `${key}.html`
 
 export const SCENE_CATALOG = [
   // ── 진입(부팅) — registry + 필름 비트 + 갤러리 ──
-  { key: '05-bios-boot', file: f('05-bios-boot'), slug: 'bios-boot', title: 'BIOS / POST 부팅', bg: '#050805', id: '05', domain: '펌웨어', perspective: 'entry', registry: true, filmBeat: true, gallery: true, blurb: '시스템 부팅 = 커리어 시작점. 인트로 전용.' },
+  { key: '05-bios-boot', file: f('05-bios-boot'), slug: 'bios-boot', title: 'BIOS / POST 부팅', bg: '#050805', id: '05', domain: '펌웨어', registry: true, filmBeat: true, gallery: true },
 
   // ── 필름 비트(내러티브 전용) + 갤러리 ──
-  { key: '42-era-shift', file: f('42-era-shift'), slug: 'era-shift', title: 'SCENE 01 · 시대 — THE ACCELERATION', bg: '#0a0b0e', perspective: 'film', filmBeat: true, gallery: true },
-  { key: '33-ax-era', file: f('33-ax-era'), slug: 'ax-era', title: 'SCENE 02 · 선언 — AX ERA', bg: '#030303', perspective: 'film', filmBeat: true, gallery: true },
-  { key: '28-gap-reality', file: f('28-gap-reality'), slug: 'gap-reality', title: 'SCENE 03 · 현실 — THE DIVERGENCE', bg: '#020202', perspective: 'film', filmBeat: true, gallery: true },
-  { key: '29-lost-in-translation', file: f('29-lost-in-translation'), slug: 'lost-in-translation', title: 'SCENE 04 · 소통 — LOST IN TRANSLATION', bg: '#020202', perspective: 'film', filmBeat: true, gallery: true },
-  { key: '41-perspectives', file: f('41-perspectives'), slug: 'perspectives', title: 'SCENE 05 · 관점 — PERSPECTIVES', bg: '#030303', perspective: 'film', filmBeat: true, gallery: true },
-  { key: '30-collision', file: f('30-collision'), slug: 'collision', title: 'SCENE 06 · 충돌 — LEXICAL COLLISION', bg: '#020202', perspective: 'film', filmBeat: true, gallery: true },
-  { key: '31-cost-cascade', file: f('31-cost-cascade'), slug: 'cost-cascade', title: 'SCENE 07 · 비용 — COST CASCADE', bg: '#020202', perspective: 'film', filmBeat: true, gallery: true },
-  { key: '32-the-connector', file: f('32-the-connector'), slug: 'the-connector', title: 'SCENE 08 · 연결 — THE CONNECTOR', bg: '#030303', perspective: 'film', filmBeat: true, gallery: true },
-  { key: '36-bridge-experts', file: f('36-bridge-experts'), slug: 'bridge-experts', title: 'SCENE 09 · 해결 — THE BRIDGE', bg: '#030303', perspective: 'film', filmBeat: true, gallery: true },
-  { key: '37-cross-domain', file: f('37-cross-domain'), slug: 'cross-domain', title: 'SCENE 10 · 핵심 — CROSS-DOMAIN', bg: '#020202', perspective: 'film', filmBeat: true, gallery: true },
-  { key: '38-ending-catchphrase', file: f('38-ending-catchphrase'), slug: 'ending-catchphrase', title: '엔딩 · 미래를 만드는 사람', bg: '#020202', perspective: 'film', filmBeat: true, gallery: true },
+  { key: '42-era-shift', file: f('42-era-shift'), slug: 'era-shift', title: 'SCENE 01 · 시대 — THE ACCELERATION', bg: '#0a0b0e', filmBeat: true, gallery: true },
+  { key: '33-ax-era', file: f('33-ax-era'), slug: 'ax-era', title: 'SCENE 02 · 선언 — AX ERA', bg: '#030303', filmBeat: true, gallery: true },
+  { key: '28-gap-reality', file: f('28-gap-reality'), slug: 'gap-reality', title: 'SCENE 03 · 현실 — THE DIVERGENCE', bg: '#020202', filmBeat: true, gallery: true },
+  { key: '29-lost-in-translation', file: f('29-lost-in-translation'), slug: 'lost-in-translation', title: 'SCENE 04 · 소통 — LOST IN TRANSLATION', bg: '#020202', filmBeat: true, gallery: true },
+  { key: '41-perspectives', file: f('41-perspectives'), slug: 'perspectives', title: 'SCENE 05 · 관점 — PERSPECTIVES', bg: '#030303', filmBeat: true, gallery: true },
+  { key: '30-collision', file: f('30-collision'), slug: 'collision', title: 'SCENE 06 · 충돌 — LEXICAL COLLISION', bg: '#020202', filmBeat: true, gallery: true },
+  { key: '31-cost-cascade', file: f('31-cost-cascade'), slug: 'cost-cascade', title: 'SCENE 07 · 비용 — COST CASCADE', bg: '#020202', filmBeat: true, gallery: true },
+  { key: '32-the-connector', file: f('32-the-connector'), slug: 'the-connector', title: 'SCENE 08 · 연결 — THE CONNECTOR', bg: '#030303', filmBeat: true, gallery: true },
+  { key: '36-bridge-experts', file: f('36-bridge-experts'), slug: 'bridge-experts', title: 'SCENE 09 · 해결 — THE BRIDGE', bg: '#030303', filmBeat: true, gallery: true },
+  { key: '37-cross-domain', file: f('37-cross-domain'), slug: 'cross-domain', title: 'SCENE 10 · 핵심 — CROSS-DOMAIN', bg: '#020202', filmBeat: true, gallery: true },
+  { key: '38-ending-catchphrase', file: f('38-ending-catchphrase'), slug: 'ending-catchphrase', title: '엔딩 · 미래를 만드는 사람', bg: '#020202', filmBeat: true, gallery: true },
 
   // ── 프로젝트 + 경력 — 프로젝트(자기주도) ──
-  { key: 'pipeline-dag', file: f('pipeline-dag'), slug: 'pipeline-dag', title: 'Notion OS — 조직 운영 시스템', bg: '#0c0e12', id: '03', domain: '프로젝트', perspective: 'project-career', cluster: 'project', featured: true, registry: true, gallery: true, blurb: '회의→결정→OKR→백로그→PRD→Runbook을 잇는 조직 운영 OS.' },
-  { key: 'radar-sonar', file: f('radar-sonar'), slug: 'radar-sonar', title: 'Work Radar — AI 워크플로우 콕핏', bg: '#060a08', id: '13', domain: '프로젝트', perspective: 'project-career', cluster: 'project', featured: true, registry: true, gallery: true, blurb: 'local-first AI 콕핏 11 서피스. 신호 수집·시간 배치·agent 거버넌스.' },
+  { key: 'pipeline-dag', file: f('pipeline-dag'), slug: 'pipeline-dag', title: 'Notion OS — 조직 운영 시스템', bg: '#0c0e12', id: '03', domain: '프로젝트', registry: true, gallery: true },
+  { key: 'radar-sonar', file: f('radar-sonar'), slug: 'radar-sonar', title: 'Work Radar — AI 워크플로우 콕핏', bg: '#060a08', id: '13', domain: '프로젝트', registry: true, gallery: true },
 
   // ── 프로젝트 + 경력 — 경력(제조 3社) ──
-  { key: 'instrument-rack', file: f('instrument-rack'), slug: 'instrument-rack', title: '생산관리 · 원가 제1원칙', bg: '#0b0d0f', id: '20', domain: '제조·원가', perspective: 'project-career', cluster: 'career', owns: '운영경비 −85%', registry: true, gallery: true, blurb: '배터리팩 생산관리. 운영경비 −85%·불량 0건의 단독 무대.' },
-  { key: 'sonar-waterfall', file: f('sonar-waterfall'), slug: 'sonar-waterfall', title: '초음파 용착 DOE', bg: '#060a10', id: '18', domain: '제조·용착', perspective: 'project-career', cluster: 'career', owns: '용착 15%→0%', registry: true, gallery: true, blurb: '스팟·레이저·초음파 용착 DOE. 용착 15%→0%의 단독 무대.' },
-  { key: 'scada-hmi', file: f('scada-hmi'), slug: 'scada-hmi', title: 'SCM · 재고 최적화', bg: '#0e1217', id: '15', domain: '물류·SCM', perspective: 'project-career', cluster: 'career', owns: '재고회전율 +17%', registry: true, gallery: true, blurb: '창고물류 SCM 개선. 재고회전율 +17%의 단독 무대.' },
-  { key: 'gantt-cpm', file: f('gantt-cpm'), slug: 'gantt-cpm', title: '커리어 타임라인 — 경력 + 프로젝트', bg: '#0c0f14', id: '17', domain: '경력 종합', perspective: 'project-career', cluster: 'career', featured: true, owns: '사무공수 −451분 · ST −50%', registry: true, gallery: true, blurb: '회사 5社를 크리티컬 패스로, 자기주도 프로젝트 16건을 병렬로 묶은 커리어 간트·임팩트 보드.' },
-  { key: 'mes-console', file: f('mes-console'), slug: 'mes-console', title: 'MES 구축', bg: '#0a0a0c', id: '01', domain: '제조·MES', perspective: 'project-career', cluster: 'career', featured: true, registry: true, gallery: true, blurb: '신제품 라인 MES 자체 개발·운영 체계 구축.' },
-  { key: 'cmm-metrology', file: f('cmm-metrology'), slug: 'cmm-metrology', title: 'CMM 정밀 측정 · GD&T 검사', bg: '#0a0e14', id: '12', domain: '계측·CMM', perspective: 'project-career', cluster: 'career', owns: 'GD&T 검사성적서', registry: true, gallery: true, blurb: 'CMM 3D 좌표측정·GD&T 검사성적서 자동발행.' },
+  { key: 'instrument-rack', file: f('instrument-rack'), slug: 'instrument-rack', title: '생산관리 · 원가 제1원칙', bg: '#0b0d0f', id: '20', domain: '제조·원가', registry: true, gallery: true },
+  { key: 'sonar-waterfall', file: f('sonar-waterfall'), slug: 'sonar-waterfall', title: '초음파 용착 DOE', bg: '#060a10', id: '18', domain: '제조·용착', registry: true, gallery: true },
+  { key: 'scada-hmi', file: f('scada-hmi'), slug: 'scada-hmi', title: 'SCM · 재고 최적화', bg: '#0e1217', id: '15', domain: '물류·SCM', registry: true, gallery: true },
+  { key: 'gantt-cpm', file: f('gantt-cpm'), slug: 'gantt-cpm', title: '커리어 타임라인 — 경력 + 프로젝트', bg: '#0c0f14', id: '17', domain: '경력 종합', registry: true, gallery: true },
+  { key: 'mes-console', file: f('mes-console'), slug: 'mes-console', title: 'MES 구축', bg: '#0a0a0c', id: '01', domain: '제조·MES', registry: true, gallery: true },
+  { key: 'cmm-metrology', file: f('cmm-metrology'), slug: 'cmm-metrology', title: 'CMM 정밀 측정 · GD&T 검사', bg: '#0a0e14', id: '12', domain: '계측·CMM', registry: true, gallery: true },
 
   // ── 스킬 ──
-  { key: 'weld-thermal', file: f('weld-thermal'), slug: 'weld-thermal', title: '산업 용접 기술', bg: '#0a0410', id: '11', domain: '공정기술', perspective: 'skill', registry: true, gallery: true, blurb: '스팟·레이저 용접 공정 기술과 조건 설계.' },
-  { key: 'robot-pendant', file: f('robot-pendant'), slug: 'robot-pendant', title: '설비·로봇 티칭', bg: '#0c0e12', id: '16', domain: '설비', perspective: 'skill', registry: true, gallery: true, blurb: '설비 기술·로봇 티칭·레시피(작업 프로그램) 설계.' },
-  { key: 'pid-scheme', file: f('pid-scheme'), slug: 'pid-scheme', title: '시스템 토폴로지', bg: '#0c0f14', id: '19', domain: '아키텍처', perspective: 'skill', registry: true, gallery: true, blurb: 'ISA-5.1 도면 언어로 그린 시스템 토폴로지/아키텍처.' },
-  { key: 'db-architecture', file: f('db-architecture'), slug: 'db-architecture', title: 'DB 모델링', bg: '#0c0f14', id: '22', domain: '데이터·DB', perspective: 'skill', featured: true, registry: true, gallery: true, blurb: '유명·장대한 DB 스키마 예제로 보는 데이터 모델링 역량.' },
+  { key: 'weld-thermal', file: f('weld-thermal'), slug: 'weld-thermal', title: '산업 용접 기술', bg: '#0a0410', id: '11', domain: '공정기술', registry: true, gallery: true },
+  { key: 'robot-pendant', file: f('robot-pendant'), slug: 'robot-pendant', title: '설비·로봇 티칭', bg: '#0c0e12', id: '16', domain: '설비', registry: true, gallery: true },
+  { key: 'pid-scheme', file: f('pid-scheme'), slug: 'pid-scheme', title: '시스템 토폴로지', bg: '#0c0f14', id: '19', domain: '아키텍처', registry: true, gallery: true },
+  { key: 'db-architecture', file: f('db-architecture'), slug: 'db-architecture', title: 'DB 모델링', bg: '#0c0f14', id: '22', domain: '데이터·DB', registry: true, gallery: true },
 
   // ── 개발(갤러리 dev 영역 전용) ──
-  { key: 'ide-coding', file: f('ide-coding'), slug: 'ide-coding', title: 'IDE 코딩 화면', bg: '#050608', perspective: 'skill', gallery: true },
+  { key: 'ide-coding', file: f('ide-coding'), slug: 'ide-coding', title: 'IDE 코딩 화면', bg: '#050608', gallery: true },
 
   // ── 철학 ──
-  { key: 'digital-twin', file: f('digital-twin'), slug: 'digital-twin', title: '도메인 지식의 미래 유용성', bg: '#0b0b0d', id: '06', domain: '크로스도메인', perspective: 'philosophy', featured: true, registry: true, gallery: true, blurb: '제조+개발+AI 이해도 — 다가올 시대에 크로스도메인이 갖는 가치.' },
-  { key: 'oscilloscope', file: f('oscilloscope'), slug: 'oscilloscope', title: '품질에 철저한 성격', bg: '#0a0e0c', id: '09', domain: '품질', perspective: 'philosophy', registry: true, gallery: true, blurb: '스팟 용접 검사 — 품질과 타협하지 않는 검사 기준.' },
+  { key: 'digital-twin', file: f('digital-twin'), slug: 'digital-twin', title: '도메인 지식의 미래 유용성', bg: '#0b0b0d', id: '06', domain: '크로스도메인', registry: true, gallery: true },
+  { key: 'oscilloscope', file: f('oscilloscope'), slug: 'oscilloscope', title: '품질에 철저한 성격', bg: '#0a0e0c', id: '09', domain: '품질', registry: true, gallery: true },
 
   // ── 지식관리 ──
-  { key: 'ai-latent', file: f('ai-latent'), slug: 'ai-latent', title: '볼트 semantic map', bg: '#07080d', id: '04', domain: '지식·AI', perspective: 'knowledge', registry: true, gallery: true, blurb: 'BGE-M3→UMAP→HDBSCAN 볼트 임베딩 의미맵. 그대로 유지.' },
-  { key: 'agent-governance', file: f('agent-governance'), slug: 'agent-governance', title: 'Boule 거버넌스', bg: '#0a0d0f', id: '23', domain: 'AI 거버넌스', perspective: 'knowledge', featured: true, registry: true, gallery: true, blurb: '권한·중단조건·인간승인 경계가 먼저인 자동 개발 거버넌스.' },
-  { key: 'decision-os', file: f('decision-os'), slug: 'decision-os', title: 'Decision OS', bg: '#0a0d12', id: '25', domain: '의사결정', perspective: 'knowledge', registry: true, gallery: true, blurb: '결정론적 Gate→Score→Cap→Tiebreaker·append-only Ledger.' },
-  { key: 'graphrag', file: f('graphrag'), slug: 'graphrag', title: 'GraphRAG / 신경-기호', bg: '#080a0f', id: '26', domain: 'AI', perspective: 'knowledge', registry: true, gallery: true, blurb: 'Leiden 커뮤니티 그래프·벡터↔그래프 멀티홉.' },
+  { key: 'ai-latent', file: f('ai-latent'), slug: 'ai-latent', title: '볼트 semantic map', bg: '#07080d', id: '04', domain: '지식·AI', registry: true, gallery: true },
+  { key: 'agent-governance', file: f('agent-governance'), slug: 'agent-governance', title: 'Boule 거버넌스', bg: '#0a0d0f', id: '23', domain: 'AI 거버넌스', registry: true, gallery: true },
+  { key: 'decision-os', file: f('decision-os'), slug: 'decision-os', title: 'Decision OS', bg: '#0a0d12', id: '25', domain: '의사결정', registry: true, gallery: true },
+  { key: 'graphrag', file: f('graphrag'), slug: 'graphrag', title: 'GraphRAG / 신경-기호', bg: '#080a0f', id: '26', domain: 'AI', registry: true, gallery: true },
 
   // ── 보류(parked) — 홈/릴 제외 ──
-  { key: 'gcode-printer', file: f('gcode-printer'), slug: 'gcode-printer', title: 'G-code 3D 프린터 빌드', bg: '#0e1116', id: '07', domain: '적층제조', perspective: 'project-career', cluster: 'project', status: 'parked', registry: true, gallery: true, blurb: '하드웨어 개발 후보 — 보류.' },
+  { key: 'gcode-printer', file: f('gcode-printer'), slug: 'gcode-printer', title: 'G-code 3D 프린터 빌드', bg: '#0e1116', id: '07', domain: '적층제조', registry: true, gallery: true },
 ] as const satisfies readonly SceneEntry[]
 
 export type SceneSlug = (typeof SCENE_CATALOG)[number]['slug']

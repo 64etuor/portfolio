@@ -12,6 +12,15 @@
   --muted: #8b909a;
   --accent: #e07a5f;
   --line: rgba(233, 233, 236, 0.12);
+  --shell-btn-ink: var(--ink);
+  --shell-btn-muted: var(--muted);
+  --shell-btn-accent: var(--accent);
+  --shell-btn-line: var(--line);
+  --shell-btn-hover-border: rgba(224, 122, 95, 0.5);
+  --shell-btn-hover-bg: rgba(255, 255, 255, 0.06);
+  --shell-btn-hover-glow: 0 0 14px rgba(224, 122, 95, 0.2);
+  --shell-btn-transition-duration: 160ms;
+  --shell-btn-transition-easing: ease;
   --font-sans: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', system-ui, sans-serif;
   --font-serif: 'Cormorant Garamond', 'Noto Serif KR', serif;
   --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
@@ -52,37 +61,41 @@
   font-weight: 500;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--shell-btn-muted);
   background: transparent;
-  border: 1px solid var(--line);
+  border: 1px solid var(--shell-btn-line);
   border-radius: 7px;
   padding: 7px 13px;
   cursor: pointer;
   text-decoration: none;
-  transition: border-color 160ms ease, color 160ms ease, background 160ms ease, box-shadow 160ms ease;
+  transition:
+    border-color var(--shell-btn-transition-duration) var(--shell-btn-transition-easing),
+    color var(--shell-btn-transition-duration) var(--shell-btn-transition-easing),
+    background var(--shell-btn-transition-duration) var(--shell-btn-transition-easing),
+    box-shadow var(--shell-btn-transition-duration) var(--shell-btn-transition-easing);
 }
 .chrome-btn:hover {
-  border-color: rgba(224, 122, 95, 0.5);
-  color: var(--ink);
-  background: rgba(255, 255, 255, 0.06);
-  box-shadow: 0 0 14px rgba(224, 122, 95, 0.2);
+  border-color: var(--shell-btn-hover-border);
+  color: var(--shell-btn-ink);
+  background: var(--shell-btn-hover-bg);
+  box-shadow: var(--shell-btn-hover-glow);
 }
 /* Primary variant — accent-tinted border */
 .chrome-btn--primary {
-  color: var(--ink);
+  color: var(--shell-btn-ink);
   border-color: rgba(224, 122, 95, 0.45);
   background: rgba(224, 122, 95, 0.04);
 }
 .chrome-btn--primary:hover {
-  border-color: var(--accent);
+  border-color: var(--shell-btn-accent);
   box-shadow: 0 0 18px rgba(224, 122, 95, 0.28);
 }
 /* Back variant — leading arrow already in the label text */
 .chrome-btn--back {
-  color: var(--muted);
+  color: var(--shell-btn-muted);
 }
 .chrome-btn--back:hover {
-  color: var(--ink);
+  color: var(--shell-btn-ink);
 }
 
 

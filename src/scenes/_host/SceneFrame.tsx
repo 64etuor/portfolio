@@ -1,8 +1,8 @@
 'use client'
 
-import { Suspense, lazy, useMemo, useRef, useState, type ComponentType } from 'react'
-import { ErrorBoundary } from 'react-error-boundary'
+import { useRef, useState, type ComponentType } from 'react'
 import { useIntersectionObserver } from 'usehooks-ts'
+import { LazyScene } from './LazyScene'
 import type { SceneProps } from './types'
 
 type Loader = () => Promise<{ default: ComponentType<SceneProps> }>
@@ -42,7 +42,6 @@ export function SceneFrame({
   const hasEverIntersectedRef = useRef(false)
   if (isIntersecting) hasEverIntersectedRef.current = true
 
-  const Lazy = useMemo(() => lazy(load), [load])
   // keepMounted 면 한 번 보인 후에는 마운트를 유지(pause 만). 아니면 교차 중에만 마운트.
   const mounted = keepMounted ? hasEverIntersectedRef.current : isIntersecting
   // running 은 항상 실제 교차 여부에 따른다 — keepMounted 씬도 화면 밖이면 멈춘다.
@@ -61,23 +60,22 @@ export function SceneFrame({
       onMouseEnter={hoverPlay ? () => setHovered(true) : undefined}
       onMouseLeave={hoverPlay ? () => setHovered(false) : undefined}
     >
-      <ErrorBoundary
-        fallback={
-          <div style={fallbackStyle}>
-            <span>SCENE ERROR · {title}</span>
-          </div>
-        }
-      >
-        <Suspense
-          fallback={
+      {mounted ? (
+        <LazyScene
+          load={load}
+          running={running}
+          errorFallback={
+            <div style={fallbackStyle}>
+              <span>SCENE ERROR · {title}</span>
+            </div>
+          }
+          loadingFallback={
             <div style={fallbackStyle}>
               <span>LOADING · {title}</span>
             </div>
           }
-        >
-          {mounted ? <Lazy running={running} /> : null}
-        </Suspense>
-      </ErrorBoundary>
+        />
+      ) : null}
       {/* 호버 재생 힌트 — 정지 상태일 때만 표시. */}
       {hoverPlay && mounted && !hovered && (
         <div style={hintStyle} aria-hidden>

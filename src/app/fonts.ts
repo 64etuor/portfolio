@@ -21,28 +21,9 @@ import '@fontsource/jetbrains-mono/500.css'
 import '@fontsource/jetbrains-mono/700.css'
 import '@fontsource/jetbrains-mono/800.css'
 
-// Share Tech Mono — terminal/HUD accent. Family: 'Share Tech Mono'.
-import '@fontsource/share-tech-mono/400.css'
-
-// DM Mono — instrument/label mono. Family: 'DM Mono'.
-import '@fontsource/dm-mono/400.css'
-import '@fontsource/dm-mono/500.css'
-
-// IBM Plex Sans KR — KR UI. Family: 'IBM Plex Sans KR'.
-import '@fontsource/ibm-plex-sans-kr/400.css'
-import '@fontsource/ibm-plex-sans-kr/500.css'
-import '@fontsource/ibm-plex-sans-kr/600.css'
-import '@fontsource/ibm-plex-sans-kr/700.css'
-
-// IBM Plex Mono — secondary mono. Family: 'IBM Plex Mono'.
-import '@fontsource/ibm-plex-mono/400.css'
-import '@fontsource/ibm-plex-mono/500.css'
-import '@fontsource/ibm-plex-mono/600.css'
-
-// Oswald — condensed display. Family: 'Oswald'.
-import '@fontsource/oswald/400.css'
-import '@fontsource/oswald/600.css'
-import '@fontsource/oswald/700.css'
+// NOTE: 씬 전용 디스플레이 폰트(Share Tech Mono · DM Mono · IBM Plex Sans KR ·
+// IBM Plex Mono · Oswald)는 여기서 제거하고 src/scenes/_styles/scene-fonts.ts 로 옮겼다.
+// SceneHost 와 함께 씬 청크에 실려, 씬을 마운트하는 라우트에서만 로드된다(랜딩/resume 제외).
 
 // Inter — UI sans. Family: 'Inter'.
 import '@fontsource/inter/400.css'

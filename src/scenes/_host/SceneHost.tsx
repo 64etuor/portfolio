@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import '../_styles/tokens.css'
+import '../_styles/scene-fonts'
 import host from './host.module.css'
 
 /** 모바일에서 고정폭 "계기판" 씬(예: .stage{width:1600px})이 잘리지 않게 컨테이너 폭에 맞춰 축소.

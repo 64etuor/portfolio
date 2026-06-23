@@ -1,8 +1,67 @@
 'use client'
 
-import type { CSSProperties, ReactNode } from 'react'
+import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import '../_styles/tokens.css'
 import host from './host.module.css'
+
+/** 모바일에서 고정폭 "계기판" 씬(예: .stage{width:1600px})이 잘리지 않게 컨테이너 폭에 맞춰 축소.
+ *  - cw<=760(모바일/태블릿)에서만 동작 → 데스크톱 레이아웃은 그대로.
+ *  - 씬 래퍼의 직속 자식 중 컨테이너보다 넓은 가장 큰 블록(스테이지)만 scale.
+ *  - 캔버스 씬(자체 ResizeObserver)·이미 transform 으로 자체 스케일하는 씬(41-perspectives)은 건드리지 않음. */
+const FIT_MAX_W = 760
+function useFitWidth(hostRef: React.RefObject<HTMLDivElement | null>) {
+  const scaledRef = useRef<HTMLElement | null>(null)
+  useEffect(() => {
+    const hostEl = hostRef.current
+    if (!hostEl) return
+    const reset = () => {
+      const prev = scaledRef.current
+      if (prev) {
+        prev.style.removeProperty('transform')
+        prev.style.removeProperty('transform-origin')
+        prev.style.removeProperty('margin-left')
+        prev.style.removeProperty('margin-right')
+        scaledRef.current = null
+      }
+    }
+    const fit = () => {
+      reset()
+      const cw = hostEl.clientWidth
+      if (!cw || cw > FIT_MAX_W) return
+      const wrap = hostEl.firstElementChild as HTMLElement | null
+      if (!wrap) return
+      if (wrap.querySelector('iframe')) return // 자체 스케일하는 iframe 씬(41-perspectives 등)
+      // 씬 래퍼의 직속 자식 중 가장 넓은 블록 = 설계 스테이지(예: width:1600px)
+      let stage: HTMLElement | null = null
+      let maxW = 0
+      for (const c of Array.from(wrap.children) as HTMLElement[]) {
+        const w = c.scrollWidth || c.offsetWidth
+        if (w > maxW) {
+          maxW = w
+          stage = c
+        }
+      }
+      if (!stage || maxW <= cw + 1) return
+      if (stage.tagName === 'CANVAS') return // 캔버스 씬은 자체 리사이즈
+      if (getComputedStyle(stage).transform !== 'none') return // 이미 자체 스케일
+      const scale = cw / maxW
+      // origin top-left + margin 0 → 좌상단 기준으로 축소(가로 중앙정렬 margin:auto 무력화)
+      stage.style.transformOrigin = 'top left'
+      stage.style.transform = `scale(${scale})`
+      stage.style.marginLeft = '0'
+      stage.style.marginRight = '0'
+      scaledRef.current = stage
+    }
+    const raf = requestAnimationFrame(fit) // 씬 DOM 빌드 후 측정
+    const ro = new ResizeObserver(fit)
+    ro.observe(hostEl)
+    return () => {
+      cancelAnimationFrame(raf)
+      ro.disconnect()
+      reset()
+    }
+  }, [hostRef])
+}
 
 /**
  * 씬 스테이지 프레이밍. 풀블리드(부모를 100% 채움)로 캔버스 + 정적 오버레이를
@@ -42,8 +101,11 @@ export function SceneHost({
     vignette?: VignetteOverlay
   }
 }) {
+  const ref = useRef<HTMLDivElement | null>(null)
+  useFitWidth(ref)
   return (
     <div
+      ref={ref}
       className={className}
       style={{
         position: 'absolute',

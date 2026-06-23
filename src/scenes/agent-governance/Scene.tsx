@@ -21,143 +21,9 @@ import {
   TOOLS,
   type AgentStatus,
 } from './data'
+import { COMM, IV, nullEvent, nowTs, rootBg, statusColor } from './constants'
+import type { Agent, BuiltEvent, CounterKey, ElementKey, EventKind, GraphEdge, GraphNode, LiveState, PipeEvent, PipeNode, Reg, RuntimeState } from './types'
 import s from './scene.module.css'
-
-type CounterKey = 'ev' | 'tool'
-type EventKind = 'emit' | 'gate' | 'ok' | 'tool' | 'deny'
-type BuiltEvent = { id: string; type: EventKind; msg: string; counterKey: CounterKey; ts: string }
-type RuntimeState = {
-  evId: number
-  toolId: number
-  jobOk: number
-  jobFail: number
-  latch: number
-  capture: number
-  tickerOn: boolean
-  gateRelease: boolean
-  autonomyClosed: boolean
-  acp: 'awaiting' | 'approved' | 'denied'
-  stage: number
-}
-type Agent = { g: string; name: string; scope: string; status: AgentStatus }
-type Reg = { n: string; h: 'healthy' | 'armed' | 'awaiting' | 'fired' }
-type PipeNode = { x: number; y: number; r: number; name: string }
-type PipeEvent = { seg: number; p: number; color: string; born: number }
-type GraphNode = {
-  x: number
-  y: number
-  vx: number
-  vy: number
-  c: number
-  r: number
-  label: string
-  cx: number
-  cy: number
-  lit: number
-}
-type GraphEdge = [number, number, number]
-type LiveState = {
-  bpm: number
-  bpmTarget: number
-  capture: number
-  captureTarget: number
-  jobPSmooth: number
-  evAcc: number
-  toolAcc: number
-  spawnAcc: number
-  jobAcc: number
-  stageAcc: number
-  gateAcc: number
-  latchAcc: number
-  capAcc: number
-  sigAcc: number
-  nzAcc: number
-  auditAcc: number
-  lintAcc: number
-  clockAcc: number
-  evQueue: BuiltEvent[]
-  toolQueue: BuiltEvent[]
-}
-
-type ElementKey =
-  | 'agentList'
-  | 'regList'
-  | 'sStat'
-  | 'lintChip'
-  | 'jobOk'
-  | 'jobFail'
-  | 'latchCt'
-  | 'capCt'
-  | 'clock'
-  | 'fleetActive'
-  | 'jobId'
-  | 'jobBadge'
-  | 'jobProg'
-  | 'jobCost'
-  | 'jobTurns'
-  | 'killTicker'
-  | 'killNote'
-  | 'evHead'
-  | 'gateLed'
-  | 'gateTxt'
-  | 'tickLed'
-  | 'tickTxt'
-  | 'autLed'
-  | 'autTxt'
-  | 'latchLed'
-  | 'latchTxt'
-  | 'bpm'
-  | 'rawCt'
-  | 'wikiCt'
-  | 'schCt'
-  | 'gtrace'
-  | 'acp'
-  | 'acpState'
-  | 'acpQ'
-  | 'envWrite'
-  | 'envWriteTail'
-  | 'envPrio'
-  | 'envPrioTail'
-  | 'evTotal'
-  | 'toolTotal'
-  | 'evFeed'
-  | 'toolFeed'
-  | 'lintPin'
-  | 'lintNum'
-  | 'nzPin'
-  | 'nzList'
-  | 'nzBal'
-  | 'cronPin'
-  | 'sig0'
-  | 'sig1'
-  | 'sig2'
-  | 'sig3'
-  | 'sig4'
-  | 'auditPin'
-  | 'auditFeed'
-
-const IV = {
-  ev: 0.9,
-  tool: 1.3,
-  spawn: 1.4,
-  job: 1.1,
-  stage: 4.2,
-  gate: 3.0,
-  latch: 5.2,
-  cap: 1.7,
-  sig: 2.1,
-  nz: 4.8,
-  audit: 5.6,
-  lint: 6.4,
-  clock: 1.0,
-}
-
-const COMM = [C.hueA, C.hueB, C.hueC]
-const rootBg =
-  'radial-gradient(1200px 600px at 78% -10%, rgba(54,224,164,.06), transparent 60%), radial-gradient(900px 500px at 10% 110%, rgba(90,169,230,.05), transparent 60%), linear-gradient(#0a0e15,#06080c)'
-
-const statusColor = (status: AgentStatus) =>
-  status === 'run' ? C.signal : status === 'await' ? C.amber : status === 'done' ? C.hueA : C.ink3
 
 export default function Scene({ running = true, onReady }: SceneProps) {
   const rootRef = useRef<HTMLDivElement | null>(null)
@@ -248,13 +114,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     renderReg()
     prepaint()
   })
-
-  function nowTs() {
-    const d = new Date()
-    const p = (n: number) => String(n).padStart(2, '0')
-    const ms = String(d.getMilliseconds()).padStart(3, '0')
-    return `${p(d.getHours())}:${p(d.getMinutes())}:${p(d.getSeconds())}.${ms}`
-  }
 
   function buildEvent(type: EventKind, msg: string, counterKey: CounterKey): BuiltEvent {
     const state = stateRef.current
@@ -870,10 +729,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
     if (live.evQueue.length) flushEvent(live.evQueue.shift() ?? nullEvent(), get('evFeed'), 'ev')
     if (live.toolQueue.length) flushEvent(live.toolQueue.shift() ?? nullEvent(), get('toolFeed'), 'tool')
-  }
-
-  function nullEvent(): BuiltEvent {
-    return { id: '', type: 'emit', msg: '', counterKey: 'ev', ts: '' }
   }
 
   function drawPipe(g: CanvasRenderingContext2D, fr: Frame) {

@@ -4,8 +4,8 @@
 import type { Profile } from './types'
 
 // Sub-types mirroring JSON Resume schema fields used by ResumeDoc.
-export type ResumeProfile = { network: string; username: string; url: string }
-export type ResumeBasics = {
+type ResumeProfile = { network: string; username: string; url: string }
+type ResumeBasics = {
   name: string
   label: string
   email: string
@@ -14,14 +14,14 @@ export type ResumeBasics = {
   summary?: string
   profiles?: ResumeProfile[]
 }
-export type ResumeWork = {
+type ResumeWork = {
   name: string
   position: string
   summary?: string
   highlights?: string[]
   startDate?: string
 }
-export type ResumeProject = {
+type ResumeProject = {
   name: string
   description?: string
   highlights?: string[]
@@ -30,14 +30,14 @@ export type ResumeProject = {
   entity?: string
   url?: string
 }
-export type ResumeSkillGroup = { name: string; keywords: string[] }
-export type ResumeEducation = {
+type ResumeSkillGroup = { name: string; keywords: string[] }
+type ResumeEducation = {
   institution: string
   area: string
   studyType?: string
   startDate?: string
 }
-export type ResumeCertificate = {
+type ResumeCertificate = {
   name: string
   issuer?: string
   summary?: string

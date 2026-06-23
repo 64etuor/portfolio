@@ -1,71 +1,94 @@
-# portfolio — 박양하 3D 포트폴리오
+# portfolio — 박양하 · Yangha Park
 
-Vite + React 19 + React Three Fiber 로 만든 3D 개인 포트폴리오.
-이력서는 **JSON Resume 표준**(`src/data/resume.json`)으로 관리하고, 사이트의 Resume
-섹션이 그 데이터를 그대로 렌더링한다. PDF/PPTX 내보내기는 자매 레포 `../deckforge`
-(HTML→PDF/PPTX 툴킷)로 처리한다.
+데이터 분석·제조 DX→AX 를 주제로 한 **인터랙티브 포트폴리오**. Next.js 15 통합 셸 위에
+32개의 자체 캔버스 "씬"을 엮어, 자동재생 **필름**(DX→AX 내러티브)·갤러리·단독 씬 라우트로
+구성한다.
+
+**Live: https://yanghapark.com**
 
 ## 스택
 
-| 영역 | 라이브러리 |
-|------|-----------|
-| 빌드 | Vite 8 (Rolldown) + TypeScript |
-| UI | React 19 |
-| 3D | three · @react-three/fiber · @react-three/drei · @react-three/postprocessing |
-| 애니메이션 | motion (Framer Motion) · GSAP · @gsap/react |
-| 스크롤 | lenis (부드러운 스크롤) |
+| 영역 | 사용 |
+|------|------|
+| 프레임워크 | Next.js 15 (App Router) · React 19 (React Compiler) |
 | 스타일 | Tailwind CSS v4 (`@tailwindcss/postcss`) |
-| 아이콘 | lucide-react |
-| 폰트 | Pretendard · Cormorant Garamond (Fontsource 셀프호스팅) |
-| 디버그 | leva |
-| 이력서 | JSON Resume (`@jsonresume/schema` 검증) |
+| 씬 | HTML5 Canvas (2D) · 공유 rAF 스케줄러 |
+| 3D 히어로 | Spline (`@splinetool/react-spline`, 랜딩에서 지연 로드) |
+| 폰트 | Fontsource 셀프호스팅 (Pretendard · JetBrains Mono 외 9종 — `src/app/fonts.ts`) |
+| 계측 | Vercel Analytics · Speed Insights |
+| 배포 | Vercel → `yanghapark.com` |
 
 ## 실행
 
 ```bash
 npm install        # 의존성 설치
-npm run dev        # 개발 서버
+npm run dev        # 개발 서버 (http://localhost:3000)
 npm run build      # 타입체크 + 프로덕션 빌드
-npm run preview    # 빌드 결과 미리보기
-npm run typecheck  # 타입 검사만
-npm run validate:resume   # resume.json 을 JSON Resume 스키마로 검증
+npm run start      # 빌드 결과 서빙
+npm run lint       # next lint
+npm run gen:resume # content/ → public/resume.json 생성
+npm run audit:react# react-doctor (React 안티패턴)
+npm run audit:lh   # Lighthouse (실행 중인 :3000 대상)
 ```
+
+## 라우트
+
+| 경로 | 내용 |
+|------|------|
+| `/` | 랜딩 — Spline 3D 로봇 히어로 + 내비 |
+| `/film` | 자동재생 필름 (DX→AX 12-비트 내러티브) |
+| `/scenes` | 씬 갤러리 (호버 시 재생) |
+| `/skills`, `/skills/[area]` | 스킬 갤러리 |
+| `/s/[scene]` | 단독 씬 (전체화면) |
+| `/c/[comp]` | 씬 조합(composition) |
+| `/resume` | 이력서 (content SSOT 렌더) |
+
+## SSOT (단일 출처)
+
+| 출처 | 역할 |
+|------|------|
+| `content/profile.ts` · `overrides.ts` | 인물·경력·프로젝트·스킬 정본 (이력서/렌더의 base) |
+| `content/resume.ts` | `toResumeData(PROFILE)` 투영 → `gen:resume` 가 `public/resume.json` 생성 |
+| `content/site.ts` | 랜딩 카피·도메인·타이틀 |
+| `src/scenes/catalog.ts` | 씬 카탈로그 — registry/loaders/gallery/acts/`/s` params 가 여기서 파생, `SceneKey` 리터럴 타입 |
+| `src/app/fonts.ts` | 폰트 로딩 매니페스트 (한 곳에서 관리) |
 
 ## 구조
 
 ```
 src/
-  main.tsx           진입점 (폰트/CSS import)
-  App.tsx            Lenis 스크롤 + 고정 3D 배경 + 섹션 조합
-  index.css          Tailwind v4 + @theme 디자인 토큰
-  three/
-    Experience.tsx   R3F Canvas — 금속 토러스 노트 + Bloom 포스트프로세싱
+  app/                 App Router (layout·라우트·globals/cinematic/resume CSS)
+    fonts.ts           폰트 로딩 SSOT
   components/
-    Nav.tsx
-  sections/
-    Hero.tsx · About.tsx · Resume.tsx · Contact.tsx
-  data/
-    resume.json      ← 이력서 원본 (JSON Resume 표준)
-    resume.ts        타입 + 로더
-  lib/utils.ts       cn() (shadcn 호환)
-scripts/
-  validate-resume.mjs
+    landing/           랜딩(Spline 지연 로드 + 내비)
+    film/              필름 엔진 — Film.tsx + 훅(useFilmClock·useSceneBuffer·useIrisOutro)
+                       + 컴포넌트(SceneSlot·FilmControls·FilmTransition) + acts.ts(비트)
+    gallery/           갤러리(GalleryGrid·GalleryPageShell)
+    resume/            이력서 렌더
+  scenes/
+    catalog.ts         씬 SSOT · loaders.ts · registry.ts
+    _host/             씬 런타임 — useSceneCanvas(freeze-resume rAF) · SceneHost(overlay)
+                       · SceneFrame · LazyScene · 공유 유틸(color·math·random·dom-util·palette)
+    _styles/tokens.css 공유 phosphor 토큰
+    <name>/            32개 씬 (Scene.tsx + scene.module.css), public/lab HTML 이식
+content/               콘텐츠 SSOT (profile·resume·site·overrides)
+public/lab/            원본 자기완결형 HTML 시안 (씬의 출처)
+scripts/gen-resume.ts  content → public/resume.json
 ```
 
 ## 이력서 워크플로우
 
-1. `src/data/resume.json` 만 수정한다 (JSON Resume 스키마).
-2. `npm run validate:resume` 로 검증.
-3. 사이트 Resume 섹션이 자동 반영된다.
-4. PDF/PPTX 가 필요하면 `../deckforge` 로 HTML 을 렌더링해 내보낸다.
+1. `content/profile.ts`(+`overrides.ts`) 만 수정한다.
+2. `npm run gen:resume` 로 `public/resume.json` 생성.
+3. `/resume` 가 자동 반영된다.
 
-## 메모 / 다음 단계
+## 메모
 
-- 현재 3D 배경의 `Environment preset="city"` 는 런타임에 HDRI 를 네트워크에서
-  받는다. 완전 오프라인이 필요하면 로컬 `.hdr` 파일로 교체할 것.
-- JS 번들이 ~1.35MB (three.js 포함). 필요시 `<Canvas>` 를 `React.lazy` 로
-  코드 스플리팅해 초기 로드를 줄일 수 있다.
-- shadcn/ui 컴포넌트는 `npx shadcn@latest init` 으로 추가 가능 (cva·tailwind-merge·
-  clsx 는 이미 설치됨).
-- Tailwind v4 는 `@tailwindcss/postcss`(PostCSS) 로 처리한다. Vite 8/rolldown 에서
-  `@tailwindcss/vite` 플러그인이 변환을 누락하는 이슈가 있어 PostCSS 경로를 쓴다.
+- **필름**: `acts.ts` 가 비트(막)·씬별 지속시간(ms)의 SSOT. 씬은 차례가 될 때 코드스플릿 로드,
+  더블버퍼 크로스페이드로 컷. 일시정지/이전/SKIP 컨트롤은 씬 캔버스까지 freeze-resume 한다.
+- **씬 CSS**: 32개 씬 CSS 모듈이 루트 레이아웃 청크로 묶여 전 라우트에 로드된다(Next 15 한계 —
+  라우트그룹/`:global()` 키프레임 공유 미지원으로 환경상 분리 불가). 색상은 `--scene-phos*` 토큰 공유.
+- **성능**: 랜딩 Spline 런타임(~568KB)은 `next/dynamic(ssr:false)` + `requestIdleCallback` 로
+  크리티컬 패스 밖으로 지연 로드(홈 Lighthouse 54→92).
+- **배포**: `main` push 시 Vercel 프로덕션 자동 배포(`yanghapark.com`). 프리뷰는 Deployment
+  Protection 으로 보호됨.

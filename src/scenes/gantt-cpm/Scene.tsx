@@ -181,7 +181,9 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       let left: number, top: number
       if (e) {
         left = e.clientX - pRect.left + 20
-        top = e.clientY - pRect.top + 16
+        // 클릭한 막대에 세로 중앙 정렬 → 긴 패널이 상단으로 동떨어지지 않고 클릭 지점 옆에 붙는다.
+        // (아래 클램프가 보드 밖으로 넘치는 경우만 보정.)
+        top = e.clientY - pRect.top - h / 2
         // 오른쪽으로 넘치면 커서 왼편으로 뒤집어 배치 (세로는 클램프로 처리)
         if (left + w > pRect.width - pad) left = e.clientX - pRect.left - w - 20
       } else {

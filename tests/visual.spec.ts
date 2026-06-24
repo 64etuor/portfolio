@@ -197,4 +197,12 @@ test.describe('instrument and scene routes', () => {
   test('/s/gantt-cpm', async ({ page }) => {
     await sceneSnapshot(page, '/s/gantt-cpm', 'scene-gantt-cpm.png');
   });
+
+  test('/s/42-era-shift (postfx)', async ({ page }) => {
+    await sceneSnapshot(page, '/s/42-era-shift', 'scene-42-era-shift.png');
+  });
+
+  test('/s/graphrag (postfx)', async ({ page }) => {
+    await sceneSnapshot(page, '/s/graphrag', 'scene-graphrag.png');
+  });
 });

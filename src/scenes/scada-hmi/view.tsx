@@ -654,7 +654,7 @@ export function HmiView({
               <span className="ic">◎</span>
               <div className="ct">
                 재고 측정은 현장 / 검토 트리거는 TF 주간회의 / 처분(이관·면책)은 부서 합의 -- <b className="blue">수치는 판결이 아니라 개선의 시작이다.</b>
-                <span className="principle">TF 운영 원칙: "불합리한 재고 흐름을 방치하지 않는다."</span>
+                <span className="principle">TF 운영 원칙: &ldquo;불합리한 재고 흐름을 방치하지 않는다.&rdquo;</span>
               </div>
             </div>
             <div className="scm-note">

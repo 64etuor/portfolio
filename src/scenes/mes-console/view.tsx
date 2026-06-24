@@ -4,7 +4,7 @@ import type React from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { DEFECTS, GAUGE_COLORS, GAUGES, JOBS, KPIS, SKILL_GROUPS } from './data'
 import { SPARK_COLORS } from './constants'
-import { chipToneClass, gaugeArc, jobLeft, jobWidth } from './draw'
+import { chipToneClass, gaugeArc, jobLeft } from './draw'
 import s from './scene.module.css'
 
 export interface MesConsoleViewProps {
@@ -123,7 +123,7 @@ export function MesConsoleView({
         </div>
 
         <div className={s.wrap}>
-          <div className={s.sectionTag}>// ABOUT THIS CONSOLE — 자체개발 MES 아키텍처 · 인-하우스 설계 원칙</div>
+          <div className={s.sectionTag}>{/* // ABOUT THIS CONSOLE — 자체개발 MES 아키텍처 · 인-하우스 설계 원칙 */}{'// ABOUT THIS CONSOLE — 자체개발 MES 아키텍처 · 인-하우스 설계 원칙'}</div>
           <div className={s.philo}>
             <div className={s.philoCell}>
               <div className={s.pname}>
@@ -157,7 +157,7 @@ export function MesConsoleView({
             </div>
           </div>
 
-          <div className={s.sectionTag}>// PLANT OVERVIEW — 설비 종합 효율 · 실시간 공정 현황</div>
+          <div className={s.sectionTag}>{'// PLANT OVERVIEW — 설비 종합 효율 · 실시간 공정 현황'}</div>
           <div className={`${s.grid} ${s.row1}`}>
             <div className={s.panel}>
               <div className={s.pHead}>
@@ -307,7 +307,7 @@ export function MesConsoleView({
             </div>
           </div>
 
-          <div className={s.sectionTag}>// CUMULATIVE KPI — 실시간 운영 지표 (OEE 구성요소 분해)</div>
+          <div className={s.sectionTag}>{'// CUMULATIVE KPI — 실시간 운영 지표 (OEE 구성요소 분해)'}</div>
           <div className={`${s.grid} ${s.rowKpi}`}>
             {KPIS.slice(0, 4).map((kpi, i) => (
               <KpiTile
@@ -340,7 +340,7 @@ export function MesConsoleView({
             })}
           </div>
 
-          <div className={s.sectionTag}>// PRODUCTION SCHEDULE — 당일 워크오더 · 라인별 생산 계획</div>
+          <div className={s.sectionTag}>{'// PRODUCTION SCHEDULE — 당일 워크오더 · 라인별 생산 계획'}</div>
           <div className={`${s.grid} ${s.row2}`}>
             <div className={s.panel}>
               <div className={s.pHead}>
@@ -447,7 +447,7 @@ export function MesConsoleView({
                   <span className={s.txtAmber}>▲ 개선 개입 시점</span>
                 </div>
                 <div className={s.trendNote}>
-                  <span className={s.trendNoteAmber}>// MES 자체개발 스택</span> · OPC UA 수집 → PostgreSQL 적재 → Django REST API →
+                  <span className={s.trendNoteAmber}>{'// MES 자체개발 스택'}</span> · OPC UA 수집 → PostgreSQL 적재 → Django REST API →
                   React/Electron UI → Python Dash 대시보드.
                   <br />
                   <b className={s.trendNoteText}>OCV/IR 검사장비</b> 레거시 연동 +{' '}

@@ -1,5 +1,5 @@
 import { CHANNELS, EVENT_POOL, LUT_STOPS, type EventTone } from './data'
-import { DOE_AT, LERP_SPEED, MAX_LINES, NCH, ROW_MS, TOP, WELD_LEN } from './constants'
+import { DOE_AT, LERP_SPEED, MAX_LINES, NCH, TOP, WELD_LEN } from './constants'
 import type { Engine, ReadoutRefs } from './types'
 import s from './scene.module.css'
 

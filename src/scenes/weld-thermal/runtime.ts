@@ -1,11 +1,10 @@
 /* weld-thermal — engine/state: createEngine, simulate, arc, HUD, params */
 
 import { setText } from '../_host/dom-util'
-import { LUT, PROGRAMS } from './data'
+import { PROGRAMS } from './data'
 import type { WeldProgram } from './data'
 import {
   GRID_TARGET, AMB, TMAX_SCALE,
-  STITCH_N, STITCH_DUTY,
   STRIKE_SECS, CRATER_SECS, RESET_SECS, TRAVEL_SPEEDUP,
   paramKeys,
   type Engine, type DomRefs,

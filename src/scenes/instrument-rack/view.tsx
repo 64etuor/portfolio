@@ -105,10 +105,10 @@ export function SceneView({ refs, onSelectLedger }: SceneViewProps) {
                   <span className={`${s.sub} ${s.mono}`}>FIRST-PRINCIPLES COST TEARDOWN</span>
                 </div>
                 <div className={s.creed}>
-                  <span className={s.q}>"이 비용은 관행이 아니라, 꼭 필요해서 존재하는가?"</span>
+                  <span className={s.q}>&ldquo;이 비용은 관행이 아니라, 꼭 필요해서 존재하는가?&rdquo;</span>
                   <br />
                   운영경비(OPEX)를 결과가 아니라 <b>구조</b>로 본다 — 원가를 숫자로 세우기 위해 항목을 한 줄씩 원장에 펼치고, 각 줄을 심문한다.
-                  답이 "관행"이면 레버를 건다. 조달단가 재협상 · 라인 운영구조 재설계 · 비전검사 0불량 · 인원·공수·생산계획·재고 개선으로
+                  답이 &ldquo;관행&rdquo;이면 레버를 건다. 조달단가 재협상 · 라인 운영구조 재설계 · 비전검사 0불량 · 인원·공수·생산계획·재고 개선으로
                   기준 OPEX를 단계적으로 깎아 <b>−85%</b>까지 내렸다. 1막은 손의 시대에서 정렬을 시작한 시기였다.
                 </div>
               </section>

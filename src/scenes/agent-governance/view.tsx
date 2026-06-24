@@ -213,7 +213,7 @@ export function View({
             </div>
             <div className={s.guard}>
               <div className={s.gh}><span className={s.led} />Schema 비대화<span className={s.st}>CONTAINED</span></div>
-              <div className={s.gd}>SSOT가 모든 규칙 종착지로 비대해짐 — Hyrum's Law. net-zero 레저로 차단. <b>최소주의 = 비대화 면역력.</b></div>
+              <div className={s.gd}>SSOT가 모든 규칙 종착지로 비대해짐 — Hyrum&#39;s Law. net-zero 레저로 차단. <b>최소주의 = 비대화 면역력.</b></div>
               <div className={s.meter}><i style={{ width: '22%' }} /></div>
             </div>
             <div className={s.guard}>

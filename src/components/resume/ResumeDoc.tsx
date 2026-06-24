@@ -59,7 +59,7 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
         {/* ── masthead ───────────────────────────────────────── */}
         <header className="rz-masthead">
           <p className="rz-eyebrow">
-            RÉSUMÉ <span className="rz-acc">//</span> CURRICULUM VITAE
+            RÉSUMÉ <span className="rz-acc">{'//'}</span> CURRICULUM VITAE
           </p>
           <h1 className="rz-sr-only">
             {NAME_EN} · {basics.name} — {basics.label}

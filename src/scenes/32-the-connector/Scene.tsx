@@ -385,7 +385,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     drawNodes(ctx, leftNodes, anchorI, time, 0, warm, sync)
     drawNodes(ctx, rightNodes, anchorI, time, Math.PI, warm, sync)
     drawLabels(ctx, leftNodes, rightNodes, warm)
-  }, { running })
+  }, { running, postFX: true, preset: 'instrument' })
 
   return (
     <SceneHost

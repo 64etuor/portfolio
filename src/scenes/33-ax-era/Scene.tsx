@@ -235,7 +235,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     drawMotes(g, geo, S)
     drawStratum(g, geo, S)
     drawLabels(g, W, H, S)
-  }, { running })
+  }, { running, postFX: true, preset: 'instrument' })
 
   return (
     <SceneHost

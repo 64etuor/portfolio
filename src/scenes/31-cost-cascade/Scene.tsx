@@ -492,7 +492,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
     // DOM overlay sync
     syncOverlay(st, W, H)
-  }, { running })
+  }, { running, postFX: true, preset: 'instrument' })
 
   return (
     <SceneHost className={s.root} bg="#050505">

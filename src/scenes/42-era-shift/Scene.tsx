@@ -169,7 +169,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       headline.style.transform = `scale(${(1.1 - 0.1 * ease(hv)).toFixed(3)})`
     }
     if (subRef.current) subRef.current.style.opacity = (appear * 0.9).toFixed(3)
-  }, { running })
+  }, { running, postFX: true, preset: 'instrument' })
 
   return (
     <SceneHost

@@ -461,7 +461,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         l2Ref.current.style.transform = `translateX(-50%) translateY(${lerp(16, 0, smooth((f - 0.34) / 0.14)).toFixed(1)}px)`
       }
     },
-    { running }
+    { running, postFX: true, preset: 'instrument' }
   )
 
   return (

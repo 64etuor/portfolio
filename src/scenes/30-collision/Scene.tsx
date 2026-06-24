@@ -477,7 +477,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     }
 
     g.restore() // end translate(shx, shy)
-  }, { running })
+  }, { running, postFX: true, preset: 'instrument' })
 
   return (
     <SceneHost className={s.root} bg="#050505">

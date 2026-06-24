@@ -501,7 +501,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     drawHermes(g, L)
     drawFlows(g, L, t)
     drawReject(g, L, t)
-  }, { running })
+  }, { running, postFX: true, preset: 'instrument' })
 
   return (
     <SceneHost

@@ -279,7 +279,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     drawParticles(g, time, CX, CY, A, YS)
     drawNode(g, time, beat, CX, CY, A)
     drawLabels(g, time, CX, CY, A, H)
-  }, { running })
+  }, { running, postFX: true, preset: 'instrument' })
 
   return (
     <SceneHost

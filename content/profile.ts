@@ -87,8 +87,8 @@ export const profile: Profile = {
       ],
     },
     {
-      id: 'startup-beautifly',
-      name: 'Beautifly — 뷰티 매장 CRM·키오스크·앱 플랫폼',
+      id: 'startup-beauty-platform',
+      name: '뷰티 매장 CRM·키오스크·앱 플랫폼',
       org: '스타트업',
       period: '2025.08 ~ 현재',
       role: '총괄본부장 / 제품 요구사항 정의, 기능 기획, 개발 일정 관리, 백엔드·인프라·HW 프로토타입',
@@ -99,7 +99,7 @@ export const profile: Profile = {
         'FastAPI 백엔드, RDS MySQL 데이터 모델링, AWS·GCP 인프라 및 CI/CD 구축',
         '키오스크 하드웨어 프로토타입 기구 설계, 외주 제작 관리 및 운영 검토',
         'RPA·AI MCP 서버 기반 AX 업무 시스템 기획 및 구축',
-        'Beautifly 웹 통계 분석 기능(매출 통계·고객 이용 통계 대시보드) 기획 및 사용자 매뉴얼 작성',
+        '웹 통계 분석 기능(매출 통계·고객 이용 통계 대시보드) 기획 및 사용자 매뉴얼 작성',
       ],
       impact: [
         { metric: '제품군', value: 'CRM·키오스크·협업 SW·앱을 단일 플랫폼으로 통합' },
@@ -364,7 +364,7 @@ export const profile: Profile = {
       title: '총괄본부장 / Director',
       period: '2025.08 ~ 현재',
       summary:
-        '뷰티 매장 대상 Beautifly 제품군(CRM·키오스크·협업 SW·앱) 개발과 AX 기반 업무 시스템 구축 총괄.',
+        '뷰티 매장 대상 제품군(CRM·키오스크·협업 SW·앱) 개발과 AX 기반 업무 시스템 구축 총괄.',
       highlights: [
         'CRM·키오스크·협업 SW·앱 제품 요구사항 정의, 기능 기획 및 개발 일정 관리',
         'FastAPI 백엔드, RDS MySQL 데이터 모델링, AWS·GCP 인프라 및 CI/CD 구축',

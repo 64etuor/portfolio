@@ -17,7 +17,7 @@
 - 지식관리: `…/000_System/AGENTS.md`, `…/600_Tech Stack/AI Agent/{LLM Wiki,GraphRAG,Decision OS}.md`, `…/600_Tech Stack/Data/ssot-data-architecture.md`
 - 설계 스펙: `docs/superpowers/specs/2026-06-15-portfolio-4-perspective-restructure-design.md`
 
-**불변 규칙:** 지표 owner 1:1(중복 금지, 전부 프로젝트+경력 관점) · 브랜드/실명 비표기(Beautifly·KH·DB 실프로젝트명 금지) · 글/시/에세이 제외 · push 금지(로컬 전용) · 각 시안의 `anim`(릴 durationMs 기준) 동작 보존.
+**불변 규칙:** 지표 owner 1:1(중복 금지, 전부 프로젝트+경력 관점) · 브랜드/실명 비표기(뷰티 매장 SW 제품명·이전 직장명·DB 실프로젝트명 금지) · 글/시/에세이 제외 · push 금지(로컬 전용) · 각 시안의 `anim`(릴 durationMs 기준) 동작 보존.
 
 ---
 
@@ -448,5 +448,5 @@ git add -A && git commit -m "content: 22개 활성 시안 4관점 콘텐츠 정�
 
 - **스펙 커버리지**: 4관점 정의(A1 PERSPECTIVES)·매핑 27행(A1 SCENES)·홈(A2)·조합(A3)·릴(A4)·콘텐츠 22개(B-*)·테마 #19(B-19)·금지규칙(각 브리프 must-exclude)·deferred(07/10/14/21/27 parked, #08 이미지 placeholder) 모두 태스크 존재. ✓
 - **지표 owner 1:1**: A5-Step3 자동 점검 + 각 경력 브리프 must-exclude로 강제. owner 7개(−85/C/T·생산성/용착/재고/451·ST/추적성) 전부 project-career. ✓
-- **금지**: Beautifly·KH·DB 실명·글에세이 → 해당 브리프 must-exclude 명시(B-13·B-22·B-08·B-09·B-24). ✓
+- **금지**: 뷰티 매장 SW 제품명·이전 직장명·DB 실명·글에세이 → 해당 브리프 must-exclude 명시(B-13·B-22·B-08·B-09·B-24). ✓
 - **타입 정합**: `perspective`/`cluster`/`status` 필드명이 A1(정의)·A2(`scenesByPerspective`/`scenesByCluster`)·A4 점검 스크립트에서 일관. ✓

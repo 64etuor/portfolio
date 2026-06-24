@@ -58,14 +58,16 @@ void main() {
   float b = texture(uTex, uv - dir * px.x).b;
   vec3 col = vec3(r, g, b);
 
-  // 값싼 글로우 근사 — 이웃 4탭 평균을 가산.
+  // 값싼 글로우 근사 — 이웃 4탭 평균 중 "밝은 부분만" 가산(threshold).
+  // 무차별 가산은 밝은 씬을 워시아웃시키므로, 임계값(0.6) 초과분만 블룸한다.
   if (uBloom > 0.0) {
     vec2 o = 1.5 / uResolution;
     vec3 sum = texture(uTex, uv + vec2(o.x, 0.0)).rgb
              + texture(uTex, uv - vec2(o.x, 0.0)).rgb
              + texture(uTex, uv + vec2(0.0, o.y)).rgb
              + texture(uTex, uv - vec2(0.0, o.y)).rgb;
-    col += (sum * 0.25) * uBloom;
+    vec3 bright = max(sum * 0.25 - vec3(0.6), 0.0);
+    col += bright * uBloom;
   }
 
   // 스캔라인 — 세로 방향 명암 변조(시간에 따라 미세 스크롤).

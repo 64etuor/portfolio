@@ -147,7 +147,9 @@ export function View({
             </div>
 
             <div className={s['know-sub']}>GraphRAG · Leiden community · multi-hop</div>
-            <canvas ref={graphRef} className={s.graphCanvas} />
+            <div className={s['graph-canvas-wrap']}>
+              <canvas ref={graphRef} className={s.graphCanvas} />
+            </div>
             <div className={s['graph-trace']} ref={setEl(ctx, 'gtrace')}>query → multi-hop trace 대기…</div>
           </section>
 

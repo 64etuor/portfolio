@@ -7,7 +7,7 @@ import { useSceneCanvas } from '../_host/useSceneCanvas'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
 import { SceneShell } from './view'
-import { setupRuntime } from './runtime'
+import { createRuntimeGate, setupRuntime, syncRuntimeGate } from './runtime'
 
 /* ════════════════════════════════════════════════════════════════
    DB 모델링 & 데이터 아키텍처 (db-architecture.html 이식 / 실용적 포팅)
@@ -26,11 +26,7 @@ import { setupRuntime } from './runtime'
 
 export default function Scene({ running = true, onReady }: SceneProps) {
   const rootRef = useRef<HTMLDivElement | null>(null)
-  // 씬이 화면 밖(running=false)일 때 자체 rAF/interval 틱을 멈추기 위한 게이트.
-  // ref 로 들고 useEffect 내부 루프가 매 틱 읽는다. running=true 동안엔 동작 동일.
-  const runningRef = useRef(running)
-  // running 이 false→true 로 바뀔 때 멈춘 rAF 루프를 재가동하는 콜백을 등록한다.
-  const resumeRef = useRef<(() => void) | null>(null)
+  const gateRef = useRef(createRuntimeGate(running))
 
   // 하네스 계약 충족용 베이스 배경 캔버스(불투명 DOM 뒤에 깔림). 베이스 톤만 칠한다.
   const canvasRef = useSceneCanvas((g: CanvasRenderingContext2D, f: Frame) => {
@@ -40,17 +36,14 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
   useSceneReady(onReady)
 
-  // running 프롭 → runningRef 동기화. false→true 전환 시 멈췄던 rAF 루프 재가동.
   useEffect(() => {
-    const wasRunning = runningRef.current
-    runningRef.current = running
-    if (running && !wasRunning) resumeRef.current?.()
+    syncRuntimeGate(gateRef.current, running)
   }, [running])
 
   useEffect(() => {
     const rootEl = rootRef.current
     if (!rootEl) return
-    return setupRuntime(rootEl, { runningRef, resumeRef })
+    return setupRuntime(rootEl, gateRef.current)
   }, [])
 
   return (

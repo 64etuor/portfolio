@@ -111,6 +111,7 @@ export function SceneHost({
   film = true,
   scroll = false,
   overlay,
+  label,
 }: {
   children: ReactNode
   bg?: string
@@ -125,6 +126,9 @@ export function SceneHost({
     scan?: ScanOverlay
     vignette?: VignetteOverlay
   }
+  /** 선택. 지정 시 호스트 컨테이너를 role="img" + aria-label 로 노출해
+   *  캔버스/SVG 씬을 스크린리더에 의미있는 이름으로 알린다. 미지정(기본)이면 변화 없음. */
+  label?: string
 }) {
   const ref = useRef<HTMLDivElement | null>(null)
   useFitWidth(ref)
@@ -132,6 +136,8 @@ export function SceneHost({
     <div
       ref={ref}
       className={className}
+      role={label ? 'img' : undefined}
+      aria-label={label}
       style={{
         position: 'absolute',
         inset: 0,

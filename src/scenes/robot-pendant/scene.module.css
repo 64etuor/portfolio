@@ -65,6 +65,9 @@
   position: relative;
   width: 1320px;
   height: 812px;
+  /* flex .root 안에서 1320px 고정폭 본체가 shrink 로 찌그러지지 않게 고정.
+     모바일 축소는 오직 --fit(useFitDevice) 의 scale 로만 처리한다. */
+  flex: none;
   border-radius: 30px;
   padding: 18px;
   background: linear-gradient(160deg, var(--case-hi) 0%, var(--case) 18%, var(--case-2) 100%);

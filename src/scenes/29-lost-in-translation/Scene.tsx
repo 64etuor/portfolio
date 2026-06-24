@@ -316,7 +316,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     /* film flicker */
     if (flickRef.current)
       flickRef.current.style.opacity = (0.5 + 0.5 * Math.sin(time / 55)).toFixed(2)
-  }, { running, postFX: true, preset: 'instrument' })
+  }, { running })
 
   return (
     <SceneHost

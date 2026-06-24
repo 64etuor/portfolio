@@ -2,8 +2,6 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { subscribe } from './raf'
-import { createGlPostFX, type GlPostFX } from './postfx/glRenderer'
-import { resolvePreset } from './postfx/presets'
 import type { Frame, TickFn, UseSceneCanvasOptions } from './types'
 
 const DPR_CAP = 2
@@ -12,122 +10,74 @@ const MAX_DT = 1 / 20 // 탭 복귀/스톨 후 dt 폭주 캡(초)
 /**
  * 기존 씬의 imperative `frame(now)` 캔버스 루프를 React 로 옮기는 어댑터.
  *
- * postFX=false(기본): 씬은 보이는 캔버스의 2D 컨텍스트에 직접 그린다(기존 동작).
- * postFX=true: 씬은 화면 밖 offscreen 2D 캔버스에 그리고, 보이는 캔버스는 WebGL2 로
- *   바뀌어 매 프레임 offscreen 을 텍스처로 받아 후처리 셰이더를 통과시킨다.
- *   webgl2 불가/로스 시 2D 경로로 자동 폴백한다.
+ * 하네스가 소유: canvas 마운트, DPR≤2 + setTransform, ResizeObserver, reduced-motion,
+ * 공유 rAF 구독(running && !reduced 일 때만), 정리.
+ * 씬이 소유: draw 콜백 본문만 — (now-start)/1000 → f.t, W/H → f.w/f.h, g → ctx.
  *
- * draw 계약은 두 경로 모두 동일: (ctx2d, frame) => void.
+ * 반환된 ref 콜백을 <canvas> 에 붙인다. 캔버스는 CSS 로 부모를 꽉 채우게(100%/100%)
+ * 두면 ResizeObserver 가 픽셀 버퍼를 맞춘다.
  */
 export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
-  const { running = true, reducedMotionStatic = true, postFX = false, preset } = opts
+  const { running = true, reducedMotionStatic = true } = opts
 
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  // 씬 draw 의 대상 2D 컨텍스트. 2D 경로면 보이는 캔버스, GL 경로면 offscreen 캔버스의 것.
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null)
-  // GL 경로 전용.
-  const offscreenRef = useRef<HTMLCanvasElement | null>(null)
-  const glRef = useRef<GlPostFX | null>(null)
-  // 이 마운트가 GL 경로로 활성됐는지(폴백 시 false).
-  const usingGlRef = useRef(false)
-
   const drawRef = useRef<TickFn>(draw)
   const sizeRef = useRef({ w: 0, h: 0, dpr: 1 })
   const startRef = useRef(0)
   const lastRef = useRef(0)
+  // 누적 재생 시간(초). running 토글(일시정지/재개·뷰포트 진출입) 사이에 보존되어
+  // 재개 시 t 가 0 으로 리셋되지 않고 멈춘 지점부터 이어진다(freeze-resume).
   const elapsedRef = useRef(0)
+  // reduced-motion 을 state 로 관리 — OS 설정 변경 시 tick effect 가 재실행된다.
   const [reduced, setReduced] = useState(false)
 
-  useEffect(() => {
-    drawRef.current = draw
-  }, [draw])
+  // 최신 draw 를 항상 참조(의존성으로 인한 재구독 없이).
+  drawRef.current = draw
 
   const applySize = useCallback(() => {
     const cv = canvasRef.current
-    if (!cv) return
+    const ctx = ctxRef.current
+    if (!cv || !ctx) return
     const parent = cv.parentElement
     const w = parent?.clientWidth || cv.clientWidth || window.innerWidth
     const h = parent?.clientHeight || cv.clientHeight || window.innerHeight
     const dpr = Math.min(window.devicePixelRatio || 1, DPR_CAP)
+    // 실제로 값이 바뀔 때만 캔버스를 건드린다(불필요한 픽셀 버퍼 재할당 방지).
     const prev = sizeRef.current
     if (prev.w === w && prev.h === h && prev.dpr === dpr) return
-
-    if (usingGlRef.current) {
-      // GL 경로: offscreen(2D) 은 씬 좌표계, 보이는 캔버스는 GL 이 리사이즈.
-      const off = offscreenRef.current
-      const offCtx = ctxRef.current
-      if (off && offCtx) {
-        off.width = Math.max(1, Math.round(w * dpr))
-        off.height = Math.max(1, Math.round(h * dpr))
-        offCtx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      }
-      glRef.current?.resize(w, h, dpr)
-    } else {
-      // 2D 경로(기존 동작): 보이는 캔버스 자체에 그린다.
-      const ctx = ctxRef.current
-      if (!ctx) return
-      cv.width = Math.max(1, Math.round(w * dpr))
-      cv.height = Math.max(1, Math.round(h * dpr))
-      cv.style.width = w + 'px'
-      cv.style.height = h + 'px'
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-    }
+    cv.width = Math.max(1, Math.round(w * dpr))
+    cv.height = Math.max(1, Math.round(h * dpr))
+    cv.style.width = w + 'px'
+    cv.style.height = h + 'px'
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     sizeRef.current = { w, h, dpr }
   }, [])
 
-  // 정지/정적 1프레임 — 누적 시간 지점을 그린다. GL 경로면 셰이더도 한 번 통과.
+  // 정지 프레임 — 누적 시간(elapsedRef) 지점을 그린다. 최초 마운트/감속모드면 0(=인트로),
+  // 일시정지면 멈춘 그 순간을 다시 그려 화면이 인트로로 튀지 않는다.
   const renderStatic = useCallback(() => {
     const ctx = ctxRef.current
     if (!ctx) return
-    const { w, h } = sizeRef.current
-    const t = elapsedRef.current
-    drawRef.current(ctx, { w, h, dpr: sizeRef.current.dpr, t, dt: 0 })
-    if (usingGlRef.current && offscreenRef.current && glRef.current) {
-      // reduced-motion: 시간 고정(t) → 셰이더 애니메이션(grain/scanline) 정지.
-      glRef.current.render(offscreenRef.current, reducedMotionStatic && reduced ? 0 : t)
-    }
-  }, [reduced, reducedMotionStatic])
+    const { w, h, dpr } = sizeRef.current
+    drawRef.current(ctx, { w, h, dpr, t: elapsedRef.current, dt: 0 })
+  }, [])
 
   // canvas 마운트/언마운트.
   const ref = useCallback(
     (node: HTMLCanvasElement | null) => {
-      // 정리(언마운트 또는 교체).
-      if (!node) {
-        glRef.current?.dispose()
-        glRef.current = null
-        offscreenRef.current = null
-        usingGlRef.current = false
-        ctxRef.current = null
-        canvasRef.current = null
-        return
-      }
       canvasRef.current = node
-
-      if (postFX) {
-        const off = document.createElement('canvas')
-        const offCtx = off.getContext('2d')
-        const gl = offCtx ? createGlPostFX(node, resolvePreset(preset)) : null
-        if (offCtx && gl) {
-          offscreenRef.current = off
-          ctxRef.current = offCtx
-          glRef.current = gl
-          usingGlRef.current = true
-          applySize()
-          return
-        }
-        // 폴백: webgl2 불가 → 기존 2D 경로.
+      if (node) {
+        ctxRef.current = node.getContext('2d')
+        applySize()
+      } else {
+        ctxRef.current = null
       }
-      // 2D 경로(기본/폴백).
-      usingGlRef.current = false
-      offscreenRef.current = null
-      glRef.current = null
-      ctxRef.current = node.getContext('2d')
-      applySize()
     },
-    [applySize, postFX, preset]
+    [applySize]
   )
 
-  // ResizeObserver.
+  // ResizeObserver — 부모 크기 변화에 픽셀 버퍼 동기화. 정지 중이면 정적 프레임 재그림.
   useEffect(() => {
     const cv = canvasRef.current
     if (!cv) return
@@ -140,7 +90,7 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
     return () => ro.disconnect()
   }, [applySize, renderStatic, running, reduced])
 
-  // reduced-motion 감지.
+  // reduced-motion 감지 — state 로 관리해 변경 시 tick effect 재실행.
   useEffect(() => {
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
     const set = () => setReduced(mq.matches)
@@ -149,7 +99,7 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
     return () => mq.removeEventListener('change', set)
   }, [])
 
-  // tick 루프.
+  // tick 루프 — running 이고 reduced 가 아니면 공유 rAF 구독. 아니면 정적 1프레임.
   useEffect(() => {
     if (!canvasRef.current || !ctxRef.current) return
 
@@ -177,11 +127,8 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
       const { w, h, dpr } = sizeRef.current
       const f: Frame = { w, h, dpr, t, dt }
       drawRef.current(ctx, f)
-      // GL 경로: offscreen → 셰이더 합성. 로스 시 이후 프레임은 no-op(씬은 멈춰도 죽지 않음).
-      if (usingGlRef.current && offscreenRef.current && glRef.current) {
-        glRef.current.render(offscreenRef.current, t)
-      }
     })
+    // running 이 꺼지거나 언마운트될 때 이번 세션 재생분을 누적 → 재개 시 이어서.
     return () => {
       unsub()
       if (startRef.current !== 0) {

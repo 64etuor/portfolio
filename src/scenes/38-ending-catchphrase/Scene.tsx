@@ -161,7 +161,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       ctx.fillStyle = `rgba(2,2,2,${(1 - master).toFixed(3)})`
       ctx.fillRect(0, 0, W, H)
     }
-  }, { running, postFX: true, preset: 'instrument' })
+  }, { running })
 
   return (
     <SceneHost

@@ -1,7 +1,5 @@
 // 하네스 공유 타입.
 
-import type { PostFXPreset } from './postfx/types'
-
 /** draw 콜백이 매 프레임 받는 프레임 정보. */
 export interface Frame {
   /** CSS px 너비 (DPR 미적용 — ctx 에 이미 DPR transform 이 걸려 있음) */
@@ -23,10 +21,6 @@ export interface UseSceneCanvasOptions {
   running?: boolean
   /** prefers-reduced-motion 시 t=0 정적 1프레임만 그린다. 기본 true. */
   reducedMotionStatic?: boolean
-  /** true 면 WebGL2 후처리 경로(offscreen 2D → 셰이더). 기본 false(opt-in). */
-  postFX?: boolean
-  /** 후처리 프리셋. 미지정 시 'instrument'. postFX=true 일 때만 의미. */
-  preset?: PostFXPreset
 }
 
 /** 갤러리/필름 씬 공통 prop. */

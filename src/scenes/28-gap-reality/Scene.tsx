@@ -290,7 +290,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       s2Ref.current.style.transform = `translateY(${lerp(14, 0, clamp(s2op, 0, 1))}px)`
     }
     if (legendRef.current) legendRef.current.style.opacity = (0.85 * dv).toFixed(3)
-  }, { running, postFX: true, preset: 'instrument' })
+  }, { running })
 
   return (
     <SceneHost className={s.crt} bg="#050505">

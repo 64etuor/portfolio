@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, type CSSProperties } from 'react'
 import { ACTS } from './acts'
 import { SceneSlot } from './SceneSlot'
 import { FilmControls } from './FilmControls'
@@ -11,6 +11,22 @@ import { useIrisOutro } from './useIrisOutro'
 
 // Neutral film accent (progress bar / controls). Scenes carry their own color.
 const ACCENT = '#cdd2d8'
+
+// Visually-hidden heading: gives SR users the film's name without altering the
+// cinematic visual. (Mounted scenes can render their own <main>, so the film
+// region is a labelled group — not a second <main>.)
+const FILM_TITLE = '박양하 포트폴리오 필름'
+const srOnly: CSSProperties = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  padding: 0,
+  margin: -1,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+}
 
 /**
  * Film — the autoplay portfolio "film" controller (DX→AX narrative).
@@ -129,7 +145,8 @@ export function Film() {
   if (reduced) {
     const endFile = ACTS[ACTS.length - 1].scenes[0].file
     return (
-      <div style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
+      <div role="region" aria-label={FILM_TITLE} style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
+        <h1 style={srOnly}>{FILM_TITLE}</h1>
         <div style={{ position: 'absolute', inset: 0 }}>
           <SceneSlot file={endFile} running onReady={() => {}} />
         </div>
@@ -144,7 +161,8 @@ export function Film() {
   const txVariant = txVariantFor(ACTS[actIdx].id)
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
+    <div role="region" aria-label={FILM_TITLE} style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
+      <h1 style={srOnly}>{FILM_TITLE}</h1>
       {/* Buffered scene viewport — two stable slots that cross-fade. */}
       <div style={{ position: 'absolute', inset: 0 }}>
         {[0, 1].map((i) => {

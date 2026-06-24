@@ -8,6 +8,7 @@ import { createRuntime } from './dom'
 import { drawRuntime } from './draw'
 import { initRuntime, wireEvents } from './runtime'
 import type { Runtime } from './types'
+import { useFitDevice } from './useFitDevice'
 import { DeviceView } from './view'
 
 export default function Scene({ running = true, onReady }: SceneProps) {
@@ -15,6 +16,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const runtimeRef = useRef<Runtime | null>(null)
 
   useSceneReady(onReady)
+  // 모바일에서 1320px 고정폭 본체를 호스트 폭에 맞춰 축소(--fit). 데스크톱은 1=무변화.
+  useFitDevice(rootRef)
 
   useEffect(() => {
     const root = rootRef.current

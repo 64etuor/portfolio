@@ -28,11 +28,22 @@ export default async function ScenePage({ params }: { params: Promise<{ scene: s
   const s = catalogEntry(scene)
   if (!s) notFound()
 
+  // 마운트되는 일부 씬(radar-sonar/db-architecture 등)이 자체 <main> 을 렌더하므로
+  // 여기서는 <section> 랜드마크 + 시각적으로 숨긴 <h1> 로 접근가능 이름만 부여한다.
+  // (<main> 중첩 방지 — 페이지당 <main> 은 정확히 하나.)
+  const headingId = 'scene-title'
   return (
-    <div style={{ height: 'calc(100dvh - 49px)', display: 'flex', flexDirection: 'column', background: s.bg }}>
+    <section
+      aria-labelledby={headingId}
+      style={{ height: 'calc(100dvh - 49px)', display: 'flex', flexDirection: 'column', background: s.bg }}
+    >
+      <h1 id={headingId} className="sr-only" style={{ position: 'absolute', width: 1, height: 1, padding: 0, margin: -1, overflow: 'hidden', clip: 'rect(0 0 0 0)', whiteSpace: 'nowrap', border: 0 }}>
+        {s.domain ? `${s.title} — ${s.domain}` : s.title}
+      </h1>
       <div className="flex items-center justify-between px-6 py-2 md:px-10" style={{ borderBottom: '1px solid var(--line)', background: 'color-mix(in oklab, var(--bg) 70%, transparent)' }}>
-        <div className="flex items-center gap-3">
-          {/* 백버튼/시안번호는 전역 SiteHeader(← Home)와 중복이라 제거. title/domain 만 컨텍스트로 표시. */}
+        <div className="flex items-center gap-3" aria-hidden>
+          {/* 백버튼/시안번호는 전역 SiteHeader(← Home)와 중복이라 제거. title/domain 만 컨텍스트로 표시.
+              접근가능 이름은 위 <h1> 가 제공하므로 이 시각 표기는 aria-hidden. */}
           <span className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>{s.title}</span>
           {s.domain ? <span className="hidden text-xs md:inline" style={{ color: 'var(--accent)' }}>{s.domain}</span> : null}
         </div>
@@ -41,6 +52,6 @@ export default async function ScenePage({ params }: { params: Promise<{ scene: s
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
         <SceneMount name={s.file} title={s.title} bg={s.bg} />
       </div>
-    </div>
+    </section>
   )
 }

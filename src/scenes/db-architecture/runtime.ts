@@ -36,6 +36,19 @@ import styles from './scene.module.css'
 
 const s = styles as Record<string, string>
 
+export function createRuntimeGate(running: boolean): RuntimeGate {
+  return {
+    runningRef: { current: running },
+    resumeRef: { current: null },
+  }
+}
+
+export function syncRuntimeGate(gate: RuntimeGate, running: boolean): void {
+  const wasRunning = gate.runningRef.current
+  gate.runningRef.current = running
+  if (running && !wasRunning) gate.resumeRef.current?.()
+}
+
 /**
  * Wires up the entire db-architecture scene against `rootEl`.
  * Returns a cleanup function (clears all timers/rafs/listeners). Behavior is

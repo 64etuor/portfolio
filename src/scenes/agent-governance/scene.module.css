@@ -265,14 +265,20 @@
 
 .pipe-canvas-wrap {
   position: relative;
-  flex: 1;
+  /* 고정 높이로 고정 — 캔버스를 absolute 로 빼내 in-flow 높이 기여를 끊어
+     ResizeObserver↔scrollHeight 폭주를 차단한다(이 박스 높이가 픽셀 버퍼 상한). */
+  flex: 0 0 272px;
+  height: 272px;
   min-height: 272px;
+  overflow: hidden;
 }
 
 .pipeCanvas {
+  position: absolute;
+  inset: 0;
   display: block;
   width: 100%;
-  height: 272px;
+  height: 100%;
 }
 
 .pipe-controls {
@@ -840,13 +846,24 @@
   text-transform: uppercase;
 }
 
-.graphCanvas {
-  display: block;
+.graph-canvas-wrap {
+  /* 캔버스를 absolute 로 빼내 in-flow 높이 기여를 끊는다 → 폭주 차단.
+     배경/보더는 wrap 으로 옮겨 시각은 동일하게 유지. */
+  position: relative;
   width: 100%;
   height: 188px;
   background: #070b11;
   border: 1px solid var(--line);
   border-radius: 9px;
+  overflow: hidden;
+}
+
+.graphCanvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
 }
 
 .graph-trace {

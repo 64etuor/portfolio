@@ -52,16 +52,31 @@ const personJsonLd = {
   sameAs: [PROFILE.contact.github, PROFILE.contact.githubPage],
 }
 
+// Skip-link styles: visually-hidden until focused, then revealed top-left above
+// all chrome. Scoped inline so globals.css is untouched (server component — CSS
+// :focus, not JS handlers). Keep this CSS as a single source for the .skip-link.
+const skipLinkCss = `
+.skip-link{position:absolute;left:-9999px;top:0;width:1px;height:1px;overflow:hidden;z-index:1000;padding:10px 16px;background:#050505;color:#fff;border:1px solid #fff;border-radius:4px;text-decoration:none;}
+.skip-link:focus{left:12px;top:12px;width:auto;height:auto;overflow:visible;}
+`
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="ko">
       <body>
+        <style dangerouslySetInnerHTML={{ __html: skipLinkCss }} />
+        <a href="#main" className="skip-link">
+          본문으로 건너뛰기 / Skip to content
+        </a>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
         />
         <SiteHeader />
-        {children}
+        {/* Pages render their own <main> (landing / resume / some scenes), so this
+            skip target is a <div> — a wrapping <main> here would create duplicate/
+            nested main landmarks. One <main> per page stays owned by the page. */}
+        <div id="main">{children}</div>
         <SpeedInsights />
         <Analytics />
       </body>

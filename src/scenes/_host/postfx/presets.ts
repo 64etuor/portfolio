@@ -17,14 +17,14 @@ export const PRESETS: Record<PostFXPreset, PresetUniforms> = {
     vignette: 0.35,
     tint: [0.92, 1.0, 0.94],
   },
-  // 기본 — 계측/제어. 선명, 곡률 0, 은은.
+  // 기본 — 계측/제어. 선명, 곡률 0, 은은하지만 존재감 있게.
   instrument: {
     curvature: 0.0,
-    aberration: 0.5,
-    bloom: 0.15,
-    scanline: 0.05,
-    grain: 0.03,
-    vignette: 0.25,
+    aberration: 0.6,
+    bloom: 0.2,
+    scanline: 0.07,
+    grain: 0.045,
+    vignette: 0.32,
     tint: [1.0, 1.0, 1.0],
   },
   // 클린 — 차트/대시보드형. 거의 무효과.

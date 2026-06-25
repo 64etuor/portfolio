@@ -209,7 +209,7 @@ function topoIndex(): Record<string, number> {
     })
   )
   const order: string[] = []
-  let ready = ids.filter((i) => indeg[i] === 0).sort()
+  const ready = ids.filter((i) => indeg[i] === 0).sort()
   while (ready.length) {
     const cur = ready.shift() as string
     order.push(cur)

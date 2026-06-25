@@ -137,7 +137,7 @@ export function SceneView({ canvasRef, refs }: ViewProps) {
             <span className={s.stamp}>APPROVED<br />QA · METROLOGY</span>
           </div>
           <div className={s.belief}>
-            <div className={s.bq}>"측정할 수 없으면 <b>관리할 수 없다.</b>"</div>
+            <div className={s.bq}>&ldquo;측정할 수 없으면 <b>관리할 수 없다.</b>&rdquo;</div>
             <div className={s.bm}>
               <span className={s.bchip}>전 피처 <b>GD&amp;T 검증</b></span>
               <span className={s.bchip}>공차 대비 <b>편차 정량화</b></span>

@@ -80,7 +80,7 @@ const PHASE_TXT = [
 /* ---------- gloss renderer ---------- */
 function renderGloss(i: number, mode: number, shimmer: number, time: number): string {
   const tk = TOK[i]
-  let str = mode === 0 ? tk.moji : mode === 1 ? tk.hex : tk.bin
+  const str = mode === 0 ? tk.moji : mode === 1 ? tk.hex : tk.bin
   if (shimmer > 0) {
     const arr = [...str]
     const n = Math.max(1, Math.round(arr.length * shimmer * 0.5))
@@ -166,7 +166,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       ansWRef.current.push(el)
     })
 
-    ;[...LAYERS, BASE].forEach((L, i) => {
+    ;[...LAYERS, BASE].forEach((L) => {
       if (L === BASE) {
         const hr = document.createElement('div')
         hr.className = s.divider
@@ -287,7 +287,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     /* ANSWER words */
     ansWRef.current.forEach((el, i) => {
       const inP = smooth((pPeel - i * 0.07) / 0.4)
-      let op = inP * (1 - smooth(pRel))
+      const op = inP * (1 - smooth(pRel))
       const blur = (1 - inP) * 4.0 * (1 - pRel)
       const dy = lerp(10, 0, inP)
       el.style.opacity = op.toFixed(3)

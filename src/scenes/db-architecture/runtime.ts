@@ -9,9 +9,6 @@ import {
   CDC_EVENTS_EBOM,
   FLOW_NODES,
   FLOW_EDGES,
-  SM_STATES,
-  SM_W,
-  SM_H,
   SM_ORDER,
   RECSQL,
 } from './data'
@@ -249,6 +246,7 @@ export function setupRuntime(rootEl: HTMLElement, gate: RuntimeGate): () => void
     drawRels()
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function selectTable(name: string, _fromTree?: boolean, _silent?: boolean) {
     curTable = name
     const m = MODELS[curModel]
@@ -299,6 +297,7 @@ export function setupRuntime(rootEl: HTMLElement, gate: RuntimeGate): () => void
       h = el.offsetHeight || 120
     return { x: parseFloat(el.style.left), y: parseFloat(el.style.top), w, h }
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   function drawRels(selName?: string, _related?: Set<string>) {
     const m = MODELS[curModel]
     let svg = ''

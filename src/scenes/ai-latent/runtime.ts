@@ -409,7 +409,7 @@ export function startAiLatentRuntime(params: AiLatentRuntimeParams) {
   vsBtn?.addEventListener('click', onVsToggle)
 
   /* ambient idle glow */
-  const idleGlowTimer = trackInterval(setInterval(() => {
+  trackInterval(setInterval(() => {
     if (streamingRef.current || !nodes.length) return
     const live = nodes.filter((n) => n.appear > 0.6)
     if (!live.length) return

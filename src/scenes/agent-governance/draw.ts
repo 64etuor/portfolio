@@ -209,7 +209,6 @@ export function drawHeartbeat(ctx: SceneCtx, g: CanvasRenderingContext2D, fr: Fr
 }
 
 export function drawGraph(ctx: SceneCtx, g: CanvasRenderingContext2D, fr: Frame): void {
-  const now = fr.t * 1000
   const dtMs = fr.dt * 1000
   if (
     Math.abs(ctx.graphSize.current.w - fr.w) > 1 ||

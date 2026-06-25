@@ -129,7 +129,7 @@ export function RadarView({
 
         <div className={s.creed}>
           <div className={s.creedQ}>
-            "자동화가 많아질수록, <b>인간이 운영 상태를 이해하고 멈출 수 있게</b> 정보를 아키텍처한다."
+            &ldquo;자동화가 많아질수록, <b>인간이 운영 상태를 이해하고 멈출 수 있게</b> 정보를 아키텍처한다.&rdquo;
           </div>
           <div className={s.creedR}>
             BOULE GOVERNANCE · tick_enabled · max_steps · autonomy_level · 인간 승인 게이트

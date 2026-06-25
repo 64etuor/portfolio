@@ -3,7 +3,7 @@
 import type React from 'react'
 import { setText, scrollIntoNearestScrollable } from '../_host/dom-util'
 import { FIL_HOT, G_MAX, TOTAL_MOVES } from './constants'
-import { CAREER, CAREER_REVEAL, LAYER_H, LAYERS, METRICS, PLATE, SKILLS, T_TARGET, TOTAL_LAYERS, type Layer, type Move } from './data'
+import { CAREER_REVEAL, LAYER_H, LAYERS, METRICS, PLATE, SKILLS, T_TARGET, TOTAL_LAYERS, type Layer, type Move } from './data'
 import { drawFixtureAnnotations, drawNozzle, drawPlate, fmt, project, setupCam } from './draw'
 import type { DefectAnim, Deposit, Pos, SimState } from './types'
 import s from './scene.module.css'

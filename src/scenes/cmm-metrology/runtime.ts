@@ -2,7 +2,7 @@ import type { Frame } from '../_host/types'
 import { FEATURES, TARGETS, SKILLS, XCHECKS, SYMS, SEED0 } from './data'
 import type { FeatureDatum } from './data'
 import { PART, BOOT_MS, CYCLE_HOLD_MS, CSS } from './constants'
-import { iso, layout, drawGround, drawPart, drawCloud, drawMeasuredMarks, drawGantry, dimLine, calloutFCF, drawCpk } from './draw'
+import { layout, drawGround, drawPart, drawCloud, drawMeasuredMarks, drawGantry, dimLine, calloutFCF, drawCpk } from './draw'
 import type { RuntimeState, RuntimeFeature, RuntimeTarget, SceneDomRefs } from './types'
 import type s from './scene.module.css'
 

@@ -1,4 +1,3 @@
-import { ease } from '../_host/math'
 import type React from 'react'
 import { buildLayout, panEnv } from './draw'
 import type { LayoutState, ProcNode, Screen } from './types'

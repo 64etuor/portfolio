@@ -256,7 +256,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           const fy = i / segs,
             y = lerp(yTop, yBot, fy)
           const jag = Math.sin(i * 1.7 + t * 0.8) * MIN * 0.004 * a
-          i === 0 ? g.moveTo(CX + jag, y) : g.lineTo(CX + jag, y)
+          if (i === 0) g.moveTo(CX + jag, y); else g.lineTo(CX + jag, y)
         }
         g.stroke()
         if (a > 0.35) {

@@ -11,7 +11,7 @@ import {
 } from './data'
 import {
   NS, TYPE_LABEL, statusPill, edgePath, topoOrder, padTs,
-  AI_MAX, aiSample, initAICanvas, drawAIChart, drawGridBackground,
+  initAICanvas, drawAIChart, drawGridBackground,
 } from './draw'
 import type { EdgeEl, SweepState } from './types'
 import { PipelineDagView } from './view'
@@ -423,7 +423,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     el.style.display = 'block'
     el.innerHTML = `<div class="h">${sch.h}</div>` +
       sch.rows.map(r => `<div class="row"><span class="key">${r[0]}</span>: <span class="ty">${r[1]}</span></div>`).join('')
-    let x = ev.clientX + 14, y = ev.clientY + 14
+    let x = ev.clientX + 14; const y = ev.clientY + 14
     if (x + 260 > window.innerWidth) x = ev.clientX - 260
     el.style.left = x + 'px'; el.style.top = y + 'px'
   }

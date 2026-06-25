@@ -8,7 +8,6 @@ import { drawLatentScene } from './draw'
 import { AiLatentView } from './view'
 import { buildLinks, buildNodes, startAiLatentRuntime } from './runtime'
 import type { Link, Node } from './types'
-import s from './scene.module.css'
 
 export default function Scene({ running = true, onReady }: SceneProps) {
   const tpsRef = useRef<HTMLElement>(null)

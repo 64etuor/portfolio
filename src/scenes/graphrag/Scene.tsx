@@ -8,7 +8,6 @@
    모션: 결정적(시간 파라미터) · 무한 루프 · 난수/가짜 로그 없음
    ════════════════════════════════════════════════════════════════════ */
 
-import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'

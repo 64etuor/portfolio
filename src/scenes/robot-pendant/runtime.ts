@@ -599,12 +599,12 @@ export function wireEvents(rt: Runtime) {
       }
     }
     if (ev.key === 'h' || ev.key === 'H') {
-      rt.harnessOv.classList.contains('show') ? closeHarness(rt) : openHarness(rt)
+      if (rt.harnessOv.classList.contains('show')) closeHarness(rt); else openHarness(rt)
       return
     }
     if (ev.key === ' ') {
       ev.preventDefault()
-      rt.state.mode === 'PLAY' ? pause(rt) : play(rt)
+      if (rt.state.mode === 'PLAY') pause(rt); else play(rt)
     } else if (ev.key === 'ArrowRight') stepFwd(rt)
     else if (ev.key === 'ArrowLeft') rewind(rt)
     else if (ev.key >= '1' && ev.key <= '4') selectLine(rt, Number(ev.key) - 1, true)

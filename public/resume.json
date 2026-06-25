@@ -18,7 +18,7 @@
     {
       "name": "스타트업",
       "position": "총괄본부장 / Director",
-      "summary": "뷰티 매장 대상 Beautifly 제품군(CRM·키오스크·협업 SW·앱) 개발과 AX 기반 업무 시스템 구축 총괄.",
+      "summary": "뷰티 매장 대상 제품군(CRM·키오스크·협업 SW·앱) 개발과 AX 기반 업무 시스템 구축 총괄.",
       "highlights": [
         "CRM·키오스크·협업 SW·앱 제품 요구사항 정의, 기능 기획 및 개발 일정 관리",
         "FastAPI 백엔드, RDS MySQL 데이터 모델링, AWS·GCP 인프라 및 CI/CD 구축",
@@ -102,14 +102,14 @@
       "url": "https://github.com/64etuor"
     },
     {
-      "name": "Beautifly — 뷰티 매장 CRM·키오스크·앱 플랫폼",
+      "name": "뷰티 매장 CRM·키오스크·앱 플랫폼",
       "description": "뷰티 매장의 매출·고객 이용 데이터를 전산화하고, CRM·키오스크·협업 SW·앱을 하나의 제품군으로 묶어 매장 운영을 데이터 기반으로 전환하기 위한 프로젝트. 제품 개발과 AX(AI Transformation) 기반 업무 시스템 구축을 동시에 담당.",
       "highlights": [
         "CRM·키오스크·협업 SW·앱 제품 요구사항 정의, 기능 기획 및 개발 일정 관리",
         "FastAPI 백엔드, RDS MySQL 데이터 모델링, AWS·GCP 인프라 및 CI/CD 구축",
         "키오스크 하드웨어 프로토타입 기구 설계, 외주 제작 관리 및 운영 검토",
         "RPA·AI MCP 서버 기반 AX 업무 시스템 기획 및 구축",
-        "Beautifly 웹 통계 분석 기능(매출 통계·고객 이용 통계 대시보드) 기획 및 사용자 매뉴얼 작성",
+        "웹 통계 분석 기능(매출 통계·고객 이용 통계 대시보드) 기획 및 사용자 매뉴얼 작성",
         "제품군: CRM·키오스크·협업 SW·앱을 단일 플랫폼으로 통합",
         "인프라: FastAPI + RDS MySQL + AWS/GCP + CI/CD 풀스택 구축",
         "업무 자동화: RPA·AI MCP 기반 AX 업무 시스템 도입"

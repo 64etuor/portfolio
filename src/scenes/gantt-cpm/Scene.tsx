@@ -168,30 +168,28 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     const dReplay = detail!.querySelector<HTMLButtonElement>('[data-d="replay"]')!
     const dX = detail!.querySelector<HTMLElement>('[data-d="x"]')!
 
-    // 클릭한 위치 근처에 패널을 띄우되, 패널 기준 요소(offsetParent) 안으로 클램프
+    // 패널은 position:fixed → 뷰포트 좌표(clientX/clientY)에 직접 배치한다.
+    // offsetParent·스크롤·중앙정렬 마진·스케일 transform 같은 좌표 함정을 피하려고
+    // 클릭 지점(커서)에 패널 중심을 맞추고, 뷰포트 안으로만 클램프한다.
     function positionDetail(e?: MouseEvent) {
       if (!detail) return
-      const parent = (detail.offsetParent as HTMLElement) || detail.parentElement
-      if (!parent) return
-      const pRect = parent.getBoundingClientRect()
       const pad = 16
       const pr = detail.getBoundingClientRect()
+      const vw = window.innerWidth
+      const vh = window.innerHeight
       const w = pr.width || 430
-      const h = pr.height || Math.min(pRect.height - 48, 520)
+      const h = pr.height || Math.min(vh - 48, 520)
       let left: number, top: number
       if (e) {
-        left = e.clientX - pRect.left + 20
-        // 클릭한 막대에 세로 중앙 정렬 → 긴 패널이 상단으로 동떨어지지 않고 클릭 지점 옆에 붙는다.
-        // (아래 클램프가 보드 밖으로 넘치는 경우만 보정.)
-        top = e.clientY - pRect.top - h / 2
-        // 오른쪽으로 넘치면 커서 왼편으로 뒤집어 배치 (세로는 클램프로 처리)
-        if (left + w > pRect.width - pad) left = e.clientX - pRect.left - w - 20
+        // 커서에 패널 중심 정렬(좌우·상하 모두) → "클릭한 곳"에서 열린다.
+        left = e.clientX - w / 2
+        top = e.clientY - h / 2
       } else {
-        left = pRect.width - w - 24
-        top = pRect.height - h - 24
+        left = vw - w - 24
+        top = vh - h - 24
       }
-      left = Math.max(pad, Math.min(left, pRect.width - w - pad))
-      top = Math.max(pad, Math.min(top, pRect.height - h - pad))
+      left = Math.max(pad, Math.min(left, vw - w - pad))
+      top = Math.max(pad, Math.min(top, vh - h - pad))
       detail.style.left = left + 'px'
       detail.style.top = top + 'px'
       detail.style.right = 'auto'

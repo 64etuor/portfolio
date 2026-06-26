@@ -609,7 +609,9 @@
 
 /* ============ detail panel (task click) ============ */
 .detail {
-  position: absolute;
+  /* fixed → 뷰포트 좌표로 클릭 지점에 정확히 배치(절대좌표·스크롤·스케일 함정 회피).
+     max-* 의 100% 도 뷰포트 기준이 되어 화면 밖으로 넘치지 않는다. */
+  position: fixed;
   right: 24px;
   bottom: 24px;
   width: 430px;

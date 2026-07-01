@@ -1,8 +1,10 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSceneReady } from '../_host/useSceneReady'
 import type { SceneProps } from '../_host/types'
+import { projectBySlug } from '@content/projects'
+import { ProjectDrawer } from '@/components/projects/ProjectDrawer'
 import s from './scene.module.css'
 import { NS, eio, fmtYM, rowPct, span, sparkSVG } from './draw'
 import { GanttView } from './view'
@@ -45,6 +47,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const tipRef = useRef<HTMLDivElement | null>(null)
   const cpToggleRef = useRef<HTMLDivElement | null>(null)
   const dimToggleRef = useRef<HTMLDivElement | null>(null)
+  const [drawerSlug, setDrawerSlug] = useState<string | null>(null)
   useSceneReady(onReady)
 
   useEffect(() => {
@@ -147,17 +150,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     function rewindToScene(key: string) {
       const path = REWIND_ROUTES[key]
       if (!path) return
-      try {
-        const targetWindow = window.top && window.top !== window ? window.top : window
-        targetWindow.location.href = path
-      } catch {
-        window.location.href = path
-      }
-    }
-    // 프로젝트 상세 문서(/projects/<slug>)로 이동 — rewindToScene 과 동일한 top-window 가드.
-    function docTo(slug: string) {
-      if (!slug) return
-      const path = '/projects/' + slug
       try {
         const targetWindow = window.top && window.top !== window ? window.top : window
         targetWindow.location.href = path
@@ -276,8 +268,12 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     const onRewindClick = function (this: HTMLButtonElement) {
       rewindToScene(this.dataset.rewind || '')
     }
+    // 상세 문서는 풀페이지 이동 대신 우측 드로어로 — 간트 패널을 닫고 드로어를 연다.
     const onDocClick = function (this: HTMLButtonElement) {
-      docTo(this.dataset.slug || '')
+      const slug = this.dataset.slug || ''
+      if (!slug) return
+      closeDetail()
+      setDrawerSlug(slug)
     }
     dX.addEventListener('click', onX)
     document.addEventListener('keydown', onKey)
@@ -753,20 +749,26 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   }, [])
 
   return (
-    <GanttView
-      rootRef={rootRef}
-      boardWrapRef={boardWrapRef}
-      svgRef={svgRef}
-      railRef={railRef}
-      boardHdRef={boardHdRef}
-      kpisRef={kpisRef}
-      derivedRef={derivedRef}
-      skillsRef={skillsRef}
-      heroNumRef={heroNumRef}
-      detailRef={detailRef}
-      tipRef={tipRef}
-      cpToggleRef={cpToggleRef}
-      dimToggleRef={dimToggleRef}
-    />
+    <>
+      <GanttView
+        rootRef={rootRef}
+        boardWrapRef={boardWrapRef}
+        svgRef={svgRef}
+        railRef={railRef}
+        boardHdRef={boardHdRef}
+        kpisRef={kpisRef}
+        derivedRef={derivedRef}
+        skillsRef={skillsRef}
+        heroNumRef={heroNumRef}
+        detailRef={detailRef}
+        tipRef={tipRef}
+        cpToggleRef={cpToggleRef}
+        dimToggleRef={dimToggleRef}
+      />
+      <ProjectDrawer
+        project={drawerSlug ? projectBySlug(drawerSlug) ?? null : null}
+        onClose={() => setDrawerSlug(null)}
+      />
+    </>
   )
 }

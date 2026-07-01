@@ -1,0 +1,106 @@
+/* Right-side project detail drawer (gantt scene). Reuses the pj-* content
+   styles from projects.css; defines the --pj-* token scope on the shell so
+   the block components resolve their colors here too. Portaled to <body>. */
+
+.pjd-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(4, 5, 7, 0.55);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.28s ease;
+}
+.pjd-backdrop.pjd-open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.pjd-drawer {
+  --pj-bg: #070809;
+  --pj-bg2: #0c0f14;
+  --pj-ink: #e9e9ec;
+  --pj-dim: #9096a0;
+  --pj-deep: #4a4f57;
+  --pj-line: rgba(233, 233, 236, 0.11);
+  --pj-acc: var(--accent);
+  position: fixed;
+  top: 0;
+  right: 0;
+  z-index: 2001;
+  height: 100dvh;
+  width: min(600px, 94vw);
+  display: flex;
+  flex-direction: column;
+  background: radial-gradient(ellipse 120% 90% at 90% 0%, var(--pj-bg2) 0%, var(--pj-bg) 60%, #000 100%);
+  color: var(--pj-ink);
+  font-family: var(--font-sans);
+  border-left: 1px solid var(--pj-line);
+  box-shadow: -24px 0 70px -24px rgba(0, 0, 0, 0.8);
+  transform: translateX(100%);
+  transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.pjd-drawer.pjd-open {
+  transform: translateX(0);
+}
+
+.pjd-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 20px;
+  border-bottom: 1px solid var(--pj-line);
+  background: color-mix(in oklab, var(--pj-bg) 82%, transparent);
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  flex: 0 0 auto;
+}
+.pjd-full {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  color: var(--pj-acc);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.16s;
+}
+.pjd-full:hover {
+  border-color: var(--pj-acc);
+}
+.pjd-x {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--pj-line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--pj-dim);
+  cursor: pointer;
+  transition: color 0.16s, border-color 0.16s;
+}
+.pjd-x:hover {
+  color: var(--pj-ink);
+  border-color: var(--pj-acc);
+}
+
+.pjd-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 22px 26px 60px;
+}
+/* the drawer already has a header bar, so the hero's top padding can be tighter */
+.pjd-scroll .pj-hero {
+  padding-top: 2px;
+}
+@media (max-width: 520px) {
+  .pjd-scroll {
+    padding: 16px 16px 48px;
+  }
+}

@@ -13,7 +13,6 @@ import { smart_factory } from './smart-factory'
 import { work_radar } from './work-radar'
 import { notion_os } from './notion-os'
 import { mirrorless } from './mirrorless'
-import { kh_project } from './kh-project'
 
 export const ALL_PROJECTS: ProjectContent[] = [
   mes_console,
@@ -27,7 +26,6 @@ export const ALL_PROJECTS: ProjectContent[] = [
   work_radar,
   notion_os,
   mirrorless,
-  kh_project,
 ]
 
 export function enabledProjects(): ProjectContent[] {

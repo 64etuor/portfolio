@@ -46,6 +46,4 @@ export const MANIFEST: ManifestEntry[] = [
     source: '300_Projects/2510 Notion System/2510 Notion OS.md' },
   { slug: 'mirrorless', ganttId: 'p-kiosk-app', title: '미러리스 키오스크 — SW 아키텍처', company: '스타트업', companyKey: 'startup', period: '2025.08–', order: 11, enabled: true,
     source: `${PRIVATE}/2508 Mirrorless/개발 문서/미러리스 키오스크 아키텍쳐.md` },
-  { slug: 'kh-project', ganttId: '', title: 'KH — 중고 거래 마켓플레이스 기획', company: '스타트업', companyKey: 'startup', period: '2024.07–', order: 12, enabled: true,
-    source: `${PRIVATE}/2407 KH Project/프로젝트 개요.md` },
 ]

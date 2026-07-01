@@ -1,14 +1,20 @@
 import type { MetadataRoute } from 'next'
 import { SKILL_AREAS } from '@/components/gallery/data'
 import { SCENE_CATALOG } from '@/scenes/catalog'
+import { enabledProjects } from '@content/projects'
 
 const BASE = 'https://yanghapark.com'
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const lastModified = new Date()
 
-  const staticRoutes = ['', '/film', '/scenes', '/skills', '/resume'].map((path) => ({
+  const staticRoutes = ['', '/film', '/scenes', '/skills', '/resume', '/projects'].map((path) => ({
     url: `${BASE}${path || '/'}`,
+    lastModified,
+  }))
+
+  const projectRoutes = enabledProjects().map((p) => ({
+    url: `${BASE}/projects/${p.slug}`,
     lastModified,
   }))
 
@@ -22,5 +28,5 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified,
   }))
 
-  return [...staticRoutes, ...skillRoutes, ...sceneRoutes]
+  return [...staticRoutes, ...projectRoutes, ...skillRoutes, ...sceneRoutes]
 }

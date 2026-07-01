@@ -948,10 +948,7 @@ function buildGantt(){
     const bx=x(t.start), bx2=x(t.end), bw=Math.max(8,bx2-bx);
     boxes[t.id]={x:bx,x2:bx2,y:r0.top,cy,w:bw,h:r0.h};
 
-    const g=el('g',{class: t.crit?'task crit':'task nc', 'data-id':t.id, style:'cursor:pointer'},rowsG);
-
-    // row hover background
-    el('rect',{x:0,y:r0.top-2,width:W,height:r0.h+4,fill:'transparent'},g);
+    const g=el('g',{class: t.crit?'task crit':'task nc', 'data-id':t.id},rowsG);
 
     // left label
     const lblG=el('g',{},g);
@@ -977,7 +974,7 @@ function buildGantt(){
     }
 
     // bar track (dark)
-    el('rect',{x:bx,y:cy-bhh,width:bw,height:bh,rx:5,fill:'#1c2330',stroke:'var(--line-2)','stroke-width':1},g);
+    const track=el('rect',{x:bx,y:cy-bhh,width:bw,height:bh,rx:5,fill:'#1c2330',stroke:'var(--line-2)','stroke-width':1},g);
     // bar fill (% complete). For ongoing bars the progress edge is pinned to the
     // TODAY line, so the fill always matches the Today marker.
     let pct = t.pct;
@@ -1037,10 +1034,14 @@ function buildGantt(){
       el('rect',{x:sx,y:cy-4,width:Math.max(0,sx2-sx),height:8,rx:3,fill:t.color,'fill-opacity':.14,stroke:t.color,'stroke-opacity':.4,'stroke-dasharray':'2 3','stroke-width':1},g);
     }
 
-    // interaction
-    g.addEventListener('click',()=>openDetail(t));
-    g.addEventListener('mousemove',(e)=>showTip(e,t));
-    g.addEventListener('mouseleave',hideTip);
+    // interaction — 클릭·호버 타깃을 막대 + 이름 라벨로만 한정. 빈 공간 클릭은
+    // svg 배경 핸들러가 패널을 닫는다.
+    [lblG,track,fill].forEach(node=>{
+      node.style.cursor='pointer';
+      node.addEventListener('click',(ev)=>{ ev.stopPropagation(); openDetail(t); });
+      node.addEventListener('mousemove',(e)=>showTip(e,t));
+      node.addEventListener('mouseleave',hideTip);
+    });
   });
 
   // ---- dependency arrows (finish-to-start) ----
@@ -1273,6 +1274,11 @@ function openDetail(t){
   startVerificationReplay();
 }
 document.getElementById('dX').addEventListener('click',()=>{
+  clearVerificationReplay();
+  detail.classList.remove('show');
+});
+// 간트 빈 공간 클릭 → 패널 닫기(막대·라벨 클릭은 stopPropagation).
+svg.addEventListener('click',()=>{
   clearVerificationReplay();
   detail.classList.remove('show');
 });

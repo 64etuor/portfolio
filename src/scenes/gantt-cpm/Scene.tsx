@@ -262,16 +262,17 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       startVerificationReplay()
     }
 
-    const onX = () => {
+    const closeDetail = () => {
       clearVerificationReplay()
       detail!.classList.remove(s.show)
     }
+    const onX = () => closeDetail()
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        clearVerificationReplay()
-        detail!.classList.remove(s.show)
-      }
+      if (e.key === 'Escape') closeDetail()
     }
+    // 간트 빈 공간(막대·라벨이 아닌 곳) 클릭 → 패널 닫기. 막대/라벨 클릭은
+    // stopPropagation 하므로 여기까지 오지 않는다.
+    const onBgClick = () => closeDetail()
     const onRewindClick = function (this: HTMLButtonElement) {
       rewindToScene(this.dataset.rewind || '')
     }
@@ -280,12 +281,14 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     }
     dX.addEventListener('click', onX)
     document.addEventListener('keydown', onKey)
+    svg.addEventListener('click', onBgClick)
     dRewind.addEventListener('click', onRewindClick)
     dDoc.addEventListener('click', onDocClick)
     dReplay.addEventListener('click', startVerificationReplay)
     cleanups.push(() => {
       dX.removeEventListener('click', onX)
       document.removeEventListener('keydown', onKey)
+      svg.removeEventListener('click', onBgClick)
       dRewind.removeEventListener('click', onRewindClick)
       dDoc.removeEventListener('click', onDocClick)
       dReplay.removeEventListener('click', startVerificationReplay)
@@ -427,9 +430,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         boxes[t.id] = { x: bx, x2: bx2, y: r0.top, cy, w: bw, h: r0.h }
 
         const cls = t.crit ? `${s.task} ${s.crit}` : `${s.task} ${s.nc}`
-        const g = el('g', { class: cls, 'data-id': t.id, style: 'cursor:pointer' }, rowsG)
-
-        el('rect', { x: 0, y: r0.top - 2, width: W, height: r0.h + 4, fill: 'transparent' }, g)
+        const g = el('g', { class: cls, 'data-id': t.id }, rowsG)
 
         const lblG = el('g', {}, g)
         if (!isP) {
@@ -452,7 +453,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           sub.textContent = t.co
         }
 
-        el('rect', { x: bx, y: cy - bhh, width: bw, height: bh, rx: 5, fill: '#1c2330', stroke: 'var(--line-2)', 'stroke-width': 1 }, g)
+        const track = el('rect', { x: bx, y: cy - bhh, width: bw, height: bh, rx: 5, fill: '#1c2330', stroke: 'var(--line-2)', 'stroke-width': 1 }, g)
 
         const pct = rowPct(t, TODAY.getTime())
         const fw = bw * (pct / 100)
@@ -508,9 +509,17 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           el('rect', { x: sx, y: cy - 4, width: Math.max(0, sx2 - sx), height: 8, rx: 3, fill: t.color, 'fill-opacity': 0.14, stroke: t.color, 'stroke-opacity': 0.4, 'stroke-dasharray': '2 3', 'stroke-width': 1 }, g)
         }
 
-        g.addEventListener('click', (e) => openDetail(t, e))
-        g.addEventListener('mousemove', (e) => showTip(e, t))
-        g.addEventListener('mouseleave', hideTip)
+        // 클릭·호버 타깃을 "프로젝트 막대 + 이름 라벨"로만 한정한다.
+        // 행의 빈 공간을 누르면 (막대/라벨이 아니므로) svg 배경 핸들러가 패널을 닫는다.
+        ;[lblG, track, fill].forEach((node) => {
+          node.style.cursor = 'pointer'
+          node.addEventListener('click', (ev) => {
+            ev.stopPropagation()
+            openDetail(t, ev as MouseEvent)
+          })
+          node.addEventListener('mousemove', (ev) => showTip(ev as MouseEvent, t))
+          node.addEventListener('mouseleave', hideTip)
+        })
       })
 
       // ---- dependency arrows (FS) ----

@@ -40,6 +40,7 @@ export interface Row {
   problem?: string
   built?: string
   rewind?: string
+  slug?: string // → /projects/<slug> detail doc (only bars with an embedded doc)
   desc: string
   metrics: Metric[]
   stack: string[]
@@ -224,6 +225,7 @@ export const PROJECTS: Row[] = [
   },
   {
     id: 'p-smartfac',
+    slug: 'smart-factory',
     tier: 1,
     parent: 'eun',
     co: '은성 · 프로젝트',
@@ -280,6 +282,7 @@ export const PROJECTS: Row[] = [
   // ── 이랜텍 ──
   {
     id: 'p-line',
+    slug: 'line-innovation',
     tier: 1,
     parent: 'elen',
     co: '이랜텍 · 프로젝트',
@@ -308,6 +311,7 @@ export const PROJECTS: Row[] = [
   },
   {
     id: 'p-idle',
+    slug: 'idle-equipment',
     tier: 1,
     parent: 'elen',
     co: '이랜텍 · 프로젝트',
@@ -334,6 +338,7 @@ export const PROJECTS: Row[] = [
   },
   {
     id: 'p-samsung',
+    slug: 'samsung-logistics',
     tier: 1,
     parent: 'elen',
     co: '삼성 상생아카데미 · 프로젝트',
@@ -362,6 +367,7 @@ export const PROJECTS: Row[] = [
   // ── 솔라엣지 ──
   {
     id: 'p-procdata',
+    slug: 'process-data',
     tier: 1,
     parent: 'sol',
     co: '솔라엣지 · 프로젝트',
@@ -391,6 +397,7 @@ export const PROJECTS: Row[] = [
   },
   {
     id: 'p-trace',
+    slug: 'traceability',
     tier: 1,
     parent: 'sol',
     co: '솔라엣지 · 프로젝트',
@@ -419,6 +426,7 @@ export const PROJECTS: Row[] = [
   },
   {
     id: 'p-dv',
+    slug: 'dv-data',
     tier: 1,
     parent: 'sol',
     co: '솔라엣지 · 프로젝트',
@@ -446,6 +454,7 @@ export const PROJECTS: Row[] = [
   },
   {
     id: 'p-mes',
+    slug: 'mes-console',
     tier: 1,
     parent: 'sol',
     co: '솔라엣지 · 프로젝트',
@@ -529,6 +538,7 @@ export const PROJECTS: Row[] = [
   // ── 스타트업 (뷰티 통합 솔루션 — 각 영역 직접 구축) ──
   {
     id: 'p-notion',
+    slug: 'notion-os',
     tier: 1,
     parent: 'mir',
     co: '스타트업 · 조직 OS',
@@ -613,6 +623,7 @@ export const PROJECTS: Row[] = [
   },
   {
     id: 'p-kiosk-app',
+    slug: 'mirrorless',
     tier: 1,
     parent: 'mir',
     co: '스타트업 · 키오스크',
@@ -695,6 +706,7 @@ export const PROJECTS: Row[] = [
   },
   {
     id: 'p-radar',
+    slug: 'work-radar',
     tier: 1,
     parent: 'mir',
     co: '개인 프로젝트',
@@ -824,7 +836,7 @@ export const SKILLS: SkillGroup[] = [
 
 export const REWIND_ROUTES: Record<string, string> = {
   eunseong: '/s/instrument-rack',
-  elentec: '/s/assembly-line',
+  elentec: '/s/weld-thermal',
   solaredge: '/s/mes-console',
   bridge: '/s/digital-twin',
   startup: '/s/pid-scheme',

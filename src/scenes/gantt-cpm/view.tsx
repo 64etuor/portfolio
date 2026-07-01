@@ -189,10 +189,11 @@ export function GanttView({
           </div>
           <div className={s.vpDivider} />
           <div className={s.vpSection}>
-            <div className={s.vpLabel}><span className={s.vpNum}>⑤</span>관련 장면 되감기</div>
+            <div className={s.vpLabel}><span className={s.vpNum}>⑤</span>자세히 보기</div>
             <div className={s.vpActions}>
-              <button className={s.vpRewind} data-d="rewind" type="button">↩ 관련 장면으로</button>
-              <button className={s.vpReplay} data-d="replay" type="button">검증 리플레이</button>
+              <button className={s.vpDoc} data-d="doc" type="button" style={{ display: 'none' }}>📄 프로젝트 상세 보기 →</button>
+              <button className={s.vpRewind} data-d="rewind" type="button">↩ 관련 장면 보기</button>
+              <button className={s.vpReplay} data-d="replay" type="button">핵심 성과 하이라이트</button>
             </div>
           </div>
         </div>

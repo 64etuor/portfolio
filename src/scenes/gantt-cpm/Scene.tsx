@@ -154,6 +154,17 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         window.location.href = path
       }
     }
+    // 프로젝트 상세 문서(/projects/<slug>)로 이동 — rewindToScene 과 동일한 top-window 가드.
+    function docTo(slug: string) {
+      if (!slug) return
+      const path = '/projects/' + slug
+      try {
+        const targetWindow = window.top && window.top !== window ? window.top : window
+        targetWindow.location.href = path
+      } catch {
+        window.location.href = path
+      }
+    }
 
     const dBar = detail!.querySelector<HTMLElement>('[data-d="bar"]')!
     const dCo = detail!.querySelector<HTMLElement>('[data-d="co"]')!
@@ -166,6 +177,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     const dMetrics = detail!.querySelector<HTMLElement>('[data-d="metrics"]')!
     const dRewind = detail!.querySelector<HTMLButtonElement>('[data-d="rewind"]')!
     const dReplay = detail!.querySelector<HTMLButtonElement>('[data-d="replay"]')!
+    const dDoc = detail!.querySelector<HTMLButtonElement>('[data-d="doc"]')!
     const dX = detail!.querySelector<HTMLElement>('[data-d="x"]')!
 
     // 패널은 position:fixed → 뷰포트 좌표(clientX/clientY)에 직접 배치한다.
@@ -237,6 +249,14 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       })
 
       dRewind.dataset.rewind = t.rewind || ''
+      // 프로젝트 상세 문서 버튼 — slug 가 있는 막대에만 노출(primary CTA).
+      if (t.slug) {
+        dDoc.dataset.slug = t.slug
+        dDoc.style.display = ''
+      } else {
+        dDoc.dataset.slug = ''
+        dDoc.style.display = 'none'
+      }
       positionDetail(e)
       detail!.classList.add(s.show)
       startVerificationReplay()
@@ -255,14 +275,19 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     const onRewindClick = function (this: HTMLButtonElement) {
       rewindToScene(this.dataset.rewind || '')
     }
+    const onDocClick = function (this: HTMLButtonElement) {
+      docTo(this.dataset.slug || '')
+    }
     dX.addEventListener('click', onX)
     document.addEventListener('keydown', onKey)
     dRewind.addEventListener('click', onRewindClick)
+    dDoc.addEventListener('click', onDocClick)
     dReplay.addEventListener('click', startVerificationReplay)
     cleanups.push(() => {
       dX.removeEventListener('click', onX)
       document.removeEventListener('keydown', onKey)
       dRewind.removeEventListener('click', onRewindClick)
+      dDoc.removeEventListener('click', onDocClick)
       dReplay.removeEventListener('click', startVerificationReplay)
     })
 

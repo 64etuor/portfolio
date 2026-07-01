@@ -260,6 +260,14 @@ body{
   padding:6px 12px;background:var(--paper-2);cursor:pointer;
   transition:border-color .15s,color .15s,background .15s;user-select:none}
 .vp-rewind:hover,.vp-replay:hover{border-color:var(--today);color:#9fc0ff;background:#111927}
+/* primary CTA — 프로젝트 상세 문서. filled accent so it clearly reads as the main action. */
+.vp-doc{display:inline-flex;align-items:center;gap:7px;
+  font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.02em;
+  color:#08131f;border:1px solid var(--today);border-radius:7px;
+  padding:7px 14px;background:var(--today);cursor:pointer;
+  box-shadow:0 0 0 0 rgba(90,150,255,0);transition:filter .15s,box-shadow .15s,transform .1s;user-select:none}
+.vp-doc:hover{filter:brightness(1.12);box-shadow:0 0 16px -2px var(--today)}
+.vp-doc:active{transform:translateY(1px)}
 .vp-divider{height:1px;background:var(--line);margin:12px 0}
 
 /* tooltip */
@@ -446,11 +454,11 @@ footer .r a:hover{color:var(--crit)}
     <div class="vp-divider"></div>
     <!-- ⑤ 관련 장면 되감기 -->
     <div class="vp-section" id="dSecRewind">
-      <div class="vp-label"><span class="vp-num">⑤</span>관련 장면 되감기</div>
+      <div class="vp-label"><span class="vp-num">⑤</span>자세히 보기</div>
       <div class="vp-actions">
-        <button class="vp-rewind" id="dRewind" data-rewind="">↩ 관련 장면으로</button>
-        <button class="vp-rewind" id="dDoc" data-slug="" type="button" style="display:none">📄 프로젝트 문서 →</button>
-        <button class="vp-replay" id="dReplay" type="button">검증 리플레이</button>
+        <button class="vp-doc" id="dDoc" data-slug="" type="button" style="display:none">📄 프로젝트 상세 보기 →</button>
+        <button class="vp-rewind" id="dRewind" data-rewind="" type="button">↩ 관련 장면 보기</button>
+        <button class="vp-replay" id="dReplay" type="button">핵심 성과 하이라이트</button>
       </div>
     </div>
   </div>
@@ -1158,7 +1166,7 @@ document.head.appendChild(styleDim);
 const detail=document.getElementById('detail');
 const REWIND_ROUTES={
   eunseong:'/s/instrument-rack',
-  elentec:'/s/assembly-line',
+  elentec:'/s/weld-thermal',
   solaredge:'/s/mes-console',
   bridge:'/s/digital-twin',
   startup:'/s/pid-scheme',

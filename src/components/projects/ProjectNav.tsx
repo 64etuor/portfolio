@@ -1,0 +1,19 @@
+import Link from 'next/link'
+import type { ProjectContent } from '@content/projects/types'
+
+/** Prev / next project + back-to-Gantt link. */
+export function ProjectNav({ prev, next }: { prev?: ProjectContent; next?: ProjectContent }) {
+  return (
+    <nav className="pj-nav" aria-label="project navigation">
+      <span>
+        {prev ? <Link href={`/projects/${prev.slug}`}>← {prev.hero.title}</Link> : <span />}
+      </span>
+      <Link className="pj-nav-back" href="/s/gantt-cpm">
+        ↩ 간트로
+      </Link>
+      <span>
+        {next ? <Link href={`/projects/${next.slug}`}>{next.hero.title} →</Link> : <span />}
+      </span>
+    </nav>
+  )
+}

@@ -746,7 +746,7 @@ const PROJECTS = [
       {k:'운영', v:'trace·폴링', cls:'', c:'에러 핸들링·관측성'}
     ],
     stack:['React','Vite','TypeScript','TanStack Query'] },
-  { id:'p-kiosk-app', slug:'mirrorless', tier:1, parent:'mir', co:'스타트업 · 키오스크', color:COLORS.mir, role:'키오스크 앱 — Electron·React',
+  { id:'p-kiosk-app', slug:'kiosk-app', tier:1, parent:'mir', co:'스타트업 · 키오스크', color:COLORS.mir, role:'키오스크 앱 — Electron·React',
     start:ym(2025,10), end:ym(2026,8), pct:60, crit:false, deps:[], slack:0, ongoing:true,
     problem:'매장 현장에서 동작해야 하는 키오스크 앱이 없었고, 디바이스·카메라·미디어 연동과 IPC 보안 경계를 모두 설계해야 했음.',
     built:'Electron·React·TypeScript로 키오스크 앱을 직접 제작하고 renderer/main/preload IPC 경계, 카메라·미디어 워크플로우, 디바이스 진단 연동을 설계·구현함.',

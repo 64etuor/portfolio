@@ -12,7 +12,7 @@ import { line_innovation } from './line-innovation'
 import { smart_factory } from './smart-factory'
 import { work_radar } from './work-radar'
 import { notion_os } from './notion-os'
-import { mirrorless } from './mirrorless'
+import { kiosk_app } from './kiosk-app'
 
 export const ALL_PROJECTS: ProjectContent[] = [
   mes_console,
@@ -25,7 +25,7 @@ export const ALL_PROJECTS: ProjectContent[] = [
   smart_factory,
   work_radar,
   notion_os,
-  mirrorless,
+  kiosk_app,
 ]
 
 export function enabledProjects(): ProjectContent[] {

@@ -1,16 +1,16 @@
 import type { ProjectContent } from './types'
 
-export const mirrorless: ProjectContent = {
-  slug: 'mirrorless',
+export const kiosk_app: ProjectContent = {
+  slug: 'kiosk-app',
   ganttId: 'p-kiosk-app',
   order: 11,
   enabled: true,
   hero: {
-    title: '미러리스 키오스크 — SW 아키텍처',
+    title: '뷰티 매장 키오스크 — SW 아키텍처',
     company: '스타트업',
     companyKey: 'startup',
     period: '2025.08–',
-    role: '미러리스 키오스크 — SW 아키텍처',
+    role: '뷰티 매장 키오스크 — SW 아키텍처',
   },
   summary:
     'Electron 기반 살롱 키오스크의 소프트웨어 아키텍처. Renderer(UI) · Main(Electron backend) · Python helper의 3계층을 IPC로 연결하고, 멀티 카메라 캡처·녹화·외부 AI 시뮬레이션을 멱등성과 오프라인 무결성을 지키며 처리하도록 설계했다.',
@@ -35,7 +35,7 @@ export const mirrorless: ProjectContent = {
     {
       heading: '계층 구조',
       body:
-        'Electron 앱을 세 계층으로 분리하고, 각 계층은 안전한 IPC 브릿지로만 통신한다.\n\n- **Renderer (UI)** — Atomic Design으로 구성. `CameraStream.atom` → `CameraController.molecule` → `CameraOverlay.organism` → `Home.page`. 상태는 `useCamera` / `useCapture` / `useSimulation` 스토어로 관리하고, `getUserMedia` 스트림을 WebGL/WebGPU 후처리 파이프라인에 전달\n- **Preload (Context Bridge)** — `window.Mirrorless` 네임스페이스에 IPC 헬퍼를 노출하되 채널 화이트리스트와 인자 검증으로 보안 확보 (`Camera.list()`, `Capture.trigger()`, `Simulation.request()`)\n- **Main (Electron backend)** — 핸들러·서비스·DB가 실제 미디어 작업과 외부 연동을 수행\n- **Python Helper** — Linux에서 `v4l2-ctl`로 장치 목록/컨트롤을 추출하고, 미지원 환경은 `ffmpeg avfoundation` / `system_profiler`로 대체',
+        'Electron 앱을 세 계층으로 분리하고, 각 계층은 안전한 IPC 브릿지로만 통신한다.\n\n- **Renderer (UI)** — Atomic Design으로 구성. `CameraStream.atom` → `CameraController.molecule` → `CameraOverlay.organism` → `Home.page`. 상태는 `useCamera` / `useCapture` / `useSimulation` 스토어로 관리하고, `getUserMedia` 스트림을 WebGL/WebGPU 후처리 파이프라인에 전달\n- **Preload (Context Bridge)** — `window.KioskBridge` 네임스페이스에 IPC 헬퍼를 노출하되 채널 화이트리스트와 인자 검증으로 보안 확보 (`Camera.list()`, `Capture.trigger()`, `Simulation.request()`)\n- **Main (Electron backend)** — 핸들러·서비스·DB가 실제 미디어 작업과 외부 연동을 수행\n- **Python Helper** — Linux에서 `v4l2-ctl`로 장치 목록/컨트롤을 추출하고, 미지원 환경은 `ffmpeg avfoundation` / `system_profiler`로 대체',
     },
     {
       heading: '메인 프로세스 설계',

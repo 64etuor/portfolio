@@ -25,7 +25,7 @@ const NAME_EN = 'Yangha Park'
  */
 const PROJECT_DETAIL_SLUG: Record<string, string> = {
   'Work Radar — Local-first AI 워크플로우 콕핏': 'work-radar',
-  '뷰티 매장 CRM·키오스크·앱 플랫폼': 'mirrorless',
+  '뷰티 매장 CRM·키오스크·앱 플랫폼': 'kiosk-app',
   '신제품 생산 라인 셋업 프로젝트 (자동화 설비 MES 자체 개발)': 'mes-console',
   '개발품 DV 데이터 전산 관리 프로젝트': 'dv-data',
   '공정 추적성 관리 프로그램 개발 프로젝트': 'traceability',

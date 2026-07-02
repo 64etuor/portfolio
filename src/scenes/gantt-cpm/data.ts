@@ -625,7 +625,7 @@ export const PROJECTS: Row[] = [
   },
   {
     id: 'p-kiosk-app',
-    slug: 'mirrorless',
+    slug: 'kiosk-app',
     tier: 1,
     parent: 'mir',
     co: '스타트업 · 키오스크',

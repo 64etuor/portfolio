@@ -9,7 +9,7 @@ import { SITE } from '@content/site'
  * The single, unified site header — one bar on every non-immersive route
  * (/s, /c, /resume). Hidden on the landing ('/') and the film ('/film').
  * A centered HOME button; the right end carries a page-specific action where
- * one makes sense (PDF on the résumé, OPEN ↗ on a scene). The same look is
+ * one makes sense (PRINT on the résumé, OPEN ↗ on a scene). The same look is
  * replicated inline on the static lab pages (gantt / scenes / skills).
  */
 export function SiteHeader() {
@@ -24,13 +24,12 @@ export function SiteHeader() {
       <Link href="/" className="site-bar__brand">{SITE.domain}</Link>
       <Link href="/" className="chrome-btn home">← Home</Link>
       {pathname === '/resume' && (
-        // A pre-rendered print-styled PDF, not window.print(): the latter is a
-        // silent no-op in embedded WebKit (WKWebView / the cmux browser). A PDF
-        // link prints and saves reliably everywhere. Regenerate via
-        // `npm run gen:resume:pdf` after résumé content changes.
-        <a href="/resume.pdf" target="_blank" rel="noreferrer" className="chrome-btn">
-          PDF
-        </a>
+        // Native print. Works in real Chrome/Safari; note it is a no-op inside
+        // embedded WebKit (WKWebView, e.g. the cmux in-app browser) — print the
+        // résumé from a real browser there.
+        <button type="button" className="chrome-btn" onClick={() => window.print()}>
+          Print
+        </button>
       )}
       {scene && (
         <a href={`/lab/${scene.file}`} target="_blank" rel="noreferrer" className="chrome-btn">

@@ -261,12 +261,13 @@ body{
   transition:border-color .15s,color .15s,background .15s;user-select:none}
 .vp-rewind:hover,.vp-replay:hover{border-color:var(--today);color:#9fc0ff;background:#111927}
 /* primary CTA — 상세 보기(문서). filled accent + persistent glow/pulse so it clearly reads as the main action. */
-.vp-doc{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;
-  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.02em;white-space:nowrap;
-  color:#06121f;border:1px solid var(--today);border-radius:7px;
-  padding:6px 12px;background:var(--today);cursor:pointer;
-  box-shadow:0 0 12px -5px var(--today);transition:filter .15s,box-shadow .15s,transform .1s;user-select:none}
-.vp-doc:hover{filter:brightness(1.1);box-shadow:0 0 16px -4px var(--today)}
+/* Same ghost shape as the other buttons; emphasis via accent color, not fill/bold. */
+.vp-doc{display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:10px;font-weight:700;white-space:nowrap;
+  color:#9fc0ff;border:1px solid rgba(74,128,240,.55);border-radius:7px;
+  padding:6px 9px;background:rgba(74,128,240,.10);cursor:pointer;
+  transition:border-color .15s,color .15s,background .15s;user-select:none}
+.vp-doc:hover{border-color:var(--today);color:#cfe0ff;background:rgba(74,128,240,.18)}
 .vp-doc:active{transform:translateY(1px)}
 .vp-divider{height:1px;background:var(--line);margin:12px 0}
 

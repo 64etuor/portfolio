@@ -31,7 +31,7 @@ export const notion_os: ProjectContent = {
     {
       heading: 'SSOT 정보 아키텍처',
       body:
-        '가장 중요한 원칙은 **Single Source of Truth**다. 같은 정보를 여러 곳에 복사하지 않고, 정보의 성격에 따라 정본 위치를 나눈다.\n\n- 코드 사실·API contract·CI/CD·ADR → **GitHub** (코드와 함께 변하는 기술 사실)\n- 사람용 설명·온보딩·운영 절차·문서 색인 → **Notion 개발 문서 허브**\n- 작업 단위·담당자·상태·완료 조건·PR 링크 → **백로그** (`MIR-DEV`)\n- 제품 요구사항·사용자 시나리오 → **PRD** (1행 = 1프로젝트 × 1기능)\n- 계약·법무·재무·민감 파일 → **Google Drive** (복사 대신 링크)\n- 목표와 핵심 지표 → **OKR DB**\n- 의사결정과 액션 상태 → **Decision OS**\n\n개발 문서는 역할(Canonical / Index / Guide / Runbook / Decision / Reference / Archive)과 SSOT 위치, 검토 주기, 정리 우선순위(P0~P3)를 필드로 관리해, 팀원이 문서를 열었을 때 *이 문서를 기준으로 판단해도 되는지*를 즉시 알 수 있게 했다.',
+        '가장 중요한 원칙은 **Single Source of Truth**다. 같은 정보를 여러 곳에 복사하지 않고, 정보의 성격에 따라 정본 위치를 나눈다.\n\n- 코드 사실·API contract·CI/CD·ADR → **GitHub** (코드와 함께 변하는 기술 사실)\n- 사람용 설명·온보딩·운영 절차·문서 색인 → **Notion 개발 문서 허브**\n- 작업 단위·담당자·상태·완료 조건·PR 링크 → **백로그**\n- 제품 요구사항·사용자 시나리오 → **PRD** (1행 = 1프로젝트 × 1기능)\n- 계약·법무·재무·민감 파일 → **Google Drive** (복사 대신 링크)\n- 목표와 핵심 지표 → **OKR DB**\n- 의사결정과 액션 상태 → **Decision OS**\n\n개발 문서는 역할(Canonical / Index / Guide / Runbook / Decision / Reference / Archive)과 SSOT 위치, 검토 주기, 정리 우선순위(P0~P3)를 필드로 관리해, 팀원이 문서를 열었을 때 *이 문서를 기준으로 판단해도 되는지*를 즉시 알 수 있게 했다.',
     },
     {
       heading: 'Decision OS · OKR',

@@ -13,39 +13,37 @@ export const kiosk_app: ProjectContent = {
     role: '뷰티 매장 키오스크 — SW 아키텍처',
   },
   summary:
-    'Electron 기반 살롱 키오스크의 소프트웨어 아키텍처. Renderer(UI) · Main(Electron backend) · Python helper의 3계층을 IPC로 연결하고, 멀티 카메라 캡처·녹화·외부 AI 시뮬레이션을 멱등성과 오프라인 무결성을 지키며 처리하도록 설계했다.',
+    'Electron 기반 뷰티 매장 키오스크의 소프트웨어 아키텍처. UI(Renderer) · 백엔드(Main) · 디바이스 헬퍼의 다중 프로세스를 안전한 IPC 경계로 연결하고, 멀티 카메라 캡처·녹화·외부 AI 연동을 멱등성과 오프라인 무결성을 지키며 처리하도록 설계했다.',
   metrics: [
-    { label: '아키텍처', value: 'IPC 다중 프로세스', note: 'Renderer / Main / Python' },
-    { label: 'UI 구성', value: 'Atomic Design', note: 'atom·molecule·organism·page' },
-    { label: '멱등성', value: 'ULID + LRU', note: '중복 캡처/시뮬레이션 명령 방지' },
-    { label: '로컬 저장', value: 'SQLite (WAL)', note: '오프라인 환경 무결성 유지' },
-    { label: '미디어', value: 'FFmpeg · GStreamer · V4L2', note: '캡처·녹화·장치 제어' },
+    { label: '아키텍처', value: '다중 프로세스', note: 'UI · 백엔드 · 디바이스 헬퍼' },
+    { label: 'UI 구성', value: '컴포넌트 계층', note: '재사용 가능한 구조' },
+    { label: '신뢰성', value: '멱등 처리', note: '중복 캡처·요청 방지' },
+    { label: '오프라인', value: '로컬 저장', note: '세션·미디어 무결성 유지' },
+    { label: '미디어', value: '캡처·녹화·장치제어', note: '멀티 카메라 파이프라인' },
   ],
   stack: [
     'Electron',
     'React / TypeScript',
-    'Zustand (store)',
-    'Context Bridge (preload)',
-    'Python (v4l2-ctl)',
-    'FFmpeg / GStreamer',
+    'IPC (Context Bridge)',
+    '미디어 파이프라인',
     'WebGL / WebGPU',
-    'SQLite (WAL)',
+    '로컬 DB',
   ],
   sections: [
     {
       heading: '계층 구조',
       body:
-        'Electron 앱을 세 계층으로 분리하고, 각 계층은 안전한 IPC 브릿지로만 통신한다.\n\n- **Renderer (UI)** — Atomic Design으로 구성. `CameraStream.atom` → `CameraController.molecule` → `CameraOverlay.organism` → `Home.page`. 상태는 `useCamera` / `useCapture` / `useSimulation` 스토어로 관리하고, `getUserMedia` 스트림을 WebGL/WebGPU 후처리 파이프라인에 전달\n- **Preload (Context Bridge)** — `window.KioskBridge` 네임스페이스에 IPC 헬퍼를 노출하되 채널 화이트리스트와 인자 검증으로 보안 확보 (`Camera.list()`, `Capture.trigger()`, `Simulation.request()`)\n- **Main (Electron backend)** — 핸들러·서비스·DB가 실제 미디어 작업과 외부 연동을 수행\n- **Python Helper** — Linux에서 `v4l2-ctl`로 장치 목록/컨트롤을 추출하고, 미지원 환경은 `ffmpeg avfoundation` / `system_profiler`로 대체',
+        'Electron 앱을 UI(Renderer) · 백엔드(Main) · 디바이스 헬퍼로 분리하고, 각 계층은 화이트리스트 기반의 안전한 IPC 경계로만 통신하도록 설계했다.\n\n- **Renderer (UI)** — 재사용 가능한 컴포넌트 계층으로 화면을 구성하고, 카메라 스트림과 미리보기 효과를 후처리 파이프라인에서 처리\n- **Preload (Context Bridge)** — 검증된 IPC 헬퍼만 렌더러에 노출해 권한을 최소화 (채널 화이트리스트 + 인자 검증)\n- **Main (백엔드)** — 미디어 작업·디바이스 제어·외부 연동·로컬 저장을 담당',
     },
     {
-      heading: '메인 프로세스 설계',
+      heading: '미디어 · 디바이스 처리',
       body:
-        '메인 프로세스는 명령의 신뢰성과 장치 일관성을 책임진다.\n\n- **IpcManager** — `withIdempotency` 래퍼가 ULID 기반 멱등성을 LRU 캐시로 보장해, 캡처·시뮬레이션·녹화 같은 중복 명령을 방지\n- **DeviceRegistry** — `/dev/video*` ↔ 브라우저 `mediaDeviceId`를 한 곳에서 매칭. 권한 변경 시 목록을 재배포\n- **핸들러** — `CameraHandler`(Python 호출) · `CaptureHandler`(FFmpeg 스틸+썸네일+DB) · `RecordHandler`(장기 녹화 세션) · `SimulationHandler`(외부 AI 요청 준비·결과 수집)\n- **서비스** — `ServiceRegistry`가 `FFmpegService` · `CameraService` · `ExternalApiClient` · `AssetUploader` 등을 싱글턴으로 관리\n- **DB** — SQLite(WAL)에 세션·미디어·업로드 큐·시뮬레이션 기록을 저장해 오프라인에서도 무결성 유지',
+        '멀티 카메라 프리뷰·스틸 캡처·장기 녹화를 미디어 파이프라인으로 처리하고, 카메라 장치 식별과 권한 변경을 한 곳에서 일관되게 관리했다.\n\n- **멱등 처리** — 캡처·요청 명령에 고유 키를 부여해 중복 실행을 방지\n- **오프라인 무결성** — 세션·미디어·처리 기록을 로컬 DB에 저장해 네트워크 단절에도 데이터를 잃지 않도록 설계\n- **디바이스 추상화** — 운영체제별 카메라 장치 차이를 흡수해 동일한 인터페이스로 노출',
     },
     {
-      heading: '데이터 흐름',
+      heading: '외부 연동',
       body:
-        '카메라 장치부터 AI 시뮬레이션까지의 처리 흐름:\n\n- **장치 동기화** — Renderer가 `Camera.list` 호출 → `CameraService`가 장치 수집 → `DeviceRegistry`가 `/dev/video*` ↔ `mediaDeviceId` 매칭 후 목록 전달\n- **프리뷰** — 선택 장치로 `getUserMedia`, WebGL/WebGPU 파이프라인에서 미리보기 효과 적용 (메인 결과와 파라미터 동기화)\n- **스틸 캡처** — `Capture.trigger` → FFmpeg 고품질 캡처 → 썸네일·DB 갱신 → 완료 이벤트 브로드캐스트\n- **녹화** — `RecordHandler`가 `MediaPipeline`(FFmpeg/GStreamer)으로 세션 관리, 진행/완료 이벤트 전송\n- **AI 시뮬레이션** — FFmpeg 전처리 → `AssetUploader`로 업로드 → 외부 헤어/염색 시뮬레이션 API 호출 → 결과를 DB/CDN에 저장 후 스토어 업데이트\n\n외부 AI 공급자는 언제든 교체될 수 있으므로 엔드포인트·인증 정보를 `ExternalApiClient`에 격리해, 공급자 변경이 나머지 코드에 파급되지 않게 했다.',
+        '외부 AI 연동은 전처리 · 업로드 · 요청 · 결과 수집의 단계로 분리하고, 공급자 교체가 나머지 코드에 파급되지 않도록 연동 계층을 격리했다. 결과는 로컬에 저장한 뒤 화면 상태로 반영한다.',
     },
   ],
 }

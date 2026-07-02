@@ -61,7 +61,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     if (!root || !svg || !boardWrap || !detail || !tip || !cpToggle || !dimToggle) return
 
     let cpOn = true,
-      dimOn = true
+      dimOn = false
     let replayTimers: ReturnType<typeof setTimeout>[] = []
     const cleanups: Array<() => void> = []
 
@@ -440,10 +440,18 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           if (study) {
             el('rect', { x: 38, y: cy - 7, width: 8, height: 14, rx: 3, fill: COLORS.self }, lblG)
             el('path', { d: `M ${40.5} ${cy} L ${42} ${cy + 2} L ${44.5} ${cy - 2.6}`, fill: 'none', stroke: '#06241a', 'stroke-width': 1.4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-opacity': 0.75 }, lblG)
+          } else if (t.slug) {
+            // 상세 문서(드로어)가 있는 행 — 작은 문서 아이콘으로 특별 표시.
+            const mx = 39,
+              my = cy - 6
+            const mk = el('g', {}, lblG)
+            el('rect', { x: mx, y: my, width: 9, height: 12, rx: 1.5, fill: 'rgba(143,180,255,.12)', stroke: '#8fb4ff', 'stroke-width': 1.1 }, mk)
+            el('line', { x1: mx + 2.4, y1: my + 4, x2: mx + 6.6, y2: my + 4, stroke: '#8fb4ff', 'stroke-width': 1 }, mk)
+            el('line', { x1: mx + 2.4, y1: my + 7, x2: mx + 6.6, y2: my + 7, stroke: '#8fb4ff', 'stroke-width': 1 }, mk)
           } else {
             el('rect', { x: 42, y: cy - 6, width: 3, height: 12, rx: 1.5, fill: t.color, 'fill-opacity': 0.9 }, lblG)
           }
-          const nm = el('text', { x: 50, y: cy - 1.5, fill: '#ccd4e0', 'font-size': 10, 'font-weight': 700 }, lblG)
+          const nm = el('text', { x: 51, y: cy - 1.5, fill: t.slug ? '#eaf1ff' : '#ccd4e0', 'font-size': 10, 'font-weight': 700 }, lblG)
           nm.textContent = t.role.length > 25 ? t.role.slice(0, 24) + '…' : t.role
           const sub = el('text', { x: 50, y: cy + 9, fill: study ? '#7fd4b3' : 'var(--ink-2)', 'font-size': 8, 'font-family': 'var(--mono)' }, lblG)
           sub.textContent = t.co

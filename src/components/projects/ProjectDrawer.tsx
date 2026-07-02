@@ -60,16 +60,19 @@ export function ProjectDrawer({ project, onClose }: { project: ProjectContent | 
         style={accent}
       >
         <div className="pjd-bar">
-          {shown ? (
-            <Link className="pjd-full" href={`/projects/${shown.slug}`}>
-              전체 페이지로 열기 ↗
-            </Link>
-          ) : (
-            <span />
-          )}
-          <button className="pjd-x" type="button" onClick={onClose} aria-label="닫기">
-            ✕
+          <button className="pjd-back" type="button" onClick={onClose}>
+            ← 뒤로
           </button>
+          <div className="pjd-bar-r">
+            {shown ? (
+              <Link className="pjd-full" href={`/projects/${shown.slug}`}>
+                전체 페이지 ↗
+              </Link>
+            ) : null}
+            <button className="pjd-x" type="button" onClick={onClose} aria-label="닫기">
+              ✕
+            </button>
+          </div>
         </div>
         <div className="pjd-scroll">
           {shown ? (

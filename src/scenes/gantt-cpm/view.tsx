@@ -74,7 +74,7 @@ export function GanttView({
             <div className={`${s.toggle} ${s.on}`} ref={cpToggleRef} role="button" tabIndex={0} aria-pressed="true">
               <span className={s.dot} />크리티컬 패스 강조
             </div>
-            <div className={`${s.toggle} ${s.ghost} ${s.on}`} ref={dimToggleRef} role="button" tabIndex={0} aria-pressed="true">
+            <div className={`${s.toggle} ${s.ghost}`} ref={dimToggleRef} role="button" tabIndex={0} aria-pressed="false">
               <span className={s.dot} />프로젝트 디밍
             </div>
             <span className={s.hint}>회사·프로젝트 막대를 클릭하면 역할 상세 + 비즈니스 임팩트가 열립니다.</span>
@@ -191,9 +191,9 @@ export function GanttView({
           <div className={s.vpSection}>
             <div className={s.vpLabel}><span className={s.vpNum}>⑤</span>자세히 보기</div>
             <div className={s.vpActions}>
-              <button className={s.vpDoc} data-d="doc" type="button" style={{ display: 'none' }}>📄 프로젝트 상세 보기 →</button>
-              <button className={s.vpRewind} data-d="rewind" type="button">↩ 관련 장면 보기</button>
-              <button className={s.vpReplay} data-d="replay" type="button">핵심 성과 하이라이트</button>
+              <button className={s.vpDoc} data-d="doc" type="button" style={{ display: 'none' }}>📄 상세 보기</button>
+              <button className={s.vpRewind} data-d="rewind" type="button">↩ 관련 장면</button>
+              <button className={s.vpReplay} data-d="replay" type="button">✦ 성과 하이라이트</button>
             </div>
           </div>
         </div>

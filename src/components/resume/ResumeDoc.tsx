@@ -1,4 +1,6 @@
 import Link from 'next/link'
+import { ProjectDetailLink } from '../projects/ProjectDetailLink'
+import { ProjectDrawerHost } from '../projects/ProjectDrawerHost'
 import { ResumeDragonHero } from './ResumeDragonHero'
 import { PretextHeading } from './PretextHeading'
 import { coverLetter } from '@content/coverLetter'
@@ -181,9 +183,9 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
                 <article className="rz-card" key={i}>
                   <div className="rz-card-head">
                     {slug ? (
-                      <Link className="rz-card-title rz-card-title-link kr" href={`/projects/${slug}`}>
+                      <ProjectDetailLink slug={slug} className="rz-card-title rz-card-title-link kr">
                         {p.name}
-                      </Link>
+                      </ProjectDetailLink>
                     ) : (
                       <h3 className="rz-card-title kr">{p.name}</h3>
                     )}
@@ -206,9 +208,9 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
                     </ul>
                   )}
                   {slug && (
-                    <Link className="rz-card-detail" href={`/projects/${slug}`}>
+                    <ProjectDetailLink slug={slug} className="rz-card-detail">
                       프로젝트 상세 보기 →
-                    </Link>
+                    </ProjectDetailLink>
                   )}
                 </article>
               )
@@ -276,6 +278,7 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
           <span>ASCII dragon &amp; layout ported from pretext-playground (MIT)</span>
         </footer>
       </div>
+      <ProjectDrawerHost />
     </main>
   )
 }

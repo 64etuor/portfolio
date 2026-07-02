@@ -253,21 +253,23 @@ body{
 }
 .vp-section.replay-active .vp-label{color:#9fc0ff}
 .vp-section.replay-active .vp-num{background:var(--today);color:#fff}
-.vp-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.vp-rewind,.vp-replay{display:inline-flex;align-items:center;gap:7px;
-  font-family:var(--mono);font-size:10.5px;font-weight:700;
+.vp-actions{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+.vp-rewind,.vp-replay{display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:10px;font-weight:700;white-space:nowrap;
   color:var(--ink-2);border:1px solid var(--line-2);border-radius:7px;
-  padding:6px 12px;background:var(--paper-2);cursor:pointer;
+  padding:6px 9px;background:var(--paper-2);cursor:pointer;
   transition:border-color .15s,color .15s,background .15s;user-select:none}
 .vp-rewind:hover,.vp-replay:hover{border-color:var(--today);color:#9fc0ff;background:#111927}
-/* primary CTA — 프로젝트 상세 문서. filled accent so it clearly reads as the main action. */
-.vp-doc{display:inline-flex;align-items:center;gap:7px;
-  font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.02em;
-  color:#08131f;border:1px solid var(--today);border-radius:7px;
-  padding:7px 14px;background:var(--today);cursor:pointer;
-  box-shadow:0 0 0 0 rgba(90,150,255,0);transition:filter .15s,box-shadow .15s,transform .1s;user-select:none}
-.vp-doc:hover{filter:brightness(1.12);box-shadow:0 0 16px -2px var(--today)}
+/* primary CTA — 상세 보기(문서). filled accent + persistent glow/pulse so it clearly reads as the main action. */
+.vp-doc{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;
+  font-family:var(--mono);font-size:11.5px;font-weight:800;letter-spacing:.02em;white-space:nowrap;
+  color:#06121f;border:1px solid var(--today);border-radius:7px;
+  padding:7px 13px;background:var(--today);cursor:pointer;
+  box-shadow:0 0 0 1px rgba(90,150,255,.25),0 0 16px -3px var(--today);
+  animation:vpDocPulse 2.4s ease-in-out infinite;transition:filter .15s,box-shadow .15s,transform .1s;user-select:none}
+.vp-doc:hover{filter:brightness(1.14);box-shadow:0 0 0 1px var(--today),0 0 22px -2px var(--today)}
 .vp-doc:active{transform:translateY(1px)}
+@keyframes vpDocPulse{0%,100%{box-shadow:0 0 0 1px rgba(90,150,255,.25),0 0 14px -4px var(--today)}50%{box-shadow:0 0 0 1px rgba(90,150,255,.45),0 0 22px -2px var(--today)}}
 .vp-divider{height:1px;background:var(--line);margin:12px 0}
 
 /* tooltip */
@@ -351,7 +353,7 @@ footer .r a:hover{color:var(--crit)}
       <div class="toggle on" id="cpToggle" role="button" tabindex="0" aria-pressed="true">
         <span class="dot"></span>크리티컬 패스 강조
       </div>
-      <div class="toggle ghost on" id="dimToggle" role="button" tabindex="0" aria-pressed="true">
+      <div class="toggle ghost" id="dimToggle" role="button" tabindex="0" aria-pressed="false">
         <span class="dot"></span>프로젝트 디밍
       </div>
       <span class="hint">회사·프로젝트 막대를 클릭하면 역할 상세 + 비즈니스 임팩트가 열립니다.</span>
@@ -456,9 +458,9 @@ footer .r a:hover{color:var(--crit)}
     <div class="vp-section" id="dSecRewind">
       <div class="vp-label"><span class="vp-num">⑤</span>자세히 보기</div>
       <div class="vp-actions">
-        <button class="vp-doc" id="dDoc" data-slug="" type="button" style="display:none">📄 프로젝트 상세 보기 →</button>
-        <button class="vp-rewind" id="dRewind" data-rewind="" type="button">↩ 관련 장면 보기</button>
-        <button class="vp-replay" id="dReplay" type="button">핵심 성과 하이라이트</button>
+        <button class="vp-doc" id="dDoc" data-slug="" type="button" style="display:none">📄 상세 보기</button>
+        <button class="vp-rewind" id="dRewind" data-rewind="" type="button">↩ 관련 장면</button>
+        <button class="vp-replay" id="dReplay" type="button">✦ 성과 하이라이트</button>
       </div>
     </div>
   </div>
@@ -964,10 +966,16 @@ function buildGantt(){
         // 개인 교육 — green badge in front
         el('rect',{x:38,y:cy-7,width:8,height:14,rx:3,fill:COLORS.self},lblG);
         el('path',{d:`M ${40.5} ${cy} L ${42} ${cy+2} L ${44.5} ${cy-2.6}`,fill:'none',stroke:'#06241a','stroke-width':1.4,'stroke-linecap':'round','stroke-linejoin':'round','stroke-opacity':.75},lblG);
+      } else if(t.slug){
+        // 상세 문서가 있는 행 — 작은 파란 문서 아이콘으로 특별 표시.
+        const mx=39,my=cy-6,mk=el('g',{},lblG);
+        el('rect',{x:mx,y:my,width:9,height:12,rx:1.5,fill:'rgba(143,180,255,.12)',stroke:'#8fb4ff','stroke-width':1.1},mk);
+        el('line',{x1:mx+2.4,y1:my+4,x2:mx+6.6,y2:my+4,stroke:'#8fb4ff','stroke-width':1},mk);
+        el('line',{x1:mx+2.4,y1:my+7,x2:mx+6.6,y2:my+7,stroke:'#8fb4ff','stroke-width':1},mk);
       } else {
         el('rect',{x:42,y:cy-6,width:3,height:12,rx:1.5,fill:t.color,'fill-opacity':.9},lblG);
       }
-      const nm=el('text',{x:50,y:cy-1.5,fill:'#ccd4e0','font-size':10,'font-weight':700},lblG);
+      const nm=el('text',{x:51,y:cy-1.5,fill:t.slug?'#eaf1ff':'#ccd4e0','font-size':10,'font-weight':700},lblG);
       nm.textContent = t.role.length>25 ? t.role.slice(0,24)+'…' : t.role;
       const sub=el('text',{x:50,y:cy+9,fill: study?'#7fd4b3':'var(--ink-2)','font-size':8,'font-family':'var(--mono)'},lblG);
       sub.textContent=t.co;
@@ -1128,7 +1136,7 @@ function buildGantt(){
 /* ============================================================
    Critical path toggle / dim
 ============================================================ */
-let cpOn=true, dimOn=true;
+let cpOn=true, dimOn=false;
 function applyCP(){
   svg.classList.toggle('cp', cpOn);
   document.body.classList.toggle('dim-others', cpOn && dimOn);

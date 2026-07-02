@@ -8,7 +8,7 @@
   overflow: hidden;
   background: #0a0e14;
   color: #c9d4e3;
-  font-family: 'SF Mono','JetBrains Mono','Fira Code',ui-monospace,'Cascadia Code',Consolas,monospace;
+  font-family: 'JetBrains Mono','SF Mono','Fira Code',ui-monospace,'Cascadia Code',Consolas,monospace;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;

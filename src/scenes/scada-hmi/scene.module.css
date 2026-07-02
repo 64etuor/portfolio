@@ -20,7 +20,7 @@
     radial-gradient(1200px 700px at 50% -10%, #18222b 0%, transparent 60%),
     linear-gradient(180deg, #0a0e12 0%, #0c1014 100%);
   color: var(--txt);
-  font-family: 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+  font-family: 'Pretendard Variable', Pretendard, 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
 }

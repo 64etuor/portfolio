@@ -1,7 +1,7 @@
 'use client'
 
 import { createPortal } from 'react-dom'
-import { useEffect, useState, useSyncExternalStore } from 'react'
+import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
 import type { CSSProperties } from 'react'
 
 // Hydration-safe client flag: false during SSR AND the hydration render (so it
@@ -41,6 +41,7 @@ export function ProjectDrawer({ project, onClose }: { project: ProjectContent | 
     if (project) setShown(project)
   }
   const open = !!project
+  const scrollRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!open) return
@@ -50,6 +51,26 @@ export function ProjectDrawer({ project, onClose }: { project: ProjectContent | 
     document.addEventListener('keydown', onKey)
     return () => document.removeEventListener('keydown', onKey)
   }, [open, onClose])
+
+  // Always start a freshly-opened (or switched) drawer at the top — otherwise
+  // the scroll container retains the previous project's scroll position.
+  useEffect(() => {
+    if (project) scrollRef.current?.scrollTo({ top: 0 })
+  }, [project?.slug])
+
+  // Scroll-lock the background while open: a wheel over the drawer chrome (or
+  // past the scroll region's edge) must not scroll the page/scene underneath.
+  // Inside .pjd-scroll we let it scroll (overscroll-behavior:contain in CSS
+  // stops chaining at its edges); everywhere else we cancel the default.
+  useEffect(() => {
+    if (!open) return
+    const onWheel = (e: WheelEvent) => {
+      const sc = scrollRef.current
+      if (!sc || !sc.contains(e.target as Node)) e.preventDefault()
+    }
+    document.addEventListener('wheel', onWheel, { passive: false })
+    return () => document.removeEventListener('wheel', onWheel)
+  }, [open])
 
   // Render nothing on the server and during the hydration pass (matches the
   // server's null output); the body portal mounts only after hydration.
@@ -82,7 +103,7 @@ export function ProjectDrawer({ project, onClose }: { project: ProjectContent | 
             </button>
           </div>
         </div>
-        <div className="pjd-scroll">{shown ? <ProjectBody project={shown} /> : null}</div>
+        <div className="pjd-scroll" ref={scrollRef}>{shown ? <ProjectBody project={shown} /> : null}</div>
       </aside>
     </>,
     document.body,

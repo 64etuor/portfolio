@@ -119,6 +119,8 @@
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
+  /* keep wheel/touch scroll inside the drawer — don't chain to the page/scene */
+  overscroll-behavior: contain;
   padding: 22px 26px 60px;
 }
 /* the drawer already has a header bar, so the hero's top padding can be tighter */

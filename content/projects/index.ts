@@ -36,6 +36,3 @@ export function projectBySlug(slug: string): ProjectContent | undefined {
   const p = ALL_PROJECTS.find((x) => x.slug === slug)
   return p && p.enabled ? p : undefined
 }
-
-export type { ProjectContent }
-export { COMPANY_ACCENT } from './types'

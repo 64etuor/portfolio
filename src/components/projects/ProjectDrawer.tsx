@@ -6,12 +6,7 @@ import type { CSSProperties } from 'react'
 import Link from 'next/link'
 import type { ProjectContent } from '@content/projects/types'
 import { COMPANY_ACCENT } from '@content/projects/types'
-import { Hero } from './Hero'
-import { MetricGrid } from './MetricGrid'
-import { Prose } from './Prose'
-import { Gallery } from './Gallery'
-import { StackTags } from './StackTags'
-import { Diagram } from './Diagram'
+import { ProjectBody } from './ProjectBody'
 import '@/app/projects.css'
 import './projectDrawer.css'
 
@@ -74,38 +69,7 @@ export function ProjectDrawer({ project, onClose }: { project: ProjectContent | 
             </button>
           </div>
         </div>
-        <div className="pjd-scroll">
-          {shown ? (
-            <>
-              <Hero project={shown} />
-              {shown.metrics.length > 0 ? (
-                <section className="pj-section">
-                  <h2 className="pj-h2">핵심 성과</h2>
-                  <MetricGrid metrics={shown.metrics} />
-                </section>
-              ) : null}
-              <Prose sections={shown.sections} />
-              {shown.diagram ? (
-                <section className="pj-section">
-                  <h2 className="pj-h2">동작 흐름</h2>
-                  <Diagram diagram={shown.diagram} />
-                </section>
-              ) : null}
-              {shown.gallery && shown.gallery.length > 0 ? (
-                <section className="pj-section">
-                  <h2 className="pj-h2">화면</h2>
-                  <Gallery items={shown.gallery} />
-                </section>
-              ) : null}
-              {shown.stack.length > 0 ? (
-                <section className="pj-section">
-                  <h2 className="pj-h2">기술 스택</h2>
-                  <StackTags stack={shown.stack} />
-                </section>
-              ) : null}
-            </>
-          ) : null}
-        </div>
+        <div className="pjd-scroll">{shown ? <ProjectBody project={shown} /> : null}</div>
       </aside>
     </>,
     document.body,

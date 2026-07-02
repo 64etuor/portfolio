@@ -148,7 +148,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       })
     }
     function rewindToScene(key: string) {
-      const path = REWIND_ROUTES[key]
+      // key 가 '/s/...' 절대경로면 전용 씬 직행, 아니면 회사·시대 되감기 맵을 조회.
+      const path = key.startsWith('/') ? key : REWIND_ROUTES[key]
       if (!path) return
       try {
         const targetWindow = window.top && window.top !== window ? window.top : window
@@ -240,7 +241,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         dMetrics.appendChild(d)
       })
 
-      dRewind.dataset.rewind = t.rewind || ''
+      // 전용 씬(t.scene)이 있으면 /s/<scene> 직행, 없으면 회사·시대 되감기 키.
+      dRewind.dataset.rewind = t.scene ? `/s/${t.scene}` : t.rewind || ''
       // 프로젝트 상세 문서 버튼 — slug 가 있는 막대에만 노출(primary CTA).
       if (t.slug) {
         dDoc.dataset.slug = t.slug

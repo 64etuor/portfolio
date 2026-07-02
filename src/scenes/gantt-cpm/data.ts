@@ -39,7 +39,8 @@ export interface Row {
   slack: number
   problem?: string
   built?: string
-  rewind?: string
+  rewind?: string // 회사·시대 단위 되감기 키(REWIND_ROUTES). 전용 씬이 없는 막대의 기본값.
+  scene?: string // 이 프로젝트만의 전용 씬 slug(예: 'pipeline-dag'). 있으면 rewind 보다 우선해 /s/<scene> 로 직행.
   slug?: string // → /projects/<slug> detail doc (only bars with an embedded doc)
   desc: string
   metrics: Metric[]
@@ -556,6 +557,7 @@ export const PROJECTS: Row[] = [
     built:
       'Notion 중심의 조직 운영 OS를 혼자 기획·설계·구축해 SSOT 거버넌스·백로그·PRD·Decision OS·OKR·Runbook·GitHub 연계 등 7개 하위 시스템을 현재까지 운영·고도화 중.',
     rewind: 'startup',
+    scene: 'pipeline-dag', // 전용 씬(Notion OS DAG) — 회사 기본 되감기(pid-scheme) 대신 이쪽으로 직행.
     desc:
       '문서·의사결정·목표·개발 실행·운영 지식을 Notion 중심으로 연결한 조직 운영 OS를 혼자 기획·설계·구축하고 현재까지 운영·고도화 중. SSOT 거버넌스, 개발문서 허브, Jira 대체 백로그·에픽·PRD, Decision OS(Ledger·Action·Boost/Drag), OKR/KPI 체크인, 운영·보안 Runbook, GitHub·Drive·AI 연계와 Google Workspace 세팅까지 전부 직접 구성.',
     metrics: [

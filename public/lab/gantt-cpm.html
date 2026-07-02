@@ -714,7 +714,7 @@ const PROJECTS = [
     start:ym(2025,9), end:ym(2026,8), pct:60, crit:false, deps:[], slack:0, ongoing:true,
     problem:'문서·의사결정·목표·개발 실행·운영 지식이 분산되어 있어 조직 운영의 단일 정보 소스(SSOT)가 없었고 빠른 실행에 마찰이 있었음.',
     built:'Notion 중심의 조직 운영 OS를 혼자 기획·설계·구축해 SSOT 거버넌스·백로그·PRD·Decision OS·OKR·Runbook·GitHub 연계 등 7개 하위 시스템을 현재까지 운영·고도화 중.',
-    rewind:'startup',
+    rewind:'startup', scene:'pipeline-dag',
     desc:'문서·의사결정·목표·개발 실행·운영 지식을 Notion 중심으로 연결한 조직 운영 OS를 혼자 기획·설계·구축하고 현재까지 운영·고도화 중. SSOT 거버넌스, 개발문서 허브, Jira 대체 백로그·에픽·PRD, Decision OS(Ledger·Action·Boost/Drag), OKR/KPI 체크인, 운영·보안 Runbook, GitHub·Drive·AI 연계와 Google Workspace 세팅까지 전부 직접 구성.',
     metrics:[
       {k:'설계', v:'7개 하위 시스템', cls:'', c:'문서·백로그·PRD·Decision·OKR·Runbook·연계'},
@@ -1215,7 +1215,8 @@ function startVerificationReplay(){
   });
 }
 function rewindToScene(key){
-  const path=REWIND_ROUTES[key];
+  // key 가 '/s/...' 절대경로면 전용 씬 직행, 아니면 회사·시대 되감기 맵을 조회.
+  const path=key.charAt(0)==='/'?key:REWIND_ROUTES[key];
   if(!path) return;
   try{
     const targetWindow=(window.top && window.top!==window) ? window.top : window;
@@ -1270,7 +1271,8 @@ function openDetail(t){
 
   // ⑤ 관련 장면 되감기
   const rw=document.getElementById('dRewind');
-  rw.dataset.rewind=t.rewind||'';
+  // 전용 씬(t.scene)이 있으면 /s/<scene> 직행, 없으면 회사·시대 되감기 키.
+  rw.dataset.rewind=t.scene?('/s/'+t.scene):(t.rewind||'');
 
   // 프로젝트 상세 문서 버튼 — slug 가 있는 항목에만 노출.
   const dc=document.getElementById('dDoc');

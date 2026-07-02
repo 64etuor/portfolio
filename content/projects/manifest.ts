@@ -45,5 +45,5 @@ export const MANIFEST: ManifestEntry[] = [
   { slug: 'notion-os', ganttId: 'p-notion', title: 'Notion OS — 조직 운영 시스템', company: '스타트업', companyKey: 'startup', period: '2025.10–', order: 10, enabled: true,
     source: '300_Projects/2510 Notion System/2510 Notion OS.md' },
   { slug: 'kiosk-app', ganttId: 'p-kiosk-app', title: '뷰티 매장 키오스크 — SW 아키텍처', company: '스타트업', companyKey: 'startup', period: '2025.08–', order: 11, enabled: true,
-    source: `${PRIVATE}/2508 Mirrorless/개발 문서/미러리스 키오스크 아키텍쳐.md` },
+    source: `${PRIVATE}/2508 Kiosk/개발 문서/키오스크 아키텍쳐.md` },
 ]

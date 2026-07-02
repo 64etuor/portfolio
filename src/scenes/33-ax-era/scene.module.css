@@ -9,7 +9,7 @@
   inset: 0;
   overflow: hidden;
   color: var(--scene-phos);
-  font-family: 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
+  font-family: 'Pretendard Variable', 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
   background: radial-gradient(135% 100% at 50% 30%, #0c0c0e 0%, #070708 52%, #030303 100%);
@@ -133,7 +133,7 @@
 }
 
 .l1 {
-  font-family: 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
+  font-family: 'Pretendard Variable', 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
   font-weight: 800;
   font-size: clamp(34px, 5.6vw, 92px);
   letter-spacing: -1.6px;
@@ -196,7 +196,7 @@
 }
 
 .l2 {
-  font-family: 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
+  font-family: 'Pretendard Variable', 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
   font-weight: 600;
   font-size: clamp(16px, 2.3vw, 38px);
   letter-spacing: -0.4px;

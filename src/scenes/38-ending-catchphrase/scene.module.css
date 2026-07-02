@@ -5,7 +5,7 @@
   --phos-deep: var(--scene-phos-deep);
   --acc: #52e6cf;
   --acc-bright: #c7fbf1;
-  --kr: 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
+  --kr: 'Pretendard Variable', 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
   --mono: 'JetBrains Mono', ui-monospace, monospace;
 
   color: var(--phos);

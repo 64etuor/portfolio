@@ -326,7 +326,7 @@ function drawAgents(ctx: CanvasRenderingContext2D, L: Layout) {
     ctx.fillStyle = COL.read; ctx.shadowColor = COL.read; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0
 
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'
-    ctx.font = '700 12px "Pretendard",sans-serif'; ctx.fillStyle = '#d7d7d7'
+    ctx.font = '700 12px "Pretendard Variable","Pretendard",sans-serif'; ctx.fillStyle = '#d7d7d7'
     ctx.fillText(a.label, x + 13, y + a.h * 0.42)
     ctx.font = '500 9.5px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(141,141,141,.95)'
     ctx.fillText(a.role, x + 13, y + a.h * 0.42 + 15)
@@ -352,11 +352,11 @@ function drawHermes(ctx: CanvasRenderingContext2D, L: Layout) {
   ctx.lineWidth = 1.4; ctx.strokeStyle = 'rgba(79,224,196,.34)'; ctx.stroke()
 
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'
-  ctx.font = '800 16px "Pretendard",sans-serif'; ctx.fillStyle = '#e7faf5'
+  ctx.font = '800 16px "Pretendard Variable","Pretendard",sans-serif'; ctx.fillStyle = '#e7faf5'
   ctx.fillText('HERMES', h.x + h.w * 0.07, h.y + h.h * 0.115)
   ctx.font = '600 10px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(79,224,196,.9)'
   ctx.fillText('CONTROL PLANE', h.x + h.w * 0.07 + 86, h.y + h.h * 0.115)
-  ctx.font = '500 10px "Pretendard",sans-serif'; ctx.fillStyle = 'rgba(141,141,141,.95)'
+  ctx.font = '500 10px "Pretendard Variable","Pretendard",sans-serif'; ctx.fillStyle = 'rgba(141,141,141,.95)'
   ctx.fillText('제어 평면 · 유일한 진입점 · 라우팅 / 권한 / 정본 / 적재', h.x + h.w * 0.07, h.y + h.h * 0.115 + 17)
 
   L.modules.forEach((m) => {
@@ -365,7 +365,7 @@ function drawHermes(ctx: CanvasRenderingContext2D, L: Layout) {
     ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(60,72,70,.95)'; ctx.stroke()
     ctx.font = '700 12px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(79,224,196,.9)'; ctx.textAlign = 'left'
     ctx.fillText(m.n, m.x + 11, m.y + m.h * 0.42)
-    ctx.font = '700 12.5px "Pretendard",sans-serif'; ctx.fillStyle = '#d7d7d7'
+    ctx.font = '700 12.5px "Pretendard Variable","Pretendard",sans-serif'; ctx.fillStyle = '#d7d7d7'
     ctx.fillText(m.title, m.x + 30, m.y + m.h * 0.42)
     ctx.font = '500 9px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(141,141,141,.85)'
     ctx.fillText(m.sub, m.x + 30, m.y + m.h * 0.42 + 15)
@@ -417,7 +417,7 @@ function drawGraphiti(ctx: CanvasRenderingContext2D, L: Layout, t: number) {
 
   ctx.font = '600 10px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(141,141,141,.9)'; ctx.textAlign = 'center'
   ctx.fillText('GRAPHITI · temporal graph index', g.x + g.w / 2, g.y - 14)
-  ctx.font = '500 9px "Pretendard",sans-serif'; ctx.fillStyle = 'rgba(224,104,90,.7)'
+  ctx.font = '500 9px "Pretendard Variable","Pretendard",sans-serif'; ctx.fillStyle = 'rgba(224,104,90,.7)'
   ctx.fillText('HIDDEN · 런타임 직접 접근 ✕', g.x + g.w / 2, g.y - 2)
 }
 
@@ -429,7 +429,7 @@ function drawCanon(ctx: CanvasRenderingContext2D, L: Layout) {
   ctx.lineWidth = 1.3; ctx.strokeStyle = 'rgba(230,178,79,.5)'; ctx.stroke()
   ctx.fillStyle = COL.gov; ctx.fillRect(x, y + 6, 3, c.h - 12)
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'
-  ctx.font = '700 12.5px "Pretendard",sans-serif'; ctx.fillStyle = '#f0dcab'
+  ctx.font = '700 12.5px "Pretendard Variable","Pretendard",sans-serif'; ctx.fillStyle = '#f0dcab'
   ctx.fillText('OKF · 정본 문서 포맷', x + 14, y + c.h * 0.44)
   ctx.font = '500 9px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(230,178,79,.8)'
   ctx.fillText('llmwiki canonical bundle', x + 14, y + c.h * 0.44 + 15)
@@ -450,7 +450,7 @@ function drawPRGate(ctx: CanvasRenderingContext2D, L: Layout, t: number) {
     ctx.stroke()
   }
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'
-  ctx.font = '700 12.5px "Pretendard",sans-serif'; ctx.fillStyle = '#f0dcab'
+  ctx.font = '700 12.5px "Pretendard Variable","Pretendard",sans-serif'; ctx.fillStyle = '#f0dcab'
   ctx.fillText('PR PROPOSAL · 리뷰 게이트', x + 34, y + p.h * 0.44)
   ctx.font = '500 9px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(230,178,79,.8)'
   ctx.fillText('write → review → merge', x + 34, y + p.h * 0.44 + 15)

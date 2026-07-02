@@ -32,7 +32,7 @@
     --phos-deep:#3a3a3a;
     --warm:#d98a3d; --warm-bright:#f3c184;   /* FIELD */
     --cold:#6ea8ff; --cold-bright:#cfe0ff;   /* DEV  */
-    --kr:"Pretendard","Pretendard Variable",-apple-system,sans-serif;
+    --kr:"Pretendard Variable","Pretendard","Pretendard Variable",-apple-system,sans-serif;
     --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
@@ -349,7 +349,7 @@
         const a=lerp(0.09,0.86,sharp)*0.92;
         if(a<0.045) continue;                  // 사실상 안 보이는 토큰은 스킵
         const col=o.side==='F'?mix([150,150,150],WARMB,sharp):mix([86,98,112],COLD,sharp);
-        g.font=(o.side==='F'?'600 '+o.sz.toFixed(1)+"px 'Pretendard',sans-serif"
+        g.font=(o.side==='F'?'600 '+o.sz.toFixed(1)+"px 'Pretendard Variable', 'Pretendard',sans-serif"
                             :'500 '+o.sz.toFixed(1)+"px 'JetBrains Mono',monospace");
         if(sharp>0.5&&!heavy){ g.shadowColor=rgba(col,0.5*sharp); g.shadowBlur=10*sharp; }
         else g.shadowBlur=0;

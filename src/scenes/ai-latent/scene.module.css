@@ -20,7 +20,7 @@
   --c-ai: #46e6b0;
   --c-phil: #f6c177;
   --mono: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
-  --sans: "Pretendard", "Apple SD Gothic Neo", "Helvetica Neue", -apple-system, system-ui, sans-serif;
+  --sans: "Pretendard Variable","Pretendard", "Apple SD Gothic Neo", "Helvetica Neue", -apple-system, system-ui, sans-serif;
 
   position: absolute;
   inset: 0;

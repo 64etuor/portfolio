@@ -49,7 +49,7 @@
 }
 
 .kr {
-  font-family: 'Pretendard', 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-family: 'Pretendard Variable', 'Pretendard', 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
 }
 
 /* film flicker overlay */
@@ -246,7 +246,7 @@
   max-width: calc(var(--s) * 78);
 }
 .srcWord {
-  font-family: 'Pretendard', 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-family: 'Pretendard Variable', 'Pretendard', 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
   font-weight: 600;
   font-size: calc(var(--s) * 3.5);
   line-height: 1.18;
@@ -297,7 +297,7 @@
   z-index: 13;
 }
 .ansWord {
-  font-family: 'Pretendard', 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-family: 'Pretendard Variable', 'Pretendard', 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
   font-weight: 500;
   font-size: calc(var(--s) * 2.55);
   line-height: 1.3;

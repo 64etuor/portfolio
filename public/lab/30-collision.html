@@ -79,7 +79,7 @@
 
   /* side banners */
   .side{position:absolute;z-index:45;pointer-events:none;top:50%;transform:translateY(-50%);
-    font-family:'Pretendard';font-weight:700;font-size:13px;letter-spacing:2px;opacity:.85;}
+    font-family:'Pretendard Variable', 'Pretendard';font-weight:700;font-size:13px;letter-spacing:2px;opacity:.85;}
   .side.l{left:34px;color:var(--warm);text-shadow:0 0 12px rgba(217,138,61,.3);}
   .side.r{right:34px;color:var(--cold);text-align:right;text-shadow:0 0 12px rgba(74,179,204,.3);}
   .side .en{font-family:var(--mono);font-weight:400;font-size:9px;letter-spacing:2px;
@@ -216,9 +216,9 @@
     glyphs=[];
     const targetW=W*0.80;
     let fpx=Math.min(H*0.12, W*0.075);
-    ctx.font='800 '+fpx+"px 'Pretendard'";
+    ctx.font='800 '+fpx+"px 'Pretendard Variable', 'Pretendard'";
     let tw=0; for(const ch of LINE2) tw+=ctx.measureText(ch).width;
-    if(tw>targetW){ fpx*=targetW/tw; ctx.font='800 '+fpx+"px 'Pretendard'";
+    if(tw>targetW){ fpx*=targetW/tw; ctx.font='800 '+fpx+"px 'Pretendard Variable', 'Pretendard'";
       tw=0; for(const ch of LINE2) tw+=ctx.measureText(ch).width; }
     heroFont=fpx;
     line1Font=Math.max(15, fpx*0.34);
@@ -371,7 +371,7 @@
             const tx=x-dx*(s/steps)*0.9;
             ctx.globalAlpha=a*0.10*(1-s/steps);
             ctx.fillStyle=rgba(col,1);
-            ctx.font=(tk.ko?'600 ':'400 ')+fpx+"px "+(tk.ko?"'Pretendard'":"'JetBrains Mono'");
+            ctx.font=(tk.ko?'600 ':'400 ')+fpx+"px "+(tk.ko?"'Pretendard Variable', 'Pretendard'":"'JetBrains Mono'");
             ctx.fillText(tk.txt,tx,y);
           }
         }
@@ -379,7 +379,7 @@
       tk.px=x;
 
       ctx.globalAlpha=a;
-      ctx.font=(tk.ko?'600 ':'400 ')+fpx+"px "+(tk.ko?"'Pretendard'":"'JetBrains Mono'");
+      ctx.font=(tk.ko?'600 ':'400 ')+fpx+"px "+(tk.ko?"'Pretendard Variable', 'Pretendard'":"'JetBrains Mono'");
       ctx.shadowColor=rgba(col,0.5); ctx.shadowBlur=8;
       ctx.fillStyle=rgba(col,0.9);
       ctx.fillText(tk.txt,x,y);
@@ -427,7 +427,7 @@
     if(S.l1>0.01){
       ctx.save();
       ctx.globalAlpha=S.l1;
-      ctx.font='600 '+line1Font+"px 'Pretendard'";
+      ctx.font='600 '+line1Font+"px 'Pretendard Variable', 'Pretendard'";
       ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillStyle=rgba(PHOS,0.92);
       ctx.shadowColor='rgba(226,226,226,0.25)'; ctx.shadowBlur=12;
@@ -437,7 +437,7 @@
     }
 
     // line2 hero glyphs
-    ctx.font='800 '+heroFont+"px 'Pretendard'";
+    ctx.font='800 '+heroFont+"px 'Pretendard Variable', 'Pretendard'";
     ctx.textAlign='center'; ctx.textBaseline='middle';
     const sh=S.shatter;
     glyphs.forEach(g=>{

@@ -238,7 +238,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       g.moveTo(bx, my - 5)
       g.lineTo(bx, my + 5)
       g.stroke()
-      g.font = "600 13px 'Pretendard', sans-serif"
+      g.font = "600 13px 'Pretendard Variable', 'Pretendard', sans-serif"
       g.fillStyle = rgba(GAPC, (0.5 + 0.4 * gv) * dv)
       g.textAlign = 'left'
       g.textBaseline = 'middle'
@@ -249,7 +249,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     }
 
     drawDot(g, exDx, exDy, PHOS, pulse, dv)
-    g.font = "600 17px 'Pretendard', sans-serif"
+    g.font = "600 17px 'Pretendard Variable', 'Pretendard', sans-serif"
     g.textAlign = 'left'
     g.textBaseline = 'middle'
     g.fillStyle = rgba(PHOS, 0.95 * dv)
@@ -259,7 +259,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     g.fillText('EXPECTATION', exDx + 14, exDy + 13)
 
     drawDot(g, rlDx, rlDy, GAPC, pulse, dv)
-    g.font = "700 17px 'Pretendard', sans-serif"
+    g.font = "700 17px 'Pretendard Variable', 'Pretendard', sans-serif"
     g.fillStyle = rgba(GAPC, 0.98 * dv)
     g.fillText('성과', rlDx + 14, rlDy + (rlDy > exDy ? 2 : -2))
     g.font = "700 9px 'JetBrains Mono', monospace"

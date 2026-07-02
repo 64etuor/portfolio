@@ -28,7 +28,7 @@
 }
 
 .kr {
-  font-family: 'Pretendard', var(--mono);
+  font-family: 'Pretendard Variable', 'Pretendard', var(--mono);
 }
 
 .c {
@@ -140,7 +140,7 @@
 }
 
 .headline {
-  font-family: 'Pretendard', var(--mono);
+  font-family: 'Pretendard Variable', 'Pretendard', var(--mono);
   font-weight: 800;
   font-size: calc(var(--s) * 6.4);
   line-height: 1.16;

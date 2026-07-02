@@ -1,8 +1,20 @@
 'use client'
 
 import { createPortal } from 'react-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useSyncExternalStore } from 'react'
 import type { CSSProperties } from 'react'
+
+// Hydration-safe client flag: false during SSR AND the hydration render (so it
+// matches the server's null output), true only after hydration — then the
+// body portal mounts without a mismatch.
+const noopSubscribe = () => () => {}
+function useHydrated() {
+  return useSyncExternalStore(
+    noopSubscribe,
+    () => true,
+    () => false,
+  )
+}
 import Link from 'next/link'
 import type { ProjectContent } from '@content/projects/types'
 import { COMPANY_ACCENT } from '@content/projects/types'
@@ -21,6 +33,7 @@ export function ProjectDrawer({ project, onClose }: { project: ProjectContent | 
   // Retain the last project through the close transition so the drawer slides
   // out with content still visible. React's "adjust state during render"
   // pattern (no refs, no effect): only refresh `shown` when opening.
+  const hydrated = useHydrated()
   const [shown, setShown] = useState<ProjectContent | null>(project)
   const [prev, setPrev] = useState<ProjectContent | null>(project)
   if (project !== prev) {
@@ -38,9 +51,9 @@ export function ProjectDrawer({ project, onClose }: { project: ProjectContent | 
     return () => document.removeEventListener('keydown', onKey)
   }, [open, onClose])
 
-  // Portals render into <body>; on the server there is no document, so render
-  // nothing (the inline output is empty either way, so no hydration mismatch).
-  if (typeof document === 'undefined') return null
+  // Render nothing on the server and during the hydration pass (matches the
+  // server's null output); the body portal mounts only after hydration.
+  if (!hydrated) return null
 
   const accent = shown ? ({ '--pj-acc': COMPANY_ACCENT[shown.hero.companyKey] } as CSSProperties) : undefined
 

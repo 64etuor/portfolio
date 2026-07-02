@@ -262,14 +262,12 @@ body{
 .vp-rewind:hover,.vp-replay:hover{border-color:var(--today);color:#9fc0ff;background:#111927}
 /* primary CTA — 상세 보기(문서). filled accent + persistent glow/pulse so it clearly reads as the main action. */
 .vp-doc{display:inline-flex;align-items:center;gap:6px;flex:0 0 auto;
-  font-family:var(--mono);font-size:11.5px;font-weight:800;letter-spacing:.02em;white-space:nowrap;
+  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.02em;white-space:nowrap;
   color:#06121f;border:1px solid var(--today);border-radius:7px;
-  padding:7px 13px;background:var(--today);cursor:pointer;
-  box-shadow:0 0 0 1px rgba(90,150,255,.25),0 0 16px -3px var(--today);
-  animation:vpDocPulse 2.4s ease-in-out infinite;transition:filter .15s,box-shadow .15s,transform .1s;user-select:none}
-.vp-doc:hover{filter:brightness(1.14);box-shadow:0 0 0 1px var(--today),0 0 22px -2px var(--today)}
+  padding:6px 12px;background:var(--today);cursor:pointer;
+  box-shadow:0 0 12px -5px var(--today);transition:filter .15s,box-shadow .15s,transform .1s;user-select:none}
+.vp-doc:hover{filter:brightness(1.1);box-shadow:0 0 16px -4px var(--today)}
 .vp-doc:active{transform:translateY(1px)}
-@keyframes vpDocPulse{0%,100%{box-shadow:0 0 0 1px rgba(90,150,255,.25),0 0 14px -4px var(--today)}50%{box-shadow:0 0 0 1px rgba(90,150,255,.45),0 0 22px -2px var(--today)}}
 .vp-divider{height:1px;background:var(--line);margin:12px 0}
 
 /* tooltip */

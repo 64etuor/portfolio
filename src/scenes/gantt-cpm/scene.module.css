@@ -850,35 +850,26 @@
   gap: 6px;
   flex: 0 0 auto;
   font-family: var(--mono);
-  font-size: 11.5px;
-  font-weight: 800;
+  font-size: 10px;
+  font-weight: 700;
   letter-spacing: 0.02em;
   white-space: nowrap;
   color: #06121f;
   border: 1px solid var(--today);
   border-radius: 7px;
-  padding: 7px 13px;
+  padding: 6px 12px;
   background: var(--today);
   cursor: pointer;
-  box-shadow: 0 0 0 1px rgba(74, 128, 240, 0.25), 0 0 16px -3px var(--today-glow);
-  animation: vpDocPulse 2.4s ease-in-out infinite;
+  box-shadow: 0 0 12px -5px var(--today-glow);
   transition: filter 0.15s, box-shadow 0.15s, transform 0.1s;
   user-select: none;
 }
 .vpDoc:hover {
-  filter: brightness(1.14);
-  box-shadow: 0 0 0 1px var(--today), 0 0 22px -2px var(--today-glow);
+  filter: brightness(1.1);
+  box-shadow: 0 0 16px -4px var(--today-glow);
 }
 .vpDoc:active {
   transform: translateY(1px);
-}
-@keyframes vpDocPulse {
-  0%, 100% {
-    box-shadow: 0 0 0 1px rgba(74, 128, 240, 0.25), 0 0 14px -4px var(--today-glow);
-  }
-  50% {
-    box-shadow: 0 0 0 1px rgba(74, 128, 240, 0.45), 0 0 22px -2px var(--today-glow);
-  }
 }
 .vpDivider {
   height: 1px;

@@ -130,3 +130,13 @@
     padding: 16px 16px 48px;
   }
 }
+
+/* The drawer is portaled to <body> and always mounted; its off-screen
+   transform doesn't hold in print media, so exclude it from print entirely
+   (it otherwise bleeds a dark panel over the résumé). */
+@media print {
+  .pjd-backdrop,
+  .pjd-drawer {
+    display: none !important;
+  }
+}

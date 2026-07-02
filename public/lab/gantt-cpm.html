@@ -725,9 +725,9 @@ const PROJECTS = [
   { id:'p-backend', tier:1, parent:'mir', co:'스타트업 · 백엔드', color:COLORS.mir, role:'백엔드 — FastAPI·SQLAlchemy',
     start:ym(2025,9), end:ym(2026,8), pct:60, crit:false, deps:[], slack:0, ongoing:true,
     problem:'뷰티 솔루션 제품군의 비즈니스 API·인증·영속성·비동기 워커를 처음부터 설계·구축해야 했고 운영 안전성과 마이그레이션 안정성이 모두 요구되었음.',
-    built:'FastAPI·SQLAlchemy·Alembic으로 백엔드를 직접 설계·구축하고 RDS MySQL 데이터 모델링, 비동기 잡 프레임워크, SSM 런타임 시크릿 관리까지 아키텍처 전반을 담당함.',
+    built:'FastAPI·SQLAlchemy·Alembic으로 백엔드를 직접 설계·구축하고 RDS MySQL 데이터 모델링, 비동기 잡 프레임워크, 런타임 시크릿 관리까지 아키텍처 전반을 담당함.',
     rewind:'startup',
-    desc:'비즈니스 API·영속성·인증·백그라운드 워커를 담당하는 백엔드를 FastAPI·SQLAlchemy·Alembic로 구축. RDS MySQL 데이터 모델링, 마이그레이션 안전성, 비동기 외부 API 잡 프레임워크, SSM 런타임 시크릿을 설계.',
+    desc:'비즈니스 API·영속성·인증·백그라운드 워커를 담당하는 백엔드를 FastAPI·SQLAlchemy·Alembic로 구축. RDS MySQL 데이터 모델링, 마이그레이션 안전성, 비동기 외부 API 잡 프레임워크, 런타임 시크릿을 설계.',
     metrics:[
       {k:'스택', v:'FastAPI', cls:'', c:'SQLAlchemy·Alembic'},
       {k:'데이터', v:'RDS MySQL', cls:'', c:'모델링·마이그레이션'},
@@ -774,12 +774,12 @@ const PROJECTS = [
     problem:'백엔드가 단일 EC2에서 운영되어 장애 시 수동 복구가 필요했고 배포 중 다운타임·비용 가시성 부재·에러 추적 불가 문제가 있었음.',
     built:'ECS Fargate Multi-AZ·Terraform IaC·ALB·ECR·SSM·Sentry·CloudWatch 전체 인프라와 관제 체계를 직접 설계·구축해 무중단 롤링 배포·자동 페일오버·예산 알람을 확보함.',
     rewind:'startup',
-    desc:'백엔드 런타임을 단일 EC2에서 ECS Fargate(Multi-AZ·replicas≥2)로 이전해 무중단 롤링 배포·자동 페일오버·셀프힐을 확보. ALB 호스트 라우팅(prod·staging 공유), ECR, SSM 런타임 시크릿, Meilisearch Fargate(EFS·Cloud Map), Firebase 연동, 그리고 Sentry·CloudWatch 기반 관제(에러 추적·로그·메트릭·예산 알람)까지 Terraform IaC(packages/infra)로 전면 코드화 — 전부 직접 설계·구축.',
+    desc:'백엔드 런타임을 단일 EC2에서 컨테이너 오케스트레이션(ECS Fargate·Multi-AZ)으로 이전해 무중단 롤링 배포·자동 페일오버·셀프힐을 확보. 로드밸런싱·컨테이너 레지스트리·런타임 시크릿·검색엔진 등 서비스 구성과 에러 추적·로그·메트릭·예산 알람 기반 관제까지 IaC(Terraform)로 전면 코드화 — 전부 직접 설계·구축.',
     metrics:[
       {k:'런타임', v:'ECS Fargate', cls:'g', c:'Multi-AZ 무중단 배포'},
-      {k:'IaC', v:'Terraform', cls:'', c:'modules·env·S3 state'},
-      {k:'관제', v:'Sentry·CloudWatch', cls:'g', c:'에러·로그·메트릭·알람'},
-      {k:'구성', v:'ALB·ECR·SSM', cls:'', c:'Firebase·Meili·EFS·VPC'}
+      {k:'IaC', v:'Terraform', cls:'', c:'모듈·환경 분리'},
+      {k:'관제', v:'관측성', cls:'g', c:'에러·로그·메트릭·알람'},
+      {k:'구성', v:'로드밸런싱·레지스트리', cls:'', c:'시크릿·검색엔진'}
     ],
     stack:['AWS ECS Fargate','ALB','ECR','Terraform','SSM','Sentry','CloudWatch','Firebase'] },
   { id:'p-radar', slug:'work-radar', tier:1, parent:'mir', co:'개인 프로젝트', color:COLORS.self, role:'Work Radar — Local-first AI 워크플로우 콕핏',

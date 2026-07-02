@@ -41,6 +41,7 @@ export const profile: Profile = {
     github: 'https://github.com/64etuor',
     githubPage: 'https://64etuor.github.io',
     url: 'https://yanghapark.com',
+    blog: 'https://blog.yanghapark.com',
   },
 
   projects: [

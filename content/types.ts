@@ -77,6 +77,7 @@ interface Contact {
   github: string
   githubPage?: string
   url?: string
+  blog?: string
 }
 export interface Profile {
   identity: Identity

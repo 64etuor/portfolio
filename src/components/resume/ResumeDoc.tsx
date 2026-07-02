@@ -67,6 +67,7 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
   const { basics } = data
   const gh = basics.profiles?.find((p) => p.network.toLowerCase() === 'github')
   const portfolio = basics.profiles?.find((p) => p.network.toLowerCase() === 'portfolio')
+  const blog = basics.profiles?.find((p) => p.network.toLowerCase() === 'blog')
 
   return (
     <main className="rz-root">
@@ -113,6 +114,14 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
                 <span className="rz-k">GITHUB</span>
                 <a href={gh.url} target="_blank" rel="noreferrer">
                   {gh.url.replace(/^https?:\/\//, '')}
+                </a>
+              </li>
+            )}
+            {blog && (
+              <li>
+                <span className="rz-k">BLOG</span>
+                <a href={blog.url} target="_blank" rel="noreferrer">
+                  {blog.url.replace(/^https?:\/\//, '')}
                 </a>
               </li>
             )}

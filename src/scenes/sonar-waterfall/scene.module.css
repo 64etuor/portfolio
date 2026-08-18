@@ -570,6 +570,7 @@
   align-items: center;
   justify-content: center;
   background: rgba(1, 4, 10, 0.78);
+  -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
 }
 

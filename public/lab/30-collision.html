@@ -4,11 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SCENE 06 · 충돌 — LEXICAL COLLISION</title>
-<!-- TODO(security): CSS @import inside <style> cannot carry SRI integrity hashes.
-     Real fix: replace with <link rel="stylesheet" href="..." crossorigin="anonymous" integrity="sha384-..."> or self-host fonts. -->
+<link rel="stylesheet" href="/fonts/lab.css">
 <style>
-  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
-
   :root{
     --bg:#050505;
     --bg2:#0e0e0e;
@@ -17,15 +14,15 @@
     --phos-deep:#3a3a3a;
     --warm:#d98a3d;        /* 현업 · 제조 */
     --cold:#4ab3cc;        /* 개발 · 시스템 */
-    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
+    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,'Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',monospace;
   }
   @font-face{
     font-family:'JetBrains Mono';font-display:swap;font-weight:400;
-    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff2') format('woff2');
+    src:url('/fonts/lab/jetbrains-mono-latin-400-normal.woff2') format('woff2');
   }
   @font-face{
     font-family:'JetBrains Mono';font-display:swap;font-weight:700;
-    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-700-normal.woff2') format('woff2');
+    src:url('/fonts/lab/jetbrains-mono-latin-700-normal.woff2') format('woff2');
   }
 
   *{box-sizing:border-box;margin:0;padding:0}
@@ -79,7 +76,7 @@
 
   /* side banners */
   .side{position:absolute;z-index:45;pointer-events:none;top:50%;transform:translateY(-50%);
-    font-family:'Pretendard';font-weight:700;font-size:13px;letter-spacing:2px;opacity:.85;}
+    font-family:'Pretendard Variable', 'Pretendard';font-weight:700;font-size:13px;letter-spacing:2px;opacity:.85;}
   .side.l{left:34px;color:var(--warm);text-shadow:0 0 12px rgba(217,138,61,.3);}
   .side.r{right:34px;color:var(--cold);text-align:right;text-shadow:0 0 12px rgba(74,179,204,.3);}
   .side .en{font-family:var(--mono);font-weight:400;font-size:9px;letter-spacing:2px;
@@ -216,9 +213,9 @@
     glyphs=[];
     const targetW=W*0.80;
     let fpx=Math.min(H*0.12, W*0.075);
-    ctx.font='800 '+fpx+"px 'Pretendard'";
+    ctx.font='800 '+fpx+"px 'Pretendard Variable', 'Pretendard'";
     let tw=0; for(const ch of LINE2) tw+=ctx.measureText(ch).width;
-    if(tw>targetW){ fpx*=targetW/tw; ctx.font='800 '+fpx+"px 'Pretendard'";
+    if(tw>targetW){ fpx*=targetW/tw; ctx.font='800 '+fpx+"px 'Pretendard Variable', 'Pretendard'";
       tw=0; for(const ch of LINE2) tw+=ctx.measureText(ch).width; }
     heroFont=fpx;
     line1Font=Math.max(15, fpx*0.34);
@@ -371,7 +368,7 @@
             const tx=x-dx*(s/steps)*0.9;
             ctx.globalAlpha=a*0.10*(1-s/steps);
             ctx.fillStyle=rgba(col,1);
-            ctx.font=(tk.ko?'600 ':'400 ')+fpx+"px "+(tk.ko?"'Pretendard'":"'JetBrains Mono'");
+            ctx.font=(tk.ko?'600 ':'400 ')+fpx+"px "+(tk.ko?"'Pretendard Variable', 'Pretendard'":"'JetBrains Mono'");
             ctx.fillText(tk.txt,tx,y);
           }
         }
@@ -379,7 +376,7 @@
       tk.px=x;
 
       ctx.globalAlpha=a;
-      ctx.font=(tk.ko?'600 ':'400 ')+fpx+"px "+(tk.ko?"'Pretendard'":"'JetBrains Mono'");
+      ctx.font=(tk.ko?'600 ':'400 ')+fpx+"px "+(tk.ko?"'Pretendard Variable', 'Pretendard'":"'JetBrains Mono'");
       ctx.shadowColor=rgba(col,0.5); ctx.shadowBlur=8;
       ctx.fillStyle=rgba(col,0.9);
       ctx.fillText(tk.txt,x,y);
@@ -427,7 +424,7 @@
     if(S.l1>0.01){
       ctx.save();
       ctx.globalAlpha=S.l1;
-      ctx.font='600 '+line1Font+"px 'Pretendard'";
+      ctx.font='600 '+line1Font+"px 'Pretendard Variable', 'Pretendard'";
       ctx.textAlign='center'; ctx.textBaseline='middle';
       ctx.fillStyle=rgba(PHOS,0.92);
       ctx.shadowColor='rgba(226,226,226,0.25)'; ctx.shadowBlur=12;
@@ -437,7 +434,7 @@
     }
 
     // line2 hero glyphs
-    ctx.font='800 '+heroFont+"px 'Pretendard'";
+    ctx.font='800 '+heroFont+"px 'Pretendard Variable', 'Pretendard'";
     ctx.textAlign='center'; ctx.textBaseline='middle';
     const sh=S.shatter;
     glyphs.forEach(g=>{

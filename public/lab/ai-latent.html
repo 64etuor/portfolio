@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>지식 볼트 의미지도 — 지식을 구조로 (BGE-M3 → UMAP → HDBSCAN)</title>
+<link rel="stylesheet" href="/fonts/lab.css">
 <style>
 /* ───────────────────────── reset / tokens ───────────────────────── */
 :root{
@@ -24,8 +25,8 @@
   --c-dev:#c9a3ff;        /* 지식공학 */
   --c-ai:#46e6b0;         /* AI Agent */
   --c-phil:#f6c177;       /* 철학 */
-  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
-  --sans:"Pretendard","Apple SD Gothic Neo","Helvetica Neue",-apple-system,system-ui,sans-serif;
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic",monospace;
+  --sans:"Pretendard Variable","Pretendard","Apple SD Gothic Neo","Helvetica Neue",-apple-system,system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -59,7 +60,7 @@ header.topbar{
   display:flex;align-items:center;justify-content:space-between;
   border:1px solid var(--line);border-radius:14px;
   background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(0,0,0,0));
-  padding:13px 18px;backdrop-filter:blur(6px);
+  padding:13px 18px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
 }
 .brand{display:flex;align-items:center;gap:13px}
 .logo{
@@ -109,7 +110,7 @@ header.topbar{
   position:absolute;left:14px;bottom:14px;display:flex;flex-direction:column;gap:7px;
   font-family:var(--mono);font-size:10.5px;color:var(--ink-2);
   background:rgba(7,9,13,.55);border:1px solid var(--line-soft);
-  padding:10px 12px;border-radius:10px;backdrop-filter:blur(4px);
+  padding:10px 12px;border-radius:10px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);
 }
 .legend .row{display:flex;align-items:center;gap:8px;cursor:default}
 .legend .chip{width:10px;height:10px;border-radius:3px}
@@ -123,7 +124,7 @@ header.topbar{
   position:absolute;right:14px;top:70px;font-family:var(--mono);font-size:10px;
   color:var(--signal);background:rgba(70,230,176,.06);
   border:1px solid var(--signal-dim);border-radius:999px;padding:6px 12px;
-  cursor:pointer;letter-spacing:.4px;transition:.16s;backdrop-filter:blur(4px);z-index:6;
+  cursor:pointer;letter-spacing:.4px;transition:.16s;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:6;
 }
 #vsToggle:hover{background:rgba(70,230,176,.14);box-shadow:0 0 14px rgba(70,230,176,.25)}
 #vsToggle.sym{color:var(--amber);border-color:rgba(255,180,84,.5);background:rgba(255,180,84,.07)}

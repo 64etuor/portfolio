@@ -4,11 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>박양하 · 커리어 타임라인 & 프로젝트 임팩트 보드 · 간트 + 크리티컬 패스 + 스코어카드</title>
-<!-- TODO(security): self-host Pretendard or add SRI integrity= hash; cdn.jsdelivr.net is trusted but unverified at load time -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="/fonts/lab.css">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap');
-:root{
+  :root{
   --paper:#0c0f14;
   --paper-2:#11151b;
   --board:#141820;
@@ -30,7 +28,7 @@
   --c-sol:#5588e8;   /* 솔라엣지 */
   --c-mir:#9470e0;   /* 스타트업 */
   --c-bridge:#8fa0b4;/* 역량 보강 */
-  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic",monospace;
   --sans:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
   --today-glow:rgba(74,128,240,.6);
   --crit-glow:rgba(240,85,85,.5);
@@ -60,11 +58,11 @@ body{
   position:sticky;top:0;z-index:100;
   display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;
   padding:8px clamp(16px,4vw,40px);
-  background:rgba(8,9,12,.82);backdrop-filter:blur(8px);
+  background:rgba(8,9,12,.82);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
   border-bottom:1px solid rgba(232,234,240,.1);
 }
 .site-bar .brand{
-  font-family:'Playfair Display',Georgia,serif;font-size:clamp(15px,1.5vw,19px);font-weight:600;
+  font-family:'Playfair Display',Georgia,'Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',serif;font-size:clamp(15px,1.5vw,19px);font-weight:600;
   letter-spacing:.01em;color:#e8eaf0;text-decoration:none;transition:opacity .16s;
 }
 .site-bar .brand:hover{opacity:.72;}
@@ -253,13 +251,22 @@ body{
 }
 .vp-section.replay-active .vp-label{color:#9fc0ff}
 .vp-section.replay-active .vp-num{background:var(--today);color:#fff}
-.vp-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.vp-rewind,.vp-replay{display:inline-flex;align-items:center;gap:7px;
-  font-family:var(--mono);font-size:10.5px;font-weight:700;
+.vp-actions{display:flex;align-items:center;gap:6px;flex-wrap:nowrap}
+.vp-rewind,.vp-replay{display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:10px;font-weight:700;white-space:nowrap;
   color:var(--ink-2);border:1px solid var(--line-2);border-radius:7px;
-  padding:6px 12px;background:var(--paper-2);cursor:pointer;
+  padding:6px 9px;background:var(--paper-2);cursor:pointer;
   transition:border-color .15s,color .15s,background .15s;user-select:none}
 .vp-rewind:hover,.vp-replay:hover{border-color:var(--today);color:#9fc0ff;background:#111927}
+/* primary CTA — 상세 보기(문서). filled accent + persistent glow/pulse so it clearly reads as the main action. */
+/* Same ghost shape as the other buttons; emphasis via accent color, not fill/bold. */
+.vp-doc{display:inline-flex;align-items:center;gap:5px;
+  font-family:var(--mono);font-size:10px;font-weight:700;white-space:nowrap;
+  color:#9fc0ff;border:1px solid rgba(74,128,240,.55);border-radius:7px;
+  padding:6px 9px;background:rgba(74,128,240,.10);cursor:pointer;
+  transition:border-color .15s,color .15s,background .15s;user-select:none}
+.vp-doc:hover{border-color:var(--today);color:#cfe0ff;background:rgba(74,128,240,.18)}
+.vp-doc:active{transform:translateY(1px)}
 .vp-divider{height:1px;background:var(--line);margin:12px 0}
 
 /* tooltip */
@@ -343,7 +350,7 @@ footer .r a:hover{color:var(--crit)}
       <div class="toggle on" id="cpToggle" role="button" tabindex="0" aria-pressed="true">
         <span class="dot"></span>크리티컬 패스 강조
       </div>
-      <div class="toggle ghost on" id="dimToggle" role="button" tabindex="0" aria-pressed="true">
+      <div class="toggle ghost" id="dimToggle" role="button" tabindex="0" aria-pressed="false">
         <span class="dot"></span>프로젝트 디밍
       </div>
       <span class="hint">회사·프로젝트 막대를 클릭하면 역할 상세 + 비즈니스 임팩트가 열립니다.</span>
@@ -446,10 +453,11 @@ footer .r a:hover{color:var(--crit)}
     <div class="vp-divider"></div>
     <!-- ⑤ 관련 장면 되감기 -->
     <div class="vp-section" id="dSecRewind">
-      <div class="vp-label"><span class="vp-num">⑤</span>관련 장면 되감기</div>
+      <div class="vp-label"><span class="vp-num">⑤</span>자세히 보기</div>
       <div class="vp-actions">
-        <button class="vp-rewind" id="dRewind" data-rewind="">↩ 관련 장면으로</button>
-        <button class="vp-replay" id="dReplay" type="button">검증 리플레이</button>
+        <button class="vp-doc" id="dDoc" data-slug="" type="button" style="display:none">📄 상세 보기</button>
+        <button class="vp-rewind" id="dRewind" data-rewind="" type="button">↩ 관련 장면</button>
+        <button class="vp-replay" id="dReplay" type="button">✦ 성과 하이라이트</button>
       </div>
     </div>
   </div>
@@ -563,7 +571,7 @@ const PROJECTS = [
       {k:'검사', v:'자동화', cls:'', c:'외관·치수·역삽 방지'}
     ],
     stack:['비전검사','PFMEA','CP'] },
-  { id:'p-smartfac', tier:1, parent:'eun', co:'은성 · 프로젝트', color:COLORS.eun, role:'중기청 상생 스마트팩토리 도입',
+  { id:'p-smartfac', slug:'smart-factory', tier:1, parent:'eun', co:'은성 · 프로젝트', color:COLORS.eun, role:'중기청 상생 스마트팩토리 도입',
     start:ym(2021,8), end:ym(2022,1), pct:100, crit:false, deps:[], slack:5,
     problem:'재고·실적 데이터가 수작업 장부에 머물러 있어 현황 파악이 지연되고 데이터 오류가 반복되는 상황이었음.',
     built:'중기청 상생 스마트팩토리 지원사업을 직접 신청·수행해 Ecount ERP 도입, ERP 연계 바코드 관리 시스템, 모바일 태블릿 생산현황 시스템을 구축하고 데이터를 전산화함.',
@@ -588,7 +596,7 @@ const PROJECTS = [
     stack:['앱 개발','웹 개발','DB 연동','배포'] },
 
   // ── 이랜텍 ──
-  { id:'p-line', tier:1, parent:'elen', co:'이랜텍 · 프로젝트', color:COLORS.elen, role:'연간 생산라인 혁신 프로젝트',
+  { id:'p-line', slug:'line-innovation', tier:1, parent:'elen', co:'이랜텍 · 프로젝트', color:COLORS.elen, role:'연간 생산라인 혁신 프로젝트',
     start:ym(2022,11), end:ym(2023,9), pct:100, crit:false, deps:[], slack:0,
     problem:'초음파 용착 불량(15%)으로 사출 케이스가 대량 폐기되고, Neck 공정 병목과 LOB 불균형이 라인 전체 생산성을 끌어내리고 있었음.',
     built:'DOE로 용착 조건을 최적화하고 커팅·검사 Jig를 직접 기구설계·제작해 C/T 49% 단축, LOB 재배치로 생산성 24%를 개선하며 연간 폐기·재작업 6,800만원을 절감함.',
@@ -601,7 +609,7 @@ const PROJECTS = [
       {k:'폐기·재작업', v:'연 6,800만↓', cls:'g', c:'폐기 3,600만+재작업 3,200만'}
     ],
     stack:['DOE','LOB','C/T','Jig개발','초음파용착','Python','WBS/Gantt'] },
-  { id:'p-idle', tier:1, parent:'elen', co:'이랜텍 · 프로젝트', color:COLORS.elen, role:'유휴 설비 재활용 프로젝트',
+  { id:'p-idle', slug:'idle-equipment', tier:1, parent:'elen', co:'이랜텍 · 프로젝트', color:COLORS.elen, role:'유휴 설비 재활용 프로젝트',
     start:ym(2022,12), end:ym(2023,4), pct:100, crit:false, deps:[], slack:3,
     problem:'폐기 예정인 비전검사 설비 4대(개당 약 4천만원)가 자산으로 방치된 채 신규 설비 구매 비용이 별도 발생할 예정이었음.',
     built:'유휴 설비 4대의 재활용 방안을 직접 기획해 1대는 의료키트 반자동 조립 사급 장비로 전용하고 2대는 범용 비전 SW로 사출 인서트·너트 누락 및 역삽 방지 검사에 재투입함.',
@@ -612,7 +620,7 @@ const PROJECTS = [
       {k:'설비', v:'4대 전용', cls:'', c:'폐기 대신 재활용'}
     ],
     stack:['비전검사','설비 재활용','품질 자동화'] },
-  { id:'p-samsung', tier:1, parent:'elen', co:'삼성 상생아카데미 · 프로젝트', color:COLORS.elen, role:'삼성 제조리더 연계 — 물류 시스템 개선',
+  { id:'p-samsung', slug:'samsung-logistics', tier:1, parent:'elen', co:'삼성 상생아카데미 · 프로젝트', color:COLORS.elen, role:'삼성 제조리더 연계 — 물류 시스템 개선',
     start:ym(2023,3), end:ym(2023,5), pct:100, crit:false, deps:[], slack:4,
     problem:'제조·영업 간 재고 이관 프로세스가 전산화되어 있지 않아 재고 정확도가 낮고 과잉·부족 재고가 반복되었음.',
     built:'삼성전자 상생협력 아카데미 연계로 구매·영업·제조·생산관리 4직능 TF를 구성해 3개월간 프로젝트를 리딩하고, 면책 구역 지정과 재고 이관 전산 프로세스를 직접 개선해 재고회전율 17%를 높임.',
@@ -625,7 +633,7 @@ const PROJECTS = [
     stack:['SCM','재고관리','3정5S','프로세스 개선','PM'] },
 
   // ── 솔라엣지 ──
-  { id:'p-procdata', tier:1, parent:'sol', co:'솔라엣지 · 프로젝트', color:COLORS.sol, role:'공정 데이터 관리 시스템 개발',
+  { id:'p-procdata', slug:'process-data', tier:1, parent:'sol', co:'솔라엣지 · 프로젝트', color:COLORS.sol, role:'공정 데이터 관리 시스템 개발',
     start:ym(2023,10), end:ym(2023,12), pct:100, crit:false, deps:[], slack:0, award:'2023 MOC Best Employee',
     problem:'작업지시·생산계획·실적·불량이 엑셀 개별 파일로 파편화되어 있어 리포팅에 일 451분이 낭비되고 제품 ST를 실데이터로 측정할 수 없었음.',
     built:'Excel VBA·SQL·Power BI로 DB 통합 파이프라인, On-prem Gateway 자동 업데이트, 통합 대시보드, 보고서 Script 자동생성을 직접 구축해 사무공수 일 451분(연 약 5천만원)과 제품 ST 50%를 절감함.',
@@ -638,7 +646,7 @@ const PROJECTS = [
       {k:'수상', v:'MOC Best', cls:'g', c:'2023 올해의 직원'}
     ],
     stack:['Excel VBA','SQL','Power BI','On-prem Gateway','Script 자동화'] },
-  { id:'p-trace', tier:1, parent:'sol', co:'솔라엣지 · 프로젝트', color:COLORS.sol, role:'공정 추적성 관리 프로그램 개발',
+  { id:'p-trace', slug:'traceability', tier:1, parent:'sol', co:'솔라엣지 · 프로젝트', color:COLORS.sol, role:'공정 추적성 관리 프로그램 개발',
     start:ym(2024,3), end:ym(2024,6), pct:100, crit:false, deps:[], slack:0, award:'2024 Core Value Award',
     problem:'필드에서 원자재 불량이 발견됐으나 수기 S/N 관리로는 영향 범위를 측정할 수 없어 리콜 범위 특정이 불가능한 상태였음.',
     built:'Power Apps 모바일 실적등록·체크리스트, S/N 검증·혼입 방지 공정 품질 검증, Power BI 추적 대시보드, Power Automate 검사성적서 자동발행을 직접 설계·구축함.',
@@ -650,7 +658,7 @@ const PROJECTS = [
       {k:'수상', v:'Core Value', cls:'g', c:'2024 핵심가치상'}
     ],
     stack:['Power Apps','Power BI','Power Automate','S/N 추적'] },
-  { id:'p-dv', tier:1, parent:'sol', co:'솔라엣지 · 프로젝트', color:COLORS.sol, role:'개발품 DV 데이터 전산 관리',
+  { id:'p-dv', slug:'dv-data', tier:1, parent:'sol', co:'솔라엣지 · 프로젝트', color:COLORS.sol, role:'개발품 DV 데이터 전산 관리',
     start:ym(2024,8), end:ym(2024,10), pct:100, crit:false, deps:[], slack:2,
     problem:'한정된 DV 기간 내 다현장 데이터를 실시간으로 취합할 방법이 없어 고품질 데이터 확보와 현황 파악이 어려웠음.',
     built:'Google AppSheet 실적·불량 등록 앱, Python Matplotlib CPK 공정분석, Sheets 실시간 대시보드, Apps Script QR 이력추적 시스템을 직접 기획·구축함.',
@@ -662,7 +670,7 @@ const PROJECTS = [
       {k:'추적', v:'QR 이력', cls:'', c:'배터리 패스포트 대응'}
     ],
     stack:['AppSheet','Python','Matplotlib','Sheets','Apps Script','CPK'] },
-  { id:'p-mes', tier:1, parent:'sol', co:'솔라엣지 · 프로젝트', color:COLORS.sol, role:'신제품 라인 셋업 — MES 자체 개발',
+  { id:'p-mes', slug:'mes-console', tier:1, parent:'sol', co:'솔라엣지 · 프로젝트', color:COLORS.sol, role:'신제품 라인 셋업 — MES 자체 개발',
     start:ym(2024,10), end:ym(2024,12), pct:100, crit:false, deps:[], slack:0,
     problem:'해외 신제품 라인 이관 셋업 중 설비 예산 30만불 초과 상황에서 MES 외주 개발비가 누락된 것을 확인, 외주 없이 MES를 확보해야 했음.',
     built:'Django REST 백엔드, React·Electron 프론트, OPC UA·TCP/IP ETL, PostgreSQL 아키텍처, Python Dash 실시간 대시보드까지 MES 풀스택을 직접 기획·설계·구현함(사업 종료로 중단).',
@@ -700,11 +708,11 @@ const PROJECTS = [
     stack:['React','TypeScript','FastAPI','DevOps','CI/CD'] },
 
   // ── 스타트업 (뷰티 통합 솔루션 — 각 영역 직접 구축) ──
-  { id:'p-notion', tier:1, parent:'mir', co:'스타트업 · 조직 OS', color:COLORS.mir, role:'Notion OS — 조직 운영 시스템',
+  { id:'p-notion', slug:'notion-os', tier:1, parent:'mir', co:'스타트업 · 조직 OS', color:COLORS.mir, role:'Notion OS — 조직 운영 시스템',
     start:ym(2025,9), end:ym(2026,8), pct:60, crit:false, deps:[], slack:0, ongoing:true,
     problem:'문서·의사결정·목표·개발 실행·운영 지식이 분산되어 있어 조직 운영의 단일 정보 소스(SSOT)가 없었고 빠른 실행에 마찰이 있었음.',
     built:'Notion 중심의 조직 운영 OS를 혼자 기획·설계·구축해 SSOT 거버넌스·백로그·PRD·Decision OS·OKR·Runbook·GitHub 연계 등 7개 하위 시스템을 현재까지 운영·고도화 중.',
-    rewind:'startup',
+    rewind:'startup', scene:'pipeline-dag',
     desc:'문서·의사결정·목표·개발 실행·운영 지식을 Notion 중심으로 연결한 조직 운영 OS를 혼자 기획·설계·구축하고 현재까지 운영·고도화 중. SSOT 거버넌스, 개발문서 허브, Jira 대체 백로그·에픽·PRD, Decision OS(Ledger·Action·Boost/Drag), OKR/KPI 체크인, 운영·보안 Runbook, GitHub·Drive·AI 연계와 Google Workspace 세팅까지 전부 직접 구성.',
     metrics:[
       {k:'설계', v:'7개 하위 시스템', cls:'', c:'문서·백로그·PRD·Decision·OKR·Runbook·연계'},
@@ -715,9 +723,9 @@ const PROJECTS = [
   { id:'p-backend', tier:1, parent:'mir', co:'스타트업 · 백엔드', color:COLORS.mir, role:'백엔드 — FastAPI·SQLAlchemy',
     start:ym(2025,9), end:ym(2026,8), pct:60, crit:false, deps:[], slack:0, ongoing:true,
     problem:'뷰티 솔루션 제품군의 비즈니스 API·인증·영속성·비동기 워커를 처음부터 설계·구축해야 했고 운영 안전성과 마이그레이션 안정성이 모두 요구되었음.',
-    built:'FastAPI·SQLAlchemy·Alembic으로 백엔드를 직접 설계·구축하고 RDS MySQL 데이터 모델링, 비동기 잡 프레임워크, SSM 런타임 시크릿 관리까지 아키텍처 전반을 담당함.',
+    built:'FastAPI·SQLAlchemy·Alembic으로 백엔드를 직접 설계·구축하고 RDS MySQL 데이터 모델링, 비동기 잡 프레임워크, 런타임 시크릿 관리까지 아키텍처 전반을 담당함.',
     rewind:'startup',
-    desc:'비즈니스 API·영속성·인증·백그라운드 워커를 담당하는 백엔드를 FastAPI·SQLAlchemy·Alembic로 구축. RDS MySQL 데이터 모델링, 마이그레이션 안전성, 비동기 외부 API 잡 프레임워크, SSM 런타임 시크릿을 설계.',
+    desc:'비즈니스 API·영속성·인증·백그라운드 워커를 담당하는 백엔드를 FastAPI·SQLAlchemy·Alembic로 구축. RDS MySQL 데이터 모델링, 마이그레이션 안전성, 비동기 외부 API 잡 프레임워크, 런타임 시크릿을 설계.',
     metrics:[
       {k:'스택', v:'FastAPI', cls:'', c:'SQLAlchemy·Alembic'},
       {k:'데이터', v:'RDS MySQL', cls:'', c:'모델링·마이그레이션'},
@@ -736,7 +744,7 @@ const PROJECTS = [
       {k:'운영', v:'trace·폴링', cls:'', c:'에러 핸들링·관측성'}
     ],
     stack:['React','Vite','TypeScript','TanStack Query'] },
-  { id:'p-kiosk-app', tier:1, parent:'mir', co:'스타트업 · 키오스크', color:COLORS.mir, role:'키오스크 앱 — Electron·React',
+  { id:'p-kiosk-app', slug:'kiosk-app', tier:1, parent:'mir', co:'스타트업 · 키오스크', color:COLORS.mir, role:'키오스크 앱 — Electron·React',
     start:ym(2025,10), end:ym(2026,8), pct:60, crit:false, deps:[], slack:0, ongoing:true,
     problem:'매장 현장에서 동작해야 하는 키오스크 앱이 없었고, 디바이스·카메라·미디어 연동과 IPC 보안 경계를 모두 설계해야 했음.',
     built:'Electron·React·TypeScript로 키오스크 앱을 직접 제작하고 renderer/main/preload IPC 경계, 카메라·미디어 워크플로우, 디바이스 진단 연동을 설계·구현함.',
@@ -764,15 +772,15 @@ const PROJECTS = [
     problem:'백엔드가 단일 EC2에서 운영되어 장애 시 수동 복구가 필요했고 배포 중 다운타임·비용 가시성 부재·에러 추적 불가 문제가 있었음.',
     built:'ECS Fargate Multi-AZ·Terraform IaC·ALB·ECR·SSM·Sentry·CloudWatch 전체 인프라와 관제 체계를 직접 설계·구축해 무중단 롤링 배포·자동 페일오버·예산 알람을 확보함.',
     rewind:'startup',
-    desc:'백엔드 런타임을 단일 EC2에서 ECS Fargate(Multi-AZ·replicas≥2)로 이전해 무중단 롤링 배포·자동 페일오버·셀프힐을 확보. ALB 호스트 라우팅(prod·staging 공유), ECR, SSM 런타임 시크릿, Meilisearch Fargate(EFS·Cloud Map), Firebase 연동, 그리고 Sentry·CloudWatch 기반 관제(에러 추적·로그·메트릭·예산 알람)까지 Terraform IaC(packages/infra)로 전면 코드화 — 전부 직접 설계·구축.',
+    desc:'백엔드 런타임을 단일 EC2에서 컨테이너 오케스트레이션(ECS Fargate·Multi-AZ)으로 이전해 무중단 롤링 배포·자동 페일오버·셀프힐을 확보. 로드밸런싱·컨테이너 레지스트리·런타임 시크릿·검색엔진 등 서비스 구성과 에러 추적·로그·메트릭·예산 알람 기반 관제까지 IaC(Terraform)로 전면 코드화 — 전부 직접 설계·구축.',
     metrics:[
       {k:'런타임', v:'ECS Fargate', cls:'g', c:'Multi-AZ 무중단 배포'},
-      {k:'IaC', v:'Terraform', cls:'', c:'modules·env·S3 state'},
-      {k:'관제', v:'Sentry·CloudWatch', cls:'g', c:'에러·로그·메트릭·알람'},
-      {k:'구성', v:'ALB·ECR·SSM', cls:'', c:'Firebase·Meili·EFS·VPC'}
+      {k:'IaC', v:'Terraform', cls:'', c:'모듈·환경 분리'},
+      {k:'관제', v:'관측성', cls:'g', c:'에러·로그·메트릭·알람'},
+      {k:'구성', v:'로드밸런싱·레지스트리', cls:'', c:'시크릿·검색엔진'}
     ],
     stack:['AWS ECS Fargate','ALB','ECR','Terraform','SSM','Sentry','CloudWatch','Firebase'] },
-  { id:'p-radar', tier:1, parent:'mir', co:'개인 프로젝트', color:COLORS.self, role:'Work Radar — Local-first AI 워크플로우 콕핏',
+  { id:'p-radar', slug:'work-radar', tier:1, parent:'mir', co:'개인 프로젝트', color:COLORS.self, role:'Work Radar — Local-first AI 워크플로우 콕핏',
     start:ym(2026,1), end:ym(2026,8), pct:55, crit:false, deps:[], slack:0, ongoing:true,
     problem:'캘린더·PR·백로그·worktree·agent 세션이 각기 다른 앱에 흩어져 “지금 무엇을 해야 하는지”를 파악하는 데 운영 비용이 크게 들었음.',
     built:'Tauri·Rust로 Capture/Timeline/Control Room 등 11 서피스 local-first AI 콕핏을 직접 설계·구현하고 Google Calendar 양방향 동기화, MCP human-gate, bounded agent 실행(timeout·cost cap·kill)을 탑재함.',
@@ -939,10 +947,7 @@ function buildGantt(){
     const bx=x(t.start), bx2=x(t.end), bw=Math.max(8,bx2-bx);
     boxes[t.id]={x:bx,x2:bx2,y:r0.top,cy,w:bw,h:r0.h};
 
-    const g=el('g',{class: t.crit?'task crit':'task nc', 'data-id':t.id, style:'cursor:pointer'},rowsG);
-
-    // row hover background
-    el('rect',{x:0,y:r0.top-2,width:W,height:r0.h+4,fill:'transparent'},g);
+    const g=el('g',{class: t.crit?'task crit':'task nc', 'data-id':t.id},rowsG);
 
     // left label
     const lblG=el('g',{},g);
@@ -958,17 +963,23 @@ function buildGantt(){
         // 개인 교육 — green badge in front
         el('rect',{x:38,y:cy-7,width:8,height:14,rx:3,fill:COLORS.self},lblG);
         el('path',{d:`M ${40.5} ${cy} L ${42} ${cy+2} L ${44.5} ${cy-2.6}`,fill:'none',stroke:'#06241a','stroke-width':1.4,'stroke-linecap':'round','stroke-linejoin':'round','stroke-opacity':.75},lblG);
+      } else if(t.slug){
+        // 상세 문서가 있는 행 — 작은 파란 문서 아이콘으로 특별 표시.
+        const mx=39,my=cy-6,mk=el('g',{},lblG);
+        el('rect',{x:mx,y:my,width:9,height:12,rx:1.5,fill:'rgba(143,180,255,.12)',stroke:'#8fb4ff','stroke-width':1.1},mk);
+        el('line',{x1:mx+2.4,y1:my+4,x2:mx+6.6,y2:my+4,stroke:'#8fb4ff','stroke-width':1},mk);
+        el('line',{x1:mx+2.4,y1:my+7,x2:mx+6.6,y2:my+7,stroke:'#8fb4ff','stroke-width':1},mk);
       } else {
         el('rect',{x:42,y:cy-6,width:3,height:12,rx:1.5,fill:t.color,'fill-opacity':.9},lblG);
       }
-      const nm=el('text',{x:50,y:cy-1.5,fill:'#ccd4e0','font-size':10,'font-weight':700},lblG);
+      const nm=el('text',{x:51,y:cy-1.5,fill:t.slug?'#eaf1ff':'#ccd4e0','font-size':10,'font-weight':700},lblG);
       nm.textContent = t.role.length>25 ? t.role.slice(0,24)+'…' : t.role;
       const sub=el('text',{x:50,y:cy+9,fill: study?'#7fd4b3':'var(--ink-2)','font-size':8,'font-family':'var(--mono)'},lblG);
       sub.textContent=t.co;
     }
 
     // bar track (dark)
-    el('rect',{x:bx,y:cy-bhh,width:bw,height:bh,rx:5,fill:'#1c2330',stroke:'var(--line-2)','stroke-width':1},g);
+    const track=el('rect',{x:bx,y:cy-bhh,width:bw,height:bh,rx:5,fill:'#1c2330',stroke:'var(--line-2)','stroke-width':1},g);
     // bar fill (% complete). For ongoing bars the progress edge is pinned to the
     // TODAY line, so the fill always matches the Today marker.
     let pct = t.pct;
@@ -1028,10 +1039,14 @@ function buildGantt(){
       el('rect',{x:sx,y:cy-4,width:Math.max(0,sx2-sx),height:8,rx:3,fill:t.color,'fill-opacity':.14,stroke:t.color,'stroke-opacity':.4,'stroke-dasharray':'2 3','stroke-width':1},g);
     }
 
-    // interaction
-    g.addEventListener('click',()=>openDetail(t));
-    g.addEventListener('mousemove',(e)=>showTip(e,t));
-    g.addEventListener('mouseleave',hideTip);
+    // interaction — 클릭·호버 타깃을 막대 + 이름 라벨로만 한정. 빈 공간 클릭은
+    // svg 배경 핸들러가 패널을 닫는다.
+    [lblG,track,fill].forEach(node=>{
+      node.style.cursor='pointer';
+      node.addEventListener('click',(ev)=>{ ev.stopPropagation(); openDetail(t); });
+      node.addEventListener('mousemove',(e)=>showTip(e,t));
+      node.addEventListener('mouseleave',hideTip);
+    });
   });
 
   // ---- dependency arrows (finish-to-start) ----
@@ -1118,7 +1133,7 @@ function buildGantt(){
 /* ============================================================
    Critical path toggle / dim
 ============================================================ */
-let cpOn=true, dimOn=true;
+let cpOn=true, dimOn=false;
 function applyCP(){
   svg.classList.toggle('cp', cpOn);
   document.body.classList.toggle('dim-others', cpOn && dimOn);
@@ -1157,7 +1172,7 @@ document.head.appendChild(styleDim);
 const detail=document.getElementById('detail');
 const REWIND_ROUTES={
   eunseong:'/s/instrument-rack',
-  elentec:'/s/assembly-line',
+  elentec:'/s/weld-thermal',
   solaredge:'/s/mes-console',
   bridge:'/s/digital-twin',
   startup:'/s/pid-scheme',
@@ -1198,8 +1213,20 @@ function startVerificationReplay(){
   });
 }
 function rewindToScene(key){
-  const path=REWIND_ROUTES[key];
+  // key 가 '/s/...' 절대경로면 전용 씬 직행, 아니면 회사·시대 되감기 맵을 조회.
+  const path=key.charAt(0)==='/'?key:REWIND_ROUTES[key];
   if(!path) return;
+  try{
+    const targetWindow=(window.top && window.top!==window) ? window.top : window;
+    targetWindow.location.href=path;
+  }catch(_err){
+    window.location.href=path;
+  }
+}
+// 프로젝트 상세 문서(/projects/<slug>)로 이동 — rewindToScene 과 동일한 top-window 가드.
+function docTo(slug){
+  if(!slug) return;
+  const path='/projects/'+slug;
   try{
     const targetWindow=(window.top && window.top!==window) ? window.top : window;
     targetWindow.location.href=path;
@@ -1242,12 +1269,23 @@ function openDetail(t){
 
   // ⑤ 관련 장면 되감기
   const rw=document.getElementById('dRewind');
-  rw.dataset.rewind=t.rewind||'';
+  // 전용 씬(t.scene)이 있으면 /s/<scene> 직행, 없으면 회사·시대 되감기 키.
+  rw.dataset.rewind=t.scene?('/s/'+t.scene):(t.rewind||'');
+
+  // 프로젝트 상세 문서 버튼 — slug 가 있는 항목에만 노출.
+  const dc=document.getElementById('dDoc');
+  if(t.slug){ dc.dataset.slug=t.slug; dc.style.display=''; }
+  else { dc.dataset.slug=''; dc.style.display='none'; }
 
   detail.classList.add('show');
   startVerificationReplay();
 }
 document.getElementById('dX').addEventListener('click',()=>{
+  clearVerificationReplay();
+  detail.classList.remove('show');
+});
+// 간트 빈 공간 클릭 → 패널 닫기(막대·라벨 클릭은 stopPropagation).
+svg.addEventListener('click',()=>{
   clearVerificationReplay();
   detail.classList.remove('show');
 });
@@ -1260,6 +1298,9 @@ document.addEventListener('keydown',e=>{
 document.getElementById('dRewind').addEventListener('click',function(){
   const act=this.dataset.rewind;
   rewindToScene(act);
+});
+document.getElementById('dDoc').addEventListener('click',function(){
+  docTo(this.dataset.slug);
 });
 document.getElementById('dReplay').addEventListener('click',startVerificationReplay);
 

@@ -816,21 +816,22 @@
 .vpActions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  gap: 6px;
+  flex-wrap: nowrap;
 }
 .vpRewind,
 .vpReplay {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 5px;
   font-family: var(--mono);
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 700;
+  white-space: nowrap;
   color: var(--ink-2);
   border: 1px solid var(--line-2);
   border-radius: 7px;
-  padding: 6px 12px;
+  padding: 6px 9px;
   background: var(--paper-2);
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s, background 0.15s;
@@ -841,6 +842,34 @@
   border-color: var(--today);
   color: #9fc0ff;
   background: #111927;
+}
+/* primary CTA — 프로젝트 상세 문서. filled accent so it clearly reads as the main action. */
+/* Same ghost shape as the other action buttons; emphasis comes from the accent
+   color (blue border + text + faint tint), not from a fill or heavier weight. */
+.vpDoc {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: #9fc0ff;
+  border: 1px solid rgba(74, 128, 240, 0.55);
+  border-radius: 7px;
+  padding: 6px 9px;
+  background: rgba(74, 128, 240, 0.1);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  user-select: none;
+}
+.vpDoc:hover {
+  border-color: var(--today);
+  color: #cfe0ff;
+  background: rgba(74, 128, 240, 0.18);
+}
+.vpDoc:active {
+  transform: translateY(1px);
 }
 .vpDivider {
   height: 1px;

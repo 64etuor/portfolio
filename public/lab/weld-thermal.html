@@ -4,8 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Nd:YAG LASER WELDER · 1064nm 펄스 · 키홀 / 심 / 패턴 용접</title>
-<!-- TODO(security): self-host Pretendard or add SRI integrity= hash; cdn.jsdelivr.net is trusted but unverified at load time -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="/fonts/lab.css">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   :root{
@@ -16,7 +15,7 @@
     --beam:#9fe9ff;
     --white:#fffef0;
     --line:rgba(120,200,190,.22);
-    --mono:"DM Mono","SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    --mono:"DM Mono","SF Mono",ui-monospace,Menlo,Consolas,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic",monospace;
     --kr:"Pretendard Variable",Pretendard,system-ui,sans-serif;
   }
   html,body{height:100%;}
@@ -149,7 +148,7 @@
                      color:var(--hud); text-shadow:0 1px 8px rgba(0,0,0,.9);}
   #identity .tags{ margin-top:22px; display:flex; flex-wrap:wrap; gap:8px; font-family:var(--mono); }
   #identity .tags span{ font-size:11.5px; letter-spacing:.06em; color:var(--hud); border:1px solid var(--line);
-                        padding:5px 10px; border-radius:3px; background:rgba(8,16,15,.4); backdrop-filter:blur(2px);
+                        padding:5px 10px; border-radius:3px; background:rgba(8,16,15,.4); -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);
                         text-shadow:0 0 6px #000;}
 
   /* ============ Seam program timeline (bottom) ============ */
@@ -171,7 +170,7 @@
            text-align:center; pointer-events:none; transition:opacity .4s; }
   #detail .desc{ font-size:15px; line-height:1.65; color:var(--hud); text-shadow:0 0 10px #000;
                  background:rgba(6,12,11,.35); display:inline-block; padding:10px 22px; border-radius:6px;
-                 border:1px solid var(--line); backdrop-filter:blur(3px);}
+                 border:1px solid var(--line); -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
   #detail .desc b{ color:var(--white); }
   #detail .desc .hot{ color:var(--hot); font-weight:700; }
   #detail .desc .beam{ color:var(--beam); font-weight:700; }
@@ -181,7 +180,7 @@
         font-family:var(--mono); pointer-events:auto; text-align:center; }
   #doebtn{ cursor:pointer; border:1px solid var(--beam); color:var(--white); background:rgba(4,24,34,.55);
            padding:9px 18px; border-radius:4px; font-size:12.5px; letter-spacing:.1em; font-family:var(--mono);
-           text-shadow:0 0 8px #000; box-shadow:0 0 24px rgba(60,180,255,.22) inset; transition:.2s; backdrop-filter:blur(3px);}
+           text-shadow:0 0 8px #000; box-shadow:0 0 24px rgba(60,180,255,.22) inset; transition:.2s; -webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
   #doebtn:hover{ background:rgba(8,40,60,.7); box-shadow:0 0 30px rgba(60,180,255,.45); }
   #doebtn .blink{ color:var(--amber); }
   #doestate{ margin-top:8px; font-size:11.5px; color:var(--amber); letter-spacing:.08em; height:14px;

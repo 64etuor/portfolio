@@ -29,7 +29,12 @@ for (const route of routes) {
     expect(response!.ok(), `bad status ${response!.status()} for ${route}`).toBeTruthy();
 
     // A real document rendered with a non-empty title.
-    await expect(page.locator('body')).toBeVisible();
+    //
+    // Asserted on the page root, not <body>: the landing is `position: fixed` so nothing
+    // contributes to body's layout box, body measures 1280x0, and Playwright reports it
+    // hidden — the route was failing this check while rendering perfectly. #main is the
+    // layout's content wrapper, so its first child is the page's own root element.
+    await expect(page.locator('#main > *').first()).toBeVisible();
     await expect(page).toHaveTitle(/.+/);
 
     // No uncaught runtime errors fired while loading.

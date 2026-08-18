@@ -1,8 +1,10 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useSceneReady } from '../_host/useSceneReady'
 import type { SceneProps } from '../_host/types'
+import { projectBySlug } from '@content/projects'
+import { ProjectDrawer } from '@/components/projects/ProjectDrawer'
 import s from './scene.module.css'
 import { NS, eio, fmtYM, rowPct, span, sparkSVG } from './draw'
 import { GanttView } from './view'
@@ -45,6 +47,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const tipRef = useRef<HTMLDivElement | null>(null)
   const cpToggleRef = useRef<HTMLDivElement | null>(null)
   const dimToggleRef = useRef<HTMLDivElement | null>(null)
+  const [drawerSlug, setDrawerSlug] = useState<string | null>(null)
   useSceneReady(onReady)
 
   useEffect(() => {
@@ -58,7 +61,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     if (!root || !svg || !boardWrap || !detail || !tip || !cpToggle || !dimToggle) return
 
     let cpOn = true,
-      dimOn = true
+      dimOn = false
     let replayTimers: ReturnType<typeof setTimeout>[] = []
     const cleanups: Array<() => void> = []
 
@@ -145,7 +148,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       })
     }
     function rewindToScene(key: string) {
-      const path = REWIND_ROUTES[key]
+      // key 가 '/s/...' 절대경로면 전용 씬 직행, 아니면 회사·시대 되감기 맵을 조회.
+      const path = key.startsWith('/') ? key : REWIND_ROUTES[key]
       if (!path) return
       try {
         const targetWindow = window.top && window.top !== window ? window.top : window
@@ -166,6 +170,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     const dMetrics = detail!.querySelector<HTMLElement>('[data-d="metrics"]')!
     const dRewind = detail!.querySelector<HTMLButtonElement>('[data-d="rewind"]')!
     const dReplay = detail!.querySelector<HTMLButtonElement>('[data-d="replay"]')!
+    const dDoc = detail!.querySelector<HTMLButtonElement>('[data-d="doc"]')!
     const dX = detail!.querySelector<HTMLElement>('[data-d="x"]')!
 
     // 패널은 position:fixed → 뷰포트 좌표(clientX/clientY)에 직접 배치한다.
@@ -236,33 +241,54 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         dMetrics.appendChild(d)
       })
 
-      dRewind.dataset.rewind = t.rewind || ''
+      // 전용 씬(t.scene)이 있으면 /s/<scene> 직행, 없으면 회사·시대 되감기 키.
+      dRewind.dataset.rewind = t.scene ? `/s/${t.scene}` : t.rewind || ''
+      // 프로젝트 상세 문서 버튼 — slug 가 있는 막대에만 노출(primary CTA).
+      if (t.slug) {
+        dDoc.dataset.slug = t.slug
+        dDoc.style.display = ''
+      } else {
+        dDoc.dataset.slug = ''
+        dDoc.style.display = 'none'
+      }
       positionDetail(e)
       detail!.classList.add(s.show)
       startVerificationReplay()
     }
 
-    const onX = () => {
+    const closeDetail = () => {
       clearVerificationReplay()
       detail!.classList.remove(s.show)
     }
+    const onX = () => closeDetail()
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        clearVerificationReplay()
-        detail!.classList.remove(s.show)
-      }
+      if (e.key === 'Escape') closeDetail()
     }
+    // 간트 빈 공간(막대·라벨이 아닌 곳) 클릭 → 패널 닫기. 막대/라벨 클릭은
+    // stopPropagation 하므로 여기까지 오지 않는다.
+    const onBgClick = () => closeDetail()
     const onRewindClick = function (this: HTMLButtonElement) {
       rewindToScene(this.dataset.rewind || '')
     }
+    // 상세 문서는 풀페이지 이동 대신 우측 드로어로 — 간트 패널을 닫고 드로어를 연다.
+    const onDocClick = function (this: HTMLButtonElement) {
+      const slug = this.dataset.slug || ''
+      if (!slug) return
+      closeDetail()
+      setDrawerSlug(slug)
+    }
     dX.addEventListener('click', onX)
     document.addEventListener('keydown', onKey)
+    svg.addEventListener('click', onBgClick)
     dRewind.addEventListener('click', onRewindClick)
+    dDoc.addEventListener('click', onDocClick)
     dReplay.addEventListener('click', startVerificationReplay)
     cleanups.push(() => {
       dX.removeEventListener('click', onX)
       document.removeEventListener('keydown', onKey)
+      svg.removeEventListener('click', onBgClick)
       dRewind.removeEventListener('click', onRewindClick)
+      dDoc.removeEventListener('click', onDocClick)
       dReplay.removeEventListener('click', startVerificationReplay)
     })
 
@@ -402,9 +428,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         boxes[t.id] = { x: bx, x2: bx2, y: r0.top, cy, w: bw, h: r0.h }
 
         const cls = t.crit ? `${s.task} ${s.crit}` : `${s.task} ${s.nc}`
-        const g = el('g', { class: cls, 'data-id': t.id, style: 'cursor:pointer' }, rowsG)
-
-        el('rect', { x: 0, y: r0.top - 2, width: W, height: r0.h + 4, fill: 'transparent' }, g)
+        const g = el('g', { class: cls, 'data-id': t.id }, rowsG)
 
         const lblG = el('g', {}, g)
         if (!isP) {
@@ -418,16 +442,24 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           if (study) {
             el('rect', { x: 38, y: cy - 7, width: 8, height: 14, rx: 3, fill: COLORS.self }, lblG)
             el('path', { d: `M ${40.5} ${cy} L ${42} ${cy + 2} L ${44.5} ${cy - 2.6}`, fill: 'none', stroke: '#06241a', 'stroke-width': 1.4, 'stroke-linecap': 'round', 'stroke-linejoin': 'round', 'stroke-opacity': 0.75 }, lblG)
+          } else if (t.slug) {
+            // 상세 문서(드로어)가 있는 행 — 작은 문서 아이콘으로 특별 표시.
+            const mx = 39,
+              my = cy - 6
+            const mk = el('g', {}, lblG)
+            el('rect', { x: mx, y: my, width: 9, height: 12, rx: 1.5, fill: 'rgba(143,180,255,.12)', stroke: '#8fb4ff', 'stroke-width': 1.1 }, mk)
+            el('line', { x1: mx + 2.4, y1: my + 4, x2: mx + 6.6, y2: my + 4, stroke: '#8fb4ff', 'stroke-width': 1 }, mk)
+            el('line', { x1: mx + 2.4, y1: my + 7, x2: mx + 6.6, y2: my + 7, stroke: '#8fb4ff', 'stroke-width': 1 }, mk)
           } else {
             el('rect', { x: 42, y: cy - 6, width: 3, height: 12, rx: 1.5, fill: t.color, 'fill-opacity': 0.9 }, lblG)
           }
-          const nm = el('text', { x: 50, y: cy - 1.5, fill: '#ccd4e0', 'font-size': 10, 'font-weight': 700 }, lblG)
+          const nm = el('text', { x: 51, y: cy - 1.5, fill: t.slug ? '#eaf1ff' : '#ccd4e0', 'font-size': 10, 'font-weight': 700 }, lblG)
           nm.textContent = t.role.length > 25 ? t.role.slice(0, 24) + '…' : t.role
           const sub = el('text', { x: 50, y: cy + 9, fill: study ? '#7fd4b3' : 'var(--ink-2)', 'font-size': 8, 'font-family': 'var(--mono)' }, lblG)
           sub.textContent = t.co
         }
 
-        el('rect', { x: bx, y: cy - bhh, width: bw, height: bh, rx: 5, fill: '#1c2330', stroke: 'var(--line-2)', 'stroke-width': 1 }, g)
+        const track = el('rect', { x: bx, y: cy - bhh, width: bw, height: bh, rx: 5, fill: '#1c2330', stroke: 'var(--line-2)', 'stroke-width': 1 }, g)
 
         const pct = rowPct(t, TODAY.getTime())
         const fw = bw * (pct / 100)
@@ -483,9 +515,17 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           el('rect', { x: sx, y: cy - 4, width: Math.max(0, sx2 - sx), height: 8, rx: 3, fill: t.color, 'fill-opacity': 0.14, stroke: t.color, 'stroke-opacity': 0.4, 'stroke-dasharray': '2 3', 'stroke-width': 1 }, g)
         }
 
-        g.addEventListener('click', (e) => openDetail(t, e))
-        g.addEventListener('mousemove', (e) => showTip(e, t))
-        g.addEventListener('mouseleave', hideTip)
+        // 클릭·호버 타깃을 "프로젝트 막대 + 이름 라벨"로만 한정한다.
+        // 행의 빈 공간을 누르면 (막대/라벨이 아니므로) svg 배경 핸들러가 패널을 닫는다.
+        ;[lblG, track, fill].forEach((node) => {
+          node.style.cursor = 'pointer'
+          node.addEventListener('click', (ev) => {
+            ev.stopPropagation()
+            openDetail(t, ev as MouseEvent)
+          })
+          node.addEventListener('mousemove', (ev) => showTip(ev as MouseEvent, t))
+          node.addEventListener('mouseleave', hideTip)
+        })
       })
 
       // ---- dependency arrows (FS) ----
@@ -719,20 +759,26 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   }, [])
 
   return (
-    <GanttView
-      rootRef={rootRef}
-      boardWrapRef={boardWrapRef}
-      svgRef={svgRef}
-      railRef={railRef}
-      boardHdRef={boardHdRef}
-      kpisRef={kpisRef}
-      derivedRef={derivedRef}
-      skillsRef={skillsRef}
-      heroNumRef={heroNumRef}
-      detailRef={detailRef}
-      tipRef={tipRef}
-      cpToggleRef={cpToggleRef}
-      dimToggleRef={dimToggleRef}
-    />
+    <>
+      <GanttView
+        rootRef={rootRef}
+        boardWrapRef={boardWrapRef}
+        svgRef={svgRef}
+        railRef={railRef}
+        boardHdRef={boardHdRef}
+        kpisRef={kpisRef}
+        derivedRef={derivedRef}
+        skillsRef={skillsRef}
+        heroNumRef={heroNumRef}
+        detailRef={detailRef}
+        tipRef={tipRef}
+        cpToggleRef={cpToggleRef}
+        dimToggleRef={dimToggleRef}
+      />
+      <ProjectDrawer
+        project={drawerSlug ? projectBySlug(drawerSlug) ?? null : null}
+        onClose={() => setDrawerSlug(null)}
+      />
+    </>
   )
 }

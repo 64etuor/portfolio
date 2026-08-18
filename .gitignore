@@ -47,3 +47,6 @@ _vite_archive/
 
 # any NEXT_DIST_DIR build-verify variant
 .next-*/
+
+# project-doc ingestion drafts (curated into <slug>.ts)
+content/projects/*.draft.ts

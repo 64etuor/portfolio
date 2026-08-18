@@ -4,21 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>source.editor — Live Build / Workspace</title>
-<!-- TODO(security): CSS @import inside <style> cannot carry SRI integrity hashes.
-     Real fix: replace with <link rel="stylesheet" href="..." crossorigin="anonymous" integrity="sha384-..."> or self-host fonts. -->
+<link rel="stylesheet" href="/fonts/lab.css">
 <style>
-  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
   @font-face{
     font-family:'JetBrains Mono';font-display:swap;font-weight:400;
-    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff2') format('woff2');
+    src:url('/fonts/lab/jetbrains-mono-latin-400-normal.woff2') format('woff2');
   }
   @font-face{
     font-family:'JetBrains Mono';font-display:swap;font-weight:600;
-    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-600-normal.woff2') format('woff2');
+    src:url('/fonts/lab/jetbrains-mono-latin-600-normal.woff2') format('woff2');
   }
   @font-face{
     font-family:'JetBrains Mono';font-display:swap;font-weight:700;
-    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-700-normal.woff2') format('woff2');
+    src:url('/fonts/lab/jetbrains-mono-latin-700-normal.woff2') format('woff2');
   }
 
   :root{
@@ -39,7 +37,7 @@
     --num:#9bb6ac;        /* number */
     --pu:#6d7682;         /* punctuation */
     --cm:#4d545d;         /* comment */
-    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
+    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,'Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',monospace;
     --lh:22px;
   }
   *{box-sizing:border-box;margin:0;padding:0}

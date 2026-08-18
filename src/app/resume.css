@@ -298,6 +298,38 @@
 }
 .rz-chips-quiet li { background: transparent; color: var(--rz-dim); }
 
+/* project → /projects/<slug> detail affordances */
+.rz-projects-lead {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--rz-dim);
+  margin: 0 0 18px;
+}
+.rz-inline-link {
+  color: var(--rz-acc);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.16s;
+  white-space: nowrap;
+}
+.rz-inline-link:hover { border-color: var(--rz-acc); }
+.rz-card-title-link {
+  color: #eaedf0;
+  border-bottom: 1px solid transparent;
+  transition: color 0.16s, border-color 0.16s;
+}
+.rz-card-title-link:hover { color: var(--rz-acc); border-color: rgba(95, 181, 194, 0.4); }
+.rz-card-detail {
+  align-self: flex-end;
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--rz-acc);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.16s;
+}
+.rz-card-detail:hover { border-color: var(--rz-acc); }
+
 /* ── skills ── */
 .rz-skills { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px; }
 .rz-skill-name { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--rz-acc); margin: 0 0 11px; text-transform: uppercase; }
@@ -372,5 +404,7 @@
   .rz-entry { break-inside: avoid; }
   .rz-chips li { color: #333 !important; background: #f2f5f6 !important; border-color: #dadde0 !important; }
   .rz-h2, .rz-eyebrow, .rz-period { color: #6a6e74 !important; }
+  .rz-projects-lead { color: #4a4d53 !important; }
+  .rz-card-title-link, .rz-inline-link, .rz-card-detail { color: #16181c !important; border-color: transparent !important; }
 }
 

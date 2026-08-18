@@ -4,11 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SCENE 03 · 현실 — THE DIVERGENCE / 기대와 성과의 격차</title>
-<!-- TODO(security): CSS @import inside <style> cannot carry SRI integrity hashes.
-     Real fix: replace with <link rel="stylesheet" href="..." crossorigin="anonymous" integrity="sha384-..."> or self-host fonts. -->
+<link rel="stylesheet" href="/fonts/lab.css">
 <style>
-  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
-
   :root{
     --bg:#050505;
     --bg2:#101010;
@@ -16,15 +13,15 @@
     --phos-dim:#8d8d8d;
     --phos-deep:#3a3a3a;
     --gap:#5fb5c2;         /* 단 하나의 액센트 — 차가운 void(격차) */
-    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
+    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,'Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',monospace;
   }
   @font-face{
     font-family:'JetBrains Mono';font-display:swap;font-weight:400;
-    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff2') format('woff2');
+    src:url('/fonts/lab/jetbrains-mono-latin-400-normal.woff2') format('woff2');
   }
   @font-face{
     font-family:'JetBrains Mono';font-display:swap;font-weight:700;
-    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-700-normal.woff2') format('woff2');
+    src:url('/fonts/lab/jetbrains-mono-latin-700-normal.woff2') format('woff2');
   }
 
   *{box-sizing:border-box;margin:0;padding:0}
@@ -37,7 +34,7 @@
     word-break:keep-all;
     -webkit-font-smoothing:none;
   }
-  .kr{font-family:'Pretendard',var(--mono);}
+  .kr{font-family:'Pretendard Variable', 'Pretendard',var(--mono);}
 
   /* ===== full-bleed CRT shell ===== */
   #crt{
@@ -315,7 +312,7 @@ function frame(now){
     // 가운데 화살촉(격차 방향)
     const my=(exDy+rlDy)/2;
     g.beginPath(); g.moveTo(bx,my-5); g.lineTo(bx,my+5); g.stroke();
-    g.font = "600 13px 'Pretendard', sans-serif";
+    g.font = "600 13px 'Pretendard Variable', 'Pretendard', sans-serif";
     g.fillStyle = rgba(GAPC, (0.5+0.4*gv)*dv);
     g.textAlign='left'; g.textBaseline='middle';
     g.fillText('격차', bx+11, my-8);
@@ -326,7 +323,7 @@ function frame(now){
 
   // 기대 점 (phosphor)
   drawDot(exDx, exDy, PHOS, pulse, dv);
-  g.font = "600 17px 'Pretendard', sans-serif";
+  g.font = "600 17px 'Pretendard Variable', 'Pretendard', sans-serif";
   g.textAlign='left'; g.textBaseline='middle';
   g.fillStyle = rgba(PHOS, 0.95*dv);
   g.fillText('기대', exDx+14, exDy-2);
@@ -336,7 +333,7 @@ function frame(now){
 
   // 성과 점 (gap accent)
   drawDot(rlDx, rlDy, GAPC, pulse, dv);
-  g.font = "700 17px 'Pretendard', sans-serif";
+  g.font = "700 17px 'Pretendard Variable', 'Pretendard', sans-serif";
   g.fillStyle = rgba(GAPC, 0.98*dv);
   g.fillText('성과', rlDx+14, rlDy+ (rlDy>exDy?2:-2));
   g.font = "700 9px 'JetBrains Mono', monospace";

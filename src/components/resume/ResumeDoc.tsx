@@ -1,3 +1,6 @@
+import Link from 'next/link'
+import { ProjectDetailLink } from '../projects/ProjectDetailLink'
+import { ProjectDrawerHost } from '../projects/ProjectDrawerHost'
 import { ResumeDragonHero } from './ResumeDragonHero'
 import { PretextHeading } from './PretextHeading'
 import { coverLetter } from '@content/coverLetter'
@@ -14,6 +17,24 @@ import type { ResumeData } from '@content/resume'
 export type { ResumeData }
 
 const NAME_EN = 'Yangha Park'
+
+/**
+ * Maps a resume.json project name → its /projects/<slug> detail page. Explicit
+ * (resume names differ from the project page titles); unmatched projects simply
+ * render without a detail link. Keep in sync with content/projects/*.
+ */
+const PROJECT_DETAIL_SLUG: Record<string, string> = {
+  'Work Radar — Local-first AI 워크플로우 콕핏': 'work-radar',
+  '뷰티 매장 CRM·키오스크·앱 플랫폼': 'kiosk-app',
+  '신제품 생산 라인 셋업 프로젝트 (자동화 설비 MES 자체 개발)': 'mes-console',
+  '개발품 DV 데이터 전산 관리 프로젝트': 'dv-data',
+  '공정 추적성 관리 프로그램 개발 프로젝트': 'traceability',
+  '공정 데이터 관리 시스템 개발 프로젝트': 'process-data',
+  '삼성 제조 리더 교육 연계 과정 — 물류 시스템 개선 프로젝트': 'samsung-logistics',
+  '유휴 설비 재활용 프로젝트': 'idle-equipment',
+  '연간 생산라인 혁신 프로젝트': 'line-innovation',
+  '중소기업진흥청 대기업상생 스마트 팩토리 도입 프로젝트': 'smart-factory',
+}
 
 /**
  * Render `**bold**` runs from the cover-letter source as <strong>. Plain text
@@ -46,6 +67,7 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
   const { basics } = data
   const gh = basics.profiles?.find((p) => p.network.toLowerCase() === 'github')
   const portfolio = basics.profiles?.find((p) => p.network.toLowerCase() === 'portfolio')
+  const blog = basics.profiles?.find((p) => p.network.toLowerCase() === 'blog')
 
   return (
     <main className="rz-root">
@@ -92,6 +114,14 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
                 <span className="rz-k">GITHUB</span>
                 <a href={gh.url} target="_blank" rel="noreferrer">
                   {gh.url.replace(/^https?:\/\//, '')}
+                </a>
+              </li>
+            )}
+            {blog && (
+              <li>
+                <span className="rz-k">BLOG</span>
+                <a href={blog.url} target="_blank" rel="noreferrer">
+                  {blog.url.replace(/^https?:\/\//, '')}
                 </a>
               </li>
             )}
@@ -149,31 +179,51 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
 
         {/* ── projects ───────────────────────────────────────── */}
         <Section id="projects" label="SELECTED PROJECTS">
+          <p className="rz-projects-lead">
+            각 프로젝트의 배경 · 구현 · 성과를 화면과 함께 정리했습니다.{' '}
+            <Link className="rz-inline-link" href="/projects">
+              전체 프로젝트 상세 보기 →
+            </Link>
+          </p>
           <div className="rz-projects">
-            {data.projects.map((p, i) => (
-              <article className="rz-card" key={i}>
-                <div className="rz-card-head">
-                  <h3 className="rz-card-title kr">{p.name}</h3>
-                  {p.entity && <span className="rz-card-org kr">{p.entity}</span>}
-                </div>
-                {p.roles && p.roles.length > 0 && <p className="rz-card-role kr">{p.roles.join(' · ')}</p>}
-                {p.description && <p className="rz-card-desc kr">{p.description}</p>}
-                {p.highlights && (
-                  <ul className="rz-bullets rz-bullets-sm kr">
-                    {p.highlights.map((h, j) => (
-                      <li key={j}>{h}</li>
-                    ))}
-                  </ul>
-                )}
-                {p.keywords && (
-                  <ul className="rz-chips" aria-label="stack">
-                    {p.keywords.map((k) => (
-                      <li key={k}>{k}</li>
-                    ))}
-                  </ul>
-                )}
-              </article>
-            ))}
+            {data.projects.map((p, i) => {
+              const slug = PROJECT_DETAIL_SLUG[p.name]
+              return (
+                <article className="rz-card" key={i}>
+                  <div className="rz-card-head">
+                    {slug ? (
+                      <ProjectDetailLink slug={slug} className="rz-card-title rz-card-title-link kr">
+                        {p.name}
+                      </ProjectDetailLink>
+                    ) : (
+                      <h3 className="rz-card-title kr">{p.name}</h3>
+                    )}
+                    {p.entity && <span className="rz-card-org kr">{p.entity}</span>}
+                  </div>
+                  {p.roles && p.roles.length > 0 && <p className="rz-card-role kr">{p.roles.join(' · ')}</p>}
+                  {p.description && <p className="rz-card-desc kr">{p.description}</p>}
+                  {p.highlights && (
+                    <ul className="rz-bullets rz-bullets-sm kr">
+                      {p.highlights.map((h, j) => (
+                        <li key={j}>{h}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {p.keywords && (
+                    <ul className="rz-chips" aria-label="stack">
+                      {p.keywords.map((k) => (
+                        <li key={k}>{k}</li>
+                      ))}
+                    </ul>
+                  )}
+                  {slug && (
+                    <ProjectDetailLink slug={slug} className="rz-card-detail">
+                      프로젝트 상세 보기 →
+                    </ProjectDetailLink>
+                  )}
+                </article>
+              )
+            })}
           </div>
         </Section>
 
@@ -237,6 +287,7 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
           <span>ASCII dragon &amp; layout ported from pretext-playground (MIT)</span>
         </footer>
       </div>
+      <ProjectDrawerHost />
     </main>
   )
 }

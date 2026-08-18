@@ -225,7 +225,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         g.textBaseline = 'middle'
         const fpx = Math.max(11, Math.min(15, MIN * 0.0135))
         const draw = (arr: OrbitTerm[], cx: number, tint: [number, number, number]) => {
-          g.font = "600 " + fpx + "px 'Pretendard', sans-serif"
+          g.font = "600 " + fpx + "px 'Pretendard Variable', 'Pretendard', sans-serif"
           for (const tt of arr) {
             const ang = tt.base + Math.sin(t * 0.22 + tt.ph) * 0.05
             const rr = R * tt.rad
@@ -369,7 +369,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           g.fill()
 
           if (p.carrier && p.label && central > 0.3) {
-            g.font = "700 " + tfpx + "px 'Pretendard', sans-serif"
+            g.font = "700 " + tfpx + "px 'Pretendard Variable', 'Pretendard', sans-serif"
             g.fillStyle = rgba(GOLDH, 0.85 * central * cv01)
             g.shadowColor = rgba(GOLD, 0.7)
             g.shadowBlur = 10 * central
@@ -406,7 +406,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         const lx = LCX - R * 0.6,
           rx = RCX + R * 0.6
 
-        g.font = "800 " + bigpx + "px 'Pretendard', sans-serif"
+        g.font = "800 " + bigpx + "px 'Pretendard Variable', 'Pretendard', sans-serif"
         g.fillStyle = rgba(mix(PHOS, WARM, 0.4), 0.92)
         g.shadowColor = rgba(WARM, 0.35)
         g.shadowBlur = 12
@@ -427,7 +427,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           const a = smooth((cv01 - 0.18) / 0.4)
           const yTag = CY - HY - tagpx * 2.1
           g.font =
-            "800 " + Math.max(14, Math.min(22, MIN * 0.02)) + "px 'Pretendard', sans-serif"
+            "800 " + Math.max(14, Math.min(22, MIN * 0.02)) + "px 'Pretendard Variable', 'Pretendard', sans-serif"
           g.fillStyle = rgba(GOLDH, (0.5 + 0.45 * goldPulse) * a)
           g.shadowColor = rgba(GOLD, 0.8)
           g.shadowBlur = 16 * a

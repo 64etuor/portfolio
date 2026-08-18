@@ -24,6 +24,9 @@ export function SiteHeader() {
       <Link href="/" className="site-bar__brand">{SITE.domain}</Link>
       <Link href="/" className="chrome-btn home">← Home</Link>
       {pathname === '/resume' && (
+        // Native print. Works in real Chrome/Safari; note it is a no-op inside
+        // embedded WebKit (WKWebView, e.g. the cmux in-app browser) — print the
+        // résumé from a real browser there.
         <button type="button" className="chrome-btn" onClick={() => window.print()}>
           Print
         </button>

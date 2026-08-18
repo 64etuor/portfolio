@@ -4,10 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>디지털 트윈 — 연결된 도메인 = 조직·공정의 트윈</title>
-<!-- TODO(security): self-host Pretendard or add SRI integrity= hash; cdn.jsdelivr.net is trusted but unverified at load time -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="/fonts/lab.css">
 <style>
-:root{
+  :root{
   --bg:#070a0f;
   --panel:rgba(11,15,22,.88);
   --line:#1c2333;
@@ -20,7 +19,7 @@
   --c-mfg:#ff7a8a;
   --c-dev:#6fb4ff;
   --c-ai:#c9a3ff;
-  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic",monospace;
   --sans:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -80,7 +79,7 @@ canvas{display:block;outline:none}
 #kpis::-webkit-scrollbar{display:none}
 .kpi{
   flex:0 0 auto;background:var(--panel);border:1px solid var(--line);border-radius:9px;
-  padding:7px 11px;backdrop-filter:blur(8px);min-width:96px;
+  padding:7px 11px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);min-width:96px;
 }
 .kpi .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.14em;color:var(--ink-3);text-transform:uppercase}
 .kpi .v{font-family:var(--mono);font-size:15px;font-weight:700;margin-top:2px;color:var(--signal)}
@@ -92,7 +91,7 @@ canvas{display:block;outline:none}
 /* layer legend panel (left) */
 #control{
   left:20px;bottom:20px;width:256px;background:var(--panel);border:1px solid var(--line);
-  border-radius:14px;backdrop-filter:blur(10px);overflow:hidden;
+  border-radius:14px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);overflow:hidden;
   box-shadow:0 18px 50px rgba(0,0,0,.5);
 }
 .ctl-h{padding:11px 14px;border-bottom:1px solid var(--line-soft);display:flex;align-items:center;justify-content:space-between}
@@ -140,7 +139,7 @@ canvas{display:block;outline:none}
 /* cross-domain sync panel (right) */
 #xdpanel{
   right:20px;top:96px;width:278px;background:var(--panel);border:1px solid var(--line);
-  border-radius:14px;backdrop-filter:blur(10px);overflow:hidden;
+  border-radius:14px;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);overflow:hidden;
   box-shadow:0 18px 50px rgba(0,0,0,.5);
 }
 .xd-h{padding:11px 14px;border-bottom:1px solid var(--line-soft)}
@@ -762,7 +761,7 @@ STATIONS.forEach((st, i)=>{
   hud.style.cssText = `
     transform:translate(-50%,-100%);background:rgba(10,14,21,.88);
     border:1px solid rgba(255,255,255,.10);border-left:3px solid ${hex};
-    border-radius:9px;padding:8px 11px;min-width:160px;backdrop-filter:blur(8px);
+    border-radius:9px;padding:8px 11px;min-width:160px;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
     box-shadow:0 12px 30px rgba(0,0,0,.5);font-family:var(--sans);user-select:none;cursor:pointer;`;
   hud.innerHTML = `
     <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px">

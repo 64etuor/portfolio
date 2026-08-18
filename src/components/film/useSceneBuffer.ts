@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { ACTS } from './acts'
 
 interface SceneBufferArgs {
@@ -10,18 +10,23 @@ interface SceneBufferArgs {
 interface SceneBuffer {
   slotFiles: [string | null, string | null]
   visibleSlot: number
-  /** the current scene is "visible" only once the visible slot actually holds it. */
+  /** the current scene is "visible" only once the visible slot has painted it. */
   visible: boolean
   /** reveal a slot once its scene paints (onReady) */
   revealOnLoad: (i: number) => void
+  /** bumps on each PICTURE cut (visible slot flips to a new scene); 0 = no cut yet. */
+  cutId: number
 }
 
 /**
  * useSceneBuffer — the two-slot double-buffer reveal/blank logic.
  *
- * Two stable slots cross-fade between scenes. The current scene is revealed by
- * showing whichever slot already holds it (prefetched → instant), or by loading it
- * into the hidden slot and revealing on its `load`. A safety timer force-reveals
+ * Two stable slots cross-fade between scenes. Scenes load on-cut (there is no
+ * prefetch), so a slot that merely *holds* the current file is not showable yet — its
+ * module may still be in flight. A slot becomes showable only once its scene has
+ * PAINTED, which it signals through `onReady` → `revealOnLoad`. Cutting to a slot
+ * before that would cross-fade to an empty slot: the picture goes dark and the scene
+ * pops in afterwards, out of sync with the cut flash. A safety timer force-reveals
  * after 5000ms if `onReady` never fires. After a cut settles, the now-hidden slot is
  * blanked (1100ms) so the outgoing scene stops its rAF loop.
  */
@@ -34,18 +39,42 @@ export function useSceneBuffer(args: SceneBufferArgs): SceneBuffer {
     null,
   ])
   const [visibleSlot, setVisibleSlot] = useState(0)
+  // Bumps on each picture cut, so the flash overlay can be keyed off the very event
+  // the audience sees. Bumped alongside setVisibleSlot (never in a follow-up effect)
+  // so the flash and the cross-fade land in the SAME commit — a separate effect costs
+  // a render and starts the flash a frame after the picture has already begun moving.
+  const [cutId, setCutId] = useState(0)
+  // Which file each slot has actually painted. Holding a file is not the same as being
+  // ready to show it — this is what makes "reveal on paint" the only path to a cut.
+  const [paintedFiles, setPaintedFiles] = useState<[string | null, string | null]>(() => [null, null])
 
-  // The current scene is "visible" only once the visible slot actually holds it.
-  const visible = slotFiles[visibleSlot] === currentFile
+  /** Cut the picture to slot `i`. No-op when it is already the visible one. */
+  const cutTo = useCallback(
+    (i: number) => {
+      if (i === visibleSlot) return
+      setVisibleSlot(i)
+      setCutId((n) => n + 1)
+    },
+    [visibleSlot],
+  )
 
-  // Reveal the current scene: show whichever slot has it (prefetched → instant);
-  // otherwise load it into the hidden slot and reveal on its `load`.
+  // The current scene is "visible" only once the visible slot both HOLDS it and has
+  // PAINTED it. Holding alone is not enough — slot 0 holds the opening scene from the
+  // first render, so a hold-only test would arm the clock before that scene exists and
+  // spend its first few hundred ms on the module load.
+  const visible = slotFiles[visibleSlot] === currentFile && paintedFiles[visibleSlot] === currentFile
+
+  // Load the current scene into the hidden slot. The cut itself happens in
+  // revealOnLoad (or the safety timer) — never here, because at this point the
+  // incoming scene has not painted yet.
   useEffect(() => {
     if (reduced || !ready) return
     const at = slotFiles.indexOf(currentFile)
     if (at === visibleSlot) return
     if (at >= 0) {
-      setVisibleSlot(at)
+      // Already loading in the hidden slot. Cut only if it has painted (this covers
+      // an onReady that landed before the current scene became current).
+      if (paintedFiles[at] === currentFile) cutTo(at)
       return
     }
     const hidden = visibleSlot ^ 1
@@ -55,7 +84,7 @@ export function useSceneBuffer(args: SceneBufferArgs): SceneBuffer {
       n[hidden] = currentFile
       return n
     })
-  }, [currentFile, slotFiles, visibleSlot, reduced, ready])
+  }, [currentFile, slotFiles, paintedFiles, visibleSlot, reduced, ready, cutTo])
 
   // Safety: if a scene's `onReady` never fires (load stall), force-reveal after a
   // cap so the film can't hang waiting for a frame that never paints.
@@ -63,9 +92,19 @@ export function useSceneBuffer(args: SceneBufferArgs): SceneBuffer {
     if (reduced || !ready || visible) return
     const at = slotFiles.indexOf(currentFile)
     if (at < 0) return
-    const t = setTimeout(() => setVisibleSlot(at), 5000)
+    const t = setTimeout(() => {
+      // Mark it painted too, otherwise `visible` stays false, the clock never arms
+      // and the film hangs on the very scene this timer exists to rescue.
+      setPaintedFiles((prev) => {
+        if (prev[at] === currentFile) return prev
+        const n: [string | null, string | null] = [prev[0], prev[1]]
+        n[at] = currentFile
+        return n
+      })
+      cutTo(at)
+    }, 5000)
     return () => clearTimeout(t)
-  }, [reduced, ready, visible, currentFile, slotFiles])
+  }, [reduced, ready, visible, currentFile, slotFiles, cutTo])
 
   // Optimization: once a cut has settled, blank the now-hidden slot so the OUTGOING
   // scene stops rendering. Otherwise its iframe keeps a full rAF loop alive — invisibly —
@@ -85,13 +124,30 @@ export function useSceneBuffer(args: SceneBufferArgs): SceneBuffer {
         n[h] = null
         return n
       })
+      // A blanked slot has nothing painted — drop its mark so a later cut can't treat
+      // the unmounted scene as showable.
+      setPaintedFiles((prev) => {
+        const h = visibleSlot ^ 1
+        if (prev[h] == null) return prev
+        const n: [string | null, string | null] = [prev[0], prev[1]]
+        n[h] = null
+        return n
+      })
     }, 1100) // after the 720ms cross-fade has fully settled
     return () => clearTimeout(t)
   }, [visibleSlot, currentFile, reduced, ready, slotFiles])
 
   const revealOnLoad = (i: number) => {
-    if (slotFiles[i] === currentFile && i !== visibleSlot) setVisibleSlot(i)
+    const f = slotFiles[i]
+    if (f == null) return
+    setPaintedFiles((prev) => {
+      if (prev[i] === f) return prev
+      const n: [string | null, string | null] = [prev[0], prev[1]]
+      n[i] = f
+      return n
+    })
+    if (f === currentFile) cutTo(i)
   }
 
-  return { slotFiles, visibleSlot, visible, revealOnLoad }
+  return { slotFiles, visibleSlot, visible, revealOnLoad, cutId }
 }

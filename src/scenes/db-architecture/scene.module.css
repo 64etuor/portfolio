@@ -451,6 +451,7 @@
   border: 1px solid var(--line);
   border-radius: 9px;
   padding: 4px;
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
 .zb {
@@ -481,6 +482,7 @@
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 6px 11px;
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
 .hint b {
@@ -503,6 +505,7 @@
   border-left: 3px solid var(--acc);
   border-radius: 9px;
   padding: 9px 12px;
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   box-shadow: 0 8px 30px -14px #000;
 }
@@ -825,6 +828,7 @@
   border: 1px solid var(--line);
   border-radius: 8px;
   padding: 7px 12px;
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
 .legend i {
@@ -849,6 +853,7 @@
   border-radius: 11px;
   padding: 12px 13px;
   margin-bottom: 10px;
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
 .card h6 {
@@ -884,6 +889,7 @@
   border: 1px solid var(--line);
   border-radius: 11px;
   padding: 11px 14px;
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   text-align: right;
 }
@@ -966,6 +972,7 @@
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 11px 13px;
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   z-index: 3;
 }
@@ -1059,6 +1066,10 @@
   color: var(--acc);
 }
 
+.root * {
+  scrollbar-width: thin;
+  scrollbar-color: #1d2a3a transparent;
+}
 .root ::-webkit-scrollbar {
   width: 9px;
   height: 9px;
@@ -1085,6 +1096,7 @@
   border: 1px solid var(--line);
   border-radius: 11px;
   overflow: hidden;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
 }
 .cdcLogHead {
@@ -1188,6 +1200,7 @@
   border-top: 1px solid var(--line);
   font-family: 'JetBrains Mono';
   font-size: 10px;
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   z-index: 4;
   pointer-events: none;

@@ -4,9 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DB 모델링 &amp; 데이터 아키텍처</title>
+<link rel="stylesheet" href="/fonts/lab.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap');
-
   :root{
     --bg:#0a0e14;
     --bg2:#0d121b;
@@ -34,12 +33,12 @@
   body{
     background:var(--bg);
     color:var(--ink);
-    font-family:'IBM Plex Sans KR',sans-serif;
+    font-family:'IBM Plex Sans KR','Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
     word-break:keep-all;
     overflow:hidden;
     -webkit-font-smoothing:antialiased;
   }
-  .mono{font-family:'JetBrains Mono',monospace}
+  .mono{font-family:'JetBrains Mono','Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',Menlo,Consolas,monospace}
 
   /* ===== layout shell ===== */
   #app{display:grid;grid-template-rows:auto 1fr auto;height:100vh}
@@ -187,7 +186,7 @@
   .zoombar{
     position:absolute;left:12px;bottom:12px;display:flex;gap:4px;z-index:5;
     background:#0e1620cc;border:1px solid var(--line);border-radius:9px;padding:4px;
-    backdrop-filter:blur(6px);
+    -webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   }
   .zb{width:30px;height:28px;border:none;background:#16202d;color:var(--ink-dim);
     border-radius:6px;cursor:pointer;font-family:'JetBrains Mono';font-size:13px;transition:.12s}
@@ -195,7 +194,7 @@
   .hint{
     position:absolute;right:12px;bottom:12px;z-index:5;
     font-family:'JetBrains Mono';font-size:10.5px;color:var(--dim);
-    background:#0e1620cc;border:1px solid var(--line);border-radius:8px;padding:6px 11px;backdrop-filter:blur(6px);
+    background:#0e1620cc;border:1px solid var(--line);border-radius:8px;padding:6px 11px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);
   }
   .hint b{color:var(--acc2)}
   .model-caption{
@@ -203,7 +202,7 @@
     font-size:11px;line-height:1.6;color:var(--ink-dim);
     background:linear-gradient(180deg,#0f2820cc,#0c121acc);
     border:1px solid #1d5a48;border-left:3px solid var(--acc);border-radius:9px;
-    padding:9px 12px;backdrop-filter:blur(6px);box-shadow:0 8px 30px -14px #000;
+    padding:9px 12px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);box-shadow:0 8px 30px -14px #000;
   }
   .model-caption.show{display:block}
   .model-caption code{font-family:'JetBrains Mono';color:var(--acc);font-size:10.5px;
@@ -263,17 +262,17 @@
 
   .legend{position:absolute;right:14px;bottom:12px;display:flex;gap:14px;
     font-family:'JetBrains Mono';font-size:10px;color:var(--dim);
-    background:#0c121acc;border:1px solid var(--line);border-radius:8px;padding:7px 12px;backdrop-filter:blur(6px)}
+    background:#0c121acc;border:1px solid var(--line);border-radius:8px;padding:7px 12px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
   .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
 
   .arch-aside{position:absolute;left:14px;top:14px;width:215px;z-index:4}
-  .card{background:#0c121acc;border:1px solid var(--line);border-radius:11px;padding:12px 13px;margin-bottom:10px;backdrop-filter:blur(6px)}
+  .card{background:#0c121acc;border:1px solid var(--line);border-radius:11px;padding:12px 13px;margin-bottom:10px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
   .card h6{font-family:'JetBrains Mono';font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--acc);margin-bottom:7px}
   .card p{font-size:11px;color:var(--ink-dim);line-height:1.55}
   .card .tag{font-family:'JetBrains Mono';font-size:9px;color:var(--dim);border:1px solid var(--line2);border-radius:4px;padding:1px 5px;margin:5px 4px 0 0;display:inline-block}
 
   .counter{position:absolute;right:14px;top:14px;z-index:4;
-    background:#0c121acc;border:1px solid var(--line);border-radius:11px;padding:11px 14px;backdrop-filter:blur(6px);text-align:right}
+    background:#0c121acc;border:1px solid var(--line);border-radius:11px;padding:11px 14px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);text-align:right}
   .counter .big{font-family:'JetBrains Mono';font-size:24px;font-weight:800;color:var(--acc)}
   .counter .lbl{font-family:'JetBrains Mono';font-size:9.5px;color:var(--dim);letter-spacing:.5px}
 
@@ -292,7 +291,7 @@
   .sm-ctrl{position:absolute;left:16px;bottom:14px;display:flex;gap:8px;z-index:3}
   .st-rect{transition:.3s}
   .sm-info{position:absolute;right:16px;top:14px;width:230px;background:#0c121acc;border:1px solid var(--line);
-    border-radius:10px;padding:11px 13px;backdrop-filter:blur(6px);z-index:3}
+    border-radius:10px;padding:11px 13px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);z-index:3}
   .sm-info h6{font-family:'JetBrains Mono';font-size:10px;color:var(--acc);letter-spacing:1px;margin-bottom:6px}
   .sm-info .row{display:flex;justify-content:space-between;font-family:'JetBrains Mono';font-size:11px;color:var(--ink-dim);padding:2.5px 0}
   .sm-info .row b{color:var(--ink)}
@@ -323,7 +322,7 @@
   .cdc-log-wrap{
     position:absolute;right:14px;top:90px;width:310px;z-index:4;
     background:#0a101acc;border:1px solid var(--line);border-radius:11px;
-    overflow:hidden;backdrop-filter:blur(8px);
+    overflow:hidden;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
   }
   .cdc-log-head{
     display:flex;align-items:center;gap:8px;
@@ -356,7 +355,7 @@
     display:flex;align-items:center;gap:0;
     background:#090d13cc;border-top:1px solid var(--line);
     font-family:'JetBrains Mono';font-size:10px;
-    backdrop-filter:blur(4px);z-index:4;pointer-events:none;
+    -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);z-index:4;pointer-events:none;
   }
   .erd-stat{padding:0 14px;height:100%;display:flex;align-items:center;gap:6px;border-right:1px solid var(--line)}
   .erd-stat .lbl{color:var(--dim)}

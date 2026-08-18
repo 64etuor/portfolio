@@ -1,0 +1,269 @@
+/* /projects doc pages — CRT-noir reading sheet, sibling to resume.css.
+   Reuses the resume's visual language (scan/vignette, mono eyebrows, phosphor
+   grays) but keeps the site coral --accent as the base, with a per-employer
+   accent injected as --pj-acc (see Hero). Long-form Korean prose is sans. */
+
+.pj-root {
+  --pj-bg: #070809;
+  --pj-bg2: #0c0f14;
+  --pj-ink: #e9e9ec;
+  --pj-dim: #9096a0;
+  --pj-deep: #4a4f57;
+  --pj-line: rgba(233, 233, 236, 0.11);
+  --pj-acc: var(--accent); /* overridden per-company inline */
+  position: relative;
+  min-height: 100vh;
+  background: radial-gradient(ellipse 130% 120% at 50% 0%, var(--pj-bg2) 0%, var(--pj-bg) 62%, #000 100%);
+  color: var(--pj-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  padding: clamp(28px, 5vw, 64px) 20px 96px;
+  overflow-x: hidden;
+  word-break: keep-all;
+}
+.pj-scan {
+  position: fixed;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0.45;
+  mix-blend-mode: multiply;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.13) 3px, rgba(0, 0, 0, 0.13) 4px);
+}
+.pj-vignette {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: radial-gradient(ellipse at 50% 40%, transparent 56%, rgba(0, 0, 0, 0.68) 100%);
+}
+.pj-sheet {
+  position: relative;
+  z-index: 3;
+  max-width: 880px;
+  margin: 0 auto;
+}
+
+/* ── hero ── */
+.pj-hero {
+  position: relative;
+  padding: 6px 0 30px 22px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid var(--pj-line);
+}
+.pj-hero::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 30px;
+  width: 3px;
+  border-radius: 2px;
+  background: var(--pj-acc);
+  box-shadow: 0 0 14px color-mix(in oklab, var(--pj-acc) 55%, transparent);
+}
+.pj-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.28em;
+  color: var(--pj-dim);
+  margin: 0 0 14px;
+  text-transform: uppercase;
+}
+.pj-eyebrow .pj-acc { color: var(--pj-acc); }
+.pj-title {
+  font-family: var(--font-serif);
+  font-weight: 600;
+  font-size: clamp(28px, 5vw, 48px);
+  line-height: 1.12;
+  color: #f3f4f6;
+  margin: 0 0 12px;
+}
+.pj-role {
+  font-size: 13.5px;
+  color: var(--pj-dim);
+  margin: 0 0 20px;
+}
+.pj-summary {
+  font-size: clamp(14px, 1.6vw, 16px);
+  line-height: 1.75;
+  color: #c8ccd2;
+  max-width: 64ch;
+  margin: 0;
+  text-wrap: pretty;
+}
+
+/* KPI chip row */
+.pj-kpis {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 10px;
+  margin: 20px 0 0;
+  padding: 0;
+}
+.pj-kpi {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 7px;
+  border: 1px solid var(--pj-line);
+  border-radius: 6px;
+  padding: 5px 11px;
+  background: color-mix(in oklab, var(--pj-acc) 6%, transparent);
+}
+.pj-kpi-v { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--pj-acc); }
+.pj-kpi-l { font-size: 11px; color: var(--pj-dim); }
+
+/* ── section + prose ── */
+.pj-section { margin-top: 42px; }
+.pj-h2 {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  color: var(--pj-dim);
+  text-transform: uppercase;
+  margin: 0 0 20px;
+  padding-bottom: 9px;
+  border-bottom: 1px solid var(--pj-line);
+}
+.pj-p {
+  font-size: clamp(14px, 1.5vw, 15.5px);
+  line-height: 1.85;
+  color: #c4c8ce;
+  margin: 0 0 15px;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+.pj-p:last-child { margin-bottom: 0; }
+.pj-ul { list-style: none; margin: 0 0 15px; padding: 0; display: flex; flex-direction: column; gap: 7px; }
+.pj-ul li {
+  position: relative;
+  padding-left: 17px;
+  font-size: 14px;
+  line-height: 1.66;
+  color: #c2c6cc;
+}
+.pj-ul li::before { content: "▸"; position: absolute; left: 0; top: 2px; color: var(--pj-acc); font-size: 10px; }
+.pj-link {
+  color: var(--pj-ink);
+  border-bottom: 1px solid color-mix(in oklab, var(--pj-acc) 45%, transparent);
+  transition: color 0.16s, border-color 0.16s;
+}
+.pj-link:hover { color: var(--pj-acc); border-color: var(--pj-acc); }
+.pj-code {
+  font-family: var(--font-mono);
+  font-size: 0.88em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #dfe3e8;
+}
+
+/* ── metric grid ── */
+.pj-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+}
+.pj-metric {
+  border: 1px solid var(--pj-line);
+  border-radius: 10px;
+  padding: 16px 16px 14px;
+  background: rgba(255, 255, 255, 0.012);
+}
+.pj-metric-v {
+  font-family: var(--font-mono);
+  font-size: clamp(20px, 2.6vw, 27px);
+  font-weight: 700;
+  color: var(--pj-acc);
+  line-height: 1;
+  margin: 0 0 8px;
+}
+.pj-metric-l { font-size: 12.5px; font-weight: 600; color: #e2e5e9; margin: 0; }
+.pj-metric-n { font-size: 11.5px; color: var(--pj-dim); margin: 4px 0 0; line-height: 1.5; }
+
+/* ── gallery ── */
+.pj-gallery { display: flex; flex-direction: column; gap: 22px; }
+.pj-fig { margin: 0; }
+.pj-fig img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--pj-line);
+  border-radius: 10px;
+  background: #000;
+}
+.pj-cap { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--pj-dim); margin: 9px 0 0; }
+
+/* ── diagram ── */
+.pj-diagram { width: 100%; }
+.pj-diagram svg { width: 100%; height: auto; }
+.pj-diagram .pj-node rect { fill: rgba(255, 255, 255, 0.02); stroke: var(--pj-acc); }
+.pj-diagram .pj-node text { fill: #e6e9ec; font-family: var(--font-mono); }
+.pj-diagram .pj-edge { stroke: var(--pj-deep); }
+.pj-diagram .pj-edge-l { fill: var(--pj-dim); font-family: var(--font-mono); }
+
+/* ── stack chips ── */
+.pj-stack { list-style: none; display: flex; flex-wrap: wrap; gap: 7px; margin: 0; padding: 0; }
+.pj-stack li {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: #c8ccd2;
+  border: 1px solid var(--pj-line);
+  border-radius: 5px;
+  padding: 4px 9px;
+  background: color-mix(in oklab, var(--pj-acc) 5%, transparent);
+}
+
+/* ── nav ── */
+.pj-nav {
+  margin-top: 60px;
+  padding-top: 20px;
+  border-top: 1px solid var(--pj-line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.pj-nav a {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  color: var(--pj-dim);
+  transition: color 0.16s;
+}
+.pj-nav a:hover { color: var(--pj-acc); }
+.pj-nav-back { color: var(--pj-ink) !important; }
+
+/* ── index grid ── */
+.pj-index-head { max-width: 880px; margin: 0 auto 34px; }
+.pj-index-grid {
+  max-width: 880px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+.pj-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--pj-line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.014);
+  transition: border-color 0.18s, transform 0.18s;
+}
+.pj-card:hover { border-color: color-mix(in oklab, var(--pj-acc) 45%, var(--pj-line)); transform: translateY(-2px); }
+.pj-card-thumb { aspect-ratio: 16 / 10; background: #000; object-fit: cover; width: 100%; border-bottom: 1px solid var(--pj-line); }
+.pj-card-body { padding: 15px 16px 17px; display: flex; flex-direction: column; gap: 7px; }
+.pj-card-eyebrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--pj-acc); text-transform: uppercase; }
+.pj-card-title { font-family: var(--font-serif); font-size: 20px; font-weight: 600; color: #eef1f4; margin: 0; line-height: 1.2; }
+.pj-card-kpi { font-family: var(--font-mono); font-size: 11.5px; color: var(--pj-dim); margin-top: auto; }
+
+@media (max-width: 560px) {
+  .pj-nav { flex-direction: column; align-items: flex-start; }
+}

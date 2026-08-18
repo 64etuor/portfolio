@@ -102,7 +102,7 @@ export function drawTokens(g: CanvasRenderingContext2D, w: number, h: number, ti
       const a = lerp(0.09, 0.86, sharp) * 0.92
       if (a < 0.045) continue
       const col = o.side === 'F' ? mix([150, 150, 150], WARMB, sharp) : mix([86, 98, 112], COLD, sharp)
-      g.font = o.side === 'F' ? `600 ${o.sz.toFixed(1)}px 'Pretendard',sans-serif` : `500 ${o.sz.toFixed(1)}px 'JetBrains Mono',monospace`
+      g.font = o.side === 'F' ? `600 ${o.sz.toFixed(1)}px 'Pretendard Variable', 'Pretendard',sans-serif` : `500 ${o.sz.toFixed(1)}px 'JetBrains Mono',monospace`
       if (sharp > 0.5 && !heavy) {
         g.shadowColor = rgba(col, 0.5 * sharp)
         g.shadowBlur = 10 * sharp

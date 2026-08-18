@@ -13,7 +13,13 @@
 // ─────────────────────────────────────────────────────────────────────────
 
 // Pretendard — primary KR/sans (variable subset). Family: 'Pretendard Variable'.
-import 'pretendard/dist/web/variable/pretendardvariable-dynamic-subset.css'
+// NOTE: pretendard 패키지 원본 CSS 는 src 힌트가 format('woff2-variations') 인데,
+// 이 비표준 힌트를 인식 못 하는 브라우저(Firefox·일부 Windows 빌드)는 소스를 통째로
+// 건너뛰어 시스템 폰트(Windows=Malgun)로 fallback → "폰트가 안 먹는" 증상이 난다.
+// 그래서 dynamic-subset woff2 를 public/fonts/pretendard 로 self-host 하고, 힌트를
+// 표준 format('woff2') 로 바꾼 로컬 CSS(app/pretendard.css)를 대신 로드한다.
+// (재생성: pretendard 패키지 CSS 에서 url→/fonts/pretendard, woff2-variations→woff2 치환)
+import './pretendard.css'
 
 // JetBrains Mono — primary code/mono. Family: 'JetBrains Mono'.
 import '@fontsource/jetbrains-mono/400.css'

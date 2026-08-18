@@ -71,6 +71,9 @@ export function toResumeData(p: Profile): ResumeData {
             ? p.contact.github
             : `https://${p.contact.github}`,
         },
+        ...(p.contact.blog
+          ? [{ network: 'Blog', username: p.contact.blog.replace(/^https?:\/\//, ''), url: p.contact.blog }]
+          : []),
       ],
     },
     work: p.experience.map((e) => ({

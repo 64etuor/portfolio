@@ -19,15 +19,12 @@ interface FilmClockArgs {
   ended: boolean
   ready: boolean
   armed: boolean
-  setArmed: (v: boolean) => void
   effectiveMs: number
   onFilmEnd: () => void
 }
 
 interface FilmClock {
   progress: number
-  /** bumps on each scene cut → replays the transition overlay */
-  txId: number
   /** pause-accounting carry; rewind/skip reset it to 0 before re-indexing. */
   carriedRef: React.MutableRefObject<number>
 }
@@ -38,8 +35,9 @@ interface FilmClock {
  * The per-scene clock starts only when the scene is VISIBLE (armed). It runs for
  * `effectiveMs`, calling setProgress each frame, and on completion advances to the
  * next scene (or ends the film). `advancedRef` guards advance() to at most once per
- * scene; `carriedRef` accounts for paused time. On a fresh scene the guard resets
- * and the cut transition (txId) fires (skipping the very first scene).
+ * scene; `carriedRef` accounts for paused time and `tickingRef` marks whether
+ * `startRef` currently holds a live start stamp, so paused time is banked exactly
+ * once per pause (and never banked for a scene whose clock never started).
  */
 export function useFilmClock(args: FilmClockArgs): FilmClock {
   const {
@@ -52,13 +50,11 @@ export function useFilmClock(args: FilmClockArgs): FilmClock {
     ended,
     ready,
     armed,
-    setArmed,
     effectiveMs,
     onFilmEnd,
   } = args
 
   const [progress, setProgress] = useState(0)
-  const [txId, setTxId] = useState(0) // bumps on each cut → replays the transition overlay
 
   const advance = useCallback(() => {
     const n = nextIndex(actIdx, sceneIdx)
@@ -74,6 +70,12 @@ export function useFilmClock(args: FilmClockArgs): FilmClock {
   const rafRef = useRef<number | null>(null)
   const startRef = useRef(0)
   const carriedRef = useRef(0)
+  // True while startRef holds a live start stamp for the CURRENT scene. Without it,
+  // a pause that lands before this scene's clock ever started would bank the time
+  // since the PREVIOUS scene's start — a multi-second carry that ends the incoming
+  // scene the instant playback resumes. It also stops a re-run of this effect while
+  // already paused from banking the same interval twice.
+  const tickingRef = useRef(false)
   // Shared per-scene guard: advance() fires at most once per scene, even if two
   // rAF loops briefly coexist (React StrictMode double-invokes effects in dev).
   // Reset to false whenever the scene changes (see the reset effect below).
@@ -83,11 +85,15 @@ export function useFilmClock(args: FilmClockArgs): FilmClock {
 
     if (paused) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
-      carriedRef.current += performance.now() - startRef.current
+      if (tickingRef.current) {
+        tickingRef.current = false
+        carriedRef.current += performance.now() - startRef.current
+      }
       return
     }
 
     startRef.current = performance.now()
+    tickingRef.current = true
     let alive = true
     const tick = () => {
       if (!alive) return
@@ -98,6 +104,7 @@ export function useFilmClock(args: FilmClockArgs): FilmClock {
         if (!advancedRef.current) {
           advancedRef.current = true
           carriedRef.current = 0
+          tickingRef.current = false
           advance()
         }
         return
@@ -111,19 +118,15 @@ export function useFilmClock(args: FilmClockArgs): FilmClock {
     }
   }, [actIdx, sceneIdx, paused, reduced, ended, ready, armed, effectiveMs, advance])
 
-  // On a fresh scene: reset the clock guard, and fire the cinematic cut transition.
-  // (Skip the very first scene so the overlay doesn't flash on initial load; the
-  // ref-compare also makes it immune to React StrictMode's double-invoke in dev.)
-  const prevSceneRef = useRef('')
+  // On a fresh scene: reset the clock guard and the pause accounting. (The cut
+  // overlay is driven by the picture cut in useSceneBuffer, not by this index
+  // change — the two are seconds apart while the incoming scene loads.)
   useEffect(() => {
-    const key = `${actIdx}-${sceneIdx}`
-    if (prevSceneRef.current && prevSceneRef.current !== key) setTxId((n) => n + 1)
-    prevSceneRef.current = key
     carriedRef.current = 0
+    tickingRef.current = false
     advancedRef.current = false
     setProgress(0)
-    setArmed(false)
-  }, [actIdx, sceneIdx, setArmed])
+  }, [actIdx, sceneIdx])
 
-  return { progress, txId, carriedRef }
+  return { progress, carriedRef }
 }

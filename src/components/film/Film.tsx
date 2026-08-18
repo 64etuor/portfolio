@@ -53,7 +53,11 @@ export function Film() {
   const [paused, setPaused] = useState(false)
 
   // Ported scenes signal readiness via their onReady prop (no postMessage handshake).
-  const [armed, setArmed] = useState(false)
+  // Armed is stored as the scene it was armed FOR, not a boolean: a boolean stays
+  // true across the index change until a reset effect clears it, and the clock reads
+  // that stale `true` and starts a throwaway loop for the incoming scene. Keying it
+  // makes disarming instantaneous — armed is false in the very render that cuts.
+  const [armedKey, setArmedKey] = useState<string | null>(null)
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setReduced(true)
@@ -62,6 +66,7 @@ export function Film() {
 
   const shot = ACTS[actIdx].scenes[sceneIdx]
   const currentFile = shot.file
+  const sceneKey = `${actIdx}-${sceneIdx}`
   // Playtime is the static acts.ts value (ported scenes don't declare their own).
   const effectiveMs = shot.ms
 
@@ -73,24 +78,28 @@ export function Film() {
   const irisRef = useIrisOutro(ended)
 
   // Double-buffer scene slots — reveal/blank/cross-fade logic.
-  const { slotFiles, visibleSlot, visible, revealOnLoad } = useSceneBuffer({
+  const { slotFiles, visibleSlot, visible, revealOnLoad, cutId } = useSceneBuffer({
     currentFile,
     reduced,
     ready,
   })
 
-  // Arm the clock as soon as the scene is visible (no handshake wait).
+  // Arm the clock the moment the scene is actually on screen — `visible` now flips
+  // only when the incoming scene has painted, so this is its true t0.
+  const armed = armedKey === sceneKey
   useEffect(() => {
     if (reduced || !ready || !visible || armed) return
-    setArmed(true)
-  }, [reduced, ready, visible, armed])
+    setArmedKey(sceneKey)
+  }, [reduced, ready, visible, armed, sceneKey])
 
   // NOTE: no prefetch. Each scene loads only when it becomes current (load-on-cut),
   // so its rAF starts at reveal ≈ t0 — the scene is seen from its true start point
   // (static intro → dynamic), not mid-loop. The load gap is hidden by the cut overlay.
 
-  // Clock — progress, scene advancement, cut transition id, pause carry.
-  const { progress, txId, carriedRef } = useFilmClock({
+  // Clock — progress, scene advancement, pause carry. (The cut overlay is fired by
+  // the buffer's picture cut, not by this clock: the index change and the picture
+  // change are separated by the incoming scene's load.)
+  const { progress, carriedRef } = useFilmClock({
     actIdx,
     sceneIdx,
     setActIdx,
@@ -100,7 +109,6 @@ export function Film() {
     ended,
     ready,
     armed,
-    setArmed,
     effectiveMs,
     onFilmEnd,
   })
@@ -211,8 +219,9 @@ export function Film() {
       <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '5vh', background: '#000', pointerEvents: 'none', zIndex: 20 }} />
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: '5vh', background: '#000', pointerEvents: 'none', zIndex: 20 }} />
 
-      {/* Cinematic scene-cut transition — the key replays the animation on each cut */}
-      <FilmTransition txId={txId} txVariant={txVariant} />
+      {/* Cinematic scene-cut transition — the key replays the animation on each cut.
+          Driven by the buffer's picture cut so the flash lands ON the cross-fade. */}
+      <FilmTransition txId={cutId} txVariant={txVariant} />
 
       {/* Overall progress bar (top) */}
       <div

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
+import { ErrorBoundary } from 'react-error-boundary'
 import type { Application } from '@splinetool/runtime'
 import { PretextText } from './PretextText'
 import { LandingAmbientWords } from './LandingAmbientWords'
@@ -108,8 +109,16 @@ export function Landing() {
     return () => clearTimeout(t)
   }, [])
 
+  // The robot arrives on its own schedule (measured: ~4s desktop, ~16s on 4G, often
+  // never on 3G — ~2.4s of that is WASM/WebGL init, so it is not a network problem to
+  // optimise away). The hero copy below therefore does NOT wait for it: the copy runs
+  // on its own timeline and the robot cross-fades in behind it on load. Anything that
+  // needs the robot hangs off this flag, never off a wall-clock delay.
+  const [robotIn, setRobotIn] = useState(false)
+
   function onLoad(app: Application) {
     splineRef.current = app
+    setRobotIn(true)
     // expose for scene inspection (objects / variables / events) during dev
     ;(window as unknown as { __spline?: Application }).__spline = app
   }
@@ -160,7 +169,21 @@ export function Landing() {
 
   return (
     <main className="lp-root">
-      {showSpline && <Spline scene={SPLINE_SCENE} onLoad={onLoad} className="lp-spline" />}
+      {/* The robot is decorative and third-party — it must never be able to take the
+          page with it. Spline throws on a failed scene/WASM fetch (CDN down, offline,
+          blocked origin), and with no boundary React unmounted the whole landing to
+          "Application error: a client-side exception has occurred". Falling back to
+          nothing leaves the CRT-noir backdrop, the copy and the nav intact, which is
+          the same robot-absent hero a slow 3G visitor already sees. */}
+      {showSpline && (
+        <ErrorBoundary fallback={null}>
+          <Spline
+            scene={SPLINE_SCENE}
+            onLoad={onLoad}
+            className={`lp-spline${robotIn ? ' lp-spline--in' : ''}`}
+          />
+        </ErrorBoundary>
+      )}
 
       {/* vignette + bottom fade for legibility + faint scanlines over the scene */}
       <div className="lp-veil" aria-hidden />

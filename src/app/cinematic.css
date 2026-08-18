@@ -15,6 +15,26 @@
   border: 0;
   z-index: 0;
   /* shown at the embed's default rendering — background is handled inside the Spline model */
+
+  /* The robot is the slowest thing on the page by a wide margin: ~4s to onLoad on a
+     fast desktop, ~16s on 4G, and often never on 3G — of which ~2.4s is WASM/WebGL
+     init that no amount of preloading removes. So the hero copy is NOT timed against
+     it; the copy owns its own timeline and the robot fades in behind it whenever it
+     lands. Held at 0 until Landing adds --in on Spline's onLoad, otherwise a late
+     robot pops into a settled composition (which reads as a timing bug) and a failed
+     one leaves a black canvas over the CRT-noir backdrop. */
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+.lp-spline--in {
+  opacity: 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Still a fade, just a brief one — snapping it to 1 would restore the pop this
+     rule set exists to remove, and a cross-fade carries no vestibular motion. */
+  .lp-spline {
+    transition-duration: 200ms;
+  }
 }
 /* film-tone veil: vignette + bottom fade so the actions stay legible over the 3D scene */
 .lp-veil {
@@ -128,6 +148,7 @@
   border: 1px solid var(--shell-btn-line);
   border-radius: 7px;
   padding: 7px 13px;
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   cursor: pointer;
   transition:

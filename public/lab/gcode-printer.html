@@ -4,9 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>적층제조 치공구 빌드</title>
-<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-<!-- TODO(security): self-host Pretendard or add SRI integrity= hash; cdn.jsdelivr.net is trusted but unverified at load time -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="/fonts/lab.css">
 <style>
 /* ─────────────────────────── tokens ─────────────────────────── */
 :root{
@@ -23,7 +21,7 @@
   --hot:#ff4d4d;          /* 노즐 온도 */
   --warm:#ff9a3c;
   --solid:#3ddc97;        /* 솔리드 레이어/완료 그린 */
-  --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic",monospace;
   --sans:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -56,7 +54,7 @@ header.topbar{
   display:flex;align-items:center;justify-content:space-between;gap:18px;
   border:1px solid var(--line);border-radius:14px;
   background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(0,0,0,0));
-  padding:7px 14px;backdrop-filter:blur(6px);flex-wrap:wrap;
+  padding:7px 14px;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);flex-wrap:wrap;
 }
 .brand{display:flex;align-items:center;gap:13px}
 .logo{
@@ -115,18 +113,18 @@ header.topbar{
 .vp-badge{
   position:absolute;left:14px;top:12px;font-family:var(--mono);font-size:10.5px;letter-spacing:.5px;
   color:var(--ink-2);background:rgba(8,9,11,.6);border:1px solid var(--line-soft);border-radius:7px;
-  padding:5px 9px;backdrop-filter:blur(3px);
+  padding:5px 9px;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
 }
 .vp-badge b{color:var(--filament-2);font-weight:600}
 .vp-layer{
   position:absolute;right:14px;top:12px;text-align:right;font-family:var(--mono);
-  background:rgba(8,9,11,.6);border:1px solid var(--line-soft);border-radius:7px;padding:6px 11px;backdrop-filter:blur(3px);
+  background:rgba(8,9,11,.6);border:1px solid var(--line-soft);border-radius:7px;padding:6px 11px;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
 }
 .vp-layer .big{font-size:21px;font-weight:700;color:var(--ink);letter-spacing:.5px;line-height:1}
 .vp-layer .sub{font-size:10px;color:var(--ink-3);letter-spacing:.4px;margin-top:3px}
 .vp-coord{
   position:absolute;left:14px;bottom:12px;font-family:var(--mono);font-size:10.5px;color:var(--ink-2);
-  background:rgba(8,9,11,.62);border:1px solid var(--line-soft);border-radius:7px;padding:6px 10px;backdrop-filter:blur(3px);
+  background:rgba(8,9,11,.62);border:1px solid var(--line-soft);border-radius:7px;padding:6px 10px;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
   display:flex;gap:12px;
 }
 .vp-coord span b{color:var(--bed);font-weight:600}
@@ -134,7 +132,7 @@ header.topbar{
 /* nozzle temp mini graph */
 .tempgraph{
   position:absolute;right:14px;bottom:12px;width:178px;
-  background:rgba(8,9,11,.62);border:1px solid var(--line-soft);border-radius:8px;padding:7px 9px 6px;backdrop-filter:blur(3px);
+  background:rgba(8,9,11,.62);border:1px solid var(--line-soft);border-radius:8px;padding:7px 9px 6px;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
 }
 .tempgraph .lbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:9.5px;color:var(--ink-3);letter-spacing:.3px;margin-bottom:3px}
 .tempgraph .lbl b{color:var(--hot)}

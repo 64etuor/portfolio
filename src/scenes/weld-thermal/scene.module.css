@@ -521,6 +521,7 @@
   background: rgba(8, 16, 15, 0.4);
   border: 1px solid var(--line);
   border-radius: 3px;
+  -webkit-backdrop-filter: blur(2px);
   backdrop-filter: blur(2px);
 }
 
@@ -616,6 +617,7 @@
   background: rgba(6, 12, 11, 0.35);
   border: 1px solid var(--line);
   border-radius: 6px;
+  -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
 }
 
@@ -657,6 +659,7 @@
   border-radius: 4px;
   box-shadow: 0 0 24px rgba(60, 180, 255, 0.22) inset;
   transition: 0.2s;
+  -webkit-backdrop-filter: blur(3px);
   backdrop-filter: blur(3px);
 }
 

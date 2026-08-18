@@ -130,6 +130,7 @@
   min-height: 44px;
   padding: 8px clamp(16px, 4vw, 40px);
   background: color-mix(in oklab, var(--bg) 82%, transparent);
+  -webkit-backdrop-filter: blur(8px);
   backdrop-filter: blur(8px);
   border-bottom: 1px solid var(--line);
 }

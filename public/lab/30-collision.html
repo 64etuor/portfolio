@@ -4,11 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SCENE 06 · 충돌 — LEXICAL COLLISION</title>
-<!-- TODO(security): CSS @import inside <style> cannot carry SRI integrity hashes.
-     Real fix: replace with <link rel="stylesheet" href="..." crossorigin="anonymous" integrity="sha384-..."> or self-host fonts. -->
+<link rel="stylesheet" href="/fonts/lab.css">
 <style>
-  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css');
-
   :root{
     --bg:#050505;
     --bg2:#0e0e0e;
@@ -17,15 +14,15 @@
     --phos-deep:#3a3a3a;
     --warm:#d98a3d;        /* 현업 · 제조 */
     --cold:#4ab3cc;        /* 개발 · 시스템 */
-    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,monospace;
+    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,'Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',monospace;
   }
   @font-face{
     font-family:'JetBrains Mono';font-display:swap;font-weight:400;
-    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.woff2') format('woff2');
+    src:url('/fonts/lab/jetbrains-mono-latin-400-normal.woff2') format('woff2');
   }
   @font-face{
     font-family:'JetBrains Mono';font-display:swap;font-weight:700;
-    src:url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-700-normal.woff2') format('woff2');
+    src:url('/fonts/lab/jetbrains-mono-latin-700-normal.woff2') format('woff2');
   }
 
   *{box-sizing:border-box;margin:0;padding:0}

@@ -76,6 +76,7 @@
   border-radius: 14px;
   background: linear-gradient(180deg, rgba(255, 255, 255, .02), rgba(0, 0, 0, 0));
   padding: 13px 18px;
+  -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
 }
 
@@ -252,6 +253,7 @@
   border: 1px solid var(--line-soft);
   padding: 10px 12px;
   border-radius: 10px;
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   max-height: 46%;
   overflow: auto;
@@ -314,6 +316,7 @@
   cursor: pointer;
   letter-spacing: .4px;
   transition: .16s;
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
   z-index: 6;
 }

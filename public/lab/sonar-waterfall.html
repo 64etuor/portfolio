@@ -4,9 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>초음파 용착 DOE — 조건 최적화 반응면</title>
+<link rel="stylesheet" href="/fonts/lab.css">
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans+KR:wght@300;400;500;600;700&display=swap');
-
   :root{
     --bg:#02060c;
     --ink:#9fd0ff;
@@ -26,7 +25,7 @@
   body{
     background:var(--bg);
     color:var(--txt);
-    font-family:'IBM Plex Mono','Share Tech Mono','IBM Plex Sans KR',monospace;
+    font-family:'IBM Plex Mono','Share Tech Mono','IBM Plex Sans KR','Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',Menlo,Consolas,monospace;
     word-break:keep-all;
     overflow:hidden;
     -webkit-font-smoothing:antialiased;
@@ -57,7 +56,7 @@
     display:flex;align-items:center;
     background:linear-gradient(180deg,#06192e,#03101d);
     border-bottom:1px solid var(--line);
-    font-family:'Share Tech Mono',monospace;
+    font-family:'Share Tech Mono','Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',Menlo,Consolas,monospace;
     letter-spacing:.5px;
   }
   .topbar .tag{
@@ -179,7 +178,7 @@
   .statusbar .right{margin-left:auto;border-right:none;color:var(--ink-dim);}
 
   /* ---- modal ---- */
-  .modal{position:fixed;inset:0;z-index:9500;display:none;align-items:center;justify-content:center;background:rgba(1,4,10,.78);backdrop-filter:blur(3px);}
+  .modal{position:fixed;inset:0;z-index:9500;display:none;align-items:center;justify-content:center;background:rgba(1,4,10,.78);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);}
   .modal.on{display:flex;}
   .card{
     width:min(640px,86vw);max-height:84vh;overflow:auto;position:relative;

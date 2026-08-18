@@ -4,11 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>MES 실시간 운영 콘솔</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Oswald:wght@400;500;600;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/fonts/lab.css">
 <style>
-:root{
+  :root{
   --bg:#0a0e0d;
   --panel:#0f1513;
   --panel2:#121a17;
@@ -29,7 +27,7 @@ html,body{height:100%}
 body{
   background:var(--bg);
   color:var(--txt);
-  font-family:'IBM Plex Sans KR','JetBrains Mono',monospace;
+  font-family:'IBM Plex Sans KR','JetBrains Mono','Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',Menlo,Consolas,monospace;
   word-break:keep-all;
   overflow-x:hidden;
   font-size:13px;
@@ -46,9 +44,9 @@ body::after{
   content:"";position:fixed;inset:0;z-index:9999;pointer-events:none;
   background:radial-gradient(ellipse at center,rgba(0,0,0,0) 55%,rgba(0,0,0,.55) 100%);
 }
-.mono{font-family:'JetBrains Mono',monospace}
-.cond{font-family:'Oswald',sans-serif;letter-spacing:.02em}
-.num{font-family:'JetBrains Mono',monospace;font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
+.mono{font-family:'JetBrains Mono','Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',Menlo,Consolas,monospace}
+.cond{font-family:'Oswald','Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',sans-serif;letter-spacing:.02em}
+.num{font-family:'JetBrains Mono','Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',Menlo,Consolas,monospace;font-variant-numeric:tabular-nums;font-feature-settings:"tnum"}
 
 /* ===== top bar ===== */
 .topbar{

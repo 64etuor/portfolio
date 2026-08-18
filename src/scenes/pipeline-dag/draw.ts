@@ -60,7 +60,11 @@ export const AI_MAX = 80
 
 // AI canvas initialisation — called once per canvas element
 export function initAICanvas(canvas: HTMLCanvasElement, aiData: number[]): CanvasRenderingContext2D | null {
-  const dpr = window.devicePixelRatio || 1
+  // Cap at 2 like the shared scene host (useSceneCanvas DPR_CAP). Uncapped, a 4K
+  // Windows laptop at dpr 3 allocates 2.25x the pixels of a Retina Mac for a 206x54
+  // sparkline that gains nothing above 2 — and Windows fractional scaling (1.25/1.5)
+  // makes this the one canvas whose backing size differed from every other scene's.
+  const dpr = Math.min(window.devicePixelRatio || 1, 2)
   canvas.width = 206 * dpr; canvas.height = 54 * dpr
   const ctx = canvas.getContext('2d')
   if (!ctx) return null

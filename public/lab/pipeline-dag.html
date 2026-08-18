@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>notion-os.dag — Notion OS · Org Operating System</title>
+<link rel="stylesheet" href="/fonts/lab.css">
 <style>
   :root{
     --bg:#0a0e14;
@@ -23,7 +24,7 @@
     --pink:#ff7eb6;
     --cyan:#36d9d9;
     --red:#ff6363;
-    --mono:'SF Mono','JetBrains Mono','Fira Code',ui-monospace,'Cascadia Code',Consolas,monospace;
+    --mono:'SF Mono','JetBrains Mono','Fira Code',ui-monospace,'Cascadia Code',Consolas,'Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',Menlo,monospace;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font-family:var(--mono);
@@ -202,7 +203,7 @@
   /* ---------- Minimap ---------- */
   #minimap{position:fixed;left:14px;bottom:14px;width:200px;height:130px;z-index:40;
     background:rgba(8,11,16,.85);border:1px solid var(--line);border-radius:8px;overflow:hidden;
-    box-shadow:0 8px 28px rgba(0,0,0,.5);backdrop-filter:blur(4px)}
+    box-shadow:0 8px 28px rgba(0,0,0,.5);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
   #minimap .mh{font-size:9px;letter-spacing:1px;color:var(--txt-faint);padding:5px 8px;border-bottom:1px solid var(--line);
     text-transform:uppercase;display:flex;justify-content:space-between}
   #mmsvg{display:block;width:100%;height:calc(100% - 22px);cursor:pointer}
@@ -213,7 +214,7 @@
     max-width:300px}
   #panel.open ~ #legend{right:394px}
   .leg{font-size:10px;color:var(--txt-dim);background:rgba(8,11,16,.8);border:1px solid var(--line);
-    padding:5px 9px;border-radius:6px;display:flex;align-items:center;gap:6px;backdrop-filter:blur(4px)}
+    padding:5px 9px;border-radius:6px;display:flex;align-items:center;gap:6px;-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
   .leg .d{width:7px;height:7px;border-radius:2px}
 
   /* zoom controls */
@@ -233,7 +234,7 @@
   /* hint */
   #hint{position:fixed;top:54px;left:50%;transform:translateX(-50%);z-index:35;font-size:11px;color:var(--txt-dim);
     background:rgba(8,11,16,.8);padding:6px 14px;border-radius:20px;border:1px solid var(--line);
-    backdrop-filter:blur(4px);transition:opacity .5s;pointer-events:none}
+    -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);transition:opacity .5s;pointer-events:none}
   .kbd{display:inline-block;padding:1px 6px;border-radius:4px;background:var(--panel2);border:1px solid var(--line);
     color:var(--txt);font-size:10px;margin:0 2px}
 </style>

@@ -4,11 +4,9 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>박양하 · 커리어 타임라인 & 프로젝트 임팩트 보드 · 간트 + 크리티컬 패스 + 스코어카드</title>
-<!-- TODO(security): self-host Pretendard or add SRI integrity= hash; cdn.jsdelivr.net is trusted but unverified at load time -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" crossorigin="anonymous" />
+<link rel="stylesheet" href="/fonts/lab.css">
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap');
-:root{
+  :root{
   --paper:#0c0f14;
   --paper-2:#11151b;
   --board:#141820;
@@ -30,7 +28,7 @@
   --c-sol:#5588e8;   /* 솔라엣지 */
   --c-mir:#9470e0;   /* 스타트업 */
   --c-bridge:#8fa0b4;/* 역량 보강 */
-  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,monospace;
+  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic",monospace;
   --sans:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
   --today-glow:rgba(74,128,240,.6);
   --crit-glow:rgba(240,85,85,.5);
@@ -60,11 +58,11 @@ body{
   position:sticky;top:0;z-index:100;
   display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:44px;
   padding:8px clamp(16px,4vw,40px);
-  background:rgba(8,9,12,.82);backdrop-filter:blur(8px);
+  background:rgba(8,9,12,.82);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
   border-bottom:1px solid rgba(232,234,240,.1);
 }
 .site-bar .brand{
-  font-family:'Playfair Display',Georgia,serif;font-size:clamp(15px,1.5vw,19px);font-weight:600;
+  font-family:'Playfair Display',Georgia,'Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',serif;font-size:clamp(15px,1.5vw,19px);font-weight:600;
   letter-spacing:.01em;color:#e8eaf0;text-decoration:none;transition:opacity .16s;
 }
 .site-bar .brand:hover{opacity:.72;}

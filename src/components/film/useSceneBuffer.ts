@@ -3,6 +3,8 @@ import { ACTS } from './acts'
 
 interface SceneBufferArgs {
   currentFile: string
+  /** the scene after this one — staged into the hidden slot. null on the last beat. */
+  nextFile: string | null
   reduced: boolean
   ready: boolean
 }
@@ -21,17 +23,20 @@ interface SceneBuffer {
 /**
  * useSceneBuffer — the two-slot double-buffer reveal/blank logic.
  *
- * Two stable slots cross-fade between scenes. Scenes load on-cut (there is no
- * prefetch), so a slot that merely *holds* the current file is not showable yet — its
- * module may still be in flight. A slot becomes showable only once its scene has
- * PAINTED, which it signals through `onReady` → `revealOnLoad`. Cutting to a slot
- * before that would cross-fade to an empty slot: the picture goes dark and the scene
- * pops in afterwards, out of sync with the cut flash. A safety timer force-reveals
- * after 5000ms if `onReady` never fires. After a cut settles, the now-hidden slot is
- * blanked (1100ms) so the outgoing scene stops its rAF loop.
+ * Two stable slots cross-fade between scenes. While one plays, the NEXT scene is
+ * staged into the hidden slot (1100ms after the cut settles) mounted but frozen —
+ * `running=false`, so it paints its t=0 frame and never subscribes to the rAF. That
+ * makes the following cut instant without letting the scene run before it is seen.
+ *
+ * A slot is showable only once its scene has PAINTED, which it signals through
+ * `onReady` → `revealOnLoad`. Holding a file is not the same as being ready: cutting
+ * to a slot whose module is still in flight cross-fades to an empty slot, so the
+ * picture goes dark and the scene pops in afterwards, out of sync with the cut flash.
+ * A safety timer force-reveals after 5000ms if `onReady` never fires. Rewind/skip land
+ * on a file in neither slot and fall back to load-on-cut.
  */
 export function useSceneBuffer(args: SceneBufferArgs): SceneBuffer {
-  const { currentFile, reduced, ready } = args
+  const { currentFile, nextFile, reduced, ready } = args
 
   // Two stable iframe slots; we cross-fade between them.
   const [slotFiles, setSlotFiles] = useState<[string | null, string | null]>(() => [
@@ -106,26 +111,35 @@ export function useSceneBuffer(args: SceneBufferArgs): SceneBuffer {
     return () => clearTimeout(t)
   }, [reduced, ready, visible, currentFile, slotFiles, cutTo])
 
-  // Optimization: once a cut has settled, blank the now-hidden slot so the OUTGOING
-  // scene stops rendering. Otherwise its iframe keeps a full rAF loop alive — invisibly —
-  // for the entire duration of the next scene (the double-buffer always retains the
-  // previous file). Blanking it after the cross-fade halves steady-state canvas load
-  // with zero visual change (it's already faded out), and the slot reloads on the next
-  // cut exactly as before (load-on-cut).
+  // Once a cut has settled, swap the outgoing scene in the hidden slot for the NEXT
+  // one, so it is already mounted and painted when its turn comes.
+  //
+  // Loading only on-cut made every scene overrun its budget: the clock ran the full
+  // `ms` from paint, then `advance()` fired, and the picture only moved once the
+  // incoming scene had loaded — measured at +330ms per cut (+700ms for the heavy
+  // beats), which reads as the film switching late. Staging ahead removes that gap
+  // at the source instead of compensating for it in the clock.
+  //
+  // The staged scene mounts with running=false, so useSceneCanvas paints its static
+  // t=0 frame and never subscribes to the rAF — it cannot advance before it is seen.
+  // (Prefetching was dropped originally because it started scenes mid-loop; gating on
+  // `running` is what makes it safe now.) nextFile is null on the last beat, which
+  // blanks the slot exactly as before.
   useEffect(() => {
     if (reduced || !ready) return
     const hidden = visibleSlot ^ 1
-    if (slotFiles[hidden] == null) return
+    if (slotFiles[hidden] === nextFile) return
     const t = setTimeout(() => {
       setSlotFiles((prev) => {
         const h = visibleSlot ^ 1
-        if (prev[h] == null || prev[h] === currentFile) return prev
+        if (prev[h] === nextFile || prev[h] === currentFile) return prev
         const n: [string | null, string | null] = [prev[0], prev[1]]
-        n[h] = null
+        n[h] = nextFile
         return n
       })
-      // A blanked slot has nothing painted — drop its mark so a later cut can't treat
-      // the unmounted scene as showable.
+      // The slot's previous occupant is gone — drop its paint mark so a later cut
+      // can't treat the unmounted scene as showable. The incoming staged scene
+      // re-marks itself when its own onReady fires.
       setPaintedFiles((prev) => {
         const h = visibleSlot ^ 1
         if (prev[h] == null) return prev
@@ -135,7 +149,7 @@ export function useSceneBuffer(args: SceneBufferArgs): SceneBuffer {
       })
     }, 1100) // after the 720ms cross-fade has fully settled
     return () => clearTimeout(t)
-  }, [visibleSlot, currentFile, reduced, ready, slotFiles])
+  }, [visibleSlot, currentFile, nextFile, reduced, ready, slotFiles])
 
   const revealOnLoad = (i: number) => {
     const f = slotFiles[i]

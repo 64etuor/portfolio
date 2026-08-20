@@ -423,29 +423,6 @@ export function drawLetters(ctx: CanvasRenderingContext2D, state: DragonHeroStat
     const burning = L.burnTimer > 0
     let alpha = L.baseAlpha
     let color = L.color
-    if (L.isEcho) {
-      // The crux of the no-ghost fix: while this echo sits home, show the
-      // real DOM glyph and paint nothing. The instant it's displaced (or
-      // burning), HIDE the DOM glyph and paint the moving canvas letter in
-      // its place — so the glyph travels with no duplicate left behind. DOM
-      // writes happen only on the home<->moved transition (tracked by hidden).
-      const ddx = L.x - L.hx
-      const ddy = L.y - L.hy
-      const disp = Math.sqrt(ddx * ddx + ddy * ddy)
-      const atHome = disp < 1.5 && !burning
-      if (atHome) {
-        if (L.hidden && L.span) {
-          L.span.style.opacity = ''
-          L.hidden = false
-        }
-        continue // DOM glyph shows here; draw no canvas echo
-      }
-      if (!L.hidden && L.span) {
-        L.span.style.opacity = '0'
-        L.hidden = true
-      }
-      alpha = Math.max(Math.min(1, disp / 16), burning ? 0.6 : 0.35) * L.baseAlpha
-    }
     if (burning) {
       color = fireColor(1 - Math.min(1, L.burnTimer))
       alpha = Math.min(1, alpha + 0.4)

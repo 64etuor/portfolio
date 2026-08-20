@@ -440,6 +440,12 @@
   ],
   "certificates": [
     {
+      "name": "매경TEST 최우수",
+      "issuer": "매일경제신문사",
+      "summary": "경제경영 이해력 인증시험",
+      "date": "2026.07"
+    },
+    {
       "name": "플레이데이터 — 한화시스템 Beyond SW 부트캠프",
       "issuer": "플레이데이터",
       "summary": "Back/Front-end · DevOps",

@@ -527,6 +527,12 @@ export const profile: Profile = {
 
   training: [
     {
+      name: '매경TEST 최우수',
+      org: '매일경제신문사',
+      period: '2026.07',
+      summary: '경제경영 이해력 인증시험',
+    },
+    {
       name: '플레이데이터 — 한화시스템 Beyond SW 부트캠프',
       org: '플레이데이터',
       period: '2025.01 ~ 2025.07',

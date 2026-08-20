@@ -479,8 +479,9 @@
     },
     {
       "name": "TOEIC 930",
-      "issuer": "ETS",
-      "summary": "영어 공인 어학 성적"
+      "issuer": "YBM 한국TOEIC위원회",
+      "summary": "영어 공인 어학 성적",
+      "date": "2023.01"
     },
     {
       "name": "플레이데이터 — 한화시스템 Beyond SW 부트캠프",

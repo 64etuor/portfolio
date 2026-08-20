@@ -570,7 +570,8 @@ export const profile: Profile = {
     },
     {
       name: 'TOEIC 930',
-      org: 'ETS',
+      org: 'YBM 한국TOEIC위원회',
+      period: '2023.01',
       summary: '영어 공인 어학 성적',
     },
     {

@@ -397,9 +397,6 @@
   .rz-summary, .rz-entry-sum, .rz-bullets li, .rz-card-desc, .rz-list-title, .rz-cl-body p { color: #2a2d33 !important; }
   .rz-entry-title, .rz-card-title, .rz-cl-em { color: #000 !important; }
   .rz-cl-em { text-decoration-color: #9bbfc6 !important; }
-  /* Per-glyph echo spans may be momentarily hidden on screen while the dragon
-     scatters them; print must always show every glyph. */
-  .rz-echo-ch { opacity: 1 !important; }
   .rz-card { break-inside: avoid; border-color: #d6d8dc !important; background: #fafafa !important; }
   .rz-entry { break-inside: avoid; }
   .rz-chips li { color: #333 !important; background: #f2f5f6 !important; border-color: #dadde0 !important; }

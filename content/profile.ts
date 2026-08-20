@@ -46,14 +46,49 @@ export const profile: Profile = {
 
   projects: [
     {
+      id: 'kip',
+      name: 'KIP — 근거 우선 지식 패브릭 스타터킷',
+      org: '개인 프로젝트',
+      period: '2026.08 ~ 현재',
+      role: '제품 설계, 검색 파이프라인, 파서 격리, 운영 문서 체계',
+      background:
+        'NAS 공유 폴더, HWP/HWPX, 스캔 PDF, 발표자료, 스프레드시트, 메신저에 지식이 흩어져 있는 조직에서 RAG를 붙이면 답은 나오지만 출처를 확인할 수 없어 실무에 쓸 수 없다. 특히 한국 제조 문서는 HWP 비중이 높고 표가 의미의 대부분을 담는데 일반 파서가 표를 문단으로 뭉갠다. 목표를 “잘 찾는 검색”이 아니라 “근거를 항상 같이 내는 검색”으로 잡고, 사람과 AI agent가 같은 검색 의미론을 공유하는 기반으로 설계.',
+      work: [
+        'CLI(버전 고정 JSON)·REST/OpenAPI·선택형 MCP 어댑터가 동일한 retrieval service를 호출하도록 edge를 얇게 설계 — SearchRequest의 mode/filter를 네 표면이 동일하게 노출',
+        '모든 응답에 원문 위치(locator)를 동반시키고, locator가 실제 페이지·블록을 가리키는지 평가로 검증하는 evidence-first 파이프라인 구축',
+        'PDF 백엔드를 bounded Rust 엔진 기반 hybrid로 교체하고 rollback 경로를 명시적으로 유지 — 유효 Markdown 표는 별도 단위로 승격, 미구조화 표 페이지만 선택적 fallback',
+        '파서를 bounded 프로세스로 격리해 손상 입력이 서비스를 중단시키지 못하게 하고, ACL 유출 없는 검색 경로를 평가로 확인',
+        '승인 목표(PRD/TRD)와 구현 현황·측정 근거·잔여 격차를 별도 문서로 분리하고, semantic search(pgvector)는 lexical 대비 이득 입증 전까지 비활성 유지 — 설계 결정 43건을 ADR로 고정',
+        '결정적 starter ZIP 빌더 구현 — allowlist 기반 패키징에 버전 manifest·파일별 checksum·외부 digest·경로/확장 방어·비밀 내용 스캔을 붙여 수신 측 독립 검증 가능',
+      ],
+      impact: [
+        { metric: '파싱 성능', value: 'public PDF 6종에서 raw 파싱 19.2배, PostgreSQL 동기화 3.23배 향상' },
+        { metric: '검색 품질 유지', value: '성능 개선 후에도 lexical Recall@10 1.0000 / MRR 0.9861, ACL 유출 0건' },
+        { metric: '과대 표기 차단', value: '목표 문서와 구현 현황 문서를 분리해 “PRD에 썼으니 됐다”를 구조적으로 방지' },
+      ],
+      tech: [
+        'Python 3.12',
+        'PostgreSQL 18',
+        'FastAPI',
+        'Typer',
+        'Pydantic v2',
+        'MCP',
+        'Docker',
+        'pgvector',
+      ],
+      domains: ['개발', 'AI', '데이터'],
+      links: [{ label: 'GitHub', url: 'https://github.com/64etuor' }],
+    },
+    {
       id: 'work-radar',
       name: 'Work Radar — Local-first AI 워크플로우 콕핏',
       org: '개인 프로젝트',
-      period: '2026.01 ~ 현재',
+      period: '2026.05 ~ 현재',
       role: '제품 기획, 프론트엔드, Rust 백엔드, 로컬 자동화 아키텍처',
       background:
         '개인 개발자의 업무는 캘린더, GitHub PR, Notion 백로그, 로컬 worktree, Codex/Hermes agent 세션, 루틴이 서로 다른 속도로 동시에 들어온다. 실제 병목은 자동화 부족이 아니라 “지금 무엇을 봐야 하는지”를 잃는 데 있다. 이 문제를 task manager가 아니라 운영면의 문제로 보고, 신호 수집·시간 배치·agent 실행·governance·회고를 하나의 반복 가능한 데스크톱 콕핏으로 묶기 위해 기획.',
       work: [
+        '결정 레일 분리: 신호 수집은 자동, 백로그·안건·일정으로의 승격은 전량 수동. 자동화(Codex)는 제안·실행 레일에만 붙이고 결정 레일에서 배제 — 샌드박스는 read_only/workspace_write 둘뿐(danger_full 미제공)',
         'Capture Board: 미분류 inbox, Eisenhower matrix, Today rail, 루틴, Agent Bar, 뉴스 티커를 한 화면에 결합한 관제면 구현',
         'Today Timeline: 미배치 tray, 연속 날짜 timeline, drag 배치, 완료 이력, Work Debt chip을 하나의 시간 좌표계로 합성',
         'Control Room: Boule Governance(자동 개발 구현 시스템)를 readiness gate, bounded ticker, attention latch, lineage graph로 관측 가능한 복잡계로 노출',
@@ -65,6 +100,7 @@ export const profile: Profile = {
         { metric: '운영 surface 통합', value: 'capture·schedule·jobs·governance·review를 단일 콕핏으로 통합' },
         { metric: 'agent 실행 통제', value: 'timeout·max turns·cost cap·kill·accept/reject 로그로 bounded 실행' },
         { metric: '외부 변경 안전성', value: 'GitHub·Notion·Calendar·MCP write를 모두 human gate + Rust boundary로 통제' },
+        { metric: '범위 판단', value: '앱 내 코드 실행 레일(구 Phase 10)은 외부 에이전트와 중복·고위험으로 판단해 구현분을 폐기' },
       ],
       tech: [
         'Tauri 2',

@@ -792,6 +792,18 @@ const PROJECTS = [
       {k:'안전', v:'human gate', cls:'g', c:'외부 write Rust 경계'}
     ],
     stack:['Tauri 2','Rust','SQLite','React','TypeScript','MCP','Calendar API'] },
+  { id:'p-kip', slug:'kip', tier:1, parent:'mir', co:'개인 프로젝트', color:COLORS.self, role:'KIP — 근거 우선 지식 패브릭 스타터킷',
+    start:ym(2026,8), end:ym(2026,8), pct:40, crit:false, deps:[], slack:0, ongoing:true,
+    problem:'NAS·한글문서·스캔 PDF·발표자료·메신저에 지식이 흩어져 있어, RAG를 붙여도 답의 출처를 확인할 수 없으면 업무에 쓸 수 없었음.',
+    built:'색인·검색 서비스를 하나로 두고 CLI(버전 고정 JSON)·REST/OpenAPI·MCP 세 진입 경로가 동일 의미론을 공유하게 설계. 모든 응답에 원문 locator를 동반하고, hybrid PDF 백엔드로 파싱 19.2배·동기화 3.23배를 얻으면서 lexical Recall@10 1.0000을 유지함.',
+    rewind:'epilogue',
+    desc:'회사 문서를 모아 검색하되 답변의 근거가 된 원문 위치를 항상 함께 제시하는 agent-first 지식 패브릭. semantic search는 lexical 대비 이득을 평가로 입증하기 전까지 비활성으로 두는 등, 목표 문구와 구현 현황을 문서상 분리해 과대 표기를 구조적으로 막았다.',
+    metrics:[
+      {k:'진입 경로', v:'CLI·REST·MCP', cls:'', c:'동일 retrieval service'},
+      {k:'파싱', v:'19.2x', cls:'g', c:'public PDF 6종 · 동기화 3.23x'},
+      {k:'검색 품질', v:'Recall@10 1.0', cls:'g', c:'MRR 0.9861 · ACL 유출 0'}
+    ],
+    stack:['Python 3.12','PostgreSQL 18','FastAPI','Typer','MCP','Docker'] },
 ];
 
 // flat render order: each company followed by its projects (chronological)

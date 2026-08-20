@@ -24,6 +24,7 @@ const NAME_EN = 'Yangha Park'
  * render without a detail link. Keep in sync with content/projects/*.
  */
 const PROJECT_DETAIL_SLUG: Record<string, string> = {
+  'KIP — 근거 우선 지식 패브릭 스타터킷': 'kip',
   'Work Radar — Local-first AI 워크플로우 콕핏': 'work-radar',
   '뷰티 매장 CRM·키오스크·앱 플랫폼': 'kiosk-app',
   '신제품 생산 라인 셋업 프로젝트 (자동화 설비 MES 자체 개발)': 'mes-console',

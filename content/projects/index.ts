@@ -13,6 +13,7 @@ import { smart_factory } from './smart-factory'
 import { work_radar } from './work-radar'
 import { notion_os } from './notion-os'
 import { kiosk_app } from './kiosk-app'
+import { kip } from './kip'
 
 export const ALL_PROJECTS: ProjectContent[] = [
   mes_console,
@@ -26,6 +27,7 @@ export const ALL_PROJECTS: ProjectContent[] = [
   work_radar,
   notion_os,
   kiosk_app,
+  kip,
 ]
 
 export function enabledProjects(): ProjectContent[] {

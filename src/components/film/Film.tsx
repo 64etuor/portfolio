@@ -67,6 +67,16 @@ export function Film() {
   const shot = ACTS[actIdx].scenes[sceneIdx]
   const currentFile = shot.file
   const sceneKey = `${actIdx}-${sceneIdx}`
+
+  // The scene after this one, staged into the hidden slot while this one plays so
+  // the cut can be instant. null on the final beat.
+  const act = ACTS[actIdx]
+  const nextFile =
+    sceneIdx + 1 < act.scenes.length
+      ? act.scenes[sceneIdx + 1].file
+      : actIdx + 1 < ACTS.length
+        ? ACTS[actIdx + 1].scenes[0].file
+        : null
   // Playtime is the static acts.ts value (ported scenes don't declare their own).
   const effectiveMs = shot.ms
 
@@ -80,6 +90,7 @@ export function Film() {
   // Double-buffer scene slots — reveal/blank/cross-fade logic.
   const { slotFiles, visibleSlot, visible, revealOnLoad, cutId } = useSceneBuffer({
     currentFile,
+    nextFile,
     reduced,
     ready,
   })
@@ -205,10 +216,14 @@ export function Film() {
                 zIndex: isVisible ? 2 : 1,
               }}
             >
-              {/* Mounted scenes run unless paused; blanking unmount (f→null) stops the outgoing.
-                  Tying running to !paused freezes the visible scene's canvas on pause (the
-                  scene host now freeze-resumes, so it continues from the same frame on play). */}
-              <SceneSlot file={f} running={f != null && !paused} onReady={() => revealOnLoad(i)} />
+              {/* Only the VISIBLE slot runs. The hidden slot holds the next scene already
+                  mounted and painted (its static t=0 frame) but NOT ticking — useSceneCanvas
+                  skips the rAF subscription when running is false, so a staged scene cannot
+                  advance mid-loop before it is seen. That is what makes the cut instant
+                  without reintroducing the "scene starts partway through" problem that got
+                  prefetching removed the first time. Pause freezes the visible scene in
+                  place (the host freeze-resumes from the same frame). */}
+              <SceneSlot file={f} running={isVisible && !paused} onReady={() => revealOnLoad(i)} />
             </div>
           )
         })}

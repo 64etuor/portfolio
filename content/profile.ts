@@ -569,6 +569,11 @@ export const profile: Profile = {
       summary: '경제경영 이해력 인증시험',
     },
     {
+      name: 'TOEIC 930',
+      org: 'ETS',
+      summary: '영어 공인 어학 성적',
+    },
+    {
       name: '플레이데이터 — 한화시스템 Beyond SW 부트캠프',
       org: '플레이데이터',
       period: '2025.01 ~ 2025.07',

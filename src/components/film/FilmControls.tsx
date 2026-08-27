@@ -11,7 +11,7 @@ interface FilmControlsProps {
 }
 
 /**
- * FilmControls — rewind + play/pause (bottom-right) and skip-to-ending (top-right).
+ * FilmControls — rewind + play/pause (bottom-right) and immediate return home (top-right).
  */
 export function FilmControls({ paused, onRewind, onTogglePause, onSkip }: FilmControlsProps) {
   const { t } = useLocale()
@@ -27,7 +27,7 @@ export function FilmControls({ paused, onRewind, onTogglePause, onSkip }: FilmCo
         </button>
       </div>
 
-      {/* Skip to ending (top-right) */}
+      {/* Return home immediately (top-right) */}
       <button
         onClick={onSkip}
         className="film-skip"

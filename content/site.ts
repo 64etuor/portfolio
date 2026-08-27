@@ -95,6 +95,6 @@ export const SITE = {
     previous: copy('이전', 'Previous'),
     play: copy('재생', 'Play'),
     pause: copy('일시정지', 'Pause'),
-    skip: copy('SKIP →', 'SKIP →'),
+    skip: copy('HOME →', 'HOME →'),
   },
 } as const

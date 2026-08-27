@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState, type CSSProperties } from 'react'
+import { useRouter } from 'next/navigation'
 import { ACTS } from './acts'
 import { SceneSlot } from './SceneSlot'
 import { FilmControls } from './FilmControls'
@@ -44,6 +45,7 @@ const srOnly: CSSProperties = {
  *  - After the ending beat → onFilmEnd() returns to the landing.
  */
 export function Film() {
+  const router = useRouter()
   const [reduced, setReduced] = useState(false)
   const [ready, setReady] = useState(false)
   const [ended, setEnded] = useState(false)
@@ -134,14 +136,9 @@ export function Film() {
     setSceneIdx(0)
   }, [carriedRef])
 
-  // Jump to the ending beat and resume playback (un-pause).
-  const skipToEnd = useCallback(() => {
-    setEnded(false)
-    setPaused(false)
-    carriedRef.current = 0
-    setActIdx(ACTS.length - 1)
-    setSceneIdx(0)
-  }, [carriedRef])
+  // Skip exits the film immediately. The landing is the portfolio's home and
+  // avoids making visitors wait through the closing beat before they can leave.
+  const skipToHome = useCallback(() => router.replace('/'), [router])
 
   // Keyboard: space = play/pause, ArrowLeft = rewind one beat.
   useEffect(() => {
@@ -256,12 +253,12 @@ export function Film() {
         }}
       />
 
-      {/* Controls: rewind + play/pause + skip-to-ending */}
+      {/* Controls: rewind + play/pause + return-home */}
       <FilmControls
         paused={paused}
         onRewind={rewindBeat}
         onTogglePause={() => setPaused((p) => !p)}
-        onSkip={skipToEnd}
+        onSkip={skipToHome}
       />
 
       {/* Outro iris — at the end, the frame collapses into a point, then routes home */}

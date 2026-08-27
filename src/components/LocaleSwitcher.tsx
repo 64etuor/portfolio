@@ -7,7 +7,7 @@ export function LocaleSwitcher({ className }: { className?: string }) {
   const { locale, setLocale, t } = useLocale()
 
   return (
-    <div className={className} role="group" aria-label={t(SITE.locale.label)} style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+    <div className={className} role="group" aria-label={t(SITE.locale.label)} style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
       {(['ko', 'en'] as const).map((option) => (
         <button
           key={option}
@@ -15,7 +15,7 @@ export function LocaleSwitcher({ className }: { className?: string }) {
           onClick={() => setLocale(option)}
           aria-pressed={locale === option}
           aria-label={option === 'ko' ? t(SITE.locale.korean) : t(SITE.locale.english)}
-          style={{ minWidth: 34, padding: '5px 7px', border: '1px solid rgba(255,255,255,0.24)', borderRadius: 3, background: locale === option ? 'rgba(255,255,255,0.16)' : 'rgba(0,0,0,0.28)', color: '#fff', cursor: 'pointer', font: '500 10px/1 "DM Mono", ui-monospace, monospace', letterSpacing: '0.08em' }}
+          style={{ minWidth: 46, minHeight: 42, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.36)', borderRadius: 4, background: locale === option ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.34)', color: '#fff', cursor: 'pointer', font: '600 12px/1 "DM Mono", ui-monospace, monospace', letterSpacing: '0.08em' }}
         >
           {option.toUpperCase()}
         </button>

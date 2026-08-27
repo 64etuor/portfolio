@@ -22,6 +22,8 @@ test('language choice persists and updates shared gallery content', async ({ pag
 
   await expect(page.getByRole('heading', { name: 'Scenes · 필름 서사' })).toBeVisible()
   const englishButton = page.getByRole('button', { name: '영어' })
+  await expect(englishButton).toHaveCSS('min-width', '46px')
+  await expect(englishButton).toHaveCSS('min-height', '42px')
   await englishButton.click()
 
   await expect(page.getByRole('button', { name: 'English' })).toHaveAttribute('aria-pressed', 'true')
@@ -49,8 +51,19 @@ test('English locale renders résumé and project source data in English', async
   await expect(page.getByRole('heading', { name: 'New Product Line Setup — In-house MES' })).toBeVisible()
   expect(await page.locator('main').innerText()).not.toMatch(/[가-힣]/)
 
-  await page.goto('/projects/mes-console', { waitUntil: 'domcontentloaded' })
-  await expect(page.getByRole('heading', { name: 'New Product Line Setup — In-house MES' })).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Challenge' })).toBeVisible()
-  expect(await page.locator('main').innerText()).not.toMatch(/[가-힣]/)
+  const projectUrls = await page.locator('.pj-card').evaluateAll((cards) => cards.map((card) => (card as HTMLAnchorElement).href))
+  expect(projectUrls).toHaveLength(12)
+  for (const url of projectUrls) {
+    await page.goto(url, { waitUntil: 'domcontentloaded' })
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+    expect(await page.locator('main').innerText()).not.toMatch(/[가-힣]/)
+  }
+})
+
+test('film Home control returns to the landing immediately', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('pf-locale', 'en'))
+  await page.goto('/film', { waitUntil: 'domcontentloaded' })
+
+  await page.getByRole('button', { name: 'HOME →' }).click()
+  await page.waitForURL((url) => url.pathname === '/')
 })

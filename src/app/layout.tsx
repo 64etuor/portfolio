@@ -5,6 +5,8 @@ import './globals.css'
 import './cinematic.css' // 랜딩/필름/전환 (globals 에서 분리)
 // resume.css 는 /resume 세그먼트(app/resume/layout.tsx)에서만 로드 — 글로벌 페이로드 축소
 import { SiteHeader } from '@/components/SiteHeader'
+import { LocaleProvider } from '@/components/LocaleProvider'
+import { SkipToContent } from '@/components/SkipToContent'
 import { PROFILE } from '@content/index'
 import { SITE } from '@content/site'
 import { SpeedInsights } from '@vercel/speed-insights/next'
@@ -12,21 +14,21 @@ import { Analytics } from '@vercel/analytics/next'
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://yanghapark.com'),
-  title: SITE.title,
-  description: PROFILE.identity.tagline,
+  title: SITE.metadata.title.ko,
+  description: SITE.metadata.description.ko,
   openGraph: {
     type: 'website',
-    title: SITE.title,
-    description: PROFILE.identity.tagline,
+    title: SITE.metadata.title.ko,
+    description: SITE.metadata.description.ko,
     url: 'https://yanghapark.com',
-    siteName: SITE.title,
+    siteName: SITE.metadata.title.ko,
     locale: 'ko_KR',
     images: ['/opengraph-image'],
   },
   twitter: {
     card: 'summary_large_image',
-    title: SITE.title,
-    description: PROFILE.identity.tagline,
+    title: SITE.metadata.title.ko,
+    description: SITE.metadata.description.ko,
     images: ['/opengraph-image'],
   },
   icons: {
@@ -65,20 +67,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ko">
       <body>
         <style dangerouslySetInnerHTML={{ __html: skipLinkCss }} />
-        <a href="#main" className="skip-link">
-          본문으로 건너뛰기 / Skip to content
-        </a>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
-        />
-        <SiteHeader />
-        {/* Pages render their own <main> (landing / resume / some scenes), so this
-            skip target is a <div> — a wrapping <main> here would create duplicate/
-            nested main landmarks. One <main> per page stays owned by the page. */}
-        <div id="main">{children}</div>
-        <SpeedInsights />
-        <Analytics />
+        <LocaleProvider>
+          <SkipToContent />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+          />
+          <SiteHeader />
+          {/* Pages render their own <main> (landing / resume / some scenes), so this
+              skip target is a <div> — a wrapping <main> here would create duplicate/
+              nested main landmarks. One <main> per page stays owned by the page. */}
+          <div id="main">{children}</div>
+          <SpeedInsights />
+          <Analytics />
+        </LocaleProvider>
       </body>
     </html>
   )

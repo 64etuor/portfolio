@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { sceneById } from '@/scenes/registry'
 import { SITE } from '@content/site'
+import { LocaleSwitcher } from './LocaleSwitcher'
+import { useLocale } from './LocaleProvider'
 
 /**
  * The single, unified site header — one bar on every non-immersive route
@@ -14,6 +16,7 @@ import { SITE } from '@content/site'
  */
 export function SiteHeader() {
   const pathname = usePathname()
+  const { t } = useLocale()
   if (pathname === '/' || pathname === '/film') return null
 
   // Scene page (/s/<slug>): offer to open the raw lab HTML full-screen.
@@ -22,20 +25,21 @@ export function SiteHeader() {
   return (
     <header className="site-bar">
       <Link href="/" className="site-bar__brand">{SITE.domain}</Link>
-      <Link href="/" className="chrome-btn home">← Home</Link>
+      <Link href="/" className="chrome-btn home">{t(SITE.chrome.home)}</Link>
       {pathname === '/resume' && (
         // Native print. Works in real Chrome/Safari; note it is a no-op inside
         // embedded WebKit (WKWebView, e.g. the cmux in-app browser) — print the
         // résumé from a real browser there.
         <button type="button" className="chrome-btn" onClick={() => window.print()}>
-          Print
+          {t(SITE.chrome.print)}
         </button>
       )}
       {scene && (
         <a href={`/lab/${scene.file}`} target="_blank" rel="noreferrer" className="chrome-btn">
-          Open ↗
+          {t(SITE.chrome.open)}
         </a>
       )}
+      <LocaleSwitcher />
     </header>
   )
 }

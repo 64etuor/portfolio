@@ -1,3 +1,5 @@
+'use client'
+
 import type { ProjectContent } from '@content/projects/types'
 import { Hero } from './Hero'
 import { MetricGrid } from './MetricGrid'
@@ -5,6 +7,8 @@ import { Prose } from './Prose'
 import { Gallery } from './Gallery'
 import { StackTags } from './StackTags'
 import { Diagram } from './Diagram'
+import { SITE } from '@content/site'
+import { useLocale } from '../LocaleProvider'
 
 /**
  * Shared project detail body — the block sequence rendered identically by both
@@ -12,13 +16,14 @@ import { Diagram } from './Diagram'
  * hook-free, so it works in both server and client trees.
  */
 export function ProjectBody({ project }: { project: ProjectContent }) {
+  const { t } = useLocale()
   return (
     <>
       <Hero project={project} />
 
       {project.metrics.length > 0 ? (
         <section className="pj-section">
-          <h2 className="pj-h2">핵심 성과</h2>
+          <h2 className="pj-h2">{t(SITE.project.keyOutcomes)}</h2>
           <MetricGrid metrics={project.metrics} />
         </section>
       ) : null}
@@ -27,21 +32,21 @@ export function ProjectBody({ project }: { project: ProjectContent }) {
 
       {project.diagram ? (
         <section className="pj-section">
-          <h2 className="pj-h2">동작 흐름</h2>
+          <h2 className="pj-h2">{t(SITE.project.workflow)}</h2>
           <Diagram diagram={project.diagram} />
         </section>
       ) : null}
 
       {project.gallery && project.gallery.length > 0 ? (
         <section className="pj-section">
-          <h2 className="pj-h2">화면</h2>
+          <h2 className="pj-h2">{t(SITE.project.screens)}</h2>
           <Gallery items={project.gallery} />
         </section>
       ) : null}
 
       {project.stack.length > 0 ? (
         <section className="pj-section">
-          <h2 className="pj-h2">기술 스택</h2>
+          <h2 className="pj-h2">{t(SITE.project.stack)}</h2>
           <StackTags stack={project.stack} />
         </section>
       ) : null}

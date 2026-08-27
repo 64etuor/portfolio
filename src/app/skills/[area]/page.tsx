@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { GalleryGrid } from '@/components/gallery/GalleryGrid'
 import { AREA_META, SKILL_AREAS, type SkillAreaKey } from '@/components/gallery/data'
-import { GalleryPageShell } from '@/components/gallery/GalleryPageShell'
+import { SkillAreaContent } from '@/components/gallery/SkillAreaContent'
 
 export async function generateMetadata({
   params,
@@ -13,7 +12,7 @@ export async function generateMetadata({
   const found = SKILL_AREAS.find((a) => a.key === area)
   if (!found) return {}
   const meta = AREA_META[found.key as SkillAreaKey]
-  return { title: `${meta.heading} · Skills`, description: meta.sub }
+  return { title: `${meta.heading.en} · Skills`, description: meta.sub.en }
 }
 
 export function generateStaticParams() {
@@ -24,15 +23,5 @@ export default async function SkillAreaPage({ params }: { params: Promise<{ area
   const { area } = await params
   const found = SKILL_AREAS.find((a) => a.key === area)
   if (!found) notFound()
-  const meta = AREA_META[found.key as SkillAreaKey]
-
-  return (
-    <GalleryPageShell
-      title={meta.heading}
-      sub={meta.sub}
-      footer={`${found.label} · ${found.cards.length}종`}
-    >
-      <GalleryGrid cards={found.cards} />
-    </GalleryPageShell>
-  )
+  return <SkillAreaContent areaKey={found.key as SkillAreaKey} />
 }

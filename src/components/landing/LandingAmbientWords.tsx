@@ -2,13 +2,12 @@
 
 import { useEffect, useState } from 'react'
 import { SITE } from '@content/site'
+import { useLocale } from '../LocaleProvider'
 
 // Descriptor words sourced from content/site.ts (SSOT). `lum` is a per-word
 // brightness weight (0..1): the warm / human / hopeful words glow a little — a
 // small light in the dark — while the technical ones stay almost flat. The
 // brightening is kept very subtle overall; lum only nudges it.
-const WORDS: { word: string; lum: number }[] = [...SITE.landing.ambientWords]
-
 type Item = { id: number; word: string; x: number; y: number; rot: number; lum: number }
 
 /**
@@ -17,6 +16,7 @@ type Item = { id: number; word: string; x: number; y: number; rot: number; lum: 
  * the word's `lum` weight. Sits behind the content; disabled for reduced-motion.
  */
 export function LandingAmbientWords() {
+  const { locale } = useLocale()
   const [items, setItems] = useState<Item[]>([])
 
   useEffect(() => {
@@ -27,12 +27,13 @@ export function LandingAmbientWords() {
 
     const spawn = () => {
       if (!alive) return
-      const pick = WORDS[Math.floor(Math.random() * WORDS.length)]
+      const words = SITE.landing.ambientWords
+      const pick = words[Math.floor(Math.random() * words.length)]
       const x = 5 + Math.random() * 90
       const y = 8 + Math.random() * 84
       const rot = (Math.random() - 0.5) * 6
       const myId = id++
-      setItems((prev) => [...prev, { id: myId, word: pick.word, x, y, rot, lum: pick.lum }])
+      setItems((prev) => [...prev, { id: myId, word: pick.word[locale], x, y, rot, lum: pick.lum }])
       window.setTimeout(() => {
         if (alive) setItems((prev) => prev.filter((p) => p.id !== myId))
       }, 2800)
@@ -44,7 +45,7 @@ export function LandingAmbientWords() {
       alive = false
       clearTimeout(timer)
     }
-  }, [])
+  }, [locale])
 
   return (
     <div className="lp-words" aria-hidden>

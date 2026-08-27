@@ -8,13 +8,13 @@ import type { Application } from '@splinetool/runtime'
 import { PretextText } from './PretextText'
 import { LandingAmbientWords } from './LandingAmbientWords'
 import { SITE } from '@content/site'
+import { LocaleSwitcher } from '../LocaleSwitcher'
+import { useLocale } from '../LocaleProvider'
 
 // The Spline 3D runtime (~the whole landing JS budget) is loaded client-only and
 // mounted on idle, so it never blocks the landing's FCP/LCP/TTI. The dark CRT-noir
 // backdrop (.lp-root + veil/scan) is already the placeholder; the robot fades in.
 const Spline = dynamic(() => import('./SplineClient'), { ssr: false })
-
-const [HERO_PORTFOLIO, HERO_ITS_ME, HERO_NAME, HERO_TAGLINE] = SITE.landing.hero
 
 // Runtime scene (.splinecode) — replaces the old cross-origin iframe embed, so we
 // can drive the camera on navigation.
@@ -65,14 +65,6 @@ const ICON: Record<string, ReactNode> = {
 
 type NavItem = { href: string; label: string; icon: ReactNode; primary?: boolean; external?: boolean; mail?: boolean }
 
-const NAV: NavItem[] = [
-  { href: '/film', label: 'Portfolio', icon: ICON.portfolio, primary: true },
-  { href: '/s/gantt-cpm', label: 'Projects', icon: ICON.projects, external: false },
-  { href: '/scenes', label: 'Scenes', icon: ICON.scenes, external: false },
-  { href: '/skills', label: 'Skills', icon: ICON.skills, external: false },
-  { href: '/resume', label: 'Resume', icon: ICON.resume },
-]
-
 const TX_MS = 720
 
 /**
@@ -83,6 +75,15 @@ const TX_MS = 720
  */
 export function Landing() {
   const router = useRouter()
+  const { t } = useLocale()
+  const [heroPortfolio, heroItsMe, heroName, heroTagline] = SITE.landing.hero.map((value) => t(value))
+  const nav: NavItem[] = [
+    { ...SITE.landing.nav[0], label: t(SITE.landing.nav[0].label), icon: ICON.portfolio, primary: true },
+    { ...SITE.landing.nav[1], label: t(SITE.landing.nav[1].label), icon: ICON.projects, external: false },
+    { ...SITE.landing.nav[2], label: t(SITE.landing.nav[2].label), icon: ICON.scenes, external: false },
+    { ...SITE.landing.nav[3], label: t(SITE.landing.nav[3].label), icon: ICON.skills, external: false },
+    { ...SITE.landing.nav[4], label: t(SITE.landing.nav[4].label), icon: ICON.resume },
+  ]
   const splineRef = useRef<Application | null>(null)
   const navigatingRef = useRef(false)
   const [leaving, setLeaving] = useState(false)
@@ -169,6 +170,7 @@ export function Landing() {
 
   return (
     <main className="lp-root">
+      <LocaleSwitcher className="lp-locale" />
       {/* The robot is decorative and third-party — it must never be able to take the
           page with it. Spline throws on a failed scene/WASM fetch (CDN down, offline,
           blocked origin), and with no boundary React unmounted the whole landing to
@@ -198,7 +200,7 @@ export function Landing() {
       <div className="lp-content">
         {/* all landing text rendered with the pretext letter-physics, 2.5s in */}
         <PretextText
-          text={HERO_PORTFOLIO}
+          text={heroPortfolio}
           fontFamily="'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace"
           fontWeight={500}
           fontPx={11}
@@ -212,7 +214,7 @@ export function Landing() {
         {/* film ends on "미래를 만드는 사람" → lands here: "It's me." 우아한 이탤릭 세리프,
             이름 위에서 같은 pretext 등장 효과로 조립 (필름 엔딩과 자연스럽게 연결) */}
         <PretextText
-          text={HERO_ITS_ME}
+          text={heroItsMe}
           fontFamily="'Playfair Display', 'Noto Serif KR', serif"
           fontStyle="italic"
           fontWeight={500}
@@ -225,7 +227,7 @@ export function Landing() {
           style={{ margin: '0 0 4px' }}
         />
         <PretextText
-          text={HERO_NAME}
+          text={heroName}
           fontFamily="'Playfair Display', 'Noto Serif KR', serif"
           fontWeight={600}
           fontPx={62}
@@ -237,7 +239,7 @@ export function Landing() {
           style={{ margin: '0 0 10px', maxWidth: '92vw' }}
         />
         <PretextText
-          text={HERO_TAGLINE}
+          text={heroTagline}
           fontFamily="'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace"
           fontWeight={500}
           fontPx={16}
@@ -248,8 +250,8 @@ export function Landing() {
           delay={4100}
           style={{ margin: '0 0 28px', maxWidth: '92vw' }}
         />
-        <nav className="lp-actions" aria-label="primary">
-          {NAV.map((item) => (
+        <nav className="lp-actions" aria-label={t(SITE.landing.navigation)}>
+          {nav.map((item) => (
             <a
               key={item.label}
               href={item.href}

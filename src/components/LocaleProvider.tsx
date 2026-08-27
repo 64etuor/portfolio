@@ -1,6 +1,6 @@
 'use client'
 
-import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { usePathname } from 'next/navigation'
 import { DEFAULT_LOCALE, type Locale, type LocalizedString, resolveCopy } from '@/i18n/content'
 import { SITE } from '@content/site'
@@ -15,14 +15,27 @@ const LocaleContext = createContext<LocaleContextValue | null>(null)
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE)
+  const [ready, setReady] = useState(false)
   const pathname = usePathname()
+  const selectedBeforeRestore = useRef(false)
 
   useEffect(() => {
-    const saved = localStorage.getItem('pf-locale')
-    if (saved === 'ko' || saved === 'en') setLocale(saved)
+    if (!selectedBeforeRestore.current) {
+      const saved = localStorage.getItem('pf-locale')
+      if (saved === 'ko' || saved === 'en') setLocale(saved)
+    }
+    setReady(true)
+  }, [])
+
+  const selectLocale = useCallback((nextLocale: Locale) => {
+    // The switcher can be clicked before the persisted preference effect runs.
+    // A direct user choice must always win over that deferred restoration.
+    selectedBeforeRestore.current = true
+    setLocale(nextLocale)
   }, [])
 
   useEffect(() => {
+    if (!ready) return
     const pageTitle = pathname === '/scenes'
       ? SITE.pages.scenes
       : pathname === '/skills'
@@ -45,11 +58,11 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
     localStorage.setItem('pf-locale', locale)
     return () => cancelAnimationFrame(frame)
-  }, [locale, pathname])
+  }, [locale, pathname, ready])
 
   const value = useMemo(
-    () => ({ locale, setLocale, t: (value: LocalizedString) => resolveCopy(value, locale) }),
-    [locale],
+    () => ({ locale, setLocale: selectLocale, t: (value: LocalizedString) => resolveCopy(value, locale) }),
+    [locale, selectLocale],
   )
 
   return <LocaleContext.Provider value={value}>{children}</LocaleContext.Provider>

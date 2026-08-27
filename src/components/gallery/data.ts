@@ -32,18 +32,18 @@ const card = (file: SceneFileKey, titleKo: string, titleEn: string, tagKo: strin
 
 // scenes.html — 부팅 + SCENE 01–10 + 엔딩, 서사 순서대로 (12장).
 export const SCENES_GALLERY: GalleryCard[] = [
-  card('05-bios-boot', '콜드 오픈 · 시스템 부팅', 'Cold Open · System Boot', '부팅', 'Boot', 'POST → SYSTEM READY. 필름이 기계처럼 부팅하며 열린다.', 'POST → SYSTEM READY. The film opens as a machine coming online.'),
-  card('42-era-shift', 'SCENE 01 · 시대 — THE ACCELERATION', 'SCENE 01 · Era — THE ACCELERATION', '씬 01', 'Scene 01', '시대는 빠르게 변하고 있습니다 — 가속하는 시대의 오프닝.', 'The world is changing quickly — an opening for an accelerating era.'),
-  card('33-ax-era', 'SCENE 02 · 선언 — AX ERA', 'SCENE 02 · Declaration — AX ERA', '씬 02', 'Scene 02', 'DX를 넘어 AX의 시대. 데이터·지식이 경쟁력으로 솟아오른다.', 'Beyond DX lies the AX era, where data and knowledge become competitive advantage.'),
-  card('28-gap-reality', 'SCENE 03 · 현실 — THE DIVERGENCE', 'SCENE 03 · Reality — THE DIVERGENCE', '씬 03', 'Scene 03', '기대선과 성과선이 갈라지는 void — 현실의 격차.', 'A void where expectations and outcomes diverge — the gap in reality.'),
-  card('29-lost-in-translation', 'SCENE 04 · 소통 — LOST IN TRANSLATION', 'SCENE 04 · Communication — LOST IN TRANSLATION', '씬 04', 'Scene 04', '기술은 손실 있는 번역 레이어, 핵심은 소통.', 'Technology is a lossy translation layer; communication is the essential part.'),
-  card('41-perspectives', 'SCENE 05 · 관점 — PERSPECTIVES', 'SCENE 05 · Perspective — PERSPECTIVES', '씬 05', 'Scene 05', 'RACK FOCUS — 현장↔시스템, 초점이 오가며 한쪽은 또렷·한쪽은 안개.', 'RACK FOCUS — the lens shifts between the field and the system; one sharp, one blurred.'),
-  card('30-collision', 'SCENE 06 · 충돌 — LEXICAL COLLISION', 'SCENE 06 · Collision — LEXICAL COLLISION', '씬 06', 'Scene 06', '언어가 정면충돌, 요구사항이 찢긴다 (클라이맥스).', 'Languages collide head-on and requirements tear apart (the climax).'),
-  card('31-cost-cascade', 'SCENE 07 · 비용 — COST CASCADE', 'SCENE 07 · Cost — COST CASCADE', '씬 07', 'Scene 07', '한 점의 어긋남이 세 갈래의 비용으로 이어진다.', 'One misalignment cascades into costs on three fronts.'),
-  card('32-the-connector', 'SCENE 08 · 연결 — THE CONNECTOR', 'SCENE 08 · Connection — THE CONNECTOR', '씬 08', 'Scene 08', '분열을 잇는 단 하나의 연결 — 현장과 기술을 잇는 사람.', 'One connection that bridges the divide — the person joining fieldwork and technology.'),
-  card('36-bridge-experts', 'SCENE 09 · 해결 — THE BRIDGE', 'SCENE 09 · Solution — THE BRIDGE', '씬 09', 'Scene 09', '제조↔디지털을 한 사람이 양방향으로 잇는 양손잡이 전문가.', 'A cross-functional expert connecting manufacturing and digital work in both directions.'),
-  card('37-cross-domain', 'SCENE 10 · 핵심 — CROSS-DOMAIN', 'SCENE 10 · Core — CROSS-DOMAIN', '씬 10', 'Scene 10', '경계를 넘는 지식의 교집합이 경쟁력으로 점화.', 'The intersection of knowledge across boundaries ignites competitive advantage.'),
-  card('38-ending-catchphrase', '엔딩 · 미래를 만드는 사람', 'Ending · The People Who Make the Future', '엔딩', 'Ending', 'THE MAKERS — "미래를 만드는 사람." 캐치프레이즈.', 'THE MAKERS — “The people who make the future.”'),
+  card('05-bios-boot', '콜드 오픈 · 시스템 부팅', 'Cold Open · System Boot', 'Boot', 'Boot', 'POST → SYSTEM READY. 필름이 기계처럼 부팅하며 열린다.', 'POST → SYSTEM READY. The film opens as a machine coming online.'),
+  card('42-era-shift', 'SCENE 01 · 시대 — THE ACCELERATION', 'SCENE 01 · Era — THE ACCELERATION', 'Scene 01', 'Scene 01', '시대는 빠르게 변하고 있습니다 — 가속하는 시대의 오프닝.', 'The world is changing quickly — an opening for an accelerating era.'),
+  card('33-ax-era', 'SCENE 02 · 선언 — AX ERA', 'SCENE 02 · Declaration — AX ERA', 'Scene 02', 'Scene 02', 'DX를 넘어 AX의 시대. 데이터·지식이 경쟁력으로 솟아오른다.', 'Beyond DX lies the AX era, where data and knowledge become competitive advantage.'),
+  card('28-gap-reality', 'SCENE 03 · 현실 — THE DIVERGENCE', 'SCENE 03 · Reality — THE DIVERGENCE', 'Scene 03', 'Scene 03', '기대선과 성과선이 갈라지는 void — 현실의 격차.', 'A void where expectations and outcomes diverge — the gap in reality.'),
+  card('29-lost-in-translation', 'SCENE 04 · 소통 — LOST IN TRANSLATION', 'SCENE 04 · Communication — LOST IN TRANSLATION', 'Scene 04', 'Scene 04', '기술은 손실 있는 번역 레이어, 핵심은 소통.', 'Technology is a lossy translation layer; communication is the essential part.'),
+  card('41-perspectives', 'SCENE 05 · 관점 — PERSPECTIVES', 'SCENE 05 · Perspective — PERSPECTIVES', 'Scene 05', 'Scene 05', 'RACK FOCUS — 현장↔시스템, 초점이 오가며 한쪽은 또렷·한쪽은 안개.', 'RACK FOCUS — the lens shifts between the field and the system; one sharp, one blurred.'),
+  card('30-collision', 'SCENE 06 · 충돌 — LEXICAL COLLISION', 'SCENE 06 · Collision — LEXICAL COLLISION', 'Scene 06', 'Scene 06', '언어가 정면충돌, 요구사항이 찢긴다 (클라이맥스).', 'Languages collide head-on and requirements tear apart (the climax).'),
+  card('31-cost-cascade', 'SCENE 07 · 비용 — COST CASCADE', 'SCENE 07 · Cost — COST CASCADE', 'Scene 07', 'Scene 07', '한 점의 어긋남이 세 갈래의 비용으로 이어진다.', 'One misalignment cascades into costs on three fronts.'),
+  card('32-the-connector', 'SCENE 08 · 연결 — THE CONNECTOR', 'SCENE 08 · Connection — THE CONNECTOR', 'Scene 08', 'Scene 08', '분열을 잇는 단 하나의 연결 — 현장과 기술을 잇는 사람.', 'One connection that bridges the divide — the person joining fieldwork and technology.'),
+  card('36-bridge-experts', 'SCENE 09 · 해결 — THE BRIDGE', 'SCENE 09 · Solution — THE BRIDGE', 'Scene 09', 'Scene 09', '제조↔디지털을 한 사람이 양방향으로 잇는 양손잡이 전문가.', 'A cross-functional expert connecting manufacturing and digital work in both directions.'),
+  card('37-cross-domain', 'SCENE 10 · 핵심 — CROSS-DOMAIN', 'SCENE 10 · Core — CROSS-DOMAIN', 'Scene 10', 'Scene 10', '경계를 넘는 지식의 교집합이 경쟁력으로 점화.', 'The intersection of knowledge across boundaries ignites competitive advantage.'),
+  card('38-ending-catchphrase', '엔딩 · 미래를 만드는 사람', 'Ending · The People Who Make the Future', 'Ending', 'Ending', 'THE MAKERS — "미래를 만드는 사람." 캐치프레이즈.', 'THE MAKERS — “The people who make the future.”'),
 ]
 
 // skills.html (허브) + skills-<area>.html (그리드).

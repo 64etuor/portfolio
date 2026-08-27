@@ -19,6 +19,8 @@ import Link from 'next/link'
 import type { ProjectContent } from '@content/projects/types'
 import { COMPANY_ACCENT } from '@content/projects/types'
 import { ProjectBody } from './ProjectBody'
+import { SITE } from '@content/site'
+import { useLocale } from '../LocaleProvider'
 import '@/app/projects.css'
 import './projectDrawer.css'
 
@@ -34,6 +36,7 @@ export function ProjectDrawer({ project, onClose }: { project: ProjectContent | 
   // out with content still visible. React's "adjust state during render"
   // pattern (no refs, no effect): only refresh `shown` when opening.
   const hydrated = useHydrated()
+  const { t } = useLocale()
   const [shown, setShown] = useState<ProjectContent | null>(project)
   const [prev, setPrev] = useState<ProjectContent | null>(project)
   if (project !== prev) {
@@ -56,7 +59,7 @@ export function ProjectDrawer({ project, onClose }: { project: ProjectContent | 
   // the scroll container retains the previous project's scroll position.
   useEffect(() => {
     if (project) scrollRef.current?.scrollTo({ top: 0 })
-  }, [project?.slug])
+  }, [project])
 
   // Scroll-lock the background while open: a wheel over the drawer chrome (or
   // past the scroll region's edge) must not scroll the page/scene underneath.
@@ -70,7 +73,7 @@ export function ProjectDrawer({ project, onClose }: { project: ProjectContent | 
     }
     document.addEventListener('wheel', onWheel, { passive: false })
     return () => document.removeEventListener('wheel', onWheel)
-  }, [open])
+  }, [open, project])
 
   // Render nothing on the server and during the hydration pass (matches the
   // server's null output); the body portal mounts only after hydration.
@@ -90,15 +93,15 @@ export function ProjectDrawer({ project, onClose }: { project: ProjectContent | 
       >
         <div className="pjd-bar">
           <button className="pjd-back" type="button" onClick={onClose}>
-            ← 뒤로
+            {t(SITE.project.drawerBack)}
           </button>
           <div className="pjd-bar-r">
             {shown ? (
               <Link className="pjd-full" href={`/projects/${shown.slug}`}>
-                전체 페이지 ↗
+                {t(SITE.project.drawerFullPage)}
               </Link>
             ) : null}
-            <button className="pjd-x" type="button" onClick={onClose} aria-label="닫기">
+            <button className="pjd-x" type="button" onClick={onClose} aria-label={t(SITE.project.drawerClose)}>
               ✕
             </button>
           </div>

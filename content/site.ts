@@ -84,6 +84,9 @@ export const SITE = {
     stack: copy('기술 스택', 'Technology stack'),
     backToTimeline: copy('↩ 간트로', '↩ Back to timeline'),
     navigation: copy('프로젝트 탐색', 'Project navigation'),
+    drawerBack: copy('← 뒤로', '← Back'),
+    drawerFullPage: copy('전체 페이지 ↗', 'Full page ↗'),
+    drawerClose: copy('닫기', 'Close'),
   },
   scene: {
     interactive: copy('박양하 포트폴리오 인터랙티브 씬.', 'Interactive scene from Yangha Park’s portfolio.'),

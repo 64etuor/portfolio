@@ -34,3 +34,23 @@ test('language choice persists and updates shared gallery content', async ({ pag
   await expect(page.locator('html')).toHaveAttribute('lang', 'en')
   await expect(page.getByRole('heading', { name: 'Scenes · Film Narrative' })).toBeVisible()
 })
+
+test('English locale renders résumé and project source data in English', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('pf-locale', 'en'))
+
+  await page.goto('/resume', { waitUntil: 'domcontentloaded' })
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+  await expect(page.getByText('Operations PM · Process Engineering · Data and AI Systems Builder')).toBeVisible()
+  await expect(page.getByText('View all project details →')).toBeVisible()
+  expect(await page.locator('main').innerText()).not.toMatch(/[가-힣]/)
+
+  await page.goto('/projects', { waitUntil: 'domcontentloaded' })
+  await expect(page.getByRole('heading', { name: 'Work I planned and built' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'New Product Line Setup — In-house MES' })).toBeVisible()
+  expect(await page.locator('main').innerText()).not.toMatch(/[가-힣]/)
+
+  await page.goto('/projects/mes-console', { waitUntil: 'domcontentloaded' })
+  await expect(page.getByRole('heading', { name: 'New Product Line Setup — In-house MES' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Challenge' })).toBeVisible()
+  expect(await page.locator('main').innerText()).not.toMatch(/[가-힣]/)
+})

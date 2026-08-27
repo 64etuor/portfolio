@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { ProjectDetailLink } from '../projects/ProjectDetailLink'
 import { ProjectDrawerHost } from '../projects/ProjectDrawerHost'
@@ -5,6 +7,8 @@ import { ResumeDragonHero } from './ResumeDragonHero'
 import { PretextHeading } from './PretextHeading'
 import { coverLetter } from '@content/coverLetter'
 import type { ResumeData } from '@content/resume'
+import { useLocale } from '../LocaleProvider'
+import { ResumeEnglish } from './ResumeEnglish'
 
 /**
  * ResumeDoc — the résumé body, rendered server-side from `public/resume.json`
@@ -65,6 +69,8 @@ function Section({ id, label, children }: { id: string; label: string; children:
 }
 
 export function ResumeDoc({ data }: { data: ResumeData }) {
+  const { locale } = useLocale()
+  if (locale === 'en') return <ResumeEnglish data={data} />
   const { basics } = data
   const gh = basics.profiles?.find((p) => p.network.toLowerCase() === 'github')
   const portfolio = basics.profiles?.find((p) => p.network.toLowerCase() === 'portfolio')

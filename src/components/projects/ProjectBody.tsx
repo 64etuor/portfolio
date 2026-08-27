@@ -9,6 +9,7 @@ import { StackTags } from './StackTags'
 import { Diagram } from './Diagram'
 import { SITE } from '@content/site'
 import { useLocale } from '../LocaleProvider'
+import { projectForLocale } from '@content/i18n/portfolio-en'
 
 /**
  * Shared project detail body — the block sequence rendered identically by both
@@ -16,38 +17,39 @@ import { useLocale } from '../LocaleProvider'
  * hook-free, so it works in both server and client trees.
  */
 export function ProjectBody({ project }: { project: ProjectContent }) {
-  const { t } = useLocale()
+  const { locale, t } = useLocale()
+  const localizedProject = projectForLocale(project, locale)
   return (
     <>
-      <Hero project={project} />
+      <Hero project={localizedProject} />
 
-      {project.metrics.length > 0 ? (
+      {localizedProject.metrics.length > 0 ? (
         <section className="pj-section">
           <h2 className="pj-h2">{t(SITE.project.keyOutcomes)}</h2>
-          <MetricGrid metrics={project.metrics} />
+          <MetricGrid metrics={localizedProject.metrics} />
         </section>
       ) : null}
 
-      <Prose sections={project.sections} />
+      <Prose sections={localizedProject.sections} />
 
-      {project.diagram ? (
+      {localizedProject.diagram ? (
         <section className="pj-section">
           <h2 className="pj-h2">{t(SITE.project.workflow)}</h2>
-          <Diagram diagram={project.diagram} />
+          <Diagram diagram={localizedProject.diagram} />
         </section>
       ) : null}
 
-      {project.gallery && project.gallery.length > 0 ? (
+      {localizedProject.gallery && localizedProject.gallery.length > 0 ? (
         <section className="pj-section">
           <h2 className="pj-h2">{t(SITE.project.screens)}</h2>
-          <Gallery items={project.gallery} />
+          <Gallery items={localizedProject.gallery} />
         </section>
       ) : null}
 
-      {project.stack.length > 0 ? (
+      {localizedProject.stack.length > 0 ? (
         <section className="pj-section">
           <h2 className="pj-h2">{t(SITE.project.stack)}</h2>
-          <StackTags stack={project.stack} />
+          <StackTags stack={localizedProject.stack} />
         </section>
       ) : null}
     </>

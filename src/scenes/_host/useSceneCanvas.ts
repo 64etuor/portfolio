@@ -3,9 +3,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { subscribe } from './raf'
 import type { Frame, TickFn, UseSceneCanvasOptions } from './types'
+import { localizeSceneText } from './localize'
 
 const DPR_CAP = 2
 const MAX_DT = 1 / 20 // 탭 복귀/스톨 후 dt 폭주 캡(초)
+function localizeCanvasText(ctx: CanvasRenderingContext2D): CanvasRenderingContext2D {
+  const fillText = ctx.fillText.bind(ctx)
+  const strokeText = ctx.strokeText.bind(ctx)
+  const resolve = (text: string) => localizeSceneText(text, document.documentElement.lang === 'en' ? 'en' : 'ko')
+  ctx.fillText = ((text: string, x: number, y: number, maxWidth?: number) => fillText(resolve(text), x, y, maxWidth)) as CanvasRenderingContext2D['fillText']
+  ctx.strokeText = ((text: string, x: number, y: number, maxWidth?: number) => strokeText(resolve(text), x, y, maxWidth)) as CanvasRenderingContext2D['strokeText']
+  return ctx
+}
 
 /**
  * 기존 씬의 imperative `frame(now)` 캔버스 루프를 React 로 옮기는 어댑터.
@@ -68,7 +77,8 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
     (node: HTMLCanvasElement | null) => {
       canvasRef.current = node
       if (node) {
-        ctxRef.current = node.getContext('2d')
+        const context = node.getContext('2d')
+        ctxRef.current = context ? localizeCanvasText(context) : null
         applySize()
       } else {
         ctxRef.current = null

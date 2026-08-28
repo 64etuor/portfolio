@@ -76,7 +76,8 @@ function drawDot(g: CanvasRenderingContext2D, x: number, y: number, color: strin
   g.fill()
 }
 
-export default function Scene({ running = true, onReady }: SceneProps) {
+export default function Scene({ locale = 'ko', running = true, onReady }: SceneProps) {
+  const english = locale === 'en'
   const s1Ref = useRef<HTMLHeadingElement | null>(null)
   const s2Ref = useRef<HTMLHeadingElement | null>(null)
   const eyebrowRef = useRef<HTMLDivElement | null>(null)
@@ -298,25 +299,25 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
       <div className={s.type}>
         <div className={s.eyebrow} ref={eyebrowRef}>
-          <b>SCENE 03</b> · 현실 — THE DIVERGENCE
+          <b>SCENE 03</b> · {english ? 'REALITY' : '현실'} — THE DIVERGENCE
         </div>
         <h1 className={`${s.s1} ${s.kr}`} ref={s1Ref}>
-          많은 기업들이 <em>디지털 전환</em>에<br />투자합니다.
+          {english ? <>Many companies invest in <em>digital transformation</em>.</> : <>많은 기업들이 <em>디지털 전환</em>에<br />투자합니다.</>}
         </h1>
         <h2 className={`${s.s2} ${s.kr}`} ref={s2Ref}>
-          하지만 <em>기대만큼의 <span className={s.void}>성과</span></em>를<br />내지 못하는 경우가 많습니다.
+          {english ? <>But many fail to achieve the <em>outcomes</em> they expected.</> : <>하지만 <em>기대만큼의 <span className={s.void}>성과</span></em>를<br />내지 못하는 경우가 많습니다.</>}
         </h2>
       </div>
 
       <div className={s.legend} ref={legendRef}>
         <div className={s.it}>
-          <span className={`${s.dot} ${s.exp}`} />기대 <small>EXPECTATION</small>
+          <span className={`${s.dot} ${s.exp}`} />{english ? 'Expectation' : '기대'} <small>EXPECTATION</small>
         </div>
         <div className={s.it}>
-          <span className={`${s.dot} ${s.real}`} />성과 <small>REALITY</small>
+          <span className={`${s.dot} ${s.real}`} />{english ? 'Outcome' : '성과'} <small>REALITY</small>
         </div>
         <div className={s.it}>
-          <span className={s.bar} />격차 <small>GAP</small>
+          <span className={s.bar} />{english ? 'Gap' : '격차'} <small>GAP</small>
         </div>
       </div>
 

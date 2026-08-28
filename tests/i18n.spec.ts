@@ -67,3 +67,13 @@ test('film Home control returns to the landing immediately', async ({ page }) =>
   await page.getByRole('button', { name: 'HOME →' }).click()
   await page.waitForURL((url) => url.pathname === '/')
 })
+
+test('English locale localizes standalone scene chrome and DOM captions', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('pf-locale', 'en'))
+  await page.goto('/s/ax-era', { waitUntil: 'domcontentloaded' })
+
+  await expect(page.locator('html')).toHaveAttribute('lang', 'en')
+  await expect(page.locator('#scene-title')).toHaveText('SCENE 02 · Declaration — AX ERA')
+  await expect(page.getByRole('link', { name: 'Open in new tab ↗' })).toBeVisible()
+  expect(await page.locator('#main').innerText()).not.toMatch(/[가-힣]/)
+})

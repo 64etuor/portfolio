@@ -252,7 +252,8 @@ function drawAxis(g: CanvasRenderingContext2D, beat: number, cx: number, cy: num
   g.restore()
 }
 
-export default function Scene({ running = true, onReady }: SceneProps) {
+export default function Scene({ running = true, locale = 'ko', onReady }: SceneProps) {
+  const english = locale === 'en'
   const timeOffset = useRef<number | null>(null)
 
   useSceneReady(onReady)
@@ -301,34 +302,32 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       <canvas ref={ref} className={s.scene} />
 
       <div className={`${s.eyebrow} ${s.kr}`}>
-        <b>SCENE 09</b> · 해결 — THE BRIDGE
+        <b>SCENE 09</b> · {english ? 'SOLUTION' : '해결'} — THE BRIDGE
       </div>
-      <div className={`${s.frame} ${s.bl}`}>제조 ∞ 디지털</div>
-      <div className={`${s.frame} ${s.br}`}>ONE MIND · 양손잡이</div>
+      <div className={`${s.frame} ${s.bl}`}>{english ? 'MANUFACTURING ∞ DIGITAL' : '제조 ∞ 디지털'}</div>
+      <div className={`${s.frame} ${s.br}`}>ONE MIND · {english ? 'CROSS-FUNCTIONAL' : '양손잡이'}</div>
 
       <div className={s.kicker}>
         <span className={s.dot} />
-        <span className={`${s.cv} ${s.kr}`}>양방향으로 이해하는 한 사람</span>
+        <span className={`${s.cv} ${s.kr}`}>{english ? 'One person who understands both directions' : '양방향으로 이해하는 한 사람'}</span>
       </div>
 
       <div className={s.hero}>
         <div className={`${s.line} ${s.kr} ${s.line1}`}>
-          <span className={s.m}>제조</span>를 이해하는 <span className={s.d}>디지털</span>{' '}
-          <span className={s.x}>전문가</span><span className={s.dot}>.</span>
+          {english ? <><span className={s.m}>Manufacturing</span>{' '}<span className={s.x}>expert</span> who understands <span className={s.d}>digital</span></> : <><span className={s.m}>제조</span>를 이해하는 <span className={s.d}>디지털</span>{' '}<span className={s.x}>전문가</span></>}<span className={s.dot}>.</span>
         </div>
         <div className={`${s.line} ${s.kr} ${s.line2}`}>
-          <span className={s.lead}>그리고</span> <span className={s.d}>디지털</span>을 이해하는{' '}
-          <span className={s.m}>제조</span> <span className={s.x}>전문가</span><span className={s.dot}>.</span>
+          {english ? <><span className={s.lead}>And</span>{' '}<span className={s.d}>digital</span>{' '}<span className={s.x}>expert</span> who understands <span className={s.m}>manufacturing</span></> : <><span className={s.lead}>그리고</span> <span className={s.d}>디지털</span>을 이해하는{' '}<span className={s.m}>제조</span> <span className={s.x}>전문가</span></>}<span className={s.dot}>.</span>
         </div>
       </div>
       <div className={s.seam}>⟷</div>
 
       <div className={s.footer}>
-        <span className={s.w}>제조</span>
+        <span className={s.w}>{english ? 'Manufacturing' : '제조'}</span>
         <span className={s.arr}>⟷</span>
-        <span className={s.c}>디지털</span>
+        <span className={s.c}>{english ? 'Digital' : '디지털'}</span>
         <span className={s.sep}>·</span>
-        <span className={s.one}>ONE EXPERT · 한 사람</span>
+        <span className={s.one}>ONE EXPERT · {english ? 'One person' : '한 사람'}</span>
       </div>
 
     </SceneHost>

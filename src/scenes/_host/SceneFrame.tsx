@@ -4,6 +4,8 @@ import { useRef, useState, type ComponentType } from 'react'
 import { useIntersectionObserver } from 'usehooks-ts'
 import { LazyScene } from './LazyScene'
 import type { SceneProps } from './types'
+import { SITE } from '@content/site'
+import { useLocale } from '@/components/LocaleProvider'
 
 type Loader = () => Promise<{ default: ComponentType<SceneProps> }>
 
@@ -32,6 +34,7 @@ export function SceneFrame({
   keepMounted?: boolean
   hoverPlay?: boolean
 }) {
+  const { t } = useLocale()
   // freezeOnceVisible 을 쓰지 않고, 실제 교차 상태를 항상 추적한다.
   const { ref, isIntersecting } = useIntersectionObserver({
     rootMargin,
@@ -66,12 +69,12 @@ export function SceneFrame({
           running={running}
           errorFallback={
             <div style={fallbackStyle}>
-              <span>SCENE ERROR · {title}</span>
+              <span>{t(SITE.scene.error)} · {title}</span>
             </div>
           }
           loadingFallback={
             <div style={fallbackStyle}>
-              <span>LOADING · {title}</span>
+              <span>{t(SITE.scene.loading)} · {title}</span>
             </div>
           }
         />
@@ -79,7 +82,7 @@ export function SceneFrame({
       {/* 호버 재생 힌트 — 정지 상태일 때만 표시. */}
       {hoverPlay && mounted && !hovered && (
         <div style={hintStyle} aria-hidden>
-          ▶ 호버 시 재생
+          ▶ {t(SITE.scene.playOnHover)}
         </div>
       )}
     </div>

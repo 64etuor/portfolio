@@ -25,8 +25,11 @@ export interface UseSceneCanvasOptions {
 
 /** 갤러리/필름 씬 공통 prop. */
 export interface SceneProps {
+  /** Current UI language, threaded through every film, preview, and standalone scene. */
+  locale?: Locale
   /** 화면 안(IntersectionObserver) 일 때 true → 캔버스 tick on. */
   running?: boolean
   /** 씬이 그릴 준비가 됐을 때(폰트/첫 프레임) — Film 클럭 arming 용. */
   onReady?: () => void
 }
+import type { Locale } from '@/i18n/content'

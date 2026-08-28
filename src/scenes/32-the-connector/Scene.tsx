@@ -282,7 +282,8 @@ function drawLabels(ctx: CanvasRenderingContext2D, leftNodes: NodePoint[], right
   ctx.restore()
 }
 
-export default function Scene({ running = true, onReady }: SceneProps) {
+export default function Scene({ running = true, locale = 'ko', onReady }: SceneProps) {
+  const english = locale === 'en'
   const line1Ref = useRef<HTMLDivElement | null>(null)
   const line1negRef = useRef<HTMLSpanElement | null>(null)
   const line2Ref = useRef<HTMLDivElement | null>(null)
@@ -407,7 +408,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       <canvas ref={ref} className={s.c} />
 
       <div className={`${s.sceneId} ${s.kr}`}>
-        <b>SCENE 08</b> · 연결 — THE CONNECTOR
+        <b>SCENE 08</b> · {english ? 'CONNECTION' : '연결'} — THE CONNECTOR
       </div>
 
       <div className={s.kicker}>
@@ -419,10 +420,10 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
       <div className={s.hero}>
         <div className={`${s.line1} ${s.kr}`} ref={line1Ref}>
-          성공적인 DX·AX의 핵심은 기술이 <span className={s.neg} ref={line1negRef}>아닙니다.</span>
+          {english ? <>The key to successful DX and AX is <span className={s.neg} ref={line1negRef}>not technology.</span></> : <>성공적인 DX·AX의 핵심은 기술이 <span className={s.neg} ref={line1negRef}>아닙니다.</span></>}
         </div>
         <div className={`${s.line2} ${s.kr}`} ref={line2Ref}>
-          현장과 기술을 <span className={s.acc}>연결</span>하는 <span className={s.acc}>사람</span>입니다.
+          {english ? <>It is the person who <span className={s.acc}>connects</span> <span className={s.acc}>the field and technology.</span></> : <>현장과 기술을 <span className={s.acc}>연결</span>하는 <span className={s.acc}>사람</span>입니다.</>}
         </div>
       </div>
 

@@ -137,7 +137,8 @@ function scalars(f: number, time: number): Scalars {
   }
 }
 
-export default function Scene({ running = true, onReady }: SceneProps) {
+export default function Scene({ locale = 'ko', running = true, onReady }: SceneProps) {
+  const english = locale === 'en'
   // overlay DOM refs — updated imperatively in draw
   const axRef = useRef<HTMLSpanElement | null>(null)
   const dxRef = useRef<HTMLSpanElement | null>(null)
@@ -173,10 +174,10 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
     // ---- status (phase narration) ----
     let statusTxt = '', statusCol = ''
-    if (f < 0.15)      { statusTxt = '선언 — DX';           statusCol = 'rgba(141,141,141,1)' }
-    else if (f < 0.34) { statusTxt = '전환 — AX로';          statusCol = 'rgba(78,163,240,1)' }
-    else if (f < 0.62) { statusTxt = '부상 — 데이터·지식';   statusCol = 'rgba(78,163,240,1)' }
-    else               { statusTxt = '새 시대 — AX';          statusCol = 'rgba(141,141,141,1)' }
+    if (f < 0.15)      { statusTxt = english ? 'Declaration — DX' : '선언 — DX';           statusCol = 'rgba(141,141,141,1)' }
+    else if (f < 0.34) { statusTxt = english ? 'Transition — AX' : '전환 — AX로';          statusCol = 'rgba(78,163,240,1)' }
+    else if (f < 0.62) { statusTxt = english ? 'Emergence — data · knowledge' : '부상 — 데이터·지식';   statusCol = 'rgba(78,163,240,1)' }
+    else               { statusTxt = english ? 'A new era — AX' : '새 시대 — AX';          statusCol = 'rgba(141,141,141,1)' }
 
     if (statusRef.current && statusTxt !== lastStatusRef.current) {
       lastStatusRef.current = statusTxt
@@ -257,36 +258,36 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       <canvas ref={ref} className={s.c} />
 
       <div className={`${s.sceneId} ${s.kr}`}>
-        <b>SCENE 02</b> · 선언 — AX ERA
+        <b>SCENE 02</b> · {english ? 'DECLARATION' : '선언'} — AX ERA
       </div>
 
       <div className={s.kicker}>
         <span className={s.kickerDot} />
-        <span ref={statusRef} className={`${s.status} ${s.kr}`}>선언 — DX</span>
+        <span ref={statusRef} className={`${s.status} ${s.kr}`}>{english ? 'Declaration — DX' : '선언 — DX'}</span>
       </div>
 
       <div className={s.hero}>
         <div className={`${s.l1} ${s.kr}`}>
           <span ref={l1w0Ref} className={`${s.w} ${s.dx}`}>DX</span>
-          <span ref={l1w1Ref} className={`${s.w} ${s.muted}`}>를</span>
-          <span ref={l1w2Ref} className={`${s.w} ${s.beyond}`}>넘어</span>
+          <span ref={l1w1Ref} className={`${s.w} ${s.muted}`}>{english ? ' → ' : '를'}</span>
+          <span ref={l1w2Ref} className={`${s.w} ${s.beyond}`}>{english ? '' : '넘어'}</span>
           <span ref={l1w3Ref} className={`${s.w} ${s.ax}`}>AX</span>
-          <span ref={l1w4Ref} className={`${s.w} ${s.muted}`}>의 시대.</span>
+          <span ref={l1w4Ref} className={`${s.w} ${s.muted}`}>{english ? ' era.' : '의 시대.'}</span>
         </div>
         <div className={`${s.l2} ${s.kr}`}>
-          <span ref={l2aRef} className={s.ln}>이제 제조업의 경쟁력은</span>
+          <span ref={l2aRef} className={s.ln}>{english ? 'Manufacturing advantage now begins with ' : '이제 제조업의 경쟁력은'}</span>
           <span ref={l2bRef} className={s.ln}>
-            <span className={`${s.core} ${s.hot}`}>데이터</span>와{' '}
-            <span className={`${s.core} ${s.hot}`}>지식</span>에서 시작됩니다.
+            <span className={`${s.core} ${s.hot}`}>{english ? 'data' : '데이터'}</span>{english ? ' and ' : '와'}
+            <span className={`${s.core} ${s.hot}`}>{english ? 'knowledge.' : '지식'}</span>{english ? '' : '에서 시작됩니다.'}
           </span>
         </div>
       </div>
 
       <div className={`${s.footer} ${s.kr}`}>
         <span>
-          <b>제조 · 설비 · 공정</b>{' '}
+          <b>{english ? 'Manufacturing · equipment · process' : '제조 · 설비 · 공정'}</b>{' '}
           <span className={s.footerAr}>↑ AX ↑</span>{' '}
-          <b>데이터 · 지식</b>
+          <b>{english ? 'Data · knowledge' : '데이터 · 지식'}</b>
         </span>
       </div>
 

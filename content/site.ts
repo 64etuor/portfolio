@@ -90,8 +90,12 @@ export const SITE = {
   },
   scene: {
     interactive: copy('박양하 포트폴리오 인터랙티브 씬.', 'Interactive scene from Yangha Park’s portfolio.'),
+    loading: copy('불러오는 중', 'Loading'),
+    error: copy('씬 오류', 'Scene error'),
+    playOnHover: copy('호버 시 재생', 'Play on hover'),
   },
   film: {
+    title: copy('박양하 포트폴리오 필름', 'Yangha Park Portfolio Film'),
     previous: copy('이전', 'Previous'),
     play: copy('재생', 'Play'),
     pause: copy('일시정지', 'Pause'),

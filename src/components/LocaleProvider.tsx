@@ -12,6 +12,15 @@ interface LocaleContextValue {
 }
 
 const LocaleContext = createContext<LocaleContextValue | null>(null)
+function titleForPath(pathname: string, locale: Locale): string | undefined {
+  if (pathname === '/scenes') return resolveCopy(SITE.pages.scenes, locale)
+  if (pathname === '/skills' || pathname.startsWith('/skills/')) return resolveCopy(SITE.pages.skills, locale)
+  if (pathname === '/resume') return resolveCopy(SITE.pages.resume, locale)
+  if (pathname === '/projects' || pathname.startsWith('/projects/')) return resolveCopy(SITE.pages.projects, locale)
+  if (pathname === '/film') return resolveCopy(SITE.film.title, locale)
+  if (pathname.startsWith('/s/')) return undefined
+  return resolveCopy(SITE.metadata.title, locale)
+}
 
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [locale, setLocale] = useState<Locale>(DEFAULT_LOCALE)
@@ -20,11 +29,16 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const selectedBeforeRestore = useRef(false)
 
   useEffect(() => {
-    if (!selectedBeforeRestore.current) {
-      const saved = localStorage.getItem('pf-locale')
-      if (saved === 'ko' || saved === 'en') setLocale(saved)
-    }
-    setReady(true)
+    // Defer restoration until after hydration so server-rendered Korean markup
+    // remains stable; an explicit click can still win before this callback.
+    const restoreId = window.setTimeout(() => {
+      if (!selectedBeforeRestore.current) {
+        const saved = localStorage.getItem('pf-locale')
+        if (saved === 'ko' || saved === 'en') setLocale(saved)
+      }
+      setReady(true)
+    }, 0)
+    return () => window.clearTimeout(restoreId)
   }, [])
 
   const selectLocale = useCallback((nextLocale: Locale) => {
@@ -36,28 +50,30 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!ready) return
-    const pageTitle = pathname === '/scenes'
-      ? SITE.pages.scenes
-      : pathname === '/skills'
-        ? SITE.pages.skills
-        : pathname === '/resume'
-          ? SITE.pages.resume
-          : pathname === '/projects'
-            ? SITE.pages.projects
-            : SITE.metadata.title
+    const pageTitle = titleForPath(pathname, locale)
 
     const syncDocument = () => {
       document.documentElement.lang = locale
-      document.title = resolveCopy(pageTitle, locale)
+      if (pageTitle) document.title = pageTitle
     }
 
     syncDocument()
     // Next may commit route metadata after hydration. Re-apply in the next frame so
     // the visitor's explicit language choice remains authoritative.
     const frame = requestAnimationFrame(syncDocument)
+    // Streaming metadata may arrive after hydration and reset the title. Keep
+    // title ownership with the active locale for ordinary routes; standalone
+    // scene shells intentionally manage their own dynamic titles.
+    const titleObserver = new MutationObserver(() => {
+      if (pageTitle && document.title !== pageTitle) document.title = pageTitle
+    })
+    titleObserver.observe(document.head, { childList: true, subtree: true, characterData: true })
 
     localStorage.setItem('pf-locale', locale)
-    return () => cancelAnimationFrame(frame)
+    return () => {
+      cancelAnimationFrame(frame)
+      titleObserver.disconnect()
+    }
   }, [locale, pathname, ready])
 
   const value = useMemo(

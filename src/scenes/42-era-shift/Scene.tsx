@@ -82,7 +82,8 @@ function setFrame(img: HTMLDivElement, ph: HTMLDivElement, phn: HTMLSpanElement,
   return ph
 }
 
-export default function Scene({ running = true, onReady }: SceneProps) {
+export default function Scene({ locale = 'ko', running = true, onReady }: SceneProps) {
+  const english = locale === 'en'
   const slideARef = useRef<HTMLDivElement | null>(null)
   const slideBRef = useRef<HTMLDivElement | null>(null)
   const phARef = useRef<HTMLDivElement | null>(null)
@@ -202,12 +203,12 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       <div className={s.flash} ref={flashRef} />
 
       <div className={s.eyebrow}>
-        <b>SCENE 01</b> · 시대 — THE ACCELERATION
+        <b>SCENE 01</b> · {english ? 'ERA' : '시대'} — THE ACCELERATION
       </div>
 
       <div className={s.center}>
         <div className={`${s.headline} ${s.kr}`} ref={headlineRef}>
-          시대는 <span className={s.fast}>빠르게</span> 변하고 있습니다
+          {english ? <>The world is <span className={s.fast}>changing fast.</span></> : <>시대는 <span className={s.fast}>빠르게</span> 변하고 있습니다</>}
         </div>
         <div className={s.sub} ref={subRef}>
           THE ERA IS CHANGING <b>— FASTER EVERY DAY</b>
@@ -215,7 +216,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       </div>
 
       <div className={`${s.rate} ${s.kr}`}>
-        변화의 속도 · <b>가속</b> — RATE OF CHANGE
+        {english ? <>Rate of change · <b>acceleration</b> — RATE OF CHANGE</> : <>변화의 속도 · <b>가속</b> — RATE OF CHANGE</>}
       </div>
     </SceneHost>
   )

@@ -2,6 +2,8 @@ import { Suspense, lazy, useMemo, type ComponentType, type ReactNode } from 'rea
 import { ErrorBoundary } from 'react-error-boundary'
 import { loaderFor } from '@/scenes/loaders'
 import type { SceneProps } from './types'
+import { useLocale } from '@/components/LocaleProvider'
+import { SceneLocalizedRoot } from './localize'
 
 type Loader = () => Promise<{ default: ComponentType<SceneProps> }>
 
@@ -46,6 +48,7 @@ export function LazyScene({
   /** Shown by Suspense while the scene module loads. */
   loadingFallback?: ReactNode
 }) {
+  const { locale } = useLocale()
   const Comp = useMemo(() => {
     if (file != null) {
       const loader = loaderFor(file)
@@ -61,7 +64,9 @@ export function LazyScene({
   return (
     <ErrorBoundary fallback={errorFallback}>
       <Suspense fallback={loadingFallback}>
-        <Comp running={running} onReady={onReady} />
+        <SceneLocalizedRoot locale={locale}>
+          <Comp locale={locale} running={running} onReady={onReady} />
+        </SceneLocalizedRoot>
       </Suspense>
     </ErrorBoundary>
   )

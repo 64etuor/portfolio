@@ -9,6 +9,8 @@ import { FilmTransition, txVariantFor } from './FilmTransition'
 import { useFilmClock } from './useFilmClock'
 import { useSceneBuffer } from './useSceneBuffer'
 import { useIrisOutro } from './useIrisOutro'
+import { SITE } from '@content/site'
+import { useLocale } from '../LocaleProvider'
 
 // Neutral film accent (progress bar / controls). Scenes carry their own color.
 const ACCENT = '#cdd2d8'
@@ -16,7 +18,6 @@ const ACCENT = '#cdd2d8'
 // Visually-hidden heading: gives SR users the film's name without altering the
 // cinematic visual. (Mounted scenes can render their own <main>, so the film
 // region is a labelled group — not a second <main>.)
-const FILM_TITLE = '박양하 포트폴리오 필름'
 const srOnly: CSSProperties = {
   position: 'absolute',
   width: 1,
@@ -46,6 +47,8 @@ const srOnly: CSSProperties = {
  */
 export function Film() {
   const router = useRouter()
+  const { t } = useLocale()
+  const filmTitle = t(SITE.film.title)
   const [reduced, setReduced] = useState(false)
   const [ready, setReady] = useState(false)
   const [ended, setEnded] = useState(false)
@@ -161,8 +164,8 @@ export function Film() {
   if (reduced) {
     const endFile = ACTS[ACTS.length - 1].scenes[0].file
     return (
-      <div role="region" aria-label={FILM_TITLE} style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
-        <h1 style={srOnly}>{FILM_TITLE}</h1>
+      <div role="region" aria-label={filmTitle} style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
+        <h1 style={srOnly}>{filmTitle}</h1>
         <div style={{ position: 'absolute', inset: 0 }}>
           <SceneSlot file={endFile} running onReady={() => {}} />
         </div>
@@ -177,8 +180,8 @@ export function Film() {
   const txVariant = txVariantFor(ACTS[actIdx].id)
 
   return (
-    <div role="region" aria-label={FILM_TITLE} style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
-      <h1 style={srOnly}>{FILM_TITLE}</h1>
+    <div role="region" aria-label={filmTitle} style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
+      <h1 style={srOnly}>{filmTitle}</h1>
       {/* Buffered scene viewport — two stable slots that cross-fade. */}
       <div style={{ position: 'absolute', inset: 0 }}>
         {[0, 1].map((i) => {

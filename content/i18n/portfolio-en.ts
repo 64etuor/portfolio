@@ -47,21 +47,21 @@ export const EN_PROJECTS: Record<string, EnglishProject> = {
     sections: [section('Challenge', 'Operational data was fragmented across spreadsheets, equipment exports, and team-owned files, which prevented a reliable view of production performance.'), section('Delivery', '- Defined a normalized database architecture for core manufacturing entities.\n- Connected collection, cleansing, and dashboard workflows.\n- Designed the system around practical decisions: output, defects, standard time, and operating cost.'), section('Outcome', 'Established a single operating data structure that supports both daily dashboards and longer-term process improvement.')],
   },
   'samsung-logistics': {
-    hero: { title: 'Warehouse Logistics Improvement', company: 'E-Land Tech / Samsung Academy', role: 'Cross-functional improvement project lead' },
+    hero: { title: 'Warehouse Logistics Improvement', company: 'Elentec / Samsung Academy', role: 'Cross-functional improvement project lead' },
     summary: 'A three-month warehouse and inventory-flow improvement program delivered with Samsung manufacturing-leader mentoring.',
     metrics: [metric('Inventory turnover', '+17%', 'Project KPI'), metric('Program length', '3 months', 'Cross-functional improvement team')],
     stack: ['Cross-functional task force', 'Logistics process improvement', '3S and 5S', 'WBS / Gantt'],
     sections: [section('Challenge', 'Inventory congestion and hand-off errors between manufacturing and sales warehouses created cost and visibility problems.'), section('Delivery', '- Led a cross-functional team across purchasing, sales, manufacturing, and production control.\n- Redesigned inventory-transfer workflows and clarified liability zones.\n- Applied workplace organization and visual-management practices in both warehouses.'), section('Outcome', 'Improved inventory turnover by **17%** and increased the transparency of warehouse operations.')],
   },
   'idle-equipment': {
-    hero: { title: 'Idle Equipment Reuse Program', company: 'E-Land Tech', role: 'Project planning and equipment-utilization review' },
+    hero: { title: 'Idle Equipment Reuse Program', company: 'Elentec', role: 'Project planning and equipment-utilization review' },
     summary: 'A reuse program that converted an idle vision-inspection asset into a quality-control capability instead of retiring it.',
     metrics: [metric('Approach', 'Reuse', 'Avoided replacement and disposal cost'), metric('Capability', 'Vision inspection', 'Introduced to a previously uncovered process')],
     stack: ['Vision inspection system', 'Davichi Vision', 'TOS', 'General-purpose vision inspection software'],
     sections: [section('Challenge', 'A vision-inspection machine sat unused while another process lacked an automated quality-control step.'), section('Delivery', '- Assessed equipment capability and process fit.\n- Coordinated suppliers and implementation work.\n- Defined the operating workflow for the new inspection point.'), section('Outcome', 'Extended the useful life of an existing asset and introduced an additional quality-control layer without a new equipment purchase.')],
   },
   'line-innovation': {
-    hero: { title: 'Annual Production-line Innovation Program', company: 'E-Land Tech', role: 'Manufacturing improvement project lead' },
+    hero: { title: 'Annual Production-line Innovation Program', company: 'Elentec', role: 'Manufacturing improvement project lead' },
     summary: 'A multi-track manufacturing improvement program spanning welding quality, cycle time, line balancing, MES adoption, and cost reduction.',
     metrics: [metric('Defect rate', '15% → <1%', 'Ultrasonic welding optimization'), metric('Productivity', '+24%', 'Small-pack line rebalance'), metric('Program', '10 months', 'Quality, speed, and cost improvements')],
     stack: ['DOE', 'Jig design', 'MES', 'WBS / Gantt', 'Python', '3S and 5S'],
@@ -139,7 +139,7 @@ export const EN_RESUME = {
   work: [
     { name: 'Startup', position: 'Head of Operations / Director', period: 'Aug 2025 – Present', summary: 'Leading development of a beauty-retail product suite and AI-enabled operating systems.', highlights: ['Defined CRM, kiosk, collaboration-software, and app requirements and delivery plans.', 'Built FastAPI services, MySQL models, AWS/GCP infrastructure, and CI/CD.', 'Led kiosk hardware prototyping and AI/MCP-enabled workflow design.'] },
     { name: 'SolarEdge Technologies Korea', position: 'Process Engineering', period: 'Sep 2023 – Dec 2024', summary: 'Built manufacturing-data, quality, KPI, standard-time, and OPEX operating systems while establishing MES workflows for a new product line.', highlights: ['Collected, cleansed, and operated production and quality data in databases and dashboards.', 'Improved process capability, jigs, standard time, and inspection workflows.', 'Built traceability and automated inspection-report capabilities.'] },
-    { name: 'E-Land Tech', position: 'Production-line PM / Team Lead', period: 'Nov 2022 – Sep 2023', summary: 'Led productivity, welding DOE, and logistics-improvement work across manufacturing operations.', highlights: ['Analyzed capacity, line balance, and cycle time for productivity improvement.', 'Optimized spot, laser, and ultrasonic welding processes.', 'Led warehouse SCM improvement with Samsung manufacturing mentoring.'] },
+    { name: 'Elentec', position: 'Production-line PM / Team Lead', period: 'Nov 2022 – Sep 2023', summary: 'Led productivity, welding DOE, and logistics-improvement work across manufacturing operations.', highlights: ['Analyzed capacity, line balance, and cycle time for productivity improvement.', 'Optimized spot, laser, and ultrasonic welding processes.', 'Led warehouse SCM improvement with Samsung manufacturing mentoring.'] },
     { name: 'Eunsung SIT', position: 'Production Control Manager', period: 'Aug 2020 – Nov 2022', summary: 'Led battery-pack and component manufacturing operations, cost analysis, production planning, and inventory improvement.', highlights: ['Managed production operations for battery packs, purifier components, and wiring harnesses.', 'Analyzed manufacturing cost and operating-cost structures using capacity, labor, output, and inventory data.', 'Introduced ERP and production-material status systems and managed quality certifications.'] },
   ],
   skills: [

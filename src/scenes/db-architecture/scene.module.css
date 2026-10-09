@@ -94,7 +94,7 @@
   font-size: 11px;
   color: var(--dim);
   font-weight: 500;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.02em;
 }
 .brand b {
   color: var(--acc);
@@ -859,7 +859,7 @@
 .card h6 {
   font-family: 'JetBrains Mono';
   font-size: 10px;
-  letter-spacing: 1px;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--acc);
   margin-bottom: 7px;

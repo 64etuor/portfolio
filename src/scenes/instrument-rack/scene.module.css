@@ -21,6 +21,8 @@
   background:
     radial-gradient(1300px 800px at 50% -8%, #101418 0%, var(--bg) 62%),
     var(--bg);
+  /* 로드되지 않은 굵기를 브라우저가 가짜 볼드로 합성하지 않게(OS별 렌더 차이 제거) — 가장 가까운 실제 굵기로 그린다 */
+  font-synthesis-weight: none;
 }
 
 .root,
@@ -191,7 +193,7 @@
   margin-left: auto;
   color: var(--muted);
   font-size: 10px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
   text-align: right;
 }
 
@@ -226,7 +228,7 @@
   margin-top: 4px;
   color: var(--muted);
   font-size: 11px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 .brand .role b {
   color: var(--green);
@@ -249,7 +251,7 @@
   color: var(--muted);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.13em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   background: #0e1216;
 }
@@ -317,7 +319,7 @@
   color: var(--muted2);
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 .ledhead .r {
@@ -388,7 +390,7 @@
 }
 .ledrow .cut {
   color: var(--green);
-  font-family: 'DM Mono', 'Pretendard Variable', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 12px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -421,7 +423,7 @@
 }
 .ledtot .cut {
   color: var(--green);
-  font-family: 'DM Mono', 'Pretendard Variable', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 15px;
   font-weight: 800;
   text-align: right;
@@ -447,7 +449,7 @@
   color: var(--muted);
   font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 .interro .qh .qn {
@@ -486,7 +488,7 @@
   color: var(--green);
   font-family: 'DM Mono', 'Pretendard Variable', monospace;
   font-size: 9px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   background: #0a2417;
 }
 
@@ -514,7 +516,7 @@
 .wfcorner {
   position: absolute;
   color: #2a8a60;
-  font-family: 'DM Mono', 'Pretendard Variable', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -552,7 +554,7 @@
   font-weight: 600;
 }
 .wfval {
-  font-family: 'DM Mono', 'Pretendard Variable', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9px;
   font-weight: 700;
 }
@@ -574,7 +576,7 @@
 }
 .wfstep .si {
   color: var(--amber);
-  font-family: 'DM Mono', 'Pretendard Variable', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 10px;
   font-weight: 800;
   text-align: center;
@@ -591,7 +593,7 @@
 }
 .wfstep .sv {
   color: var(--green);
-  font-family: 'DM Mono', 'Pretendard Variable', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 12px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -632,7 +634,7 @@
 }
 .illnote .flag {
   color: var(--amber);
-  font-family: 'DM Mono', 'Pretendard Variable', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-weight: 700;
 }
 .illnote b {
@@ -658,7 +660,7 @@
 }
 .lev .lk {
   color: var(--amber);
-  font-family: 'DM Mono', 'Pretendard Variable', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9px;
   font-weight: 700;
   letter-spacing: 0.06em;
@@ -700,7 +702,7 @@
   color: var(--muted);
   font-family: 'DM Mono', 'Pretendard Variable', monospace;
   font-size: 9px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 .stled {
   display: flex;
@@ -708,7 +710,7 @@
   align-items: center;
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.02em;
 }
 .stled .d {
   width: 7px;
@@ -770,7 +772,7 @@
   color: var(--muted);
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.13em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 .insth .iu {
@@ -798,7 +800,7 @@
   margin-bottom: 6px;
   color: var(--muted);
   font-size: 9px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 .dmm .dwin {
   display: flex;
@@ -817,6 +819,7 @@
   font-weight: 800;
   line-height: 0.9;
   text-shadow: 0 0 8px rgba(57, 255, 138, 0.35);
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .digit {
   position: relative;
@@ -828,6 +831,7 @@
   font-weight: 800;
   line-height: 1;
   text-shadow: 0 0 8px rgba(57, 255, 138, 0.35);
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .digit .col {
   position: absolute;
@@ -849,6 +853,7 @@
   font-size: 18px;
   font-weight: 800;
   text-shadow: 0 0 8px rgba(57, 255, 138, 0.35);
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .dmm .drange {
   display: flex;
@@ -910,7 +915,7 @@
   color: var(--muted2);
   font-family: 'DM Mono', 'Pretendard Variable', monospace;
   font-size: 8.5px;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
   text-align: center;
 }
 .gauge .gcap b {
@@ -949,7 +954,7 @@
   color: var(--muted2);
   font-size: 9px;
   font-weight: 700;
-  letter-spacing: 0.3em;
+  letter-spacing: 0.02em;
   text-align: center;
   text-transform: uppercase;
 }
@@ -1183,4 +1188,18 @@
   .crtflick {
     display: none !important;
   }
+}
+
+/* DM Mono 는 400/500 만 로드된다. DM Mono 문맥 안의 굵은 텍스트는
+   같은 0.6em 폭의 JetBrains Mono 로 돌려 OS별 가짜 볼드를 피한다. */
+.pill.mono,
+.scopefoot b,
+.gcap b,
+.chip b {
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
+}
+
+/* 한글이 섞인 우상단 코너 라벨만 자간을 줄인다(나머지 코너는 라틴 전용) */
+.wfcorner.tr {
+  letter-spacing: 0.02em;
 }

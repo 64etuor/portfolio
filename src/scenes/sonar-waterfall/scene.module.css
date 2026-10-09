@@ -18,6 +18,8 @@
   font-family: 'IBM Plex Mono', 'Pretendard Variable', monospace;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
+  /* 로드되지 않은 굵기를 브라우저가 가짜 볼드로 합성하지 않게(OS별 렌더 차이 제거) — 가장 가까운 실제 굵기로 그린다 */
+  font-synthesis-weight: none;
 }
 
 .root * {
@@ -80,14 +82,15 @@
 .k {
   color: var(--txt-dim);
   font-size: 9px;
-  letter-spacing: 1.6px;
+  letter-spacing: 0.02em;
 }
 
 .v {
   color: var(--cyan);
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 400;
   text-shadow: 0 0 9px rgba(72, 230, 255, 0.5);
+  letter-spacing: 0.02em;
 }
 
 .v.amb {
@@ -130,6 +133,7 @@
 
 .title b {
   color: #e6f6ff;
+  font-weight: 400;
 }
 
 .runState {
@@ -204,7 +208,7 @@
   color: var(--teal);
   font-size: 10.5px;
   line-height: 1.5;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.02em;
 }
 
 .sub {
@@ -223,7 +227,7 @@
   color: var(--ink-dim);
   font-family: 'Share Tech Mono';
   font-size: 9px;
-  letter-spacing: 2.4px;
+  letter-spacing: 0.02em;
 }
 
 .sectlabel::after {
@@ -272,7 +276,7 @@
   color: var(--txt-dim);
   font-family: 'Share Tech Mono';
   font-size: 8.5px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.02em;
 }
 
 .cname {
@@ -295,6 +299,7 @@
   display: block;
   color: var(--cyan);
   font-size: 10px;
+  font-weight: 400;
 }
 
 .open {
@@ -336,7 +341,7 @@
   color: var(--txt-dim);
   font-family: 'Share Tech Mono';
   font-size: 8px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.02em;
 }
 
 .center {
@@ -365,7 +370,7 @@
   color: var(--ink-dim);
   font-family: 'Share Tech Mono';
   font-size: 9px;
-  letter-spacing: 2px;
+  letter-spacing: 0.02em;
 }
 
 .ovlabel b {
@@ -380,7 +385,7 @@
   color: var(--ink-dim);
   font-family: 'Share Tech Mono';
   font-size: 8.5px;
-  letter-spacing: 3px;
+  letter-spacing: 0.02em;
   white-space: nowrap;
   transform: rotate(-90deg) translateX(50%);
   transform-origin: left center;
@@ -437,7 +442,7 @@
   color: var(--txt-dim);
   font-family: 'Share Tech Mono';
   font-size: 8px;
-  letter-spacing: 1px;
+  letter-spacing: 0.02em;
 }
 
 .n {
@@ -445,7 +450,7 @@
   color: var(--cyan);
   font-family: 'Share Tech Mono';
   font-size: 19px;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.15;
   text-shadow: 0 0 8px rgba(72, 230, 255, 0.4);
 }
@@ -533,7 +538,7 @@
   color: var(--txt-dim);
   font-family: 'Share Tech Mono';
   font-size: 9px;
-  letter-spacing: 1px;
+  letter-spacing: 0.02em;
   background: linear-gradient(180deg, #05172a, #02070f);
   border-top: 1px solid var(--line);
 }
@@ -624,7 +629,7 @@
   color: var(--txt-dim);
   font-family: 'Share Tech Mono';
   font-size: 9px;
-  letter-spacing: 1.5px;
+  letter-spacing: 0.02em;
 }
 
 .desc {
@@ -649,7 +654,7 @@
   color: var(--ink-dim);
   font-family: 'Share Tech Mono';
   font-size: 9px;
-  letter-spacing: 2px;
+  letter-spacing: 0.02em;
 }
 
 .grpL::after {
@@ -671,7 +676,7 @@
   color: var(--txt);
   font-family: 'Share Tech Mono';
   font-size: 10px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.02em;
   background: rgba(72, 230, 255, 0.06);
   border: 1px solid var(--line);
 }
@@ -692,7 +697,7 @@
   color: var(--txt-dim);
   font-family: 'Share Tech Mono';
   font-size: 8.5px;
-  letter-spacing: 1px;
+  letter-spacing: 0.02em;
 }
 
 .ov {

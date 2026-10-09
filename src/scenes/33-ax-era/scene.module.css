@@ -220,3 +220,10 @@
   color: #cfe8ff;
   text-shadow: 0 0 18px rgba(78, 163, 240, 0.55), 0 0 46px rgba(78, 163, 240, 0.22);
 }
+
+/* 한글이 들어가는 요소는 자간 0.02em 이하 — EN 로케일(라틴 전용)은 위의 넓은 자간 유지 */
+.sceneId:lang(ko),
+.status:lang(ko),
+.footer:lang(ko) {
+  letter-spacing: 0.02em;
+}

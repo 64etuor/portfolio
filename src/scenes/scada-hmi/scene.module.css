@@ -23,6 +23,8 @@
   font-family: 'Pretendard Variable', sans-serif;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
+  /* 로드되지 않은 굵기를 브라우저가 가짜 볼드로 합성하지 않게(OS별 렌더 차이 제거) — 가장 가까운 실제 굵기로 그린다 */
+  font-synthesis-weight: none;
 }
 
 .root,
@@ -44,7 +46,7 @@
 
 .root :global(.mono) {
   font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 
 .root :global(.hmi) {
@@ -137,7 +139,7 @@
   color: #e8f1f8;
   font-size: 14px;
   font-weight: 700;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
 }
 
 .root :global(.brand .sub) {
@@ -160,7 +162,7 @@
 .root :global(.hdr-block .k) {
   color: var(--txt-dim);
   font-size: 9px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
@@ -236,7 +238,7 @@
   font-family: inherit;
   font-size: 12.5px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   transition: 0.15s;
 }
 
@@ -310,7 +312,7 @@
 .root :global(.alarm-banner .msg .lvl) {
   color: var(--txt-dim);
   font-size: 9px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
@@ -356,7 +358,7 @@
   font-family: inherit;
   font-size: 12px;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   transition: 0.12s;
   white-space: nowrap;
 }
@@ -420,7 +422,7 @@
   color: #dbe7f0;
   font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
@@ -428,7 +430,7 @@
   margin-left: 8px;
   color: var(--txt-dim);
   font-weight: 500;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
   text-transform: none;
 }
 
@@ -495,7 +497,7 @@
   justify-content: space-between;
   color: var(--txt-dim);
   font-size: 9.5px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
@@ -627,7 +629,7 @@
   flex: none;
   color: var(--txt-dim);
   font-size: 9px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
@@ -1065,7 +1067,7 @@
 .root :global(.para-tank .ph .nm) {
   color: var(--txt-dim);
   font-size: 9px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
 }
 
 .root :global(.para-tank .lvlwrap) {

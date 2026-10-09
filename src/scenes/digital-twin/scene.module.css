@@ -175,7 +175,7 @@
 .kpiK {
   font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 8.5px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.02em;
   color: #5d6a82;
   text-transform: uppercase;
 }
@@ -302,7 +302,7 @@
   text-align: center;
   font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 10px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   color: #e8edf6;
   background: rgba(255, 255, 255, 0.03);
@@ -370,7 +370,7 @@
 .monoLabel {
   font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 8px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.02em;
   color: #5d6a82;
   text-transform: uppercase;
   margin-bottom: 8px;
@@ -390,7 +390,7 @@
   bottom: 20px;
   font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 10px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
   color: #5d6a82;
   text-align: right;
   line-height: 1.7;
@@ -436,7 +436,7 @@
 .xdHSub {
   font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 8.5px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.02em;
   color: #5d6a82;
   text-transform: uppercase;
   margin-top: 4px;
@@ -517,7 +517,7 @@
 .streamRqh {
   font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 8px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.02em;
   color: #5d6a82;
   text-transform: uppercase;
   margin-bottom: 6px;

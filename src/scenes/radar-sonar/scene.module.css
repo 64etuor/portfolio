@@ -10,6 +10,8 @@
   font-family: 'IBM Plex Mono', 'Pretendard Variable', monospace;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
+  /* 로드되지 않은 굵기를 브라우저가 가짜 볼드로 합성하지 않게(OS별 렌더 차이 제거) — 가장 가까운 실제 굵기로 그린다 */
+  font-synthesis-weight: none;
 }
 
 /* scanlines */
@@ -84,7 +86,7 @@
   font-size: 15px;
   color: #2effa3;
   text-shadow: 0 0 8px rgba(46, 255, 163, 0.5);
-  font-weight: 600;
+  font-weight: 400;
 }
 
 .tagVAmb {
@@ -146,6 +148,7 @@
 
 .topbarTitle b {
   color: #dfffe9;
+  font-weight: 400;
 }
 
 .topbarOnline {
@@ -249,6 +252,7 @@
 
 .sectionH span {
   color: #2effa3;
+  letter-spacing: 0.02em;
 }
 
 .legend {
@@ -377,7 +381,7 @@
   color: #4f9a7a;
   opacity: 0.7;
   font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.02em;
 }
 
 .ladActive {
@@ -407,7 +411,7 @@
 .ladRule {
   font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 8px;
-  letter-spacing: 1.5px;
+  letter-spacing: 0.02em;
   color: #ffb031;
   text-align: center;
   margin-top: 2px;
@@ -436,7 +440,7 @@
 .creedR {
   font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 8px;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.02em;
   color: #4f9a7a;
   margin-top: 5px;
   line-height: 1.4;
@@ -503,6 +507,7 @@
 
 .ovCorner b {
   color: #2effa3;
+  font-weight: 400;
 }
 
 .pingBtn {
@@ -560,7 +565,7 @@
 .rightHeadS {
   font-size: 9px;
   color: #4f9a7a;
-  letter-spacing: 1.5px;
+  letter-spacing: 0.02em;
   margin-top: 2px;
 }
 
@@ -723,6 +728,7 @@
 .statusSeg b {
   color: #2effa3;
   margin-left: 6px;
+  font-weight: 400;
 }
 
 .statusTicker {
@@ -736,6 +742,7 @@
   display: inline-block;
   padding-left: 100%;
   animation: scroll 38s linear infinite;
+  letter-spacing: 0.02em;
 }
 
 @keyframes scroll {
@@ -843,7 +850,7 @@
   font-weight: 700;
   color: #eafff2;
   margin-top: 4px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.02em;
   text-shadow: 0 0 14px rgba(46, 255, 163, 0.3);
 }
 
@@ -916,7 +923,7 @@
   flex-wrap: wrap;
   font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 10px;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.02em;
   padding: 8px 11px;
   margin-bottom: 14px;
   border: 1px solid rgba(46, 255, 163, 0.12);

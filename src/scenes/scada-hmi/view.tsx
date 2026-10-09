@@ -233,7 +233,7 @@ export function HmiView({
                         <text x="45" y="138" textAnchor="middle" fill="#7e8c99" fontSize="9">
                           구매 입고 · 자재창고
                         </text>
-                        <text ref={tk1pctRef} x="45" y="65" textAnchor="middle" fill="#fff" fontFamily="'Share Tech Mono', 'Pretendard Variable', monospace" fontSize="13" fontWeight="700">
+                        <text ref={tk1pctRef} x="45" y="65" textAnchor="middle" fill="#fff" fontFamily="'Share Tech Mono', 'Pretendard Variable', monospace" fontSize="13" fontWeight="400">
                           --%
                         </text>
                         <circle cx="78" cy="10" r="5" fill="#21d07a" className="led" stroke="#0c5a36" />
@@ -266,7 +266,7 @@ export function HmiView({
                         <text x="60" y="66" textAnchor="middle" fill="#7e8c99" fontSize="9" fontFamily="'Share Tech Mono', 'Pretendard Variable', monospace">
                           재고정확도
                         </text>
-                        <text ref={weldCtRef} x="60" y="84" textAnchor="middle" fill="#39d6ff" fontSize="15" fontWeight="700" fontFamily="'Share Tech Mono', 'Pretendard Variable', monospace">
+                        <text ref={weldCtRef} x="60" y="84" textAnchor="middle" fill="#39d6ff" fontSize="15" fontWeight="400" fontFamily="'Share Tech Mono', 'Pretendard Variable', monospace">
                           --
                         </text>
                         <circle ref={weldLedRef} cx="106" cy="10" r="5" fill="#ffb020" className="led" />
@@ -296,7 +296,7 @@ export function HmiView({
                         <text x="50" y="138" textAnchor="middle" fill="#7e8c99" fontSize="9">
                           영업창고 · 완제품 · 3정5S
                         </text>
-                        <text ref={tk2pctRef} x="50" y="105" textAnchor="middle" fill="#fff" fontFamily="'Share Tech Mono', 'Pretendard Variable', monospace" fontSize="13" fontWeight="700">
+                        <text ref={tk2pctRef} x="50" y="105" textAnchor="middle" fill="#fff" fontFamily="'Share Tech Mono', 'Pretendard Variable', monospace" fontSize="13" fontWeight="400">
                           --%
                         </text>
                         <circle cx="88" cy="10" r="5" fill="#21d07a" className="led" />
@@ -316,7 +316,7 @@ export function HmiView({
                         <text x="120" y="58" textAnchor="middle" fill="#7e8c99" fontSize="9">
                           CONV-1 · 제조→영업 이관 전산 프로세스
                         </text>
-                        <text ref={uphRef} x="120" y="-8" textAnchor="middle" fill="#dbe7f0" fontSize="10" fontWeight="700" fontFamily="'Share Tech Mono', 'Pretendard Variable', monospace">
+                        <text ref={uphRef} x="120" y="-8" textAnchor="middle" fill="#dbe7f0" fontSize="10" fontWeight="400" fontFamily="'Share Tech Mono', 'Pretendard Variable', monospace">
                           정합 ----
                         </text>
                       </g>

@@ -3,6 +3,7 @@
 import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { canvasFont } from '../_host/fonts'
 import { useSceneReady } from '../_host/useSceneReady'
 import { rgba, mix } from '../_host/color'
 import type { RGB } from '../_host/color'
@@ -267,7 +268,7 @@ function drawChasm(ctx: CanvasRenderingContext2D, W: number, H: number, time: nu
 function drawLabels(ctx: CanvasRenderingContext2D, leftNodes: NodePoint[], rightNodes: NodePoint[], warm: number) {
   const col = mix([120, 120, 120], TEAL, warm)
   ctx.save()
-  ctx.font = "600 13px var(--mono), monospace"
+  ctx.font = canvasFont(600, 13, 'mono')
   ctx.textAlign = 'center'
   const lTop = leftNodes[0]
   const rTop = rightNodes[0]

@@ -4,7 +4,7 @@ import { useEffect } from 'react'
 import { SITE } from '@content/site'
 import { sceneForLocale } from '@content/i18n/scene-en'
 import { useLocale } from '@/components/LocaleProvider'
-import type { SceneEntry } from '../catalog'
+import { hasLabPage, type SceneEntry } from '../catalog'
 import { SceneMount } from './SceneMount'
 
 /** Client shell for a standalone scene, so its chrome follows the locale switcher. */
@@ -38,7 +38,7 @@ export function ScenePageContent({ scene }: { scene: SceneEntry }) {
           <span className="text-sm font-semibold" style={{ color: 'var(--ink)' }}>{localized.title}</span>
           {localized.domain ? <span className="hidden text-xs md:inline" style={{ color: 'var(--accent)' }}>{localized.domain}</span> : null}
         </div>
-        <a href={`/lab/${localized.file}`} target="_blank" rel="noreferrer" className="text-xs hover:opacity-80" style={{ color: 'var(--muted)' }}>{t(SITE.chrome.newTab)}</a>
+        {hasLabPage(scene) ? <a href={`/lab/${localized.file}`} target="_blank" rel="noreferrer" className="text-xs hover:opacity-80" style={{ color: 'var(--muted)' }}>{t(SITE.chrome.newTab)}</a> : null}
       </div>
       <div style={{ flex: 1, minHeight: 0, position: 'relative' }}>
         <SceneMount name={localized.file} title={localized.title} bg={localized.bg} />

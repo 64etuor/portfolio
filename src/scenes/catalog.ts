@@ -104,3 +104,6 @@ export function catalogEntry(idOrSlug: string): SceneEntry | undefined {
     (s) => s.key === base || s.slug === base || s.id === idOrSlug,
   )
 }
+
+/** public/lab 에 정적 HTML 원본이 있는 씬인지. three.js 씬(x-*)은 React 전용이라 없다. */
+export const hasLabPage = (s: { file: string }): boolean => !s.file.startsWith('x-')

@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { sceneById } from '@/scenes/registry'
+import { hasLabPage } from '@/scenes/catalog'
 import { SITE } from '@content/site'
 import { LocaleSwitcher } from './LocaleSwitcher'
 import { useLocale } from './LocaleProvider'
@@ -34,7 +35,7 @@ export function SiteHeader() {
           {t(SITE.chrome.print)}
         </button>
       )}
-      {scene && (
+      {scene && hasLabPage(scene) && (
         <a href={`/lab/${scene.file}`} target="_blank" rel="noreferrer" className="chrome-btn">
           {t(SITE.chrome.open)}
         </a>

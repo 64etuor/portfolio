@@ -38,8 +38,8 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
           </span>
         </div>
 
-        {OK_CELLS.map((_, i) => (
-          <div key={i} data-hud="ok" className={s.anchor} style={{ opacity: 0 }}>
+        {OK_CELLS.map(([c, r]) => (
+          <div key={`${c}-${r}`} data-hud="ok" className={s.anchor} style={{ opacity: 0 }}>
             <span className={s.ok}>{OK_LABEL}</span>
           </div>
         ))}
@@ -63,7 +63,7 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
         </div>
         <ol className={s.lines}>
           {HUD_LINES.map((l, i) => (
-            <li key={i} data-hud="line" className={`${s.line} ${l.accent ? s[l.accent] : ''}`} style={{ opacity: i === 0 ? 1 : 0 }}>
+            <li key={l.text.en} data-hud="line" className={`${s.line} ${l.accent ? s[l.accent] : ''}`} style={{ opacity: i === 0 ? 1 : 0 }}>
               <span className={s.idx}>{String(i + 1).padStart(2, '0')}</span>
               <span className={s.txt}>{pick(l.text, lang)}</span>
             </li>

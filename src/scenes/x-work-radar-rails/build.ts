@@ -744,7 +744,10 @@ export function buildSignals(THREE: Three, A: Addons, scene: T3.Scene) {
       m.setColorAt(i, col)
       // 중요·긴급 사분면에 약간 더 몰리도록
       let quad = Math.floor(r() * 4.6) % 4
-      if (free[quad].length === 0) quad = free.findIndex((f) => f.length > 0)
+      if (free[quad].length === 0) {
+        quad = 0
+        while (quad < free.length - 1 && free[quad].length === 0) quad++
+      }
       const [lx, lz] = free[quad].pop()!
       const l = new THREE.Vector3(lx, restY[si], lz)
       const s = new THREE.Vector3(-14 - r() * 6, 0.3 + r() * 2.6, -7 + r() * 8)

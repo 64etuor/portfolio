@@ -34,7 +34,7 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
         </div>
 
         {tx.layers.map((l, i) => (
-          <div key={i} className={s.anchor} data-k={`layer${i}`}>
+          <div key={l} className={s.anchor} data-k={`layer${i}`}>
             <span className={s.layer}>
               <i>0{i + 1}</i>
               {l}
@@ -77,7 +77,7 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
 
         <ol className={s.steps}>
           {tx.steps.map((st, i) => (
-            <li key={i} data-k={`step${i}`} className={s[`step${i}`]}>
+            <li key={st} data-k={`step${i}`} className={s[`step${i}`]}>
               {st}
             </li>
           ))}

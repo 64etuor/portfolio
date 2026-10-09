@@ -31,7 +31,7 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
 
         <div className={s.phases}>
           {PHASES.map((p, i) => (
-            <div key={i} data-k={`phase${i}`} className={s.phase} style={{ opacity: i === 0 ? 1 : 0 }}>
+            <div key={p.title.en} data-k={`phase${i}`} className={s.phase} style={{ opacity: i === 0 ? 1 : 0 }}>
               <span className={s.phaseIdx}>{`0${i + 1} / 04`}</span>
               <span className={s.phaseTitle}>{pick(p.title, en)}</span>
               <span className={s.phaseSub}>{pick(p.sub, en)}</span>
@@ -64,12 +64,12 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
         </div>
 
         {SLABS.map((sl, i) => (
-          <div key={i} data-k={`slab${i}`} className={s.slabLabel} style={{ opacity: 0 }}>
+          <div key={sl.label.en} data-k={`slab${i}`} className={s.slabLabel} style={{ opacity: 0 }}>
             <span>{pick(sl.label, en)}</span>
           </div>
         ))}
         {PANELS.map((p, i) => (
-          <div key={i} data-k={`panel${i}`} className={s.panelLabel} style={{ opacity: 0 }}>
+          <div key={p.en} data-k={`panel${i}`} className={s.panelLabel} style={{ opacity: 0 }}>
             {pick(p, en)}
           </div>
         ))}

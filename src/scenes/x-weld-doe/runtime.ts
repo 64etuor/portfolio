@@ -1,14 +1,7 @@
+import { roomEnvironment } from '../_host/three/env'
 import type * as THREE_NS from 'three'
 import type { ThreeContext, ThreeSetupResult } from '../_host/three/types'
-import {
-  easeInOutCubic,
-  easeOutBack,
-  easeOutCubic,
-  loopT,
-  placeLabel,
-  projectToScreen,
-  seg,
-} from '../_host/three/helpers'
+import { easeInOutCubic, easeOutBack, easeOutCubic, loopT, placeLabel, projectToScreen, seg, setData, setStyle, setText } from '../_host/three/helpers'
 import {
   buildDust,
   buildFrame,
@@ -46,15 +39,12 @@ const lerp = (a: number, b: number, k: number) => a + (b - a) * k
 
 /** HUD 는 캔버스 컨테이너의 형제(data-hud="root"); 로케일은 그 data-locale 에서 읽는다. */
 export async function setupWeldDoe(ctx: ThreeContext): Promise<ThreeSetupResult> {
-  const { THREE, scene, camera, renderer } = ctx
+  const { THREE, scene, camera } = ctx
 
   // 금속 반사용 환경맵(절차적)
-  const { RoomEnvironment } = await import('three/examples/jsm/environments/RoomEnvironment.js')
-  const pmrem = new THREE.PMREMGenerator(renderer)
-  const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04)
+  const envRT = await roomEnvironment(ctx)
   scene.environment = envRT.texture
   scene.environmentIntensity = 0.32
-  pmrem.dispose()
 
   if (ctx.bloom) {
     ctx.bloom.strength = 0.7
@@ -315,21 +305,21 @@ export async function setupWeldDoe(ctx: ThreeContext): Promise<ThreeSetupResult>
     const ckey = `${loc}|${txt}|${state}`
     if (ckey !== lastCounter && h.counter) {
       lastCounter = ckey
-      h.counter.textContent = txt
-      h.counter.dataset.state = state
+      setText(h.counter, txt)
+      setData(h.counter, 'state', state)
     }
     if (h.cost) {
       const ck2 = easeOutCubic(seg(t, TL.cost[0], TL.cost[1]))
-      h.cost.style.opacity = ck2.toFixed(3)
-      h.cost.style.transform = `translate3d(0, ${((1 - ck2) * 14).toFixed(1)}px, 0)`
+      setStyle(h.cost, 'opacity', ck2.toFixed(3))
+      setStyle(h.cost, 'transform', `translate3d(0, ${((1 - ck2) * 14).toFixed(1)}px, 0)`)
     }
-    if (h.legend) h.legend.style.opacity = seg(t, TL.runs[0], TL.runs[0] + 0.6).toFixed(3)
+    if (h.legend) setStyle(h.legend, 'opacity', seg(t, TL.runs[0], TL.runs[0] + 0.6).toFixed(3))
     const phase = t < TL.runs[0] ? 0 : t < TL.fit[0] ? 1 : t < TL.descent[0] ? 2 : 3
     if (phase !== lastPhase) {
       lastPhase = phase
-      h.phases.forEach((el, i) => (el.dataset.on = i === phase ? '1' : i < phase ? 'done' : '0'))
+      h.phases.forEach((el, i) => (setData(el, 'on', i === phase ? '1' : i < phase ? 'done' : '0')))
     }
-    if (h.knob) h.knob.style.left = `${(50 + st.w * 50).toFixed(2)}%`
+    if (h.knob) setStyle(h.knob, 'left', `${(50 + st.w * 50).toFixed(2)}%`)
 
     const axisO = seg(t, 1.6, 3.0)
     label(h.lblA, v3.set(0, FLOOR_Y, SPAN + 0.55), axisO)

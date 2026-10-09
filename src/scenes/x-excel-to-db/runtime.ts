@@ -1,6 +1,7 @@
+import { roomEnvironment } from '../_host/three/env'
 import type * as THREE_NS from 'three'
 import type { ThreeContext, ThreeSetupResult } from '../_host/three/types'
-import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg } from '../_host/three/helpers'
+import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg, setStyle, setText } from '../_host/three/helpers'
 import { fractHash } from '../_host/random'
 import {
   DASH_Y,
@@ -43,20 +44,13 @@ function hudLookup(root: HTMLElement | null) {
 const gauss = (x: number, w: number) => Math.exp(-(x * x) / (w * w))
 
 export async function setupScene(ctx: ThreeContext, hudRoot: () => HTMLElement | null): Promise<ThreeSetupResult> {
-  const { THREE, scene, camera, renderer } = ctx
-  const [A, { RoomEnvironment }] = await Promise.all([
-    loadAddons(),
-    import('three/examples/jsm/environments/RoomEnvironment.js'),
-    loadFonts(),
-  ])
+  const { THREE, scene, camera } = ctx
+  const [A, envRT] = await Promise.all([loadAddons(), roomEnvironment(ctx), loadFonts()])
   scene.fog = new THREE.Fog(BG, 15, 40)
 
   // 환경맵(유리 슬랩·금속 랙 반사) + 키/림 — 낮은 세기, 팔레트 청색 림.
-  const pmrem = new THREE.PMREMGenerator(renderer)
-  const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04)
   scene.environment = envRT.texture
   scene.environmentIntensity = 0.45
-  pmrem.dispose()
   const key = new THREE.DirectionalLight(0xeef2f4, 1.2)
   key.position.set(-5, 9, 8)
   const rim = new THREE.DirectionalLight(0x4ab3cc, 1.0)
@@ -341,17 +335,17 @@ export async function setupScene(ctx: ThreeContext, hudRoot: () => HTMLElement |
       const el = hud.phases[k]
       if (el) {
         const o = inn * out
-        el.style.opacity = o.toFixed(3)
-        el.style.transform = `translate3d(0, ${((1 - inn) * 10).toFixed(1)}px, 0)`
+        setStyle(el, 'opacity', o.toFixed(3))
+        setStyle(el, 'transform', `translate3d(0, ${((1 - inn) * 10).toFixed(1)}px, 0)`)
       }
     }
     const hOp = seg(t, T.dial - 0.2, T.dial + 0.4)
-    if (hud.hero) hud.hero.style.opacity = hOp.toFixed(3)
+    if (hud.hero) setStyle(hud.hero, 'opacity', hOp.toFixed(3))
     const f = easeOutCubic(seg(t, T.dial, T.dialEnd))
-    if (hud.count) hud.count.textContent = String(Math.round(SAVED_MIN * f))
-    if (hud.arc) hud.arc.style.strokeDashoffset = (1 - f * (SAVED_MIN / DAY_MIN)).toFixed(4)
-    if (hud.st) hud.st.style.opacity = seg(t, 6.5, 7.0).toFixed(3)
-    if (hud.award) hud.award.style.opacity = seg(t, 7.0, 7.5).toFixed(3)
+    if (hud.count) setText(hud.count, String(Math.round(SAVED_MIN * f)))
+    if (hud.arc) setStyle(hud.arc, 'strokeDashoffset', (1 - f * (SAVED_MIN / DAY_MIN)).toFixed(4))
+    if (hud.st) setStyle(hud.st, 'opacity', seg(t, 6.5, 7.0).toFixed(3))
+    if (hud.award) setStyle(hud.award, 'opacity', seg(t, 7.0, 7.5).toFixed(3))
 
     for (let s = 0; s < SLABS.length; s++) {
       v3.set(-SLAB_W / 2 - 0.15, slabY(s), SLAB_D / 2)

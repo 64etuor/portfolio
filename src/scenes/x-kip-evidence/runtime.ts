@@ -1,6 +1,7 @@
+import { roomEnvironment } from '../_host/three/env'
 import type * as THREE from 'three'
 import type { ThreeSetup } from '../_host/three/types'
-import { countUp, easeInOutCubic, easeOutBack, easeOutCubic, loopT, projectToScreen, seg } from '../_host/three/helpers'
+import { countUp, easeInOutCubic, easeOutBack, easeOutCubic, loopT, projectToScreen, seg, setStyle, setText } from '../_host/three/helpers'
 import {
   HOT_ROW,
   anchorOf,
@@ -28,7 +29,7 @@ type Els = Record<string, HTMLElement>
 
 // HUD 루트는 캔버스 컨테이너의 형제([data-hud]) — ref 를 렌더에서 넘기지 않는다.
 export const setupKip: ThreeSetup = async (ctx) => {
-  const { THREE: T, scene, camera, bloom, renderer } = ctx
+  const { THREE: T, scene, camera, bloom } = ctx
   scene.fog = new T.Fog(PALETTE.bg, 14, 46)
   if (bloom) {
     bloom.strength = 0.95
@@ -37,12 +38,9 @@ export const setupKip: ThreeSetup = async (ctx) => {
   }
 
   // 유리 슬래브 반사용 환경맵(절차적, 낮은 강도) + addons
-  const [{ RoomEnvironment }, A] = await Promise.all([import('three/examples/jsm/environments/RoomEnvironment.js'), loadAddons()])
-  const pmrem = new T.PMREMGenerator(renderer)
-  const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04)
+  const [envRT, A] = await Promise.all([roomEnvironment(ctx), loadAddons()])
   scene.environment = envRT.texture
   scene.environmentIntensity = 0.45
-  pmrem.dispose()
 
   const dot = makeDotTexture(T)
   const lib = buildLibrary(T, scene)
@@ -113,11 +111,11 @@ export const setupKip: ThreeSetup = async (ctx) => {
     if (!el) return
     projectToScreen(ctx, world, proj)
     if (!proj.visible || op <= 0.001) {
-      el.style.opacity = '0'
+      setStyle(el, 'opacity', '0')
       return
     }
-    el.style.transform = `translate3d(${proj.x.toFixed(1)}px, ${proj.y.toFixed(1)}px, 0)`
-    el.style.opacity = op.toFixed(3)
+    setStyle(el, 'transform', `translate3d(${proj.x.toFixed(1)}px, ${proj.y.toFixed(1)}px, 0)`)
+    setStyle(el, 'opacity', op.toFixed(3))
   }
 
   const update = (t: number) => {
@@ -285,10 +283,10 @@ export const setupKip: ThreeSetup = async (ctx) => {
     const full = e.query.dataset.full ?? ''
     const n = Math.round(seg(t, TL.typeA, TL.typeB) * full.length)
     if (n !== lastQuery) {
-      e.query.textContent = full.slice(0, n)
+      setText(e.query, full.slice(0, n))
       lastQuery = n
     }
-    if (e.gloss) e.gloss.style.opacity = seg(t, TL.typeB, TL.typeB + 0.4).toFixed(3)
+    if (e.gloss) setStyle(e.gloss, 'opacity', seg(t, TL.typeB, TL.typeB + 0.4).toFixed(3))
 
     core.conduits.forEach((cd, k) => {
       const on = seg(t, TL.conduitA + k * 0.14 - 0.3, TL.conduitA + k * 0.14)
@@ -329,7 +327,7 @@ export const setupKip: ThreeSetup = async (ctx) => {
       st.opacity = pc.toFixed(3)
       for (let i = 0; i < 3; i++) {
         const el = e[`claim${i}`]
-        if (el) el.style.opacity = seg(t, TL.cardA + 0.45 + i * 0.22, TL.cardA + 0.85 + i * 0.22).toFixed(3)
+        if (el) setStyle(el, 'opacity', seg(t, TL.cardA + 0.45 + i * 0.22, TL.cardA + 0.85 + i * 0.22).toFixed(3))
       }
     }
 
@@ -337,19 +335,19 @@ export const setupKip: ThreeSetup = async (ctx) => {
     cap.forEach((o, i) => {
       const el = e[`cap${i}`]
       if (el) {
-        el.style.opacity = o.toFixed(3)
-        el.style.transform = `translateY(${((1 - o) * 6).toFixed(1)}px)`
+        setStyle(el, 'opacity', o.toFixed(3))
+        setStyle(el, 'transform', `translateY(${((1 - o) * 6).toFixed(1)}px)`)
       }
     })
 
-    if (e.metrics) e.metrics.style.opacity = (0.35 + 0.65 * seg(t, TL.metricA - 0.4, TL.metricA + 0.2)).toFixed(3)
+    if (e.metrics) setStyle(e.metrics, 'opacity', (0.35 + 0.65 * seg(t, TL.metricA - 0.4, TL.metricA + 0.2)).toFixed(3))
     METRICS.forEach((m, i) => {
       const el = e[`m${i}`]
       if (!el) return
       const p = easeOutCubic(seg(t, TL.metricA + i * 0.16, TL.metricA + i * 0.16 + 0.9))
       const txt = t < TL.metricA + i * 0.16 ? '—' : (m.prefix ?? '') + countUp(0, m.value, p, m.digits)
       if (lastMetric[i] !== txt) {
-        el.textContent = txt
+        setText(el, txt)
         lastMetric[i] = txt
       }
     })

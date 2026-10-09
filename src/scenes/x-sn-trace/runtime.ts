@@ -1,5 +1,6 @@
+import { roomEnvironment } from '../_host/three/env'
 import type * as THREE from 'three'
-import { easeInOutCubic, easeOutCubic, loopT, placeLabel, seg } from '../_host/three/helpers'
+import { easeInOutCubic, easeOutCubic, loopT, placeLabel, seg, setData, setStyle } from '../_host/three/helpers'
 import type { ThreeContext, ThreeSetupResult } from '../_host/three/types'
 import {
   buildEdges,
@@ -110,16 +111,13 @@ function stateAt(t: number): State {
 }
 
 export async function setupSnTrace(ctx: ThreeContext): Promise<ThreeSetupResult> {
-  const { THREE: T3, scene, camera, renderer } = ctx
-  const [A, { RoomEnvironment }] = await Promise.all([loadAddons(), import('three/examples/jsm/environments/RoomEnvironment.js')])
+  const { THREE: T3, scene, camera } = ctx
+  const [A, envRT] = await Promise.all([loadAddons(), roomEnvironment(ctx)])
   const g = buildGraph()
 
   // 환경맵(금속 노드 반사) + 키/림 — 낮은 세기.
-  const pmrem = new T3.PMREMGenerator(renderer)
-  const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04)
   scene.environment = envRT.texture
   scene.environmentIntensity = 0.42
-  pmrem.dispose()
   const key = new T3.DirectionalLight(0xe8eef2, 1.1)
   key.position.set(-6, 9, 12)
   const rim = new T3.DirectionalLight(0x4ab3cc, 0.9)
@@ -252,6 +250,7 @@ export async function setupSnTrace(ctx: ThreeContext): Promise<ThreeSetupResult>
   const fatMats = [aff.mat, path.mat, rings2.mat, shell.mat]
   const camTarget = new T3.Vector3(-1.1, 0.45, 0)
 
+  let lastEdgeKey = -1
   const update = (t: number) => {
     const st = stateAt(t)
 
@@ -275,7 +274,14 @@ export async function setupSnTrace(ctx: ThreeContext): Promise<ThreeSetupResult>
     const VPE = EDGE_SEGS * 2
     const calmK = 1 - 0.5 * st.calm
     const baseI = 0.024 * calmK
-    for (let e = 0; e < E; e++) {
+    // 수기 S/N 깜빡임(ambig>0)이 없으면 색은 baseI 와 '몇 층까지 점등됐나' 로만 정해진다 —
+    // 같으면 수만 개 정점 재계산·GPU 재업로드를 건너뛴다(앰비언트 루프 내내 해당).
+    let litLayers = 0
+    while (litLayers < 4 && st.fwdLit > litLayers) litLayers++
+    const edgeKey = st.ambig > 0 ? NaN : baseI * 8 + litLayers
+    const edgeDirty = edgeKey !== lastEdgeKey
+    lastEdgeKey = edgeKey
+    if (edgeDirty) for (let e = 0; e < E; e++) {
       const l = g.eLayer[e]
       const aff = g.affected[g.eFrom[e]] && g.affected[g.eTo[e]]
       const h = g.eHash[e]
@@ -296,7 +302,7 @@ export async function setupSnTrace(ctx: ThreeContext): Promise<ThreeSetupResult>
         C[o + 2] = b
       }
     }
-    edges.colAttr.needsUpdate = true
+    if (edgeDirty) edges.colAttr.needsUpdate = true
 
     // ── 팻 라인: 영향 군집(순방향 점등) ──
     {
@@ -475,10 +481,16 @@ export async function setupSnTrace(ctx: ThreeContext): Promise<ThreeSetupResult>
         emit(cp.x, cp.y, cp.z, AMBER, (1.3 / tr) * st.tokenVis)
       }
     }
-    for (let i = n; i < SPARKS; i++) {
-      SC[i * 3] = SC[i * 3 + 1] = SC[i * 3 + 2] = 0
-      SP[i * 3] = SP[i * 3 + 1] = SP[i * 3 + 2] = 0
+    // drawRange(0, n) 밖은 그려지지 않으므로 꼬리를 지우지 않고, 쓴 구간만 업로드한다.
+    if (n === 0) {
+      SC[0] = SC[1] = SC[2] = 0
+      SP[0] = SP[1] = SP[2] = 0
     }
+    const up = Math.max(1, n) * 3
+    sparks.pa.clearUpdateRanges()
+    sparks.pa.addUpdateRange(0, up)
+    sparks.ca.clearUpdateRanges()
+    sparks.ca.addUpdateRange(0, up)
     sparks.pa.needsUpdate = true
     sparks.ca.needsUpdate = true
     sparks.pts.geometry.setDrawRange(0, Math.max(1, n))
@@ -553,20 +565,20 @@ export async function setupSnTrace(ctx: ThreeContext): Promise<ThreeSetupResult>
       const y0 = a[1] + (b[1] - a[1]) * m - pad
       const x1 = a[2] + (b[2] - a[2]) * m + pad
       const y1 = a[3] + (b[3] - a[3]) * m + pad
-      elBox.style.transform = `translate3d(${x0.toFixed(1)}px, ${y0.toFixed(1)}px, 0)`
-      elBox.style.width = `${(x1 - x0).toFixed(1)}px`
-      elBox.style.height = `${(y1 - y0).toFixed(1)}px`
-      elBox.style.opacity = st.boxVis.toFixed(3)
-      elBox.dataset.known = m > 0.5 ? '1' : '0'
-      if (elBoxUnknown) elBoxUnknown.style.opacity = (1 - clamp01(m * 2)).toFixed(3)
-      if (elBoxKnown) elBoxKnown.style.opacity = clamp01(m * 2 - 1).toFixed(3)
-      if (elQ) elQ.style.opacity = ((1 - clamp01(m * 3)) * (0.75 + 0.25 * Math.sin(t * 9))).toFixed(3)
+      setStyle(elBox, 'transform', `translate3d(${x0.toFixed(1)}px, ${y0.toFixed(1)}px, 0)`)
+      setStyle(elBox, 'width', `${(x1 - x0).toFixed(1)}px`)
+      setStyle(elBox, 'height', `${(y1 - y0).toFixed(1)}px`)
+      setStyle(elBox, 'opacity', st.boxVis.toFixed(3))
+      setData(elBox, 'known', m > 0.5 ? '1' : '0')
+      if (elBoxUnknown) setStyle(elBoxUnknown, 'opacity', (1 - clamp01(m * 2)).toFixed(3))
+      if (elBoxKnown) setStyle(elBoxKnown, 'opacity', clamp01(m * 2 - 1).toFixed(3))
+      if (elQ) setStyle(elQ, 'opacity', ((1 - clamp01(m * 3)) * (0.75 + 0.25 * Math.sin(t * 9))).toFixed(3))
     }
     st.steps.forEach((v, i) => {
       const el = elSteps[i]
       if (!el) return
-      el.style.opacity = v.toFixed(3)
-      el.style.transform = `translate3d(${((1 - v) * -10).toFixed(1)}px,0,0)`
+      setStyle(el, 'opacity', v.toFixed(3))
+      setStyle(el, 'transform', `translate3d(${((1 - v) * -10).toFixed(1)}px,0,0)`)
     })
   }
 

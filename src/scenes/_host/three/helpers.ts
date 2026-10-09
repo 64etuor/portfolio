@@ -38,15 +38,57 @@ export function projectToScreen(
   return out
 }
 
-/** DOM 요소를 투영 좌표로 이동(transform 만 — 레이아웃 없음). */
+// ── HUD DOM 쓰기 캐시 ──
+// 매 프레임 같은 값을 style/textContent/dataset 에 다시 쓰면 문자열 파싱·스타일 무효화(텍스트는
+// 노드 교체 + 레이아웃)가 매번 일어난다. 마지막으로 쓴 값을 요소별로 기억해 바뀔 때만 쓴다.
+// 읽기(레이아웃)는 하지 않는다 — 쓰기 전용이라 강제 동기 리플로가 생기지 않는다.
+const lastWrites = new WeakMap<Element, Map<string, string>>()
+function changed(el: Element, key: string, v: string): boolean {
+  let m = lastWrites.get(el)
+  if (!m) {
+    m = new Map()
+    lastWrites.set(el, m)
+  }
+  if (m.get(key) === v) return false
+  m.set(key, v)
+  return true
+}
+
+/** el.style[prop] = v — 값이 바뀔 때만. prop 은 camelCase 또는 --커스텀 속성. */
+export function setStyle(el: HTMLElement | SVGElement | null | undefined, prop: string, v: string) {
+  if (!el || !changed(el, prop, v)) return
+  if (prop.startsWith('--')) el.style.setProperty(prop, v)
+  else (el.style as unknown as Record<string, string>)[prop] = v
+}
+
+/** el.textContent = v — 값이 바뀔 때만. */
+export function setText(el: Element | null | undefined, v: string) {
+  if (!el || !changed(el, '#text', v)) return
+  el.textContent = v
+}
+
+/** el.dataset[key] = v — 값이 바뀔 때만. */
+export function setData(el: HTMLElement | null | undefined, key: string, v: string) {
+  if (!el || !changed(el, `data-${key}`, v)) return
+  el.dataset[key] = v
+}
+
+/** opacity 문자열(소수 3자리). */
+export const op3 = (x: number) => x.toFixed(3)
+
+/** DOM 요소를 투영 좌표로 이동(transform 만 — 레이아웃 없음). 값이 바뀔 때만 쓴다. */
 export function placeLabel(el: HTMLElement | null, x: number, y: number, opacity = 1) {
   if (!el) return
-  el.style.transform = `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`
-  el.style.opacity = opacity.toFixed(3)
+  setStyle(el, 'transform', `translate3d(${x.toFixed(1)}px, ${y.toFixed(1)}px, 0)`)
+  setStyle(el, 'opacity', opacity.toFixed(3))
 }
+
+// toLocaleString 은 호출마다 로캘 데이터를 해석한다 — 자릿수별 포매터를 모듈에서 한 번 만든다.
+const FMTS = [0, 1, 2, 3].map((d) => new Intl.NumberFormat('en-US', { minimumFractionDigits: d, maximumFractionDigits: d }))
 
 /** 카운트업 숫자 포맷(정수/소수 자릿수). */
 export function countUp(from: number, to: number, p: number, digits = 0): string {
   const v = from + (to - from) * p
-  return v.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })
+  const f = FMTS[digits]
+  return f ? f.format(v) : v.toLocaleString('en-US', { minimumFractionDigits: digits, maximumFractionDigits: digits })
 }

@@ -1,6 +1,7 @@
+import { roomEnvironment } from '../_host/three/env'
 import type * as T3 from 'three'
 import type { ThreeContext, ThreeSetupResult } from '../_host/three/types'
-import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg } from '../_host/three/helpers'
+import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg, setStyle } from '../_host/three/helpers'
 import {
   buildBox,
   buildEnvironment,
@@ -45,7 +46,7 @@ const LABEL_KEYS = [
 type LabelKey = (typeof LABEL_KEYS)[number]
 
 export async function setupWorkRadar(ctx: ThreeContext): Promise<ThreeSetupResult> {
-  const { THREE, scene, camera, renderer } = ctx
+  const { THREE, scene, camera } = ctx
   const root = ctx.container.closest('[data-wr-root]') as HTMLElement | null
   const q = (k: string) => root?.querySelector<HTMLElement>(`[data-k="${k}"]`) ?? null
   const labels = Object.fromEntries(LABEL_KEYS.map((k) => [k, q(k)])) as Record<LabelKey, HTMLElement | null>
@@ -67,12 +68,9 @@ export async function setupWorkRadar(ctx: ThreeContext): Promise<ThreeSetupResul
   scene.add(rim)
 
   // 금속/유리 반사용 환경맵(절차적, 낮은 강도).
-  const [{ RoomEnvironment }, A] = await Promise.all([import('three/examples/jsm/environments/RoomEnvironment.js'), loadAddons()])
-  const pmrem = new THREE.PMREMGenerator(renderer)
-  const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04)
+  const [envRT, A] = await Promise.all([roomEnvironment(ctx), loadAddons()])
   scene.environment = envRT.texture
   scene.environmentIntensity = 0.55
-  pmrem.dispose()
 
   const sprite = makeSprite(THREE)
   buildEnvironment(THREE, scene, sprite)
@@ -251,8 +249,8 @@ export async function setupWorkRadar(ctx: ThreeContext): Promise<ThreeSetupResul
   }
   const fade = (el: HTMLElement | null, op: number, dy = 0) => {
     if (!el) return
-    el.style.opacity = Math.max(0, Math.min(1, op)).toFixed(3)
-    el.style.transform = `translate3d(0, ${dy.toFixed(1)}px, 0)`
+    setStyle(el, 'opacity', Math.max(0, Math.min(1, op)).toFixed(3))
+    setStyle(el, 'transform', `translate3d(0, ${dy.toFixed(1)}px, 0)`)
   }
 
   const camBase = new THREE.Vector3(-0.9, 6.6, 13.6)

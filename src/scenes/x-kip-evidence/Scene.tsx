@@ -72,7 +72,7 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
           </div>
           {CLAIMS.map((c, i) => (
             <div
-              key={i}
+              key={c.en}
               className={s.claim}
               data-k={`claim${i}`}
               style={
@@ -90,7 +90,7 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
 
         <div className={s.captions}>
           {TEXT.captions.map((c, i) => (
-            <div key={i} className={s.cap} data-k={`cap${i}`}>
+            <div key={c.en} className={s.cap} data-k={`cap${i}`}>
               <span className={s.capIdx}>0{i + 1}</span>
               {pick(c, en)}
             </div>
@@ -99,7 +99,7 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
 
         <div className={s.metrics} data-k="metrics">
           {METRICS.map((m, i) => (
-            <div key={i} className={m.headline ? `${s.metric} ${s.headline}` : s.metric}>
+            <div key={m.label.en} className={m.headline ? `${s.metric} ${s.headline}` : s.metric}>
               <span className={s.mLabel}>{pick(m.label, en)}</span>
               <span className={s.mValue}>
                 <span data-k={`m${i}`}>—</span>

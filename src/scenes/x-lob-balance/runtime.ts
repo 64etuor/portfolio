@@ -1,4 +1,5 @@
-import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg } from '../_host/three/helpers'
+import { roomEnvironment } from '../_host/three/env'
+import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg, setData, setStyle } from '../_host/three/helpers'
 import type { ThreeContext, ThreeSetupResult } from '../_host/three/types'
 import {
   BELT_TOP,
@@ -82,19 +83,14 @@ function findHud(container: HTMLElement) {
 
 export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
   const { THREE, scene, camera, bloom } = ctx
-  const [{ RoundedBoxGeometry }, { mergeGeometries }, { RoomEnvironment }] = await Promise.all([
+  const [{ RoundedBoxGeometry }, { mergeGeometries }, envRT] = await Promise.all([
     import('three/examples/jsm/geometries/RoundedBoxGeometry.js'),
     import('three/examples/jsm/utils/BufferGeometryUtils.js'),
-    import('three/examples/jsm/environments/RoomEnvironment.js'),
+    roomEnvironment(ctx),
   ])
   const kit: Kit = { RoundedBox: RoundedBoxGeometry, merge: (g) => mergeGeometries(g) }
 
   // ── 환경맵(금속/크롬 반사) — 낮은 강도 ──
-  const pmrem = new THREE.PMREMGenerator(ctx.renderer)
-  const room = new RoomEnvironment()
-  const envRT = pmrem.fromScene(room, 0.04)
-  room.dispose()
-  pmrem.dispose()
   scene.environment = envRT.texture
   scene.environmentIntensity = 0.45
 
@@ -171,6 +167,9 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
     scene.add(sparks.points)
     return { b, x, h0, h1, ghost, jig, cutter, sparks }
   })
+  /** 스테이션 인덱스 → 병목 리그(매 프레임 indexOf 대신). */
+  const rigAt: (typeof rigs)[number][] = []
+  for (const r of rigs) rigAt[r.b.idx] = r
 
   // ── bottleneck plane + takt line ──
   const plane = buildPlane(THREE, LINE_LEN + 0.6, 1.5)
@@ -250,9 +249,9 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
 
     // ── tower heights ──
     for (let i = 0; i < STATIONS; i++) {
-      const b = bnByIdx.get(i)
-      if (b) {
-        const r = rigs[BOTTLENECKS.indexOf(b)]
+      const r = rigAt[i]
+      if (r) {
+        const b = r.b
         heights[i] = r.h0 + (r.h1 - r.h0) * smooth(seg(t, b.cut[0], b.cut[1]))
       } else {
         const p = easeInOutCubic(seg(t, T.rebalance[0] + i * 0.06, T.rebalance[1] + i * 0.06))
@@ -298,10 +297,11 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
       r.ghost.mesh.visible = r.ghost.uni.uAlpha.value > 0.001
       // jig
       const dp = seg(t, b.drop[0], b.drop[1])
-      r.jig.group.visible = t >= b.drop[0]
+      const jigGroup = r.jig.group
+      jigGroup.visible = t >= b.drop[0]
       const dropY = r.h0 + 3.6 * (1 - easeOutCubic(dp))
-      r.jig.group.position.y = t < b.cut[0] ? dropY : cur
-      r.jig.group.rotation.y = (1 - easeOutCubic(dp)) * 0.9
+      jigGroup.position.y = t < b.cut[0] ? dropY : cur
+      jigGroup.rotation.y = (1 - easeOutCubic(dp)) * 0.9
       const active = seg(t, b.drop[0], b.drop[1]) * (1 - seg(t, b.cut[1], b.cut[1] + 0.6))
       r.jig.glowMat.color.setHex(COL.amber).multiplyScalar(1.0 + 2.6 * active)
       r.jig.edgeMat.color.setHex(COL.amber).multiplyScalar(0.9 + 1.8 * active)
@@ -329,8 +329,8 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
       setText(h.ct[k], i * 3, ct.toFixed(digits))
       const pctEl = h.pct[k]
       const fo = seg(t, b.cut[0] - 0.2, b.cut[0] + 0.2).toFixed(3)
-      for (const el of [h.from[k], h.arrow[k]]) if (el) el.style.opacity = fo
-      if (pctEl) pctEl.style.opacity = seg(t, b.cut[1] - 0.1, b.cut[1] + 0.3).toFixed(3)
+      for (const el of [h.from[k], h.arrow[k]]) if (el) setStyle(el, 'opacity', fo)
+      if (pctEl) setStyle(pctEl, 'opacity', seg(t, b.cut[1] - 0.1, b.cut[1] + 0.3).toFixed(3))
       // jig label (지그 옆)
       anchor.set(r.x + TOWER_W * 0.5 + 0.35, r.jig.group.position.y + 0.45, 0)
       projectToScreen(ctx, anchor, scr)
@@ -354,8 +354,8 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
     anchor.set(-LINE_LEN / 2 - 0.45, py, 0.75)
     projectToScreen(ctx, anchor, scr)
     placeLabel(h.plane, Math.max(scr.x, 150), scr.y, scr.visible ? 1 : 0)
-    if (h.planeHot) h.planeHot.style.opacity = (1 - levelT).toFixed(3)
-    if (h.planeOk) h.planeOk.style.opacity = levelT.toFixed(3)
+    if (h.planeHot) setStyle(h.planeHot, 'opacity', (1 - levelT).toFixed(3))
+    if (h.planeOk) setStyle(h.planeOk, 'opacity', levelT.toFixed(3))
 
     // ── products ──
     const d = flowDistance(t)
@@ -383,10 +383,10 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
     // ── HUD: beats / hero ──
     const beatIdx = t < BOTTLENECKS[0].drop[0] ? 0 : t < T.planeDrop[0] ? 1 : 2
     h.beats.forEach((el, k) => {
-      if (el) el.dataset.on = k === beatIdx ? '1' : k < beatIdx ? 'done' : '0'
+      if (el) setData(el, 'on', k === beatIdx ? '1' : k < beatIdx ? 'done' : '0')
     })
     const heroP = seg(t, T.hero[0], T.hero[1])
-    if (h.hero) h.hero.style.opacity = seg(t, T.hero[0] - 0.1, T.hero[0] + 0.5).toFixed(3)
+    if (h.hero) setStyle(h.hero, 'opacity', seg(t, T.hero[0] - 0.1, T.hero[0] + 0.5).toFixed(3))
     setText(h.heroNum, 99, `+${Math.round(PRODUCTIVITY_PCT * easeOutCubic(heroP))}`)
   }
 

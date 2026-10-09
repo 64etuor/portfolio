@@ -1,5 +1,5 @@
 import type * as THREE_NS from 'three'
-import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg } from '../_host/three/helpers'
+import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg, setStyle, setText } from '../_host/three/helpers'
 import type { ThreeContext, ThreeSetup } from '../_host/three/types'
 import { canvasFont, ensureSceneFonts } from '../_host/fonts'
 import { C, studioScene, buildFloor, buildMachine, buildScanner, buildTray, loadAddons, machineX, materials, shadowTexture } from './build'
@@ -251,15 +251,15 @@ export function createSetup(): ThreeSetup {
         lines.forEach((el, i) => {
           const at = HUD_LINES[i]?.at ?? 0
           const p = at === 0 ? 1 : easeOutCubic(seg(t, at, at + 0.55))
-          el.style.opacity = p.toFixed(3)
-          el.style.transform = `translate3d(${((1 - p) * -14).toFixed(1)}px,0,0)`
+          setStyle(el, 'opacity', p.toFixed(3))
+          setStyle(el, 'transform', `translate3d(${((1 - p) * -14).toFixed(1)}px,0,0)`)
         })
         if (countEl && count !== lastCount) {
           lastCount = count
-          countEl.textContent = `${String(count).padStart(2, '0')}/${total}`
+          setText(countEl, `${String(count).padStart(2, '0')}/${total}`)
         }
-        if (ngEl) ngEl.style.opacity = (det * (1 - seg(t, 6.2, 6.8))).toFixed(3)
-        if (tagEl) tagEl.style.opacity = seg(t, 5.4, 6.0).toFixed(3)
+        if (ngEl) setStyle(ngEl, 'opacity', (det * (1 - seg(t, 6.2, 6.8))).toFixed(3))
+        if (tagEl) setStyle(tagEl, 'opacity', seg(t, 5.4, 6.0).toFixed(3))
 
         // "+ OK" 라벨
         const closeFade = 1 - seg(t, 4.4, 5.0)

@@ -1,5 +1,6 @@
+import { roomEnvironment } from '../_host/three/env'
 import type * as THREE from 'three'
-import { easeInOutCubic, easeOutCubic, placeLabel, projectToScreen, seg } from '../_host/three/helpers'
+import { easeInOutCubic, easeOutCubic, placeLabel, projectToScreen, seg, setData, setStyle } from '../_host/three/helpers'
 import type { ThreeContext, ThreeSetupResult } from '../_host/three/types'
 import {
   ARM,
@@ -94,13 +95,10 @@ const GRIP_Y = [
 ] as const
 
 export async function setupMesLine(ctx: ThreeContext, hudRef: { current: Hud }): Promise<ThreeSetupResult> {
-  const { THREE: T3, scene, camera, renderer } = ctx
-  const A = await loadAddons()
-  const pmrem = new T3.PMREMGenerator(renderer)
-  const envRT = pmrem.fromScene(new A.RoomEnvironment(), 0.04)
+  const { THREE: T3, scene, camera } = ctx
+  const [A, envRT] = await Promise.all([loadAddons(), roomEnvironment(ctx)])
   scene.environment = envRT.texture
   scene.environmentIntensity = 0.32
-  pmrem.dispose()
 
   const k = makeKit(T3, A, scene)
   const env = buildEnvironment(k)
@@ -505,25 +503,25 @@ export async function setupMesLine(ctx: ThreeContext, hudRef: { current: Hud }):
     }
     if (hud.ledger) {
       const out = easeInOutCubic(seg(t, T.ledgerOut[0], T.ledgerOut[1]))
-      hud.ledger.style.opacity = (1 - out).toFixed(3)
-      hud.ledger.style.transform = `translate3d(${(-30 * out).toFixed(1)}px, ${(-14 * out).toFixed(1)}px, 0) scale(${(1 - 0.06 * out).toFixed(3)})`
-      hud.ledger.style.visibility = out >= 1 ? 'hidden' : 'visible'
+      setStyle(hud.ledger, 'opacity', (1 - out).toFixed(3))
+      setStyle(hud.ledger, 'transform', `translate3d(${(-30 * out).toFixed(1)}px, ${(-14 * out).toFixed(1)}px, 0) scale(${(1 - 0.06 * out).toFixed(3)})`)
+      setStyle(hud.ledger, 'visibility', out >= 1 ? 'hidden' : 'visible')
     }
     if (hud.mesRow) {
       const built = t >= T.built
-      hud.mesRow.dataset.state = built ? 'built' : 'missing'
+      setData(hud.mesRow, 'state', built ? 'built' : 'missing')
       const fl = t < T.missingFrom ? 0.85 : hash(Math.floor(t * 14)) > 0.3 ? 1 : 0.35
-      hud.mesRow.style.setProperty('--flick', built ? '1' : fl.toFixed(2))
-      hud.mesRow.style.setProperty('--stamp', easeOutCubic(seg(t, T.built, T.built + 0.35)).toFixed(3))
+      setStyle(hud.mesRow, '--flick', built ? '1' : fl.toFixed(2))
+      setStyle(hud.mesRow, '--stamp', easeOutCubic(seg(t, T.built, T.built + 0.35)).toFixed(3))
     }
     hud.chips.forEach((el, i) => {
       if (!el) return
-      el.dataset.on = t >= STACK[i].on ? '1' : '0'
+      setData(el, 'on', t >= STACK[i].on ? '1' : '0')
     })
     if (hud.head) {
       const h = easeOutCubic(seg(t, T.headline[0], T.headline[1]))
-      hud.head.style.opacity = h.toFixed(3)
-      hud.head.style.transform = `translate3d(0, ${(12 * (1 - h)).toFixed(1)}px, 0)`
+      setStyle(hud.head, 'opacity', h.toFixed(3))
+      setStyle(hud.head, 'transform', `translate3d(0, ${(12 * (1 - h)).toFixed(1)}px, 0)`)
     }
   }
 

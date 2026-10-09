@@ -1,5 +1,6 @@
+import { roomEnvironment } from '../_host/three/env'
 import type * as THREE from 'three'
-import { easeInOutCubic, easeOutBack, easeOutCubic, loopT, seg } from '../_host/three/helpers'
+import { easeInOutCubic, easeOutBack, easeOutCubic, loopT, seg, setData, setStyle } from '../_host/three/helpers'
 import type { ThreeSetup } from '../_host/three/types'
 import { actAt, bobAt, buildWorld, riseAt } from './build'
 import { loadAddons } from './props'
@@ -12,16 +13,11 @@ const ERP_LOG_TAGS = ['IN', 'OUT', 'STOCK', 'IN', 'MOVE', 'OUT', 'STOCK', 'IN']
 
 export function createSetup(): ThreeSetup {
   return async (ctx) => {
-    const { THREE: TH, scene, camera, container, renderer } = ctx
+    const { THREE: TH, scene, camera, container } = ctx
     scene.fog = new TH.FogExp2(COLORS.bg, 0.02)
 
     // 금속·클레이가 읽히도록 절차적 환경맵(낮은 강도)
-    const [addons, { RoomEnvironment }] = await Promise.all([loadAddons(), import('three/examples/jsm/environments/RoomEnvironment.js')])
-    const pmrem = new TH.PMREMGenerator(renderer)
-    const room = new RoomEnvironment()
-    const envRT = pmrem.fromScene(room, 0.04)
-    room.dispose()
-    pmrem.dispose()
+    const [addons, envRT] = await Promise.all([loadAddons(), roomEnvironment(ctx)])
     scene.environment = envRT.texture
     scene.environmentIntensity = 0.22
 
@@ -46,12 +42,12 @@ export function createSetup(): ThreeSetup {
       const sx = (tmp.x * 0.5 + 0.5) * ctx.size.w
       const sy = (-tmp.y * 0.5 + 0.5) * ctx.size.h
       const vis = tmp.z < 1 && tmp.z > -1
-      e.style.transform = `translate3d(${sx.toFixed(1)}px, ${sy.toFixed(1)}px, 0)`
-      e.style.opacity = (vis ? op : 0).toFixed(3)
+      setStyle(e, 'transform', `translate3d(${sx.toFixed(1)}px, ${sy.toFixed(1)}px, 0)`)
+      setStyle(e, 'opacity', (vis ? op : 0).toFixed(3))
     }
     const setOp = (k: string, op: number) => {
       const e = el(k)
-      if (e) e.style.opacity = op.toFixed(3)
+      if (e) setStyle(e, 'opacity', op.toFixed(3))
     }
     const setText = (k: string, s: string) => {
       const e = el(k)
@@ -59,7 +55,7 @@ export function createSetup(): ThreeSetup {
     }
     const setOn = (k: string, on: boolean) => {
       const e = el(k)
-      if (e) e.dataset.on = on ? '1' : '0'
+      if (e) setData(e, 'on', on ? '1' : '0')
     }
 
     /* 재고 스택 → 태그 */
@@ -229,7 +225,7 @@ export function createSetup(): ThreeSetup {
           if (e) {
             const on = seg(t, T.panelTablet + 0.3 + i * 0.2, T.panelTablet + 1.1 + i * 0.2)
             const w = on * (0.42 + 0.3 * (0.5 + 0.5 * Math.sin(t * 0.45 + i * 2.1)))
-            e.style.transform = `scaleX(${w.toFixed(3)})`
+            setStyle(e, 'transform', `scaleX(${w.toFixed(3)})`)
           }
         }
       },

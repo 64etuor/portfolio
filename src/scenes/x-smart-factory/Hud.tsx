@@ -2,10 +2,11 @@ import type { Locale } from '@/i18n/content'
 import { ERP_MODULES, HUD, LINES, PANELS, PHASES, STOCK_ITEMS, SYSTEMS, WAREHOUSE_LABEL, type L } from './data'
 import s from './scene.module.css'
 
+const panel = (key: string) => PANELS.find((p) => p.key === key)!
+
 // DOM HUD — 텍스트는 React(로케일), 위치/불투명도/숫자는 runtime 이 data-k 로 직접 갱신.
 export function Hud({ locale }: { locale: Locale }) {
   const tr = (x: L) => (locale === 'en' ? x.en : x.ko)
-  const panel = (key: string) => PANELS.find((p) => p.key === key)!
   return (
     <div className={s.hud} aria-hidden>
       {/* 3D 앵커 라벨 */}
@@ -107,7 +108,7 @@ export function Hud({ locale }: { locale: Locale }) {
 
       <div className={s.phases}>
         {PHASES.map((p, i) => (
-          <div key={i} className={`${s.phase} ${i === 2 ? s.phaseFinal : ''}`} data-k={`ph${i}`} style={{ opacity: i === 0 ? 1 : 0 }}>
+          <div key={p.en} className={`${s.phase} ${i === 2 ? s.phaseFinal : ''}`} data-k={`ph${i}`} style={{ opacity: i === 0 ? 1 : 0 }}>
             {tr(p)}
           </div>
         ))}

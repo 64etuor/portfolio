@@ -16,7 +16,7 @@ export const line_innovation: ProjectContent = {
     "초음파 용착 불량 제거를 시작으로 10개월간 공정 C/T 단축·LOB 개선·MES 도입 등 다양한 생산라인 혁신 과제를 리딩했습니다. 불량률 15%→0%, 연환산 폐기·재작업비 약 6,800만원 절감, 생산성 +24% 달성.",
   metrics: [
     { label: "초음파 용착 불량률", value: "15%→0%" },
-    { label: "Neck 공정 C/T", value: "−31%", note: "16.72sec → 12.76sec" },
+    { label: "Neck 공정 C/T", value: "−24%", note: "16.72sec → 12.76sec" },
     { label: "Core-pack FT C/T", value: "−49%", note: "55sec → 28sec" },
     { label: "소형팩 라인 생산성", value: "+24%", note: "연환산 4,437만원 절감" },
   ],

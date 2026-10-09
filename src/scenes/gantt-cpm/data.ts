@@ -301,7 +301,7 @@ export const PROJECTS: Row[] = [
       'DOE로 용착 조건을 최적화하고 커팅·검사 Jig를 직접 기구설계·제작해 C/T 49% 단축, LOB 재배치로 생산성 24%를 개선하며 연간 폐기·재작업 6,800만원을 절감함.',
     rewind: 'elentec',
     desc:
-      '초음파 용착 불량으로 폐기되던 사출 케이스 낭비 개선에서 출발해 다양한 과제로 확장. 초음파 용착 조건 DOE로 불량률 15%→0%대, 커팅 Jig로 Neck 공정 C/T 31%↓, 검사 Jig 개조로 Core-pack Function Test C/T 49%↓, 소형 배터리팩 라인 LOB 개선으로 생산성 24%↑.',
+      '초음파 용착 불량으로 폐기되던 사출 케이스 낭비 개선에서 출발해 다양한 과제로 확장. 초음파 용착 조건 DOE로 불량률 15%→0%대, 커팅 Jig로 Neck 공정 C/T 24%↓, 검사 Jig 개조로 Core-pack Function Test C/T 49%↓, 소형 배터리팩 라인 LOB 개선으로 생산성 24%↑.',
     metrics: [
       { k: '용착 불량', v: '15→0%', cls: 'g', c: 'DOE 조건 최적화' },
       { k: 'C/T(Core)', v: '−49%', cls: 'g', c: '검사 Jig 개조 55→28s' },

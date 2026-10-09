@@ -1,6 +1,6 @@
 // LOB 라인 밸런싱 — 사실/라벨/타임라인 상수.
 // 사실(출처: content/projects/line-innovation.ts, content/profile.ts):
-//  - 커팅 Jig 개발 → Neck 공정 C/T 16.72sec → 12.76sec (31% 단축)
+//  - 커팅 Jig 개발 → Neck 공정 C/T 16.72sec → 12.76sec (24% 단축)
 //  - 검사 Jig 개조 → Core-pack Function Test C/T 55sec → 28sec (49% 단축)
 //  - 소형 배터리팩 라인 LOB 개선 → 생산성 24% 향상 (연 4,437만원)
 // 그 외 공정의 높이는 예시(illustrative)이며 초 단위 수치를 표시하지 않는다.
@@ -30,7 +30,7 @@ export const BOTTLENECKS: Bottleneck[] = [
     idx: 2,
     ctBefore: 16.72,
     ctAfter: 12.76,
-    pct: 31,
+    pct: 24,
     drop: [0.9, 1.6],
     cut: [1.6, 2.9],
   },

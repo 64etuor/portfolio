@@ -48,32 +48,31 @@ export const ACTS = [
   { id: 's7-cost', scenes: [{ file: '31-cost-cascade.html', ms: 8800 }] },
   // 8. 인사이트 — 연결하는 사람 (arc 14s)
   { id: 's8-insight', scenes: [{ file: '32-the-connector.html', ms: 12000 }] },
-  // 9. 해결 방향 — 양손잡이 전문가(arc 6.6s, 텍스트 상주) + 증거(Work Radar 콕핏 / GraphRAG).
-  // CMM은 씬4+5(41)에 이미 등장 → 중복 제거하고 임팩트 큰 AI 콕핏으로 교체.
+  // 9. 해결 방향 — 양손잡이 전문가(arc 6.6s, 텍스트 상주) + 증거(three.js):
+  //    Work Radar 두 레일(결정은 사람·자동화는 샌드박스) / KIP 근거 위치(답변→원문 locator).
+  //    three 씬은 히어로 시퀀스가 ~7s 에 완결 → 7.5s 컷.
   {
     id: 's9-bridge',
     scenes: [
       { file: '36-bridge-experts.html', ms: 8500 },
-      { file: 'radar-sonar.html', ms: 6500 },
-      { file: 'graphrag.html', ms: 6500 },
+      { file: 'x-work-radar-rails.html', ms: 7500 },
+      { file: 'x-kip-evidence.html', ms: 7500 },
     ],
   },
-  // 10. 핵심 메시지 — 크로스도메인(arc 15s) + 증거(MES / 생산관리·원가 −85% / 지식맵).
-  // 간트(17)는 홈 'Projects'에 상주 → 필름에서 제외. 대신 강한 지표 시안으로 임팩트 강화.
+  // 10. 핵심 메시지 — 크로스도메인(arc 15s) + 제조 데이터 증거(three.js, 경력 순):
+  //    스마트 팩토리 트윈(은성) → 엑셀→DB −451분/일(솔라엣지) → MES 자체 개발(솔라엣지).
+  //    (useThreeScene 은 첫 프레임 페인트 후 onReady → 컷 시 로딩 화면이 보이지 않는다.)
   {
     id: 's10-crossdomain',
     scenes: [
-      // (digital-twin 프리뷰 제거: three.js CDN 로드 WebGL 씬이라 4.5s 컷에선 "초기화 중"
-      //  부팅 화면만 깜빡여 하이라이트 직전 이상한 화면이 됨. 단독 /s/digital-twin 으로는 정상.)
       { file: '37-cross-domain.html', ms: 12000 },
-      { file: 'mes-console.html', ms: 6500 },
-      // 원가 제1원칙 보드(instrument-rack) 대신 CMM 정밀측정(GD&T) 장면 — 계측 임팩트 강화.
-      { file: 'cmm-metrology.html', ms: 6500 },
-      { file: 'ai-latent.html', ms: 6500 },
+      { file: 'x-smart-factory.html', ms: 7500 },
+      { file: 'x-excel-to-db.html', ms: 7500 },
+      { file: 'x-mes-line.html', ms: 7500 },
     ],
   },
   // 엔딩 — 캐치프레이즈 (arc 13s) → 랜딩 복귀
   { id: 'ending', scenes: [{ file: '38-ending-catchphrase.html', ms: 12000 }] },
 ] satisfies Act[]
 
-// Total runtime ≈ 164.5s (~2:45). Tune individual `ms` values above to taste.
+// Total runtime ≈ 169.5s (~2:50). Tune individual `ms` values above to taste.

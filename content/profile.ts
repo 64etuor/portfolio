@@ -355,7 +355,7 @@ export const profile: Profile = {
         { metric: '초음파 용착 불량율', value: '15% → 0%대' },
         { metric: '재작업 공수비용 절감', value: '연 환산 절감(초당 임율 6.3원 기준)', krw: '연 3천2백만원' },
         { metric: '폐기 비용 절감', value: '연 환산 절감(단위 폐기 비용 7,688원)', krw: '연 3천6백만원' },
-        { metric: 'Neck 공정 C/T', value: '31% 단축 (16.72→12.76sec)' },
+        { metric: 'Neck 공정 C/T', value: '24% 단축 (16.72→12.76sec)' },
         { metric: 'Core-pack Function Test C/T', value: '49% 단축 (55→28sec)' },
         { metric: '소형 배터리팩 라인 생산성', value: '24% 향상', krw: '연 4,437만원' },
       ],
@@ -674,7 +674,7 @@ export const profile: Profile = {
   metrics: [
     { metric: '운영경비(OPEX)', value: '−85%', note: '데이터 기반 운영 개선' },
     { metric: '제품 ST', value: '−50%', note: '실 데이터 확보 기반 정규화' },
-    { metric: '공정 C/T', value: '31~49% 단축', note: 'Neck 31% / Core-pack Function Test 49%' },
+    { metric: '공정 C/T', value: '24~49% 단축', note: 'Neck 24% / Core-pack Function Test 49%' },
     { metric: '초음파 용착 불량율', value: '15% → 0%대', note: 'DOE 기반 조건 개선' },
     { metric: '생산성', value: '+24%', krw: '연 4,437만원', note: '소형 배터리팩 라인 LOB 개선' },
     { metric: '사무 공수', value: '−451분/일', krw: '연 약 5천만원', note: 'DB 자동화 전환' },

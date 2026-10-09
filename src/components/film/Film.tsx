@@ -173,16 +173,16 @@ export function Film() {
                 width: '100%',
                 height: '90vh',
                 pointerEvents: 'none',
-                // Materialize: the incoming scene comes INTO FOCUS (blur→sharp,
-                // settle from a slight zoom, fade up) so its content builds in
-                // naturally instead of being pre-rendered. Outgoing dissolves out.
+                // Materialize: the incoming scene comes INTO FOCUS (blur→sharp, settle
+                // from a slight zoom, fade up) via a one-shot keyframe animation; the
+                // outgoing one dissolves out. Both END with filter/transform = none so
+                // a settled slot never carries a filter — a lingering blur(0px) still
+                // forces an extra full-screen GPU pass on every frame over WebGL.
+                // (Outgoing uses a plain opacity transition — a keyframe here would also
+                // play on a never-shown staged slot at load and flash it.)
                 opacity: isVisible ? 1 : 0,
-                filter: isVisible ? 'blur(0px)' : 'blur(11px)',
-                transform: isVisible ? 'scale(1)' : 'scale(1.035)',
-                transformOrigin: 'center',
-                transition: isVisible
-                  ? 'opacity 640ms ease, filter 720ms cubic-bezier(.2,.7,.2,1), transform 720ms cubic-bezier(.2,.7,.2,1)'
-                  : 'opacity 380ms ease, filter 380ms ease, transform 380ms ease',
+                animation: isVisible ? 'film-materialize 720ms cubic-bezier(.2,.7,.2,1) both' : 'none',
+                transition: 'opacity 380ms ease',
                 zIndex: isVisible ? 2 : 1,
               }}
             >

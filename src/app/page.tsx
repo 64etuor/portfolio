@@ -1,3 +1,5 @@
+// 히어로 이름(한글 세리프) 전용 — 전역이 아니라 랜딩 라우트에서만 로드(~92KB CSS).
+import '@fontsource/noto-serif-kr/600.css'
 import { Landing } from '@/components/landing/Landing'
 
 // Home = the landing page (Spline robot + actions). "Projects Portfolio" plays

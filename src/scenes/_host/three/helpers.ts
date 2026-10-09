@@ -18,6 +18,9 @@ export const easeOutBack = (x: number): number => {
 /** 반복 루프 시간: 길이 `period` 의 사이클 안에서의 위치(초). 씬 타임라인을 무한 반복할 때. */
 export const loopT = (t: number, period: number): number => ((t % period) + period) % period
 
+// projectToScreen 용 스크래치 — 매 프레임 라벨마다 clone() 하던 할당을 없앤다.
+let scratch: THREE_NS.Vector3 | null = null
+
 /**
  * 월드 좌표 → 컨테이너 CSS px. HUD(DOM) 라벨을 3D 앵커에 붙일 때.
  * visible=false 면 카메라 뒤.
@@ -27,7 +30,8 @@ export function projectToScreen(
   pos: THREE_NS.Vector3,
   out: { x: number; y: number; visible: boolean } = { x: 0, y: 0, visible: false },
 ) {
-  const v = pos.clone().project(ctx.camera)
+  scratch ??= pos.clone()
+  const v = scratch.copy(pos).project(ctx.camera)
   out.x = (v.x * 0.5 + 0.5) * ctx.size.w
   out.y = (-v.y * 0.5 + 0.5) * ctx.size.h
   out.visible = v.z < 1 && v.z > -1

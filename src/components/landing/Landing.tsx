@@ -120,8 +120,10 @@ export function Landing() {
   function onLoad(app: Application) {
     splineRef.current = app
     setRobotIn(true)
-    // expose for scene inspection (objects / variables / events) during dev
-    ;(window as unknown as { __spline?: Application }).__spline = app
+    // expose for scene inspection (objects / variables / events) — dev only
+    if (process.env.NODE_ENV !== 'production') {
+      ;(window as unknown as { __spline?: Application }).__spline = app
+    }
   }
 
   // Scene warp on navigation: dolly the camera ("Camera 2", z≈1000) in toward the

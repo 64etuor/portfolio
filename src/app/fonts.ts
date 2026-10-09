@@ -34,15 +34,12 @@ import '@fontsource/jetbrains-mono/800.css'
 
 // Inter 는 제거 — Pretendard 의 라틴 글리프가 Inter 기반이라 중복.
 
-// Cormorant Garamond — editorial serif. Family: 'Cormorant Garamond'.
-import '@fontsource/cormorant-garamond/500.css'
-import '@fontsource/cormorant-garamond/600.css'
-import '@fontsource/cormorant-garamond/700.css'
-import '@fontsource/cormorant-garamond/500-italic.css'
-import '@fontsource/cormorant-garamond/600-italic.css'
-
-// Noto Serif KR — KR serif. Family: 'Noto Serif KR'. Weight 600 only (Playfair fallback; one weight sufficient).
-import '@fontsource/noto-serif-kr/600.css'
+// Cormorant Garamond(/projects 전용)·Noto Serif KR 600(랜딩 '박양하' + /projects 한글 세리프)은
+// 전역에서 빼서 쓰는 라우트에서만 로드한다 — Noto Serif KR CSS 만 ~92KB(유니코드 서브셋 @font-face
+// 수백 개)라 씬/필름/이력서 라우트의 렌더 블로킹 CSS 를 키우고 있었다.
+//   - app/page.tsx            → noto-serif-kr/600
+//   - app/projects/layout.tsx → cormorant-garamond/* + noto-serif-kr/600
+// (전역 토큰 --font-serif/--font-display 의 스택에는 그대로 남아 있어, 미로드 라우트에선 Pretendard 로 폴백.)
 
 // Playfair Display — hero serif. Family: 'Playfair Display'.
 import '@fontsource/playfair-display/500.css'

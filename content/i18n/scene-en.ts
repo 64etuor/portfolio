@@ -6,6 +6,15 @@ type EnglishSceneMeta = { title: string; domain?: string }
 /** English projection of the scene catalog. Korean remains the catalog SSOT. */
 export const EN_SCENE_META: Partial<Record<SceneKey, EnglishSceneMeta>> = {
   '05-bios-boot': { title: 'BIOS / POST Boot', domain: 'Firmware' },
+  'x-smart-factory': { title: 'Smart Factory Digital Twin', domain: 'Candidate' },
+  'x-mes-line': { title: 'MES Line Build', domain: 'Candidate' },
+  'x-excel-to-db': { title: 'Excel → Database', domain: 'Candidate' },
+  'x-vision-reverse': { title: 'Vision Inspection · Reversed Cell', domain: 'Candidate' },
+  'x-sn-trace': { title: 'S/N Traceability', domain: 'Candidate' },
+  'x-weld-doe': { title: 'Ultrasonic Weld DOE', domain: 'Candidate' },
+  'x-lob-balance': { title: 'Line Balancing (LOB)', domain: 'Candidate' },
+  'x-kip-evidence': { title: 'KIP · Evidence Locator', domain: 'Candidate' },
+  'x-work-radar-rails': { title: 'Work Radar · Two Rails', domain: 'Candidate' },
   '42-era-shift': { title: 'SCENE 01 · Era — THE ACCELERATION' },
   '33-ax-era': { title: 'SCENE 02 · Declaration — AX ERA' },
   '28-gap-reality': { title: 'SCENE 03 · Reality — THE DIVERGENCE' },

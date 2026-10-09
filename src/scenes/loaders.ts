@@ -9,6 +9,16 @@ export type SceneLoader = () => Promise<{ default: ComponentType<SceneProps> }>
 // import() 리터럴은 Next 코드스플릿을 위해 반드시 정적 문자열로 남는다(catalog 로 추출 금지).
 const SCENE_LOADERS = {
   '05-bios-boot': () => import('./05-bios-boot/Scene'),
+  // ── three.js 후보 씬(/candidates 검토용) ──
+  'x-smart-factory': () => import('./x-smart-factory/Scene'),
+  'x-mes-line': () => import('./x-mes-line/Scene'),
+  'x-excel-to-db': () => import('./x-excel-to-db/Scene'),
+  'x-vision-reverse': () => import('./x-vision-reverse/Scene'),
+  'x-sn-trace': () => import('./x-sn-trace/Scene'),
+  'x-weld-doe': () => import('./x-weld-doe/Scene'),
+  'x-lob-balance': () => import('./x-lob-balance/Scene'),
+  'x-kip-evidence': () => import('./x-kip-evidence/Scene'),
+  'x-work-radar-rails': () => import('./x-work-radar-rails/Scene'),
   '28-gap-reality': () => import('./28-gap-reality/Scene'),
   '29-lost-in-translation': () => import('./29-lost-in-translation/Scene'),
   '30-collision': () => import('./30-collision/Scene'),

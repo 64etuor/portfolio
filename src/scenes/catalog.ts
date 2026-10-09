@@ -32,6 +32,7 @@ export interface SceneEntry {
   registry?: boolean // registry.SCENES + 조합 후보
   filmBeat?: boolean // 필름 내러티브 비트
   gallery?: boolean // 갤러리 카드
+  candidate?: boolean // three.js 후보 — /candidates 에서만 노출, sitemap 제외
 }
 
 // helper: key 와 file 은 항상 1:1 — file 은 key + ".html". 템플릿 리터럴 타입을
@@ -88,6 +89,17 @@ export const SCENE_CATALOG = [
 
   // ── 보류(parked) — 홈/릴 제외 ──
   { key: 'gcode-printer', file: f('gcode-printer'), slug: 'gcode-printer', title: 'G-code 3D 프린터 빌드', bg: '#0e1116', id: '07', domain: '적층제조', registry: true, gallery: true },
+
+  // ── three.js 후보(검토 후 선택분만 승격) ──
+  { key: 'x-smart-factory', file: f('x-smart-factory'), slug: 'x-smart-factory', title: '스마트 팩토리 디지털 트윈', bg: '#05070a', domain: '후보', candidate: true },
+  { key: 'x-mes-line', file: f('x-mes-line'), slug: 'x-mes-line', title: 'MES 라인 구축', bg: '#04070a', domain: '후보', candidate: true },
+  { key: 'x-excel-to-db', file: f('x-excel-to-db'), slug: 'x-excel-to-db', title: '엑셀 → DB 전환', bg: '#06070a', domain: '후보', candidate: true },
+  { key: 'x-vision-reverse', file: f('x-vision-reverse'), slug: 'x-vision-reverse', title: '비전 검사 · 셀 역삽 검출', bg: '#040506', domain: '후보', candidate: true },
+  { key: 'x-sn-trace', file: f('x-sn-trace'), slug: 'x-sn-trace', title: 'S/N 추적성', bg: '#05060a', domain: '후보', candidate: true },
+  { key: 'x-weld-doe', file: f('x-weld-doe'), slug: 'x-weld-doe', title: '초음파 용착 DOE', bg: '#060508', domain: '후보', candidate: true },
+  { key: 'x-lob-balance', file: f('x-lob-balance'), slug: 'x-lob-balance', title: 'LOB 라인 밸런싱', bg: '#050607', domain: '후보', candidate: true },
+  { key: 'x-kip-evidence', file: f('x-kip-evidence'), slug: 'x-kip-evidence', title: 'KIP · 근거 위치', bg: '#05060a', domain: '후보', candidate: true },
+  { key: 'x-work-radar-rails', file: f('x-work-radar-rails'), slug: 'x-work-radar-rails', title: 'Work Radar · 두 레일', bg: '#050706', domain: '후보', candidate: true },
 ] as const satisfies readonly SceneEntry[]
 
 export type SceneSlug = (typeof SCENE_CATALOG)[number]['slug']

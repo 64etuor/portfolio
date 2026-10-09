@@ -1,0 +1,257 @@
+.root {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  --mono: var(--font-mono, 'DM Mono', 'JetBrains Mono', ui-monospace, monospace);
+  --sans: 'Pretendard', 'Pretendard Variable', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+  color: #d7d7d7;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.anchors {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.anchor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform, opacity;
+}
+
+.tag {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, calc(-100% - 10px));
+  white-space: nowrap;
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  line-height: 1.35;
+  text-align: center;
+  text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
+}
+
+.tag b {
+  display: block;
+  font-weight: 500;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.tag i {
+  display: block;
+  font-style: normal;
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  opacity: 0.6;
+}
+
+.tag .big {
+  font-family: var(--sans);
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.below {
+  transform: translate(-50%, 12px);
+}
+
+.side {
+  transform: translate(12px, -50%);
+  text-align: left;
+}
+
+.teal {
+  color: #4fe0c4;
+}
+.white {
+  color: #eeeeee;
+}
+.dim {
+  color: #8d8d8d;
+  font-size: 10px;
+}
+.amber {
+  color: #d98a3d;
+}
+.amberHi {
+  color: #f0a65a;
+}
+.red {
+  color: #ff5a48;
+  font-weight: 500;
+}
+.prop {
+  color: #f2c48d;
+  font-size: 10.5px;
+}
+
+.badge {
+  margin-top: 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 8px;
+  border: 1px solid rgba(217, 138, 61, 0.55);
+  background: rgba(20, 10, 2, 0.55);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+}
+.badge em {
+  font-style: normal;
+  opacity: 0.6;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-size: 9px;
+}
+.sep {
+  opacity: 0.45;
+}
+.strike {
+  margin-left: 4px;
+  color: #8d8d8d;
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+/* ── 고정 HUD ── */
+.hudTL {
+  position: absolute;
+  left: 40px;
+  top: 34px;
+  font-family: var(--mono);
+  pointer-events: none;
+}
+.title {
+  font-size: 13px;
+  letter-spacing: 0.42em;
+  color: #d7d7d7;
+}
+.sub {
+  margin-top: 6px;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  color: #8d8d8d;
+}
+.legend {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 5px;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: #9a9a9a;
+}
+.legend li span {
+  display: inline-block;
+  width: 18px;
+}
+
+.hudBL {
+  position: absolute;
+  left: 40px;
+  bottom: 38px;
+  pointer-events: none;
+}
+.headline {
+  font-family: var(--sans);
+  font-size: clamp(22px, 2.5vw, 38px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: #ececec;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 0.4em;
+  text-shadow: 0 0 24px rgba(0, 0, 0, 0.8);
+}
+.headline > span {
+  display: inline-block;
+}
+.h2 {
+  color: #ffffff;
+}
+.dot {
+  color: #8d8d8d;
+  margin-right: 0.4em;
+}
+.line2 {
+  margin-top: 10px;
+  font-family: var(--sans);
+  font-size: clamp(13px, 1.15vw, 17px);
+  color: #e0a066;
+  letter-spacing: 0.01em;
+}
+.stack {
+  margin-top: 14px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.3em;
+  color: #8d8d8d;
+}
+
+.hudBR {
+  position: absolute;
+  right: 40px;
+  bottom: 38px;
+  width: 300px;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+.logTitle {
+  font-size: 9.5px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #8d8d8d;
+  border-bottom: 1px solid rgba(141, 141, 141, 0.3);
+  padding-bottom: 5px;
+  margin-bottom: 6px;
+}
+.logRow {
+  display: flex;
+  gap: 10px;
+  color: #b8b8b8;
+  padding: 2px 0;
+  opacity: 0;
+}
+.verb {
+  width: 64px;
+  flex: none;
+  color: #d98a3d;
+}
+.logRow[data-v='kill'] .verb {
+  color: #ff5a48;
+}
+.logRow[data-v='accept'] .verb {
+  color: #f2f2f2;
+}
+.logRow[data-v='proposal'] .verb {
+  color: #f2c48d;
+}
+
+@media (max-width: 760px) {
+  .hudBR,
+  .legend,
+  .anchors .dim {
+    display: none;
+  }
+  .hudTL {
+    left: 18px;
+    top: 18px;
+  }
+  .hudBL {
+    left: 18px;
+    bottom: 18px;
+  }
+}

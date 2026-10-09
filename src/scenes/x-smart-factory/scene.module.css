@@ -1,0 +1,317 @@
+.hud {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  font-family: var(--font-mono), 'JetBrains Mono', ui-monospace, monospace;
+  color: #d7d7d7;
+  overflow: hidden;
+}
+
+/* 3D 앵커: runtime 이 translate3d 로 이동 — 자식이 오프셋을 가진다. */
+.anchor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform, opacity;
+}
+
+.floorTag {
+  position: absolute;
+  transform: translate(-100%, -50%);
+  white-space: nowrap;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: #e3a866;
+  padding: 3px 8px;
+  border-left: 2px solid rgba(217, 138, 61, 0.8);
+  background: linear-gradient(90deg, rgba(217, 138, 61, 0.14), rgba(217, 138, 61, 0));
+}
+
+.stock {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: flex;
+  align-items: baseline;
+  gap: 3px;
+  white-space: nowrap;
+  padding: 1px 6px 2px;
+  border: 1px solid rgba(217, 138, 61, 0.55);
+  background: rgba(10, 8, 5, 0.55);
+  color: #ffc58a;
+  text-shadow: 0 0 8px rgba(217, 138, 61, 0.8);
+}
+.stock b {
+  font-size: 15px;
+  font-weight: 600;
+}
+.stock i {
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: #c08a55;
+}
+
+/* 패널 카드 */
+.card {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 26px));
+  min-width: 200px;
+  padding: 9px 12px 10px;
+  border: 1px solid rgba(79, 224, 196, 0.45);
+  background: linear-gradient(180deg, rgba(8, 26, 28, 0.78), rgba(5, 10, 14, 0.62));
+  box-shadow:
+    0 0 24px rgba(79, 224, 196, 0.12),
+    inset 0 0 18px rgba(79, 224, 196, 0.06);
+  backdrop-filter: blur(3px);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+}
+.card::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -27px;
+  width: 1px;
+  height: 26px;
+  background: linear-gradient(180deg, var(--c, #4fe0c4), transparent);
+}
+.cardErp {
+  --c: #4fe0c4;
+}
+.cardTab {
+  --c: #4ab3cc;
+  border-color: rgba(74, 179, 204, 0.5);
+  background: linear-gradient(180deg, rgba(8, 20, 30, 0.78), rgba(5, 10, 14, 0.62));
+}
+.cardBc {
+  --c: #d98a3d;
+  border-color: rgba(217, 138, 61, 0.5);
+  background: linear-gradient(180deg, rgba(28, 18, 8, 0.78), rgba(12, 9, 5, 0.62));
+}
+.cardHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 7px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(215, 215, 215, 0.14);
+}
+.cardHead span {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--c);
+  text-shadow: 0 0 10px var(--c);
+}
+.cardHead em {
+  font-style: normal;
+  font-size: 10px;
+  color: #8d8d8d;
+  letter-spacing: 0.1em;
+}
+
+.modules {
+  display: flex;
+  gap: 5px;
+  margin-bottom: 6px;
+}
+.modules span {
+  padding: 2px 6px;
+  border: 1px solid rgba(141, 141, 141, 0.35);
+  color: #6b6b6b;
+  transition:
+    color 0.3s,
+    border-color 0.3s,
+    background 0.3s;
+}
+.modules span[data-on='1'] {
+  color: #04120f;
+  background: #4fe0c4;
+  border-color: #4fe0c4;
+}
+.log {
+  font-size: 10px;
+  color: #8d8d8d;
+  line-height: 1.5;
+}
+.log div:first-child {
+  color: #bdf5e8;
+}
+
+.barRow {
+  display: grid;
+  grid-template-columns: 112px 1fr;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.barRow span {
+  color: #b9c9cf;
+  white-space: nowrap;
+}
+.bar {
+  height: 6px;
+  background: rgba(74, 179, 204, 0.15);
+  overflow: hidden;
+}
+.bar div {
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  background: linear-gradient(90deg, rgba(74, 179, 204, 0.6), #8fe6ff);
+  box-shadow: 0 0 8px #4ab3cc;
+}
+
+.stockRow {
+  display: grid;
+  grid-template-columns: 58px 1fr auto;
+  gap: 8px;
+  margin-top: 3px;
+  align-items: baseline;
+}
+.code {
+  color: #8d8d8d;
+  font-size: 10px;
+}
+.name {
+  color: #d7d7d7;
+  white-space: nowrap;
+}
+.qty {
+  color: #c08a55;
+  font-size: 10px;
+  text-align: right;
+}
+.qty b {
+  color: #ffc58a;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* 고정 HUD */
+.head {
+  position: absolute;
+  left: 40px;
+  top: 34px;
+  max-width: 520px;
+}
+.kicker {
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  color: #4fe0c4;
+  margin-bottom: 8px;
+}
+.title {
+  margin: 0 0 8px;
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: #eeeeee;
+  font-family: inherit;
+}
+.meta {
+  font-size: 12px;
+  color: #8d8d8d;
+  letter-spacing: 0.06em;
+  line-height: 1.6;
+}
+.period {
+  color: #d7d7d7;
+}
+.role {
+  margin-top: 8px;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: #b0b0b0;
+  padding-left: 8px;
+  border-left: 1px solid rgba(79, 224, 196, 0.6);
+}
+
+.systems {
+  position: absolute;
+  left: 40px;
+  bottom: 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sys {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: #555;
+  transition: color 0.4s;
+}
+.sysN {
+  display: inline-block;
+  width: 26px;
+  padding: 1px 0;
+  text-align: center;
+  font-size: 10px;
+  border: 1px solid #333;
+  color: #555;
+  transition: all 0.4s;
+}
+.sys[data-on='1'] {
+  color: #d7d7d7;
+}
+.sys[data-on='1'] .sysN {
+  border-color: #4fe0c4;
+  color: #04120f;
+  background: #4fe0c4;
+  box-shadow: 0 0 10px rgba(79, 224, 196, 0.6);
+}
+
+.phases {
+  position: absolute;
+  right: 40px;
+  bottom: 36px;
+  width: 560px;
+  height: 22px;
+}
+.phase {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  white-space: nowrap;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  color: #d7d7d7;
+}
+.phaseFinal {
+  color: #bdf5e8;
+  text-shadow: 0 0 12px rgba(79, 224, 196, 0.45);
+}
+
+@media (max-width: 760px) {
+  .head {
+    left: 18px;
+    top: 18px;
+  }
+  .title {
+    font-size: 22px;
+  }
+  .systems {
+    left: 18px;
+    bottom: 54px;
+  }
+  .phases {
+    right: 18px;
+    bottom: 18px;
+    width: auto;
+  }
+  .phase {
+    font-size: 11px;
+    white-space: normal;
+    width: 86vw;
+    text-align: right;
+  }
+  .card {
+    min-width: 150px;
+    font-size: 10px;
+  }
+}

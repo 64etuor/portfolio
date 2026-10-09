@@ -1,11 +1,20 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { subscribe } from '../raf'
 import type { ThreeContext, ThreeSceneOptions, ThreeSetup, ThreeSetupResult } from './types'
 
 const DPR_CAP = 2
 const MAX_DT = 1 / 20
+
+/** 검토용 정지 프레임: 단독 페이지 URL 의 `?t=<초>` 면 그 시점에 고정(루프 없음). */
+function frozenTime(): number | null {
+  if (typeof window === 'undefined') return null
+  const raw = new URLSearchParams(window.location.search).get('t')
+  if (raw === null) return null
+  const v = Number(raw)
+  return Number.isFinite(v) && v >= 0 ? v : null
+}
 
 /**
  * three.js 씬 하네스 — useSceneCanvas 의 WebGL 판.
@@ -38,10 +47,13 @@ export function useThreeScene(setup: ThreeSetup, opts: ThreeSceneOptions = {}) {
   // 최신 running/reduced 를 ResizeObserver 콜백에 노출.
   const runningRef = useRef(running)
   const reducedRef = useRef(reduced)
-  onReadyRef.current = onReady
-  setupRef.current = setup
-  runningRef.current = running
-  reducedRef.current = reduced
+  // 렌더 중 ref 쓰기 금지(React Compiler) — 커밋 직후 동기화.
+  useLayoutEffect(() => {
+    onReadyRef.current = onReady
+    setupRef.current = setup
+    runningRef.current = running
+    reducedRef.current = reduced
+  })
 
   // 옵션은 마운트 시 1회만 읽는다(렌더러 재생성 방지).
   const initOptsRef = useRef({ bloom, fov, near, far, exposure, background })
@@ -212,6 +224,12 @@ export function useThreeScene(setup: ThreeSetup, opts: ThreeSceneOptions = {}) {
   // tick 루프 — running && !reduced 일 때만 공유 rAF 구독. 아니면 정적 1프레임.
   useEffect(() => {
     if (!ctxReady) return
+    const frozen = frozenTime()
+    if (frozen !== null) {
+      elapsedRef.current = frozen
+      renderFrame(frozen, 0)
+      return
+    }
     if (reduced || !running) {
       renderFrame(elapsedRef.current, 0)
       return

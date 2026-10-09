@@ -1,114 +1,89 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { ACTS } from './acts'
-
-// The scene that plays after (actIdx, sceneIdx), or null at the end of the film.
-function nextIndex(actIdx: number, sceneIdx: number): [number, number] | null {
-  const a = ACTS[actIdx]
-  if (sceneIdx + 1 < a.scenes.length) return [actIdx, sceneIdx + 1]
-  if (actIdx + 1 < ACTS.length) return [actIdx + 1, 0]
-  return null
-}
+import { FILM_SCHEDULE, FILM_TOTAL_MS, shotIndexAt } from './schedule'
 
 interface FilmClockArgs {
-  actIdx: number
-  sceneIdx: number
-  setActIdx: (updater: number | ((i: number) => number)) => void
-  setSceneIdx: (updater: number | ((i: number) => number)) => void
   paused: boolean
   reduced: boolean
   ended: boolean
   ready: boolean
-  armed: boolean
-  effectiveMs: number
   onFilmEnd: () => void
 }
 
 interface FilmClock {
+  /** index into FILM_SCHEDULE for whatever shot should be showing right now. */
+  shotIdx: number
+  /** ms since film start. */
+  filmT: number
+  /** ms since the current shot's own start, clamped to [0, duration]. */
+  shotT: number
+  /** 0..1 progress within the current shot (for the top bar). */
   progress: number
-  /** pause-accounting carry; rewind/skip reset it to 0 before re-indexing. */
-  carriedRef: React.MutableRefObject<number>
+  /** Jump the clock directly to a shot's start (rewind). */
+  rewindToShot: (idx: number) => void
 }
 
 /**
- * useFilmClock — the rAF progress clock that drives scene advancement.
+ * useFilmClock — the film's single master clock.
  *
- * The per-scene clock starts only when the scene is VISIBLE (armed). It runs for
- * `effectiveMs`, calling setProgress each frame, and on completion advances to the
- * next scene (or ends the film). `advancedRef` guards advance() to at most once per
- * scene; `carriedRef` accounts for paused time and `tickingRef` marks whether
- * `startRef` currently holds a live start stamp, so paused time is banked exactly
- * once per pause (and never banked for a scene whose clock never started).
+ * This is the ONLY source of truth for which shot should be on screen: it walks a
+ * real wall-clock offset (performance.now(), carried across pauses) across the
+ * FROZEN FILM_SCHEDULE boundaries computed from acts.ts. It never waits on a
+ * scene's onReady to decide the shot has changed — readiness only gates whether a
+ * slot is actually REVEALED (see useSceneBuffer), not whether time has moved on.
+ * That split is what stops a locale-dependent paint delay from turning into a
+ * visible scene repeat: the clock keeps moving regardless, and the scene the
+ * audience eventually sees always reflects the correct instant (via SceneClock),
+ * not a restart from zero.
  */
 export function useFilmClock(args: FilmClockArgs): FilmClock {
-  const {
-    actIdx,
-    sceneIdx,
-    setActIdx,
-    setSceneIdx,
-    paused,
-    reduced,
-    ended,
-    ready,
-    armed,
-    effectiveMs,
-    onFilmEnd,
-  } = args
+  const { paused, reduced, ended, ready, onFilmEnd } = args
 
-  const [progress, setProgress] = useState(0)
+  const [shotIdx, setShotIdx] = useState(0)
+  const [filmT, setFilmT] = useState(0)
 
-  const advance = useCallback(() => {
-    const n = nextIndex(actIdx, sceneIdx)
-    if (!n) {
-      onFilmEnd()
-      return
-    }
-    setActIdx(n[0])
-    setSceneIdx(n[1])
-  }, [actIdx, sceneIdx, onFilmEnd, setActIdx, setSceneIdx])
-
-  // Clock — starts only when the current scene is VISIBLE, runs for currentMs.
   const rafRef = useRef<number | null>(null)
+  // wall-clock stamp at which the CURRENT run segment started ticking.
   const startRef = useRef(0)
+  // ms of film-time banked before this run segment (pause carry / rewind offset).
   const carriedRef = useRef(0)
-  // True while startRef holds a live start stamp for the CURRENT scene. Without it,
-  // a pause that lands before this scene's clock ever started would bank the time
-  // since the PREVIOUS scene's start — a multi-second carry that ends the incoming
-  // scene the instant playback resumes. It also stops a re-run of this effect while
-  // already paused from banking the same interval twice.
-  const tickingRef = useRef(false)
-  // Shared per-scene guard: advance() fires at most once per scene, even if two
-  // rAF loops briefly coexist (React StrictMode double-invokes effects in dev).
-  // Reset to false whenever the scene changes (see the reset effect below).
-  const advancedRef = useRef(false)
+  const endedFiredRef = useRef(false)
+
+  const rewindToShot = useCallback((idx: number) => {
+    const clamped = Math.max(0, Math.min(idx, FILM_SCHEDULE.length - 1))
+    const shot = FILM_SCHEDULE[clamped]
+    carriedRef.current = shot.start
+    startRef.current = performance.now()
+    endedFiredRef.current = false
+    setShotIdx(clamped)
+    setFilmT(shot.start)
+  }, [])
+
   useEffect(() => {
-    if (reduced || ended || !ready || !armed) return
+    if (reduced || ended || !ready) return
 
     if (paused) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
-      if (tickingRef.current) {
-        tickingRef.current = false
-        carriedRef.current += performance.now() - startRef.current
-      }
+      carriedRef.current += performance.now() - startRef.current
       return
     }
 
     startRef.current = performance.now()
-    tickingRef.current = true
     let alive = true
     const tick = () => {
       if (!alive) return
-      const elapsed = carriedRef.current + (performance.now() - startRef.current)
-      const p = Math.min(1, elapsed / effectiveMs)
-      setProgress(p)
-      if (p >= 1) {
-        if (!advancedRef.current) {
-          advancedRef.current = true
-          carriedRef.current = 0
-          tickingRef.current = false
-          advance()
+      const t = carriedRef.current + (performance.now() - startRef.current)
+      if (t >= FILM_TOTAL_MS) {
+        setFilmT(FILM_TOTAL_MS)
+        setShotIdx(FILM_SCHEDULE.length - 1)
+        if (!endedFiredRef.current) {
+          endedFiredRef.current = true
+          onFilmEnd()
         }
         return
       }
+      setFilmT(t)
+      const idx = shotIndexAt(t)
+      setShotIdx((prev) => (prev === idx ? prev : idx))
       rafRef.current = requestAnimationFrame(tick)
     }
     rafRef.current = requestAnimationFrame(tick)
@@ -116,17 +91,13 @@ export function useFilmClock(args: FilmClockArgs): FilmClock {
       alive = false
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
-  }, [actIdx, sceneIdx, paused, reduced, ended, ready, armed, effectiveMs, advance])
+    // re-running this effect on every filmT tick would reset startRef mid-flight;
+    // it only needs to (re)arm on pause/ready/reduced/ended transitions.
+  }, [paused, reduced, ended, ready, onFilmEnd])
 
-  // On a fresh scene: reset the clock guard and the pause accounting. (The cut
-  // overlay is driven by the picture cut in useSceneBuffer, not by this index
-  // change — the two are seconds apart while the incoming scene loads.)
-  useEffect(() => {
-    carriedRef.current = 0
-    tickingRef.current = false
-    advancedRef.current = false
-    setProgress(0)
-  }, [actIdx, sceneIdx])
+  const shot = FILM_SCHEDULE[shotIdx]
+  const shotT = Math.max(0, Math.min(filmT - shot.start, shot.duration))
+  const progress = shot.duration > 0 ? shotT / shot.duration : 0
 
-  return { progress, carriedRef }
+  return { shotIdx, filmT, shotT, progress, rewindToShot }
 }

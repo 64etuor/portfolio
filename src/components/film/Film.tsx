@@ -3,12 +3,14 @@
 import { useCallback, useEffect, useState, type CSSProperties } from 'react'
 import { useRouter } from 'next/navigation'
 import { ACTS } from './acts'
+import { FILM_SCHEDULE, FILM_TOTAL_MS, firstShotOfAct } from './schedule'
 import { SceneSlot } from './SceneSlot'
-import { FilmControls } from './FilmControls'
+import { FilmControls, type FilmBeat } from './FilmControls'
 import { FilmTransition, txVariantFor } from './FilmTransition'
 import { useFilmClock } from './useFilmClock'
 import { useSceneBuffer } from './useSceneBuffer'
 import { useIrisOutro } from './useIrisOutro'
+import type { SceneClock } from '@/scenes/_host/sceneClock'
 import { SITE } from '@content/site'
 import { useLocale } from '../LocaleProvider'
 
@@ -30,20 +32,26 @@ const srOnly: CSSProperties = {
   border: 0,
 }
 
+/** Builds the SceneClock passed to a slot: shot-local seconds from the master clock. */
+function clockFor(shot: { start: number; duration: number }, filmT: number): SceneClock {
+  return { now: () => Math.max(0, Math.min(filmT - shot.start, shot.duration)) / 1000 }
+}
+
 /**
  * Film — the autoplay portfolio "film" controller (DX→AX narrative).
  *
- * Timing model (fixes the "cut too early / clock starts before the scene shows"
- * problems):
- *  - Per-scene durations come from acts.ts (Shot.ms), tuned to each scene's arc.
- *  - Double-buffered iframes. The NEXT scene is PREFETCHED into the hidden slot
- *    while the current one plays, so a cut is an instant cross-fade with no load
- *    wait. (Heavy scenes never flash a black/blank frame.)
- *  - The per-scene CLOCK only starts once the scene is actually VISIBLE (painted
- *    in the visible slot) — so each scene gets its full budget regardless of how
- *    long it took to load, and its static intro is never spent behind the fade.
- *  - prefers-reduced-motion: skip autoplay, render the ending catchphrase.
- *  - After the ending beat → onFilmEnd() returns to the landing.
+ * Timing model: a single master clock (useFilmClock) walks a frozen, locale-
+ * independent schedule (schedule.ts, derived from acts.ts) purely on wall time.
+ * Cuts happen when that clock crosses a shot boundary — never by waiting on a
+ * scene's onReady. Readiness only controls whether a slot is actually REVEALED
+ * (double-buffer cross-fade, see useSceneBuffer): if the incoming scene hasn't
+ * painted yet when its shot starts, the outgoing slot keeps playing until it has.
+ * Either way, the scene's own `t` comes from this same clock (SceneClockContext,
+ * threaded through SceneSlot), so a late reveal always draws the correct instant
+ * instead of restarting from 0 — which is what used to read as a visible "repeat"
+ * when EN's heavier per-frame text localization delayed a paint past its shot's
+ * internal loop boundary. Locale never touches this clock or the schedule; it only
+ * changes the text a scene renders.
  */
 export function Film() {
   const router = useRouter()
@@ -52,38 +60,12 @@ export function Film() {
   const [reduced, setReduced] = useState(false)
   const [ready, setReady] = useState(false)
   const [ended, setEnded] = useState(false)
-
-  const [actIdx, setActIdx] = useState(0)
-  const [sceneIdx, setSceneIdx] = useState(0)
   const [paused, setPaused] = useState(false)
-
-  // Ported scenes signal readiness via their onReady prop (no postMessage handshake).
-  // Armed is stored as the scene it was armed FOR, not a boolean: a boolean stays
-  // true across the index change until a reset effect clears it, and the clock reads
-  // that stale `true` and starts a throwaway loop for the incoming scene. Keying it
-  // makes disarming instantaneous — armed is false in the very render that cuts.
-  const [armedKey, setArmedKey] = useState<string | null>(null)
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setReduced(true)
     setReady(true)
   }, [])
-
-  const shot = ACTS[actIdx].scenes[sceneIdx]
-  const currentFile = shot.file
-  const sceneKey = `${actIdx}-${sceneIdx}`
-
-  // The scene after this one, staged into the hidden slot while this one plays so
-  // the cut can be instant. null on the final beat.
-  const act = ACTS[actIdx]
-  const nextFile =
-    sceneIdx + 1 < act.scenes.length
-      ? act.scenes[sceneIdx + 1].file
-      : actIdx + 1 < ACTS.length
-        ? ACTS[actIdx + 1].scenes[0].file
-        : null
-  // Playtime is the static acts.ts value (ported scenes don't declare their own).
-  const effectiveMs = shot.ms
 
   const onFilmEnd = useCallback(() => setEnded(true), [])
 
@@ -92,41 +74,21 @@ export function Film() {
   // the film hands off to the home page as one continuous shot (no abrupt cut).
   const irisRef = useIrisOutro(ended)
 
-  // Double-buffer scene slots — reveal/blank/cross-fade logic.
-  const { slotFiles, visibleSlot, visible, revealOnLoad, cutId } = useSceneBuffer({
+  // Master clock — the only source of truth for "what shot should be on screen".
+  const { shotIdx, filmT, rewindToShot } = useFilmClock({ paused, reduced, ended, ready, onFilmEnd })
+
+  const currentShot = FILM_SCHEDULE[shotIdx]
+  const nextShot = FILM_SCHEDULE[shotIdx + 1] ?? null
+  const currentFile = currentShot.file
+  const nextFile = nextShot?.file ?? null
+
+  // Double-buffer scene slots — reveal/blank/cross-fade logic. Driven by the
+  // schedule-derived files above, not by any onReady-gated state.
+  const { slotFiles, visibleSlot, revealOnLoad, cutId } = useSceneBuffer({
     currentFile,
     nextFile,
     reduced,
     ready,
-  })
-
-  // Arm the clock the moment the scene is actually on screen — `visible` now flips
-  // only when the incoming scene has painted, so this is its true t0.
-  const armed = armedKey === sceneKey
-  useEffect(() => {
-    if (reduced || !ready || !visible || armed) return
-    setArmedKey(sceneKey)
-  }, [reduced, ready, visible, armed, sceneKey])
-
-  // NOTE: no prefetch. Each scene loads only when it becomes current (load-on-cut),
-  // so its rAF starts at reveal ≈ t0 — the scene is seen from its true start point
-  // (static intro → dynamic), not mid-loop. The load gap is hidden by the cut overlay.
-
-  // Clock — progress, scene advancement, pause carry. (The cut overlay is fired by
-  // the buffer's picture cut, not by this clock: the index change and the picture
-  // change are separated by the incoming scene's load.)
-  const { progress, carriedRef } = useFilmClock({
-    actIdx,
-    sceneIdx,
-    setActIdx,
-    setSceneIdx,
-    paused,
-    reduced,
-    ended,
-    ready,
-    armed,
-    effectiveMs,
-    onFilmEnd,
   })
 
   // Rewind one beat (act). Always lands on that beat's first scene and resumes
@@ -134,10 +96,8 @@ export function Film() {
   const rewindBeat = useCallback(() => {
     setEnded(false)
     setPaused(false)
-    carriedRef.current = 0
-    setActIdx((i) => Math.max(0, i - 1))
-    setSceneIdx(0)
-  }, [carriedRef])
+    rewindToShot(firstShotOfAct(Math.max(0, currentShot.actIdx - 1)))
+  }, [rewindToShot, currentShot.actIdx])
 
   // Skip exits the film immediately. The landing is the portfolio's home and
   // avoids making visitors wait through the closing beat before they can leave.
@@ -173,11 +133,13 @@ export function Film() {
     )
   }
 
-  // Overall film progress across all scenes (flattened) for the top bar.
-  const flatTotal = ACTS.reduce((s, a) => s + a.scenes.length, 0)
-  const flatIdx = ACTS.slice(0, actIdx).reduce((s, a) => s + a.scenes.length, 0) + sceneIdx
-  const overall = Math.min(1, (flatIdx + progress) / flatTotal)
-  const txVariant = txVariantFor(ACTS[actIdx].id)
+  // Overall film progress — continuous wall-time fraction, not a scene count.
+  const overall = Math.min(1, filmT / FILM_TOTAL_MS)
+  const txVariant = txVariantFor(currentShot.actId)
+  // Sound sync: cutId already bumps exactly on manifest shot boundaries (it is the
+  // buffer's PICTURE cut, driven here by the schedule-derived currentFile — not by
+  // locale-sensitive readiness), so it fires identically in KO and EN.
+  const beat: FilmBeat = { act: currentShot.actIdx, scene: currentShot.sceneIdx, cut: cutId, ended }
 
   return (
     <div role="region" aria-label={filmTitle} style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
@@ -187,9 +149,17 @@ export function Film() {
         {[0, 1].map((i) => {
           const f = slotFiles[i]
           const isVisible = visibleSlot === i
+          // Match this slot's file against the current/next shot so its scene reads
+          // `t` from the master clock — never from a local elapsed-since-mount counter.
+          const shotForSlot = f === currentFile ? currentShot : f === nextFile ? nextShot : null
+          const clock = shotForSlot ? clockFor(shotForSlot, filmT) : undefined
           return (
             <div
               key={`slot-${i}`}
+              // Debug/QA hook only (harmless in prod): lets an instrumented
+              // Playwright check identify which scene file is in which slot
+              // without poking at React internals.
+              data-film-slot-file={f ?? ''}
               style={{
                 // Render each scene INSIDE the letterbox safe band (top/bottom 5vh
                 // are masked by the bars below). Full-bleed (inset:0) hid the top/
@@ -217,13 +187,12 @@ export function Film() {
               }}
             >
               {/* Only the VISIBLE slot runs. The hidden slot holds the next scene already
-                  mounted and painted (its static t=0 frame) but NOT ticking — useSceneCanvas
-                  skips the rAF subscription when running is false, so a staged scene cannot
-                  advance mid-loop before it is seen. That is what makes the cut instant
-                  without reintroducing the "scene starts partway through" problem that got
-                  prefetching removed the first time. Pause freezes the visible scene in
-                  place (the host freeze-resumes from the same frame). */}
-              <SceneSlot file={f} running={isVisible && !paused} onReady={() => revealOnLoad(i)} />
+                  mounted and painted (its static frame, at the clock's current shot-local
+                  offset) but NOT ticking — useSceneCanvas skips the rAF subscription when
+                  running is false, so a staged scene cannot advance mid-loop before it is
+                  seen. Pause freezes the visible scene in place (the host freeze-resumes
+                  from the same frame). */}
+              <SceneSlot file={f} running={isVisible && !paused} onReady={() => revealOnLoad(i)} clock={clock} />
             </div>
           )
         })}
@@ -262,6 +231,7 @@ export function Film() {
         onRewind={rewindBeat}
         onTogglePause={() => setPaused((p) => !p)}
         onSkip={skipToHome}
+        beat={beat}
       />
 
       {/* Outro iris — at the end, the frame collapses into a point, then routes home */}

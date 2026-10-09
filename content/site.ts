@@ -100,5 +100,8 @@ export const SITE = {
     play: copy('재생', 'Play'),
     pause: copy('일시정지', 'Pause'),
     skip: copy('HOME →', 'HOME →'),
+    soundMute: copy('사운드 끄기 (M)', 'Mute sound (M)'),
+    soundUnmute: copy('사운드 켜기 (M)', 'Unmute sound (M)'),
+    soundEnable: copy('탭하여 사운드 켜기 (M)', 'Tap to enable sound (M)'),
   },
 } as const

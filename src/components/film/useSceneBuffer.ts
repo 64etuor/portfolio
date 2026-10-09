@@ -24,9 +24,11 @@ interface SceneBuffer {
  * useSceneBuffer — the two-slot double-buffer reveal/blank logic.
  *
  * Two stable slots cross-fade between scenes. While one plays, the NEXT scene is
- * staged into the hidden slot (1100ms after the cut settles) mounted but frozen —
- * `running=false`, so it paints its t=0 frame and never subscribes to the rAF. That
- * makes the following cut instant without letting the scene run before it is seen.
+ * staged into the hidden slot as soon as the current cut settles — mounted but
+ * frozen (`running=false`), so it paints a static frame (at the master clock's
+ * current shot-local offset when a SceneClock is in scope — never a bare t=0) and
+ * never subscribes to the rAF. That makes the following cut instant without
+ * letting the scene run before it is seen.
  *
  * A slot is showable only once its scene has PAINTED, which it signals through
  * `onReady` → `revealOnLoad`. Holding a file is not the same as being ready: cutting
@@ -111,8 +113,10 @@ export function useSceneBuffer(args: SceneBufferArgs): SceneBuffer {
     return () => clearTimeout(t)
   }, [reduced, ready, visible, currentFile, slotFiles, cutTo])
 
-  // Once a cut has settled, swap the outgoing scene in the hidden slot for the NEXT
-  // one, so it is already mounted and painted when its turn comes.
+  // Swap the outgoing scene in the hidden slot for the NEXT one as soon as the
+  // current cut settles, so it is mounted and painted well before its own start
+  // time arrives on the master clock (Film passes nextFile ahead of the cut by
+  // design — see Film.tsx's schedule-driven nextFile).
   //
   // Loading only on-cut made every scene overrun its budget: the clock ran the full
   // `ms` from paint, then `advance()` fired, and the picture only moved once the
@@ -121,15 +125,17 @@ export function useSceneBuffer(args: SceneBufferArgs): SceneBuffer {
   // at the source instead of compensating for it in the clock.
   //
   // The staged scene mounts with running=false, so useSceneCanvas paints its static
-  // t=0 frame and never subscribes to the rAF — it cannot advance before it is seen.
-  // (Prefetching was dropped originally because it started scenes mid-loop; gating on
-  // `running` is what makes it safe now.) nextFile is null on the last beat, which
-  // blanks the slot exactly as before.
+  // frame at the clock's current shot-local offset (never t=0 once a SceneClock is
+  // in scope) and never subscribes to the rAF — it cannot advance before it is seen.
+  // nextFile is null on the last beat, which blanks the slot exactly as before.
   useEffect(() => {
     if (reduced || !ready) return
     const hidden = visibleSlot ^ 1
     if (slotFiles[hidden] === nextFile) return
-    const t = setTimeout(() => {
+    if (slotFiles[hidden] === currentFile) return
+    // Deferred to a 0ms timeout (not called synchronously in the effect body) so
+    // this commit finishes first — staging still lands in the very next tick.
+    const id = setTimeout(() => {
       setSlotFiles((prev) => {
         const h = visibleSlot ^ 1
         if (prev[h] === nextFile || prev[h] === currentFile) return prev
@@ -147,8 +153,8 @@ export function useSceneBuffer(args: SceneBufferArgs): SceneBuffer {
         n[h] = null
         return n
       })
-    }, 1100) // after the 720ms cross-fade has fully settled
-    return () => clearTimeout(t)
+    }, 0)
+    return () => clearTimeout(id)
   }, [visibleSlot, currentFile, nextFile, reduced, ready, slotFiles])
 
   const revealOnLoad = (i: number) => {

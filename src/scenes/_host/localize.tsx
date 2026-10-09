@@ -221,10 +221,17 @@ const originals = new WeakMap<Text, string>()
 const rendered = new WeakMap<Text, string>()
 const attributes = new WeakMap<Element, Map<string, string>>()
 
+// Matches any Hangul syllable or compatibility jamo. Scene canvases redraw their
+// text every frame (via localizeCanvasText below) and call this on every draw —
+// most of those strings (numbers, already-English HUD labels, glyphs) contain no
+// Korean at all, so this is a cheap bailout before the expensive dictionary scan.
+const HAS_HANGUL = /[ㄱ-ㆎ가-힣]/
+
 /** Translates only known Korean source copy. Original English always passes through unchanged. */
 export function localizeSceneText(value: string, locale: Locale): string {
   if (locale !== 'en' || !value) return value
   if (EN[value]) return EN[value]
+  if (!HAS_HANGUL.test(value)) return value
 
   // Animated scene copy is frequently assembled from several adjacent text
   // nodes. Long phrases win first, then the compact terminology above handles

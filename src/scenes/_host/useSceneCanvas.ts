@@ -1,10 +1,11 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { subscribe } from './raf'
 import type { Frame, TickFn, UseSceneCanvasOptions } from './types'
 import { localizeSceneText } from './localize'
 import { ensureSceneFonts } from './fonts'
+import { useSceneClock } from './sceneClock'
 
 const DPR_CAP = 2
 const MAX_DT = 1 / 20 // 탭 복귀/스톨 후 dt 폭주 캡(초)
@@ -42,6 +43,16 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
   // reduced-motion 을 state 로 관리 — OS 설정 변경 시 tick effect 가 재실행된다.
   const [reduced, setReduced] = useState(false)
 
+  // The film's master clock, when this scene is mounted inside one (see Film.tsx /
+  // SceneSlot). Its `now()` is the authoritative `t` — reading it fresh every frame
+  // via a ref (not a dependency) means a late reveal still draws the correct instant
+  // instead of restarting the scene's own elapsed-since-mount counter from 0.
+  const clock = useSceneClock()
+  const clockRef = useRef(clock)
+  useLayoutEffect(() => {
+    clockRef.current = clock
+  }, [clock])
+
   // 최신 draw 를 항상 참조(의존성으로 인한 재구독 없이).
   drawRef.current = draw
 
@@ -70,7 +81,9 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
     const ctx = ctxRef.current
     if (!ctx) return
     const { w, h, dpr } = sizeRef.current
-    drawRef.current(ctx, { w, h, dpr, t: elapsedRef.current, dt: 0 })
+    const clockT = clockRef.current?.now()
+    const t = clockT != null ? clockT : elapsedRef.current
+    drawRef.current(ctx, { w, h, dpr, t, dt: 0 })
   }, [])
 
   // canvas 마운트/언마운트.
@@ -144,9 +157,10 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
         startRef.current = now
         lastRef.current = now
       }
-      const t = elapsedRef.current + (now - startRef.current) / 1000
       const dt = Math.min(MAX_DT, (now - lastRef.current) / 1000)
       lastRef.current = now
+      const clockT = clockRef.current?.now()
+      const t = clockT != null ? clockT : elapsedRef.current + (now - startRef.current) / 1000
       const { w, h, dpr } = sizeRef.current
       const f: Frame = { w, h, dpr, t, dt }
       drawRef.current(ctx, f)

@@ -4,20 +4,25 @@ import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useThreeScene } from '../_host/three/useThreeScene'
 import type { SceneProps } from '../_host/types'
-import { COPY, STACK, STATIONS, pick, type LabelId } from './data'
+import { COPY, LEGACY_DEF, STACK, STATIONS, pick, type LabelId } from './data'
 import { emptyHud, setupMesLine, type Hud } from './runtime'
 import s from './scene.module.css'
 
 const POS: Partial<Record<LabelId, string>> = {
-  ocv: 'below',
+  cut: 'below',
+  wool: 'below',
+  seal: 'below',
+  gauge: 'below',
   vision: 'below',
-  assy: 'below',
-  'p-ocv': 'left',
-  'p-vision': 'left',
+  stack: 'below',
+  'p-legacy': 'right',
+  'p-opc': 'right',
+  'p-tcp': 'right',
   core: 'right',
 }
 
-// 신제품 배터리 라인 셋업 — MES 외주비 누락 → 자체 개발(OCV/IR·비전·OPC UA → PostgreSQL → Dash/Electron).
+// 글라스울 파우치(배터리 화재 방지) 자동화 라인 셋업 — MES 외주비 누락 → 자체 개발
+// (OPC UA · TCP/IP 비전 · 구형 검사 장비 → PostgreSQL → Django/DRF → Dash · Electron 클라이언트).
 export default function Scene({ running = true, onReady, locale }: SceneProps) {
   const hudRef = useRef<Hud>(emptyHud())
   const ref = useThreeScene((ctx) => setupMesLine(ctx, hudRef), {
@@ -25,8 +30,8 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
     onReady,
     background: '#04070a',
     fov: 38,
-    exposure: 1.05,
-    bloom: { strength: 0.95, radius: 0.6, threshold: 0.82 },
+    exposure: 1.0,
+    bloom: { strength: 0.8, radius: 0.55, threshold: 0.9 },
   })
   const p = (c: { ko: string; en: string }) => pick(c, locale)
   const labelRef = (id: LabelId) => (el: HTMLDivElement | null) => {
@@ -34,8 +39,11 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
   }
 
   const labels: { id: LabelId; main: string; sub?: string; tone: string }[] = [
-    ...STATIONS.map((st) => ({ id: st.id as LabelId, main: p(st.label), sub: p(st.sub), tone: st.id })),
-    ...STATIONS.filter((st) => st.path).map((st) => ({ id: `p-${st.id}` as LabelId, main: p(st.path!.label), tone: `p-${st.id}` })),
+    ...STATIONS.map((st) => ({ id: st.id as LabelId, main: p(st.label), sub: p(st.sub), tone: st.proto as string })),
+    { id: 'legacy', main: p(LEGACY_DEF.label), sub: p(LEGACY_DEF.sub), tone: 'legacy' },
+    { id: 'p-opc', main: p(COPY.pOpc), tone: 'opc' },
+    { id: 'p-tcp', main: p(COPY.pTcp), tone: 'tcp' },
+    { id: 'p-legacy', main: p(COPY.pLegacy), tone: 'legacy' },
     { id: 'core', main: p(COPY.core), sub: p(COPY.coreSub), tone: 'core' },
     { id: 'api', main: p(COPY.api), sub: p(COPY.apiSub), tone: 'api' },
     { id: 'dash', main: p(COPY.dash), sub: p(COPY.dashSub), tone: 'dash' },
@@ -58,6 +66,7 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
         <header className={s.title}>
           <div className={s.org}>{p(COPY.org)}</div>
           <div className={s.titleMain}>{p(COPY.title)}</div>
+          <div className={s.product}>{p(COPY.product)}</div>
           <div className={s.meta}>{p(COPY.meta)}</div>
         </header>
 

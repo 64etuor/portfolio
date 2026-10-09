@@ -26,17 +26,14 @@
   will-change: transform, opacity;
   --c: #d7d7d7;
 }
-.label[data-tone='ocv'],
-.label[data-tone='p-ocv'] {
+.label[data-tone='legacy'] {
   --c: var(--amber);
 }
-.label[data-tone='vision'],
-.label[data-tone='p-vision'],
+.label[data-tone='tcp'],
 .label[data-tone='client'] {
   --c: var(--blue);
 }
-.label[data-tone='assy'],
-.label[data-tone='p-assy'],
+.label[data-tone='opc'],
 .label[data-tone='core'],
 .label[data-tone='dash'] {
   --c: var(--teal);
@@ -135,6 +132,13 @@
   letter-spacing: var(--track-heading);
   line-height: var(--lh-tight);
   color: #e6e6e6;
+}
+.product {
+  margin-top: 5px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  color: #a9b3b6;
 }
 .meta {
   margin-top: 6px;
@@ -285,6 +289,7 @@
   .ledger,
   .chips,
   .org,
+  .product,
   .meta,
   .headSub {
     display: none;

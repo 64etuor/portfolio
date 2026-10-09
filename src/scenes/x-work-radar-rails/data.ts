@@ -26,7 +26,7 @@ export const SOURCES = [
   { key: 'agent', glyph: '●', color: '#c9ad86', ko: 'agent 세션', en: 'agent session' },
 ] as const
 
-export const SIGNALS_PER_SOURCE = 22
+export const SIGNALS_PER_SOURCE = 16
 
 export const COPY = {
   ko: {

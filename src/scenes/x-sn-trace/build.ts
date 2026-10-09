@@ -3,6 +3,136 @@ import { mulberry32 } from '../_host/random'
 import type { Three } from '../_host/three/types'
 import { EDGE_SEGS, LAYERS, PARENTS } from './data'
 
+type RoundedBoxCtor = typeof import('three/examples/jsm/geometries/RoundedBoxGeometry.js').RoundedBoxGeometry
+
+/** three/examples 애드온 — runtime 이 동적 import 해서 넘긴다(코드스플릿 유지). */
+export interface Addons {
+  RoundedBox: RoundedBoxCtor
+  LineSegments2: typeof import('three/examples/jsm/lines/LineSegments2.js').LineSegments2
+  LineSegmentsGeometry: typeof import('three/examples/jsm/lines/LineSegmentsGeometry.js').LineSegmentsGeometry
+  LineMaterial: typeof import('three/examples/jsm/lines/LineMaterial.js').LineMaterial
+}
+
+export async function loadAddons(): Promise<Addons> {
+  const [rb, ls2, lsg, lm] = await Promise.all([
+    import('three/examples/jsm/geometries/RoundedBoxGeometry.js'),
+    import('three/examples/jsm/lines/LineSegments2.js'),
+    import('three/examples/jsm/lines/LineSegmentsGeometry.js'),
+    import('three/examples/jsm/lines/LineMaterial.js'),
+  ])
+  return {
+    RoundedBox: rb.RoundedBoxGeometry,
+    LineSegments2: ls2.LineSegments2,
+    LineSegmentsGeometry: lsg.LineSegmentsGeometry,
+    LineMaterial: lm.LineMaterial,
+  }
+}
+
+/** 가산 팻 라인 머티리얼(px 폭). resolution 은 runtime.resize 가 갱신. */
+export function fatLineMat(A: Addons, width: number, vertexColors: boolean, color = 0xffffff) {
+  const mat = new A.LineMaterial({
+    color,
+    linewidth: width,
+    vertexColors,
+    transparent: true,
+    depthWrite: false,
+    blending: 2, // AdditiveBlending
+    worldUnits: false,
+  })
+  return mat
+}
+
+/**
+ * 하이라이트 엣지(영향 군집/역추적 경로)용 팻 라인 — 세그먼트별 시작/끝 색을 매 프레임 runtime 이 쓴다.
+ * colors: 세그먼트당 6 floats(시작 rgb, 끝 rgb) — LineSegmentsGeometry 의 인터리브 버퍼를 직접 갱신.
+ */
+export function buildFatEdges(A: Addons, g: Graph, list: number[], segs: number, width: number) {
+  const S = list.length * segs
+  const positions = new Float32Array(S * 6)
+  const sA = new Float32Array(S * 2)
+  const p = { x: 0, y: 0, z: 0 }
+  let k = 0
+  for (const e of list) {
+    for (let j = 0; j < segs; j++, k++) {
+      const s0 = j / segs
+      const s1 = (j + 1) / segs
+      curvePoint(g.pos, g.eFrom[e], g.eTo[e], s0, p)
+      positions[k * 6] = p.x
+      positions[k * 6 + 1] = p.y
+      positions[k * 6 + 2] = p.z
+      curvePoint(g.pos, g.eFrom[e], g.eTo[e], s1, p)
+      positions[k * 6 + 3] = p.x
+      positions[k * 6 + 4] = p.y
+      positions[k * 6 + 5] = p.z
+      sA[k * 2] = s0
+      sA[k * 2 + 1] = s1
+    }
+  }
+  const geo = new A.LineSegmentsGeometry()
+  geo.setPositions(positions)
+  geo.setColors(new Float32Array(S * 6))
+  const colAttr = geo.getAttribute('instanceColorStart') as unknown as THREE.InterleavedBufferAttribute
+  const buf = colAttr.data
+  buf.setUsage(35048) // DynamicDrawUsage
+  const mat = fatLineMat(A, width, true)
+  const lines = new A.LineSegments2(geo, mat)
+  lines.frustumCulled = false
+  return { lines, mat, colors: buf.array as Float32Array, buf, sA, segs }
+}
+
+/**
+ * 레이어 단면 링 — 각 레이어를 감싸는 얇은 타원 + 12 방위 눈금(정밀 계측기 느낌).
+ * 정적 지오메트리, 색/불투명도만 runtime 이 조정.
+ */
+export function buildLayerRings(A: Addons) {
+  const pts: number[] = []
+  const N = 128
+  LAYERS.forEach((L) => {
+    const R = L.r + 0.42
+    const zk = 0.82
+    for (let i = 0; i < N; i++) {
+      const a0 = (i / N) * Math.PI * 2
+      const a1 = ((i + 1) / N) * Math.PI * 2
+      pts.push(L.x, L.y + Math.sin(a0) * R, Math.cos(a0) * R * zk, L.x, L.y + Math.sin(a1) * R, Math.cos(a1) * R * zk)
+    }
+    for (let i = 0; i < 24; i++) {
+      const a = (i / 24) * Math.PI * 2
+      // 주 눈금은 위·좌·우만(아래는 레이어 라벨 자리)
+      const r1 = R + (i % 6 === 0 && i !== 18 ? 0.26 : 0.1)
+      pts.push(L.x, L.y + Math.sin(a) * R, Math.cos(a) * R * zk, L.x, L.y + Math.sin(a) * r1, Math.cos(a) * r1 * zk)
+    }
+  })
+  const geo = new A.LineSegmentsGeometry()
+  geo.setPositions(pts)
+  const mat = fatLineMat(A, 1.1, false, 0x4ab3cc)
+  mat.opacity = 0.22
+  const lines = new A.LineSegments2(geo, mat)
+  lines.frustumCulled = false
+  return { lines, mat }
+}
+
+/** 원인 LOT 셸 — 팻 라인 큐브 모서리 + 모서리 브래킷. */
+export function buildLotShell(A: Addons) {
+  const h = 0.3
+  const pts: number[] = []
+  const c = [-h, h]
+  // 모서리마다 3 방향 짧은 브래킷(전체 모서리 대신 → 섬세한 프레임)
+  const L = 0.17
+  for (const x of c)
+    for (const y of c)
+      for (const z of c) {
+        pts.push(x, y, z, x - Math.sign(x) * L, y, z)
+        pts.push(x, y, z, x, y - Math.sign(y) * L, z)
+        pts.push(x, y, z, x, y, z - Math.sign(z) * L)
+      }
+  const geo = new A.LineSegmentsGeometry()
+  geo.setPositions(pts)
+  const mat = fatLineMat(A, 2.0, false, 0xffffff)
+  const lines = new A.LineSegments2(geo, mat)
+  lines.frustumCulled = false
+  return { lines, mat }
+}
+
 // genealogy 그래프 생성 + three 빌더. 결정적(seeded) — 매 마운트 같은 그림.
 
 export interface Graph {
@@ -58,7 +188,8 @@ export function buildGraph(): Graph {
   const golden = Math.PI * (3 - Math.sqrt(5))
 
   LAYERS.forEach((L, l) => {
-    const thick = l === 3 ? 0.9 : l === 0 ? 0.15 : 0.45
+    // 얇은 판(plane) — 레이어가 정밀한 단면으로 읽히도록 x 지터를 작게.
+    const thick = l === 3 ? 0.34 : l === 0 ? 0.06 : 0.18
     for (let i = 0; i < L.count; i++) {
       const g = offset[l] + i
       layerOf[g] = l
@@ -267,32 +398,67 @@ export function buildEdges(T3: Three, g: Graph) {
   return { lines, colors, colAttr, vS }
 }
 
-/** 레이어별 노드 InstancedMesh. */
-export function buildNodes(T3: Three, g: Graph) {
-  const geos = [
-    new T3.BoxGeometry(0.3, 0.3, 0.3),
-    new T3.OctahedronGeometry(0.105, 0),
-    new T3.OctahedronGeometry(0.075, 0),
-    new T3.IcosahedronGeometry(0.048, 0),
+/**
+ * 레이어별 노드 InstancedMesh — 정렬된(회전 없음) 정밀 부품.
+ * LOT = 자재 릴(선반 프로파일), 서브 = 얇은 칩 플레이트, 상위 = 라운드 큐브, 제품 = 매끈한 구.
+ * 재질: 그래파이트 금속(환경맵) + 인스턴스 색을 **자체발광**으로 더한다(diffuse 곱 아님).
+ */
+export function buildNodes(T3: Three, g: Graph, RoundedBox: RoundedBoxCtor) {
+  // 릴: 바깥 플랜지 + 안쪽 허브 홈 — y 축 선반 → x 축(흐름 방향)으로 눕힌다.
+  const reelProfile = [
+    [0.0, -0.055],
+    [0.05, -0.055],
+    [0.055, -0.042],
+    [0.16, -0.042],
+    [0.172, -0.03],
+    [0.172, 0.03],
+    [0.16, 0.042],
+    [0.055, 0.042],
+    [0.05, 0.055],
+    [0.0, 0.055],
+  ].map(([x, y]) => new T3.Vector2(x, y))
+  const reel = new T3.LatheGeometry(reelProfile, 40).rotateZ(Math.PI / 2)
+  reel.computeVertexNormals()
+  const geos: THREE.BufferGeometry[] = [
+    reel,
+    new RoundedBox(0.045, 0.19, 0.19, 2, 0.018),
+    new RoundedBox(0.12, 0.12, 0.12, 2, 0.026),
+    new T3.SphereGeometry(0.05, 12, 9),
   ]
   const meshes: THREE.InstancedMesh[] = []
   const m = new T3.Matrix4()
   const q = new T3.Quaternion()
-  const e = new T3.Euler()
   const sc = new T3.Vector3(1, 1, 1)
   const ps = new T3.Vector3()
-  const rng = mulberry32(77)
+  const base = new T3.Color(0.05, 0.05, 0.05)
+  const roughness = [0.32, 0.38, 0.42, 0.5]
   LAYERS.forEach((L, l) => {
-    const mat = new T3.MeshBasicMaterial({ color: 0xffffff, fog: true })
+    const mat = new T3.MeshStandardMaterial({
+      color: 0x6b737c,
+      metalness: 0.6,
+      roughness: roughness[l],
+      envMapIntensity: 1,
+      fog: true,
+    })
+    mat.onBeforeCompile = (sh) => {
+      // 인스턴스 색 = 발광. diffuse 는 고정 그래파이트.
+      sh.fragmentShader = sh.fragmentShader
+        .replace('#include <color_fragment>', '')
+        .replace(
+          '#include <emissivemap_fragment>',
+          /* glsl */ `#include <emissivemap_fragment>
+#if defined( USE_COLOR )
+  totalEmissiveRadiance += vColor.rgb;
+#endif`,
+        )
+    }
     const mesh = new T3.InstancedMesh(geos[l], mat, L.count)
     for (let i = 0; i < L.count; i++) {
       const gi = g.offset[l] + i
       ps.set(g.pos[gi * 3], g.pos[gi * 3 + 1], g.pos[gi * 3 + 2])
-      e.set(rng() * 3, rng() * 3, rng() * 3)
-      q.setFromEuler(e)
-      m.compose(ps, l === 0 ? q.identity() : q, sc)
+      m.compose(ps, q, sc)
       mesh.setMatrixAt(i, m)
-      mesh.setColorAt(i, new T3.Color(0.3, 0.3, 0.3))
+      mesh.setColorAt(i, base)
     }
     mesh.instanceMatrix.setUsage(T3.DynamicDrawUsage)
     mesh.instanceColor!.setUsage(T3.DynamicDrawUsage)

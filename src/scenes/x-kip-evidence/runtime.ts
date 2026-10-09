@@ -15,6 +15,7 @@ import {
   buildSources,
   buildThread,
   hdr,
+  loadAddons,
   makeDotTexture,
 } from './build'
 import { CAM_A, CAM_B, CARD, METRICS, PALETTE, TL } from './data'
@@ -26,8 +27,8 @@ const bell = (t: number, c: number, w: number) => Math.exp(-(((t - c) / w) ** 2)
 type Els = Record<string, HTMLElement>
 
 // HUD 루트는 캔버스 컨테이너의 형제([data-hud]) — ref 를 렌더에서 넘기지 않는다.
-export const setupKip: ThreeSetup = (ctx) => {
-  const { THREE: T, scene, camera, bloom } = ctx
+export const setupKip: ThreeSetup = async (ctx) => {
+  const { THREE: T, scene, camera, bloom, renderer } = ctx
   scene.fog = new T.Fog(PALETTE.bg, 14, 46)
   if (bloom) {
     bloom.strength = 0.95
@@ -35,13 +36,21 @@ export const setupKip: ThreeSetup = (ctx) => {
     bloom.threshold = 0.62
   }
 
+  // 유리 슬래브 반사용 환경맵(절차적, 낮은 강도) + addons
+  const [{ RoomEnvironment }, A] = await Promise.all([import('three/examples/jsm/environments/RoomEnvironment.js'), loadAddons()])
+  const pmrem = new T.PMREMGenerator(renderer)
+  const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04)
+  scene.environment = envRT.texture
+  scene.environmentIntensity = 0.45
+  pmrem.dispose()
+
   const dot = makeDotTexture(T)
   const lib = buildLibrary(T, scene)
-  const sources = buildSources(T, scene)
+  const sources = buildSources(T, A, scene)
   const core = buildCore(T, scene, dot)
   const beam = buildBeam(T, scene)
   const srcCenters = sources.map((s) => s.group.position.clone())
-  const hits = buildHitRays(T, scene, beam.a, beam.dir, srcCenters)
+  const hits = buildHitRays(T, A, scene, beam.a, beam.dir, srcCenters)
   const camEnd = new T.Vector3(...CAM_B.pos)
   const card = buildCard(T, scene, camEnd)
   const anchors = sources.map((s) => anchorOf(T, s))
@@ -175,7 +184,7 @@ export const setupKip: ThreeSetup = (ctx) => {
       const p = hp > 0 && hp < 1 ? hp : lp > 0 && lp < 1 ? lp : -1
       const on = p >= 0 ? 1 : 0
       cd.mat.color.copy(hdr(T, PALETTE.blue, 0.5 + on * 0.9))
-      cd.glowMat.opacity = 0.14 + on * 0.18
+      cd.glowMat.uniforms.uOpacity.value = 0.2 + on * 0.3
       setPulse(1 + k, p >= 0 ? cd.curve.getPointAt(easeInOutCubic(p)) : null, white, 1.6 * Math.sin(Math.PI * Math.max(0, p)) + 0.4)
     })
 
@@ -192,7 +201,7 @@ export const setupKip: ThreeSetup = (ctx) => {
     beam.glow.scale.set(1, L, 1)
     const beamK = pb < 1 ? 1 : 0.45 + 0.25 * amb * bell(lt, 2.0, 1.2)
     beam.coreMat.opacity = Math.min(1, beamK * 1.1)
-    beam.glowMat.opacity = 0.2 * beamK + 0.05
+    beam.glowMat.uniforms.uOpacity.value = 0.32 * beamK + 0.06
     setPulse(0, pb > 0 && pb < 0.995 ? tmpP.copy(beam.dir).multiplyScalar(L).add(beam.a) : null, white, 2.2)
 
     // ── 히트 레이 ──
@@ -235,27 +244,12 @@ export const setupKip: ThreeSetup = (ctx) => {
         if (hs.cells.instanceColor) hs.cells.instanceColor.needsUpdate = true
       }
 
-      // 프레임 라인
-      const { x0, x1, y0, y1 } = hs.rect
-      const pa = hs.frame.geometry.attributes.position as THREE.BufferAttribute
+      // 프레임(팻 라인): 리프트 사각형 이동 + 커넥터 늘이기
       const zz = hs.src.table ? z : 0.03
       const zs = 0.012
-      const segs: number[][] = [
-        [x0, y0, zz, x1, y0, zz],
-        [x1, y0, zz, x1, y1, zz],
-        [x1, y1, zz, x0, y1, zz],
-        [x0, y1, zz, x0, y0, zz],
-        [x0, y0, zs, x1, y0, zs],
-        [x1, y0, zs, x1, y1, zs],
-        [x1, y1, zs, x0, y1, zs],
-        [x0, y1, zs, x0, y0, zs],
-        [x0, y0, zs, x0, y0, zz],
-        [x1, y0, zs, x1, y0, zz],
-        [x1, y1, zs, x1, y1, zz],
-        [x0, y1, zs, x0, y1, zz],
-      ]
-      segs.forEach((s, j) => pa.array.set(s, j * 6))
-      pa.needsUpdate = true
+      hs.frameTop.position.z = zz
+      hs.frameLegs.scale.z = Math.max(1e-4, zz - zs)
+      hs.frameLegs.visible = zz - zs > 0.02
       hs.frameMat.opacity = hs.src.table ? Math.min(1, pl * 0.75 + flash * 0.4) : Math.min(1, arrive * 0.9 + flash * 0.5)
       hs.fillMat.opacity = hs.src.table ? pl * 0.12 : arrive * 0.55 + flash * 0.4
 
@@ -266,7 +260,7 @@ export const setupKip: ThreeSetup = (ctx) => {
       const cnt = Math.floor(pt * th.SEG) * th.idxPerSeg
       th.tube.geometry.setDrawRange(0, cnt)
       th.glow.geometry.setDrawRange(0, cnt)
-      th.glowMat.opacity = 0.2 + 0.25 * flash
+      th.glowMat.uniforms.uOpacity.value = 0.26 + 0.3 * flash
       // 히어로: 그리는 머리 / 루프: 근거 → 답변으로 되돌아오는 펄스
       const loopP = amb * seg(loopT(t - TL.heroEnd - i * 0.55, TL.loop), 0.4, 1.75)
       let pp = -1
@@ -361,5 +355,11 @@ export const setupKip: ThreeSetup = (ctx) => {
     })
   }
 
-  return { update: (t) => update(t) }
+  return {
+    update: (t) => update(t),
+    dispose() {
+      envRT.dispose()
+      scene.environment = null
+    },
+  }
 }

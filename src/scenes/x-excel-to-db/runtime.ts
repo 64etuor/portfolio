@@ -9,6 +9,7 @@ import {
   SEED_STRIDE,
   SLAB_D,
   SLAB_W,
+  loadAddons,
   loadFonts,
   makeAtlas,
   makeDash,
@@ -42,16 +43,33 @@ function hudLookup(root: HTMLElement | null) {
 const gauss = (x: number, w: number) => Math.exp(-(x * x) / (w * w))
 
 export async function setupScene(ctx: ThreeContext, hudRoot: () => HTMLElement | null): Promise<ThreeSetupResult> {
-  const { THREE, scene, camera } = ctx
-  await loadFonts()
+  const { THREE, scene, camera, renderer } = ctx
+  const [A, { RoomEnvironment }] = await Promise.all([
+    loadAddons(),
+    import('three/examples/jsm/environments/RoomEnvironment.js'),
+    loadFonts(),
+  ])
   scene.fog = new THREE.Fog(BG, 15, 40)
+
+  // 환경맵(유리 슬랩·금속 랙 반사) + 키/림 — 낮은 세기, 팔레트 청색 림.
+  const pmrem = new THREE.PMREMGenerator(renderer)
+  const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04)
+  scene.environment = envRT.texture
+  scene.environmentIntensity = 0.45
+  pmrem.dispose()
+  const key = new THREE.DirectionalLight(0xeef2f4, 1.2)
+  key.position.set(-5, 9, 8)
+  const rim = new THREE.DirectionalLight(0x4ab3cc, 1.0)
+  rim.position.set(6, 3, -9)
+  scene.add(key, rim)
+  const fat: InstanceType<typeof A.LineMaterial>[] = []
 
   const dot = makeDot(THREE)
   const atlas = makeAtlas(THREE)
   const sheets = makeSheets(THREE, atlas)
-  const db = makeDb(THREE, dot)
-  const dash = makeDash(THREE, dot)
-  const dial = makeDial(THREE, dot)
+  const db = makeDb(THREE, A, fat, dot)
+  const dash = makeDash(THREE, A, fat, dot)
+  const dial = makeDial(THREE, A, fat, dot)
   const dust = makeDust(THREE, dot)
   scene.add(dust, db.group, dial.group, dash.group, dash.uplink, sheets.mesh)
 
@@ -72,6 +90,7 @@ export async function setupScene(ctx: ThreeContext, hudRoot: () => HTMLElement |
   const glowArr = sheets.glow.array as Float32Array
   const alphaArr = sheets.alpha.array as Float32Array
   const errArr = sheets.err.array as Float32Array
+  const landArr = sheets.land.array as Float32Array
   const S = sheets.seed
   const TG = sheets.target
 
@@ -163,6 +182,7 @@ export async function setupScene(ctx: ThreeContext, hudRoot: () => HTMLElement |
       alphaArr[i] = alpha
       glowArr[i] = Math.sin(p * Math.PI) * 0.25
       errArr[i] = 0
+      landArr[i] = p
     }
     // 메인
     const sweepW = loopT(t - T.ambient, 6)
@@ -179,25 +199,30 @@ export async function setupScene(ctx: ThreeContext, hudRoot: () => HTMLElement |
       const v = T.validate + s * 0.13 + r * 0.07 + c * 0.012
       let g = Math.sin(p * Math.PI) * 0.22
       if (t >= land - 0.05) g += gauss(t - land, 0.12) * 0.6
-      g += gauss(t - v, 0.1) * 0.85
+      g += gauss(t - v, 0.1) * 0.65
       if (t > v) g += 0.07 * seg(t, v, v + 0.3)
       // 앰비언트 검증 스윕
       g += gauss(sweepW - (1.0 + s * 0.12 + r * 0.06), 0.12) * 0.4 * amb
       g += flash[i] * 0.9
       glowArr[i] = g
       alphaArr[i] = 1
+      landArr[i] = p
       errArr[i] = sheets.bad[i] ? seg(t, land - 0.3, land) * (1 - seg(t, v + 0.1, v + 0.45)) : 0
     }
     sheets.mesh.instanceMatrix.needsUpdate = true
     sheets.glow.needsUpdate = true
     sheets.alpha.needsUpdate = true
     sheets.err.needsUpdate = true
+    sheets.land.needsUpdate = true
   }
 
   function updateDb(t: number) {
     const appear = seg(t, 1.4, 3.2)
-    for (const m of db.slabMats) m.opacity = 0.015 + 0.075 * appear
-    db.edgeMat.opacity = 0.05 + 0.5 * appear
+    db.slabMat.opacity = 0.04 + 0.5 * appear
+    db.metalMat.opacity = appear
+    db.metalMat.visible = appear > 0.001
+    db.edgeMat.opacity = 0.05 + 0.55 * appear
+    db.pool.mat.opacity = 0.03 + 0.06 * appear
     db.keyMat.opacity = seg(t, T.validate, T.validate + 0.8) * 0.9
     const rel = seg(t, 4.4, 5.3)
     db.relMat.opacity = rel * 0.6
@@ -221,12 +246,14 @@ export async function setupScene(ctx: ThreeContext, hudRoot: () => HTMLElement |
       panel.visible = pk > 0.001
       panel.scale.set(1, Math.max(0.001, pk), 1)
       panel.position.y = (1 - pk) * -0.6
-      dash.panelMats[k].opacity = 0.62 * pk
-      dash.frameMats[k].opacity = 0.9 * pk
+      dash.panelMats[k].uniforms.uOpacity.value = pk
     }
     const q = (k: number) => seg(t, T.dash + 0.35 + k * 0.22, T.dash + 1.35 + k * 0.22)
     const cOp = seg(t, T.dash + 0.2, T.dash + 0.6)
     for (const m of dash.contentMats) m.opacity = cOp
+    dash.bezelMat.opacity = seg(t, T.dash, T.dash + 0.5)
+    dash.bezelMat.visible = t > T.dash
+    dash.lineMat.opacity = cOp
     // 막대
     const q0 = q(0)
     const nb = dash.barBase.length
@@ -239,7 +266,9 @@ export async function setupScene(ctx: ThreeContext, hudRoot: () => HTMLElement |
     dash.bars.instanceMatrix.needsUpdate = true
     const q1 = easeOutCubic(q(1))
     for (const d of dash.donut) d.geometry.setDrawRange(0, 6 * Math.floor(q1 * dash.donutSeg))
-    dash.line.geometry.setDrawRange(0, Math.floor(easeOutCubic(q(2)) * dash.linePts))
+    const lq = Math.floor(easeOutCubic(q(2)) * (dash.linePts - 1))
+    dash.lineGeo.instanceCount = lq
+    dash.area.geometry.setDrawRange(0, lq * 6)
     // 업링크
     const up = seg(t, T.dash, T.dash + 0.6)
     dash.uplinkMat.opacity = up * 0.9
@@ -260,6 +289,7 @@ export async function setupScene(ctx: ThreeContext, hudRoot: () => HTMLElement |
     const a = seg(t, T.dial - 0.35, T.dial + 0.4)
     dial.baseMat.opacity = a * 0.9
     dial.tickMat.opacity = a * 0.8
+    dial.tickMajorMat.opacity = a * 0.9
     const f = easeOutCubic(seg(t, T.dial, T.dialEnd)) * (SAVED_MIN / DAY_MIN)
     dial.sweepMat.opacity = a
     dial.sweep.geometry.setDrawRange(0, 6 * Math.floor(f * dial.sweepSeg))
@@ -343,6 +373,13 @@ export async function setupScene(ctx: ThreeContext, hudRoot: () => HTMLElement |
   }
 
   return {
+    resize(w, h) {
+      for (const m of fat) m.resolution.set(w, h)
+    },
+    dispose() {
+      envRT.dispose()
+      scene.environment = null
+    },
     update(t) {
       updateCamera(t)
       updateSheets(t)

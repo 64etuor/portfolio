@@ -2,7 +2,7 @@ import type * as THREE_NS from 'three'
 import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg } from '../_host/three/helpers'
 import type { ThreeContext, ThreeSetup } from '../_host/three/types'
 import { canvasFont, ensureSceneFonts } from '../_host/fonts'
-import { C, studioScene, buildFloor, buildMachine, buildScanner, buildTray, machineX, materials } from './build'
+import { C, studioScene, buildFloor, buildMachine, buildScanner, buildTray, loadAddons, machineX, materials, shadowTexture } from './build'
 import { CELL_TOP, COLS, HUD_LINES, MACHINES, OK_CELLS, REV_COL, REV_ROW, ROWS, T, TRAY_TOP, cellX, cellZ } from './data'
 
 // 타임라인:
@@ -47,6 +47,10 @@ export function createSetup(): ThreeSetup {
     rim2.position.set(-5, 1.5, -3)
     scene.add(rim2)
     scene.add(new THREE.HemisphereLight(0x2a3a44, 0x050505, 0.2))
+    // 정면 소프트 필(캐비닛 도어 이음매 · 라운드 엣지가 읽히도록 아주 약하게)
+    const fill = new THREE.DirectionalLight(0xa9c4d4, 0.6)
+    fill.position.set(3, 2.5, 10)
+    scene.add(fill)
     const scanLight = new THREE.PointLight(C.teal, 0, 1.4, 2)
     scene.add(scanLight)
     const redLight = new THREE.PointLight(C.red, 0, 1.6, 2)
@@ -60,15 +64,17 @@ export function createSetup(): ThreeSetup {
     ])
 
     // ── 지오메트리 ──
+    const A = await loadAddons()
     const M = materials(THREE)
-    scene.add(buildFloor(THREE))
-    const tray = buildTray(THREE, M)
+    const shadowTex = shadowTexture(THREE)
+    scene.add(buildFloor(THREE, shadowTex))
+    const tray = buildTray(THREE, A, M, shadowTex)
     scene.add(tray.root)
     const machines = MACHINES.map((def, i) => {
-      const m = buildMachine(THREE, M, def.kind)
+      const m = buildMachine(THREE, A, M, def.kind)
       m.group.position.x = machineX[i]
       const footY = def.kind === 'battery' ? CELL_TOP + 0.03 : 0.3
-      const sc = buildScanner(THREE, M, 2.2, def.kind === 'battery' ? tray.W - 0.04 : 1.4, def.kind === 'battery' ? tray.D - 0.04 : 0.95, footY)
+      const sc = buildScanner(THREE, A, M, 2.2, def.kind === 'battery' ? tray.W - 0.04 : 1.4, def.kind === 'battery' ? tray.D - 0.04 : 0.95, footY)
       m.group.add(sc.group)
       if (def.kind !== 'battery') {
         sc.sheetPivot.visible = false
@@ -215,12 +221,16 @@ export function createSetup(): ThreeSetup {
         tray.rev.visible = t < T.goneAt && !bar.ambient
         const frameFade = 1 - seg(t, 5.2, 6.0)
         tray.redFrameMat.opacity = det * (pulse + flash * 1.5) * frameFade
-                tray.redFrame.scale.setScalar(1 + flash * 0.6)
+        tray.redFrame.scale.setScalar(1 + flash * 0.6)
         tray.minus.visible = det > 0
         const slotMat = tray.slot.material as THREE_NS.MeshBasicMaterial
         slotMat.opacity = seg(t, 5.0, 5.8) * (0.55 + 0.15 * Math.sin(t * 3))
         redLight.position.set(rx, CELL_TOP + 0.15 + lift, rz)
         redLight.intensity = det * (0.12 * pulse + flash * 0.3) * (1 - seg(t, 5.0, 5.6))
+
+        // 예비기 덮개 유리: 클로즈업 배경에선 죽이고 풀백에서 드러냄
+        const cover = machines[3].coverMat
+        if (cover) cover.uniforms.uOp.value = 0.25 + 0.75 * easeInOutCubic(seg(t, 5.0, 6.8))
 
         // ── 시그널 타워 ──
         machines.forEach((m, i) => {
@@ -270,7 +280,9 @@ export function createSetup(): ThreeSetup {
         mcs.forEach((el, i) => {
           const o = seg(t, 5.5 + i * 0.18, 6.0 + i * 0.18)
           projectToScreen(ctx, tmp.set(machineX[i], 3.05, -0.82), proj)
-          placeLabel(el, proj.x, proj.y, proj.visible ? o : 0)
+          // 풀백 도중 화면 위로 잘리는 라벨(밑줄만 남는 현상) 방지 — 화면 상단 근처에선 숨김
+          const edge = seg(proj.y, 70, 120)
+          placeLabel(el, proj.x, proj.y, proj.visible ? o * edge : 0)
         })
       },
       dispose() {

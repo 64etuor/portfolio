@@ -1,8 +1,50 @@
 import type * as THREE_NS from 'three'
+import type { RoundedBoxGeometry as RBG } from 'three/examples/jsm/geometries/RoundedBoxGeometry.js'
+import type { LineSegments2 as LS2 } from 'three/examples/jsm/lines/LineSegments2.js'
+import type { LineSegmentsGeometry as LSG } from 'three/examples/jsm/lines/LineSegmentsGeometry.js'
+import type { LineMaterial as LM } from 'three/examples/jsm/lines/LineMaterial.js'
 import type { Three } from '../_host/three/types'
 import { D_SAT, FLOOR_Y, HS, K, RUNS, SPAN, START, defect, type Run } from './model'
 
 // 지오메트리/머티리얼 빌더.
+
+// ── three 애드온(코드스플릿 유지: 런타임에서 동적 import) ──
+export type Addons = {
+  RoundedBoxGeometry: typeof RBG
+  LineSegments2: typeof LS2
+  LineSegmentsGeometry: typeof LSG
+  LineMaterial: typeof LM
+}
+
+export async function loadAddons(): Promise<Addons> {
+  const [rb, ls2, lsg, lm] = await Promise.all([
+    import('three/examples/jsm/geometries/RoundedBoxGeometry.js'),
+    import('three/examples/jsm/lines/LineSegments2.js'),
+    import('three/examples/jsm/lines/LineSegmentsGeometry.js'),
+    import('three/examples/jsm/lines/LineMaterial.js'),
+  ])
+  return {
+    RoundedBoxGeometry: rb.RoundedBoxGeometry,
+    LineSegments2: ls2.LineSegments2,
+    LineSegmentsGeometry: lsg.LineSegmentsGeometry,
+    LineMaterial: lm.LineMaterial,
+  }
+}
+
+/** 픽셀 폭 팻 라인 세그먼트. pts: [ax,ay,az,bx,by,bz, ...] */
+function fatSegments(A: Addons, pts: ArrayLike<number>, opts: ConstructorParameters<typeof LM>[0]) {
+  const geo = new A.LineSegmentsGeometry()
+  geo.setPositions(Array.from(pts))
+  const mat = new A.LineMaterial({ transparent: true, ...opts })
+  const line = new A.LineSegments2(geo, mat)
+  line.frustumCulled = false
+  return { line, mat, geo }
+}
+
+/** LineSegmentsGeometry 의 인터리브 버퍼(세그먼트당 6 float) — 매 프레임 직접 갱신용. */
+export function segBuffer(geo: THREE_NS.BufferGeometry, name: 'instanceStart' | 'instanceColorStart') {
+  return (geo.getAttribute(name) as THREE_NS.InterleavedBufferAttribute).data
+}
 
 export const PHOS = 0xd7d7d7
 export const TEAL = 0x4fe0c4
@@ -161,32 +203,35 @@ export function buildSurface(THREE: Three) {
   return { surface, floor, uniforms }
 }
 
-// ── 프레임(바닥 사각, 세로축, 눈금) ─────────────────────────────────
-export function buildFrame(THREE: Three) {
+// ── 프레임(바닥 사각, 세로축, 눈금) — 팻 라인 ─────────────────────────
+export function buildFrame(THREE: Three, A: Addons) {
   const S = SPAN
   const y = FLOOR_Y
-  const pts: number[] = []
-  const L = (a: number[], b: number[]) => pts.push(...a, ...b)
-  L([-S, y, -S], [S, y, -S])
-  L([S, y, -S], [S, y, S])
-  L([S, y, S], [-S, y, S])
-  L([-S, y, S], [-S, y, -S])
-  // 세로축(불량률) — 뒤 왼쪽 모서리
-  L([S, y, -S], [S, 25 * HS, -S])
-  for (let d = 5; d <= 25; d += 5) L([S, d * HS, -S], [S - 0.18, d * HS, -S])
-  // 바닥 눈금
-  for (let i = -4; i <= 4; i++) {
-    const v = (i / 5) * S
-    L([v, y, S], [v, y, S + 0.12])
-    L([S, y, v], [S + 0.12, y, v])
+  const major: number[] = []
+  const minor: number[] = []
+  const L = (arr: number[], a: number[], b: number[]) => arr.push(...a, ...b)
+  L(major, [-S, y, -S], [S, y, -S])
+  L(major, [S, y, -S], [S, y, S])
+  L(major, [S, y, S], [-S, y, S])
+  L(major, [-S, y, S], [-S, y, -S])
+  // 세로축(불량률) — 뒤 오른쪽 모서리, 5% 마다 주 눈금 · 1% 마다 보조 눈금
+  L(major, [S, y, -S], [S, 25 * HS, -S])
+  for (let d = 1; d <= 25; d++) {
+    const len = d % 5 === 0 ? 0.2 : 0.08
+    L(d % 5 === 0 ? major : minor, [S, d * HS, -S], [S - len, d * HS, -S])
   }
-  const geo = new THREE.BufferGeometry()
-  geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3))
-  const mat = new THREE.LineBasicMaterial({
-    color: new THREE.Color(0x8d8d8d).multiplyScalar(0.55),
-    transparent: true,
-  })
-  return new THREE.LineSegments(geo, mat)
+  // 바닥 눈금(바깥쪽) — 코딩 단위 0.2 마다
+  for (let i = -5; i <= 5; i++) {
+    const v = (i / 5) * S
+    const len = i % 5 === 0 ? 0.18 : 0.1
+    L(i === 0 ? major : minor, [v, y, S], [v, y, S + len])
+    L(i === 0 ? major : minor, [S, y, v], [S + len, y, v])
+  }
+  const group = new THREE.Group()
+  const a = fatSegments(A, major, { color: new THREE.Color(0x8d8d8d).multiplyScalar(0.7), linewidth: 1.3, opacity: 0.9 })
+  const b = fatSegments(A, minor, { color: new THREE.Color(0x8d8d8d).multiplyScalar(0.5), linewidth: 1.0, opacity: 0.5 })
+  group.add(a.line, b.line)
+  return group
 }
 
 // ── 부드러운 원형 헤일로 텍스처 ──────────────────────────────────────
@@ -210,7 +255,7 @@ export const runColor = (r: Run) => (r.w < 0 ? BLUE : r.w > 0 ? AMBER : PHOS)
 export const runMeasured = (r: Run) => defect(r.a, r.p, r.w) + r.res
 
 // ── DOE 런: 구 인스턴스 + 헤일로 + 잔차 스템 ─────────────────────────
-export function buildRuns(THREE: Three, halo: THREE_NS.Texture) {
+export function buildRuns(THREE: Three, A: Addons, halo: THREE_NS.Texture) {
   const n = RUNS.length
   const sphere = new THREE.InstancedMesh(
     new THREE.SphereGeometry(0.075, 20, 14),
@@ -238,24 +283,20 @@ export function buildRuns(THREE: Three, halo: THREE_NS.Texture) {
   )
   halos.frustumCulled = false
 
-  const sgeo = new THREE.BufferGeometry()
-  sgeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 2 * 3), 3))
-  sgeo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 2 * 3), 3))
-  const stems = new THREE.LineSegments(
-    sgeo,
-    new THREE.LineBasicMaterial({
-      vertexColors: true,
-      transparent: true,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    }),
-  )
-  stems.frustumCulled = false
+  // 잔차 스템: 팻 라인(정점 색 · 가산) — 위치/색은 런타임이 인터리브 버퍼에 직접 기록
+  const st = fatSegments(A, new Float32Array(n * 6), {
+    vertexColors: true,
+    linewidth: 1.6,
+    blending: THREE.AdditiveBlending,
+    depthWrite: false,
+  })
+  st.geo.setColors(new Float32Array(n * 6))
+  const stems = st.line
   return { sphere, halos, stems }
 }
 
 // ── 경사 하강 트레일(튜브, drawRange 로 점진 공개) + 마커 ─────────────
-export function buildPath(THREE: Three, pts: THREE_NS.Vector3[]) {
+export function buildPath(THREE: Three, A: Addons, pts: THREE_NS.Vector3[]) {
   const curve = new THREE.CatmullRomCurve3(pts)
   const segs = pts.length - 1
   const radial = 6
@@ -283,53 +324,111 @@ export function buildPath(THREE: Three, pts: THREE_NS.Vector3[]) {
     }),
   )
   ring.rotation.x = -Math.PI / 2
-  const dropGeo = new THREE.BufferGeometry()
-  dropGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3))
-  const drop = new THREE.Line(
-    dropGeo,
-    new THREE.LineBasicMaterial({
-      color: new THREE.Color(TEAL).multiplyScalar(0.8),
-      transparent: true,
-    }),
-  )
-  drop.frustumCulled = false
+  const dr = fatSegments(A, new Float32Array(6), {
+    color: new THREE.Color(TEAL).multiplyScalar(0.8),
+    linewidth: 1.2,
+    depthWrite: false,
+  })
+  const drop = dr.line
   return { tube, segs, radial, marker, ring, drop }
 }
 
-// ── 초음파 혼 + 사출 케이스 ─────────────────────────────────────────
-export function buildHorn(THREE: Three) {
+// ── 초음파 스택(컨버터 · 부스터 · 혼) + 사출 케이스 ───────────────────────
+// 로컬 좌표: 혼 팁 면 y=0, 위로 부스터 → 컨버터. 케이스 상면 y≈0.30.
+export function buildHorn(THREE: Three, A: Addons) {
   const group = new THREE.Group()
-  const prof: Array<[number, number]> = [
-    [0.0, 0.0],
-    [0.15, 0.0],
-    [0.16, 0.05],
-    [0.2, 0.55],
-    [0.3, 1.05],
-    [0.33, 1.25],
-    [0.42, 1.27],
-    [0.42, 1.36],
-    [0.3, 1.38],
-    [0.3, 2.3],
-    [0.24, 2.32],
-    [0.24, 3.0],
-    [0.0, 3.0],
-  ]
-  const lathe = new THREE.LatheGeometry(
-    prof.map(([r, y]) => new THREE.Vector2(r, y)),
-    56,
-  )
-  const metal = new THREE.MeshStandardMaterial({
-    color: 0x80898f,
-    metalness: 1,
-    roughness: 0.36,
-    transparent: true,
-  })
-  const horn = new THREE.Mesh(lathe, metal)
-  group.add(horn)
+  const V = (r: number, y: number) => new THREE.Vector2(r, y)
+  const fade = (m: THREE_NS.MeshStandardMaterial) => ((m.transparent = true), m)
 
-  // 혼 끝 링(초음파 에너지)
+  // 머티리얼: 티타늄 혼(밝은 새틴) · 부스터(알루) · 컨버터 하우징(다크 아노다이즈) · 클램프
+  const titanium = fade(new THREE.MeshStandardMaterial({ color: 0xa3abb1, metalness: 1, roughness: 0.3 }))
+  const booster = fade(new THREE.MeshStandardMaterial({ color: 0x858e95, metalness: 1, roughness: 0.38 }))
+  const housing = fade(new THREE.MeshStandardMaterial({ color: 0x23292f, metalness: 0.7, roughness: 0.42 }))
+  const clampM = fade(new THREE.MeshStandardMaterial({ color: 0x2e353c, metalness: 0.6, roughness: 0.5 }))
+  const rubber = fade(new THREE.MeshStandardMaterial({ color: 0x0e1012, metalness: 0, roughness: 0.8 }))
+
+  const stack = new THREE.Group()
+  // 혼: 팁 모따기 → 카테노이드 곡선(r = r0·cosh) → 숄더 → 스터드 홈
+  const hp: THREE_NS.Vector2[] = [V(0, 0), V(0.138, 0), V(0.15, 0.012)]
+  const H = 1.08
+  const r0 = 0.15
+  const r1 = 0.3
+  const k = Math.acosh(r1 / r0) / H
+  for (let i = 1; i <= 24; i++) {
+    const y = 0.012 + (i / 24) * (H - 0.012)
+    hp.push(V(r0 * Math.cosh(k * y), y))
+  }
+  hp.push(V(0.3, 1.11), V(0.292, 1.12), V(0.27, 1.125))
+  const horn = new THREE.Mesh(new THREE.LatheGeometry(hp, 64), titanium)
+  // 혼 측면 플랫(렌치 플랫 느낌의 링 홈 2줄)
+  const groove = new THREE.Mesh(new THREE.TorusGeometry(0.295, 0.006, 8, 64), booster)
+  groove.rotation.x = Math.PI / 2
+  groove.position.y = 1.05
+  stack.add(horn, groove)
+
+  // 부스터: 바디 + 노달 마운팅 링(모따기)
+  const bp: THREE_NS.Vector2[] = [
+    V(0, 1.125),
+    V(0.27, 1.125),
+    V(0.27, 1.5),
+    V(0.3, 1.5),
+    V(0.4, 1.53),
+    V(0.405, 1.56),
+    V(0.405, 1.62),
+    V(0.4, 1.65),
+    V(0.3, 1.68),
+    V(0.255, 1.68),
+    V(0.245, 2.02),
+    V(0.27, 2.03),
+    V(0, 2.03),
+  ]
+  stack.add(new THREE.Mesh(new THREE.LatheGeometry(bp, 64), booster))
+
+  // 컨버터 하우징: 냉각 리브 + 상단 캡 + 커넥터
+  const cp: THREE_NS.Vector2[] = [V(0, 2.03), V(0.3, 2.03), V(0.31, 2.05)]
+  for (let r = 0; r < 7; r++) {
+    const y = 2.12 + r * 0.075
+    cp.push(V(0.31, y), V(0.325, y + 0.012), V(0.325, y + 0.035), V(0.31, y + 0.047))
+  }
+  cp.push(V(0.31, 2.72), V(0.31, 2.86), V(0.29, 2.9), V(0.12, 2.92), V(0.07, 2.92), V(0.07, 3.02), V(0.055, 3.04), V(0, 3.04))
+  stack.add(new THREE.Mesh(new THREE.LatheGeometry(cp, 64), housing))
+  // 커넥터 케이블(뒤로 휘어 빠짐)
+  const cable = new THREE.Mesh(
+    new THREE.TubeGeometry(
+      new THREE.CatmullRomCurve3([
+        new THREE.Vector3(0, 3.02, 0),
+        new THREE.Vector3(0.02, 3.16, -0.06),
+        new THREE.Vector3(0.12, 3.24, -0.32),
+        new THREE.Vector3(0.3, 3.08, -0.62),
+        new THREE.Vector3(0.45, 2.6, -0.85),
+        new THREE.Vector3(0.5, 2.0, -0.95),
+      ]),
+      32,
+      0.03,
+      8,
+      false,
+    ),
+    rubber,
+  )
+  stack.add(cable)
+
+  // 마운팅 클램프(링을 잡는 두 블록 + 볼트)
+  for (const sx of [-1, 1]) {
+    const blk = new THREE.Mesh(new A.RoundedBoxGeometry(0.16, 0.2, 0.34, 2, 0.03), clampM)
+    blk.position.set(sx * 0.47, 1.585, 0)
+    stack.add(blk)
+    for (const sz of [-1, 1]) {
+      const bolt = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.028, 0.03, 6), booster)
+      bolt.rotation.z = Math.PI / 2
+      bolt.position.set(sx * 0.56, 1.585, sz * 0.1)
+      stack.add(bolt)
+    }
+  }
+  group.add(stack)
+
+  // 혼 팁 링(초음파 에너지)
   const tip = new THREE.Mesh(
-    new THREE.TorusGeometry(0.16, 0.012, 8, 48),
+    new THREE.TorusGeometry(0.16, 0.008, 8, 64),
     new THREE.MeshBasicMaterial({
       color: new THREE.Color(TEAL).multiplyScalar(3),
       transparent: true,
@@ -339,32 +438,45 @@ export function buildHorn(THREE: Three) {
   tip.position.y = 0.02
   group.add(tip)
 
-  // 케이스(하판 + 상판), 용착 접합선
+  // 케이스(하판 + 상판, 라운드) · 스크루 보스 · 벤트 · 용착 접합선(라운드 사각 튜브)
   const caseGroup = new THREE.Group()
-  const shellMat = new THREE.MeshStandardMaterial({
-    color: 0x1a2128,
-    metalness: 0.1,
-    roughness: 0.45,
-    transparent: true,
-    opacity: 0.95,
-  })
-  const lower = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.16, 0.66), shellMat)
+  const lowerMat = fade(new THREE.MeshStandardMaterial({ color: 0x1a2128, metalness: 0.05, roughness: 0.42 }))
+  const upperMat = fade(new THREE.MeshStandardMaterial({ color: 0x222a33, metalness: 0.05, roughness: 0.36 }))
+  const detailMat = fade(new THREE.MeshStandardMaterial({ color: 0x0c0f12, metalness: 0.2, roughness: 0.6 }))
+  const lower = new THREE.Mesh(new A.RoundedBoxGeometry(1.0, 0.16, 0.66, 3, 0.035), lowerMat)
   lower.position.y = 0.08
-  const upper = new THREE.Mesh(new THREE.BoxGeometry(1.0, 0.14, 0.66), shellMat)
+  const upper = new THREE.Mesh(new A.RoundedBoxGeometry(1.0, 0.14, 0.66, 3, 0.04), upperMat)
   upper.position.y = 0.16 + 0.07 + 0.005
   caseGroup.add(lower, upper)
-  const edgeMat = new THREE.LineBasicMaterial({
-    color: new THREE.Color(PHOS).multiplyScalar(0.9),
-    transparent: true,
-  })
-  for (const m of [lower, upper]) {
-    const e = new THREE.LineSegments(new THREE.EdgesGeometry(m.geometry), edgeMat)
-    e.position.copy(m.position)
-    caseGroup.add(e)
+  for (const sx of [-1, 1])
+    for (const sz of [-1, 1]) {
+      const boss = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.006, 20), detailMat)
+      boss.position.set(sx * 0.42, 0.306, sz * 0.26)
+      caseGroup.add(boss)
+    }
+  for (let v = 0; v < 5; v++) {
+    const slot = new THREE.Mesh(new A.RoundedBoxGeometry(0.2, 0.006, 0.022, 1, 0.003), detailMat)
+    slot.position.set(0.28, 0.306, -0.1 + v * 0.05)
+    caseGroup.add(slot)
   }
-  // 용착 접합선(불량) — 얇은 발광 밴드
+  // 용착 접합선(불량) — 접합부를 감싸는 라운드 사각 발광 튜브
+  const rr = 0.04
+  const hw = 0.5 + 0.006
+  const hd = 0.33 + 0.006
+  const shape = new THREE.Shape()
+  shape.moveTo(-hw + rr, -hd)
+  shape.lineTo(hw - rr, -hd)
+  shape.quadraticCurveTo(hw, -hd, hw, -hd + rr)
+  shape.lineTo(hw, hd - rr)
+  shape.quadraticCurveTo(hw, hd, hw - rr, hd)
+  shape.lineTo(-hw + rr, hd)
+  shape.quadraticCurveTo(-hw, hd, -hw, hd - rr)
+  shape.lineTo(-hw, -hd + rr)
+  shape.quadraticCurveTo(-hw, -hd, -hw + rr, -hd)
+  const loop = shape.getSpacedPoints(160).map((p) => new THREE.Vector3(p.x, 0, p.y))
+  loop.pop()
   const seam = new THREE.Mesh(
-    new THREE.BoxGeometry(1.03, 0.018, 0.69),
+    new THREE.TubeGeometry(new THREE.CatmullRomCurve3(loop, true), 200, 0.007, 6, true),
     new THREE.MeshBasicMaterial({
       color: new THREE.Color(RED).multiplyScalar(3),
       transparent: true,
@@ -374,7 +486,22 @@ export function buildHorn(THREE: Three) {
   caseGroup.add(seam)
   group.add(caseGroup)
 
-  return { group, horn, tip, caseGroup, seam, metal, shellMat, edgeMat }
+  const mats = [titanium, booster, housing, clampM, rubber, lowerMat, upperMat, detailMat]
+  return { group, horn: stack, tip, caseGroup, seam, mats }
+}
+
+/** 접지 그림자 텍스처(검정 · 방사 감쇠). */
+export function shadowTexture(THREE: Three) {
+  const c = document.createElement('canvas')
+  c.width = c.height = 64
+  const g = c.getContext('2d')!
+  const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32)
+  grd.addColorStop(0, 'rgba(0,0,0,0.85)')
+  grd.addColorStop(0.45, 'rgba(0,0,0,0.5)')
+  grd.addColorStop(1, 'rgba(0,0,0,0)')
+  g.fillStyle = grd
+  g.fillRect(0, 0, 64, 64)
+  return new THREE.CanvasTexture(c)
 }
 
 // ── 부유 입자 ───────────────────────────────────────────────────────

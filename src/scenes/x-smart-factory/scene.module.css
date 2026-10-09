@@ -362,3 +362,11 @@
     text-align: right;
   }
 }
+
+/* 중간 폭(≈1280×720): 상단 패널 카드끼리·상단 경계와 겹치지 않게 한 단계 축소 */
+@container (min-width: 700px) and (max-width: 1440px) {
+  .card {
+    transform-origin: 50% 100%;
+    transform: translate(-50%, calc(-100% - 26px)) scale(0.84);
+  }
+}

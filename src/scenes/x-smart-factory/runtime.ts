@@ -2,6 +2,7 @@ import type * as THREE from 'three'
 import { easeInOutCubic, easeOutBack, easeOutCubic, loopT, seg } from '../_host/three/helpers'
 import type { ThreeSetup } from '../_host/three/types'
 import { actAt, bobAt, buildWorld, riseAt } from './build'
+import { loadAddons } from './props'
 import { BENCH_X, COLORS, LIFT, LINES, LOG_IDS, PANELS, SYSTEMS, T } from './data'
 
 // 타임라인: 0–0.8 수작업 라인(종이) · 0.8–3.4 스캔 스윕 · 1.5–5.6 트윈 부상 ·
@@ -10,10 +11,21 @@ import { BENCH_X, COLORS, LIFT, LINES, LOG_IDS, PANELS, SYSTEMS, T } from './dat
 const ERP_LOG_TAGS = ['IN', 'OUT', 'STOCK', 'IN', 'MOVE', 'OUT', 'STOCK', 'IN']
 
 export function createSetup(): ThreeSetup {
-  return (ctx) => {
-    const { THREE: TH, scene, camera, container } = ctx
+  return async (ctx) => {
+    const { THREE: TH, scene, camera, container, renderer } = ctx
     scene.fog = new TH.FogExp2(COLORS.bg, 0.02)
-    const W = buildWorld(TH, scene)
+
+    // 금속·클레이가 읽히도록 절차적 환경맵(낮은 강도)
+    const [addons, { RoomEnvironment }] = await Promise.all([loadAddons(), import('three/examples/jsm/environments/RoomEnvironment.js')])
+    const pmrem = new TH.PMREMGenerator(renderer)
+    const room = new RoomEnvironment()
+    const envRT = pmrem.fromScene(room, 0.04)
+    room.dispose()
+    pmrem.dispose()
+    scene.environment = envRT.texture
+    scene.environmentIntensity = 0.22
+
+    const W = buildWorld(TH, scene, addons)
 
     /* HUD 요소(형제 DOM) — data-k 로 찾고, 리렌더로 교체되면 다시 찾는다. */
     const root = container.parentElement
@@ -75,10 +87,15 @@ export function createSetup(): ThreeSetup {
     return {
       resize(w, h) {
         aspect = w / h
-        W.pxUniform.value = 1.6 * h * ctx.size.dpr
+        W.setRes(w, h, ctx.size.dpr)
+      },
+      dispose() {
+        scene.environment = null
+        envRT.dispose()
       },
       update(t) {
         W.U.uTime.value = t
+        W.figures.update(t)
 
         /* 카메라 */
         const cp = easeInOutCubic(seg(t, 0, T.hero))
@@ -146,13 +163,15 @@ export function createSetup(): ThreeSetup {
           const d = p.x - sx
           const flash = Math.exp(-d * d * 2.2) * sa
           const sc = Math.max(0.0001, 1 - gone)
-          q.setFromEuler(e3.set(-Math.PI / 2, 0, p.ry))
-          m4.compose(v.set(p.x, p.y + gone * 0.25, p.z), q, s.set(sc, sc, 1))
+          q.setFromEuler(e3.set(0, p.ry + gone * 0.4, 0))
+          m4.compose(v.set(p.x, p.y + gone * 0.25, p.z), q, s.set(sc, sc, sc))
           W.paperMesh.setMatrixAt(i, m4)
-          col.setRGB(0.55 + flash * 2.5, 0.52 + flash * 2.6, 0.46 + flash * 2.6)
+          W.clipMesh.setMatrixAt(i, m4)
+          col.setRGB(0.8 + flash * 2.5, 0.78 + flash * 2.6, 0.74 + flash * 2.6)
           W.paperMesh.setColorAt(i, col)
         })
         W.paperMesh.instanceMatrix.needsUpdate = true
+        W.clipMesh.instanceMatrix.needsUpdate = true
         if (W.paperMesh.instanceColor) W.paperMesh.instanceColor.needsUpdate = true
 
         /* 패널 노드 */

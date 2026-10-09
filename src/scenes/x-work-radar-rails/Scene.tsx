@@ -52,11 +52,11 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
             </span>
           </Anchor>
           {L.rings.map((r, i) => (
-            <Anchor key={r} k={`ring${i}`} cls={i === 2 ? s.amberHi : s.amber} side>
+            <Anchor key={r} k={`ring${i}`} cls={`${i === 2 ? s.amberHi : s.amber} ${s.lead}`}>
               {r}
             </Anchor>
           ))}
-          <Anchor k="killed" cls={s.red} below>
+          <Anchor k="killed" cls={`${s.red} ${s.chip}`} below>
             {L.killed}
           </Anchor>
           <Anchor k="proposal" cls={s.prop}>

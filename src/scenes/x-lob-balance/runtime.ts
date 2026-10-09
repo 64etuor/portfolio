@@ -1,18 +1,26 @@
 import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg } from '../_host/three/helpers'
 import type { ThreeContext, ThreeSetupResult } from '../_host/three/types'
 import {
+  BELT_TOP,
+  buildBenches,
+  buildConveyor,
   buildCutter,
   buildDust,
-  buildFloorOverlay,
+  buildFloor,
+  buildGaugeGeometry,
+  buildGhost,
+  buildGrounding,
   buildJig,
-  buildLineBase,
   buildPlane,
   buildProducts,
   buildSparks,
   buildTaktLine,
   buildTower,
   COL,
+  CONV_Z,
   hdr,
+  type Kit,
+  radialTexture,
   stationX,
   type Tower,
 } from './build'
@@ -74,10 +82,21 @@ function findHud(container: HTMLElement) {
 
 export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
   const { THREE, scene, camera, bloom } = ctx
-  const [{ Reflector }, { mergeGeometries }] = await Promise.all([
-    import('three/examples/jsm/objects/Reflector.js'),
+  const [{ RoundedBoxGeometry }, { mergeGeometries }, { RoomEnvironment }] = await Promise.all([
+    import('three/examples/jsm/geometries/RoundedBoxGeometry.js'),
     import('three/examples/jsm/utils/BufferGeometryUtils.js'),
+    import('three/examples/jsm/environments/RoomEnvironment.js'),
   ])
+  const kit: Kit = { RoundedBox: RoundedBoxGeometry, merge: (g) => mergeGeometries(g) }
+
+  // ── 환경맵(금속/크롬 반사) — 낮은 강도 ──
+  const pmrem = new THREE.PMREMGenerator(ctx.renderer)
+  const room = new RoomEnvironment()
+  const envRT = pmrem.fromScene(room, 0.04)
+  room.dispose()
+  pmrem.dispose()
+  scene.environment = envRT.texture
+  scene.environmentIntensity = 0.45
 
   scene.fog = new THREE.FogExp2(new THREE.Color(BG), 0.032)
   if (bloom) {
@@ -86,44 +105,41 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
     bloom.threshold = 0.5
   }
 
-  // ── lights (지그/베이스/제품의 금속면용) ──
-  scene.add(new THREE.HemisphereLight(0x4ab3cc, 0x050607, 0.35))
-  const key = new THREE.DirectionalLight(0xd7d7d7, 0.9)
+  // ── lights: 키(좌상 전면) + 차가운 림(후면) ──
+  scene.add(new THREE.HemisphereLight(0x4ab3cc, 0x050607, 0.25))
+  const key = new THREE.DirectionalLight(0xd7d7d7, 1.1)
   key.position.set(-4, 8, 6)
   scene.add(key)
+  const rim = new THREE.DirectionalLight(COL.blue, 0.9)
+  rim.position.set(3, 4, -7)
+  scene.add(rim)
   const warm = new THREE.PointLight(COL.amber, 0, 6, 1.6)
   scene.add(warm)
 
-  // ── floor: half-res reflector + 반투명 그리드 오버레이 ──
-  const rScale = 0.5
-  const reflector = new Reflector(new THREE.PlaneGeometry(80, 80), {
-    textureWidth: Math.max(2, Math.floor(ctx.size.w * ctx.size.dpr * rScale)),
-    textureHeight: Math.max(2, Math.floor(ctx.size.h * ctx.size.dpr * rScale)),
-    color: 0x3c4347,
-  })
-  reflector.rotation.x = -Math.PI / 2
-  scene.add(reflector)
-  scene.add(buildFloorOverlay(THREE, BG))
+  // ── floor: 무광 다크 플로어 + 원거리 페이드 그리드 + 소프트 접지 ──
+  const radial = radialTexture(THREE)
+  scene.add(buildFloor(THREE, BG))
+  const ground = buildGrounding(THREE, radial, LINE_LEN)
+  scene.add(ground.group)
 
-  // ── line base ──
-  const base = buildLineBase(THREE, LINE_LEN)
+  // ── line: 작업대 + 컨베이어 ──
+  const benches = buildBenches(THREE, kit)
+  scene.add(benches.mesh, benches.lights)
+  const base = buildConveyor(THREE, kit, LINE_LEN)
   scene.add(base.group)
 
-  // ── towers ──
-  const unitBox = new THREE.BoxGeometry(1, 1, 1)
-  unitBox.translate(0, 0.5, 0)
-  const unitEdges = new THREE.EdgesGeometry(unitBox)
+  // ── glass C/T gauges ──
+  const gaugeGeo = buildGaugeGeometry(THREE)
   const bnByIdx = new Map(BOTTLENECKS.map((b) => [b.idx, b]))
   const towers: Tower[] = []
   for (let i = 0; i < STATIONS; i++) {
     const isBn = bnByIdx.has(i)
-    const tw = buildTower(THREE, stationX(i), isBn ? COL.blue : COL.teal, unitBox, unitEdges)
+    const tw = buildTower(THREE, stationX(i), isBn ? COL.blue : COL.teal, gaugeGeo)
     tw.uni.uTakt.value = LEVEL
     tw.uni.uHotAmt.value = isBn ? 1 : 0
     if (!isBn) {
-      tw.uni.uColor.value.multiplyScalar(0.55)
-      tw.edgeMat.opacity = 0.45
-      tw.capMat.opacity = 0.45
+      tw.uni.uColor.value.multiplyScalar(0.62)
+      tw.uni.uAlpha.value = 0.7
     }
     scene.add(tw.group)
     towers.push(tw)
@@ -134,23 +150,17 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
     const x = stationX(b.idx)
     const h0 = heightOf(b, b.ctBefore)
     const h1 = heightOf(b, b.ctAfter)
-    const ghostMat = new THREE.LineBasicMaterial({
-      color: hdr(THREE, COL.red, 1.8),
-      transparent: true,
-      opacity: 0,
-      blending: THREE.AdditiveBlending,
-      depthWrite: false,
-    })
-    const ghost = new THREE.LineSegments(unitEdges, ghostMat)
-    ghost.scale.set(TOWER_W + 0.02, h0, TOWER_W + 0.02)
-    ghost.position.x = x
-    scene.add(ghost)
+    const ghost = buildGhost(THREE, gaugeGeo)
+    ghost.mesh.scale.set(1.02, h0, 1.02)
+    ghost.mesh.position.x = x
+    ghost.uni.uH.value = h0
+    scene.add(ghost.mesh)
 
-    const jig = buildJig(THREE, b.key === 'neck' ? 'cut' : 'test', mergeGeometries)
+    const jig = buildJig(THREE, b.key === 'neck' ? 'cut' : 'test', kit)
     jig.group.position.x = x
     scene.add(jig.group)
 
-    const cutter = buildCutter(THREE)
+    const cutter = buildCutter(THREE, radial)
     cutter.group.position.x = x
     scene.add(cutter.group)
 
@@ -159,7 +169,7 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
     sparks.uni.uWin.value.set(b.cut[0], b.cut[1])
     sparks.uni.uH.value.set(h0, h1)
     scene.add(sparks.points)
-    return { b, x, h0, h1, ghostMat, jig, cutter, sparks }
+    return { b, x, h0, h1, ghost, jig, cutter, sparks }
   })
 
   // ── bottleneck plane + takt line ──
@@ -172,7 +182,7 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
   const colTeal = new THREE.Color(COL.teal)
 
   // ── products ──
-  const prod = buildProducts(THREE, PRODUCTS)
+  const prod = buildProducts(THREE, kit, PRODUCTS)
   scene.add(prod.mesh, prod.strip)
   const m4 = new THREE.Matrix4()
   const q = new THREE.Quaternion()
@@ -180,7 +190,7 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
   const pv = new THREE.Vector3()
 
   // ── dust ──
-  const dust = buildDust(THREE, 420)
+  const dust = buildDust(THREE, 300)
   scene.add(dust.points)
 
   // ── camera path ──
@@ -192,8 +202,8 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
   const tgt = new THREE.Vector3()
   const dir = new THREE.Vector3()
 
-  const colLevelTeal = hdr(THREE, COL.teal, 2.4)
-  const colLevelRed = hdr(THREE, COL.red, 2.4)
+  const colLevelTeal = hdr(THREE, COL.teal, 1.1)
+  const colLevelRed = hdr(THREE, COL.red, 2.0)
   const tmpCol = new THREE.Color()
   const anchor = new THREE.Vector3()
   const scr = { x: 0, y: 0, visible: false }
@@ -212,6 +222,8 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
   applyScale()
 
   const heights = new Array<number>(STATIONS).fill(0)
+  const stCol = new THREE.Color()
+  const colAmber = new THREE.Color(COL.amber)
   const h = findHud(ctx.container)
 
   const update = (t: number) => {
@@ -252,8 +264,8 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
     for (let i = 0; i < STATIONS; i++) {
       const tw = towers[i]
       const hh = heights[i]
-      tw.body.scale.y = hh
-      tw.edges.scale.y = hh
+      tw.shell.scale.y = hh
+      tw.core.scale.y = Math.max(0.001, hh - 0.012)
       tw.cap.position.y = hh
       tw.uni.uH.value = hh
       tw.uni.uTime.value = t
@@ -263,6 +275,15 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
         // 병목 → 균형: 블루 → 틸
         tw.uni.uColor.value.setHex(COL.blue).lerp(colTeal, levelT)
       }
+      // 바닥 빛 웅덩이 + 작업대 상태 라이트
+      const bn = bnByIdx.get(i)
+      stCol.copy(tw.uni.uColor.value).multiplyScalar((0.05 + 0.03 * hh) * (bn ? 1.3 : 1) + 0.12 * tw.uni.uPulse.value)
+      ground.pools.setColorAt(i, stCol)
+      if (bn) {
+        const okP = seg(t, bn.cut[1] - 0.2, bn.cut[1] + 0.4)
+        stCol.copy(colRed).lerp(colAmber, seg(t, bn.drop[0], bn.cut[0])).lerp(colTeal, okP).multiplyScalar(2.2)
+      } else stCol.setHex(COL.teal).multiplyScalar(1.1)
+      benches.lights.setColorAt(i, stCol)
     }
 
     // ── rigs ──
@@ -273,7 +294,8 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
       const cutP = seg(t, b.cut[0], b.cut[1])
       const cur = heights[b.idx]
       // ghost(이전 높이)
-      r.ghostMat.opacity = 0.9 * seg(t, b.cut[0], b.cut[0] + 0.3) * (1 - 0.65 * seg(t, b.cut[1], b.cut[1] + 1.0))
+      r.ghost.uni.uAlpha.value = 0.9 * seg(t, b.cut[0], b.cut[0] + 0.3) * (1 - seg(t, b.cut[1], b.cut[1] + 1.4))
+      r.ghost.mesh.visible = r.ghost.uni.uAlpha.value > 0.001
       // jig
       const dp = seg(t, b.drop[0], b.drop[1])
       r.jig.group.visible = t >= b.drop[0]
@@ -315,6 +337,8 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
       const jo = seg(t, b.drop[0] + 0.2, b.drop[1]) * (1 - seg(t, b.cut[1] + 0.4, b.cut[1] + 1.0))
       placeLabel(h.jig[k], scr.x, scr.y, r.jig.group.visible ? jo : 0)
     }
+    if (ground.pools.instanceColor) ground.pools.instanceColor.needsUpdate = true
+    if (benches.lights.instanceColor) benches.lights.instanceColor.needsUpdate = true
     warm.intensity = warmI * 9 * (0.8 + 0.2 * Math.sin(t * 51))
 
     // ── bottleneck plane ──
@@ -342,17 +366,15 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
       const x = -LINE_LEN / 2 + u
       const edgeFade = Math.min(1, u / 0.6, (LINE_LEN - u) / 0.6)
       const s = Math.max(0.001, edgeFade)
-      pv.set(x, 0.17 + 0.065, 0)
+      pv.set(x, BELT_TOP, CONV_Z)
       sc.set(s, s, s)
       m4.compose(pv, q, sc)
       prod.mesh.setMatrixAt(i, m4)
-      pv.y = 0.17 + 0.135
-      m4.compose(pv, q, sc)
       prod.strip.setMatrixAt(i, m4)
     }
     prod.mesh.instanceMatrix.needsUpdate = true
     prod.strip.instanceMatrix.needsUpdate = true
-    prod.mat.emissiveIntensity = 0.35 + 0.35 * hot
+    base.beltTex.offset.x = -(d / 0.11) % 1
     prod.stripMat.color.setHex(COL.teal).multiplyScalar(1.6 + 1.6 * hot)
     base.railMat.color.setHex(COL.blue).multiplyScalar(0.7 + 0.8 * hot)
 
@@ -370,12 +392,12 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
 
   return {
     update,
-    resize(w, hgt) {
-      reflector.getRenderTarget().setSize(Math.max(2, Math.floor(w * ctx.size.dpr * rScale)), Math.max(2, Math.floor(hgt * ctx.size.dpr * rScale)))
+    resize() {
       applyScale()
     },
     dispose() {
-      reflector.dispose()
+      envRT.dispose()
+      scene.environment = null
     },
   }
 }

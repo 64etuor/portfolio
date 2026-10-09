@@ -17,7 +17,10 @@ import {
   buildRuns,
   buildSurface,
   haloTexture,
+  loadAddons,
   runColor,
+  segBuffer,
+  shadowTexture,
   runMeasured,
   TEAL,
 } from './build'
@@ -59,25 +62,33 @@ export async function setupWeldDoe(ctx: ThreeContext): Promise<ThreeSetupResult>
     ctx.bloom.threshold = 0.42
   }
 
+  const A = await loadAddons()
   const halo = haloTexture(THREE)
   const { surface, floor, uniforms } = buildSurface(THREE)
   scene.add(floor, surface)
-  const frame = buildFrame(THREE)
+  const frame = buildFrame(THREE, A)
   scene.add(frame)
 
-  const runs = buildRuns(THREE, halo)
+  const runs = buildRuns(THREE, A, halo)
   scene.add(runs.sphere, runs.stems, runs.halos)
 
   const path2 = descentPath(160)
   const pathPts = path2.map(([a, p]) => new THREE.Vector3(a * SPAN, defect(a, p, 0) * HS + 0.045, p * SPAN))
-  const path = buildPath(THREE, pathPts)
+  const path = buildPath(THREE, A, pathPts)
   scene.add(path.tube, path.marker, path.ring, path.drop)
 
-  const horn = buildHorn(THREE)
+  const horn = buildHorn(THREE, A)
   horn.group.position.set(START.a * SPAN, 0, START.p * SPAN)
   horn.group.rotation.y = 0.5
   horn.group.scale.setScalar(0.72)
   scene.add(horn.group)
+  // 케이스 접지 그림자(혼과 함께 페이드)
+  const caseShadowMat = new THREE.MeshBasicMaterial({ map: shadowTexture(THREE), transparent: true, depthWrite: false, color: 0x000000 })
+  const caseShadow = new THREE.Mesh(new THREE.PlaneGeometry(1.7, 1.3), caseShadowMat)
+  caseShadow.rotation.x = -Math.PI / 2
+  caseShadow.position.y = 0.012
+  caseShadow.renderOrder = 1
+  horn.caseGroup.add(caseShadow)
 
   const dust = buildDust(THREE, halo)
   scene.add(dust.pts)
@@ -85,7 +96,10 @@ export async function setupWeldDoe(ctx: ThreeContext): Promise<ThreeSetupResult>
   const hemi = new THREE.HemisphereLight(0x9fc4d0, 0x0a0806, 0.6)
   const key = new THREE.DirectionalLight(0xffffff, 1.6)
   key.position.set(4, 8, 5)
-  scene.add(hemi, key)
+  // 콜드 림 — 혼 실루엣 분리(곡면은 자체 셰이딩이라 영향 없음)
+  const rim = new THREE.DirectionalLight(0x8fd8ff, 0.55)
+  rim.position.set(-5, 3, -6)
+  scene.add(hemi, key, rim)
 
   // HUD 노드 캐시(지연)
   let hud: Hud | null = null
@@ -159,10 +173,9 @@ export async function setupWeldDoe(ctx: ThreeContext): Promise<ThreeSetupResult>
     horn.horn.position.y = 0.305 + vib + lift * 2.2
     horn.tip.position.y = horn.horn.position.y + 0.01
     horn.tip.scale.setScalar(1 + 0.15 * Math.sin(t * 40) * (1 - lift))
-    horn.metal.opacity = hornA
+    for (const m of horn.mats) m.opacity = hornA
     ;(horn.tip.material as THREE_NS.MeshBasicMaterial).opacity = hornA
-    horn.shellMat.opacity = 0.95 * hornA
-    horn.edgeMat.opacity = hornA
+    caseShadowMat.opacity = hornA
     const seamPulse = 0.6 + 0.4 * Math.sin(t * 9)
     ;(horn.seam.material as THREE_NS.MeshBasicMaterial).opacity = hornA * seamPulse
     horn.caseGroup.position.y = -0.2 * lift
@@ -170,8 +183,10 @@ export async function setupWeldDoe(ctx: ThreeContext): Promise<ThreeSetupResult>
     // ── DOE 런 ──
     const sPos = runs.halos.geometry.getAttribute('position') as THREE_NS.BufferAttribute
     const sCol = runs.halos.geometry.getAttribute('color') as THREE_NS.BufferAttribute
-    const stP = runs.stems.geometry.getAttribute('position') as THREE_NS.BufferAttribute
-    const stC = runs.stems.geometry.getAttribute('color') as THREE_NS.BufferAttribute
+    const stP = segBuffer(runs.stems.geometry, 'instanceStart')
+    const stC = segBuffer(runs.stems.geometry, 'instanceColorStart')
+    const sp = stP.array as Float32Array
+    const sc = stC.array as Float32Array
     const runSpan = TL.runs[1] - TL.runs[0] - 0.45
     RUNS.forEach((r, i) => {
       const t0 = TL.runs[0] + (i / (RUNS.length - 1)) * runSpan
@@ -190,12 +205,21 @@ export async function setupWeldDoe(ctx: ThreeContext): Promise<ThreeSetupResult>
       col.set(runColor(r)).multiplyScalar(0.4 * pop * bright)
       sCol.setXYZ(i, col.r, col.g, col.b)
       const ys = surfaceY(r.a, r.p, st)
-      stP.setXYZ(i * 2, x, y, z)
-      stP.setXYZ(i * 2 + 1, x, Math.min(ys, y), z)
+      const o = i * 6
+      sp[o] = x
+      sp[o + 1] = y
+      sp[o + 2] = z
+      sp[o + 3] = x
+      sp[o + 4] = Math.min(ys, y)
+      sp[o + 5] = z
       col.set(runColor(r)).multiplyScalar(0.9 * Math.min(1, pop) * bright)
-      stC.setXYZ(i * 2, col.r, col.g, col.b)
+      sc[o] = col.r
+      sc[o + 1] = col.g
+      sc[o + 2] = col.b
       col.multiplyScalar(0.15)
-      stC.setXYZ(i * 2 + 1, col.r, col.g, col.b)
+      sc[o + 3] = col.r
+      sc[o + 4] = col.g
+      sc[o + 5] = col.b
     })
     runs.sphere.instanceMatrix.needsUpdate = true
 
@@ -224,11 +248,16 @@ export async function setupWeldDoe(ctx: ThreeContext): Promise<ThreeSetupResult>
     const ringK = opt > 0 ? (t * 0.8) % 1 : 0
     path.ring.scale.setScalar(1 + ringK * 5)
     ;(path.ring.material as THREE_NS.MeshBasicMaterial).opacity = opt * (1 - ringK) * 0.9
-    const dp = path.drop.geometry.getAttribute('position') as THREE_NS.BufferAttribute
-    dp.setXYZ(0, ma * SPAN, my, mp * SPAN)
-    dp.setXYZ(1, ma * SPAN, FLOOR_Y, mp * SPAN)
-    dp.needsUpdate = true
-    ;(path.drop.material as THREE_NS.LineBasicMaterial).opacity = showM * 0.7
+    const dpb = segBuffer(path.drop.geometry, 'instanceStart')
+    const dp = dpb.array as Float32Array
+    dp[0] = ma * SPAN
+    dp[1] = my
+    dp[2] = mp * SPAN
+    dp[3] = ma * SPAN
+    dp[4] = FLOOR_Y
+    dp[5] = mp * SPAN
+    dpb.needsUpdate = true
+    path.drop.material.opacity = showM * 0.7
     const segsShown = Math.floor(dk * path.segs)
     path.tube.geometry.setDrawRange(0, segsShown * path.radial * 6)
     ;(path.tube.material as THREE_NS.MeshBasicMaterial).opacity = 1 - seg(t, TL.ambient, TL.ambient + 2.5)

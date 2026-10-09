@@ -1,7 +1,20 @@
 import type * as THREE from 'three'
 import { easeInOutCubic, easeOutCubic, loopT, placeLabel, seg } from '../_host/three/helpers'
 import type { ThreeContext, ThreeSetupResult } from '../_host/three/types'
-import { buildEdges, buildGate, buildGraph, buildHaze, buildNodes, buildSparks, curvePoint, makeDotTexture } from './build'
+import {
+  buildEdges,
+  buildFatEdges,
+  buildGate,
+  buildGraph,
+  buildHaze,
+  buildLayerRings,
+  buildLotShell,
+  buildNodes,
+  buildSparks,
+  curvePoint,
+  loadAddons,
+  makeDotTexture,
+} from './build'
 import { AMBIENT_PERIOD, EDGE_SEGS, HERO, LAYERS, T } from './data'
 
 // 타임라인 런타임 — 모든 시각 상태를 t 에서 결정적으로 계산한다.
@@ -11,7 +24,8 @@ const TEAL: [number, number, number] = [0.31, 0.88, 0.77]
 const AMBER: [number, number, number] = [0.85, 0.54, 0.24]
 const RED: [number, number, number] = [1.0, 0.16, 0.13]
 const WHITE_TEAL: [number, number, number] = [0.75, 1.0, 0.95]
-const LAYER_BASE = [0.3, 0.22, 0.17, 0.13]
+// 노드 기본 자체발광(형태는 조명·환경맵이 만든다).
+const LAYER_BASE = [0.05, 0.04, 0.034, 0.03]
 
 const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x)
 
@@ -95,9 +109,22 @@ function stateAt(t: number): State {
   }
 }
 
-export function setupSnTrace(ctx: ThreeContext): ThreeSetupResult {
-  const { THREE: T3, scene, camera } = ctx
+export async function setupSnTrace(ctx: ThreeContext): Promise<ThreeSetupResult> {
+  const { THREE: T3, scene, camera, renderer } = ctx
+  const [A, { RoomEnvironment }] = await Promise.all([loadAddons(), import('three/examples/jsm/environments/RoomEnvironment.js')])
   const g = buildGraph()
+
+  // 환경맵(금속 노드 반사) + 키/림 — 낮은 세기.
+  const pmrem = new T3.PMREMGenerator(renderer)
+  const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04)
+  scene.environment = envRT.texture
+  scene.environmentIntensity = 0.42
+  pmrem.dispose()
+  const key = new T3.DirectionalLight(0xe8eef2, 1.1)
+  key.position.set(-6, 9, 12)
+  const rim = new T3.DirectionalLight(0x4ab3cc, 0.9)
+  rim.position.set(7, 2, -10)
+  scene.add(key, rim, new T3.HemisphereLight(0x1a2630, 0x050608, 0.6))
   const bg = new T3.Color('#05060a')
   const fogAmber = new T3.Color('#1c1309')
   const fog = new T3.FogExp2(bg.getHex(), 0.02)
@@ -106,7 +133,7 @@ export function setupSnTrace(ctx: ThreeContext): ThreeSetupResult {
   const tex = makeDotTexture(T3)
   const edges = buildEdges(T3, g)
   scene.add(edges.lines)
-  const nodes = buildNodes(T3, g)
+  const nodes = buildNodes(T3, g, A.RoundedBox)
   for (const m of nodes) scene.add(m)
   const haze = buildHaze(T3, 1400, tex)
   scene.add(haze)
@@ -129,11 +156,18 @@ export function setupSnTrace(ctx: ThreeContext): ThreeSetupResult {
     scene.add(r)
     return r
   })
-  // 원인 LOT 하이라이트 셸(와이어 박스)
-  const lotShell = new T3.LineSegments(
-    new T3.EdgesGeometry(new T3.BoxGeometry(0.52, 0.52, 0.52)),
-    new T3.LineBasicMaterial({ color: 0xd98a3d, transparent: true, blending: T3.AdditiveBlending, depthWrite: false, fog: false }),
-  )
+  // 하이라이트 엣지(팻 라인): 영향 군집 + 역추적 경로. 기본 섬유장은 1px 로 아주 옅게 둔다.
+  const aff = buildFatEdges(A, g, g.affectedEdges, 12, 1.35)
+  const path = buildFatEdges(A, g, g.pathEdges, 20, 2.2)
+  scene.add(aff.lines, path.lines)
+  const affEdgeSet = new Uint8Array(g.eFrom.length)
+  for (const e of g.affectedEdges) affEdgeSet[e] = 1
+  // 레이어 단면 링(계측 프레임)
+  const rings2 = buildLayerRings(A)
+  scene.add(rings2.lines)
+  // 원인 LOT 하이라이트 셸(팻 라인 브래킷)
+  const shell = buildLotShell(A)
+  const lotShell = shell.lines
   const lp = g.lot * 3
   lotShell.position.set(g.pos[lp], g.pos[lp + 1], g.pos[lp + 2])
   scene.add(lotShell)
@@ -209,6 +243,13 @@ export function setupSnTrace(ctx: ThreeContext): ThreeSetupResult {
   const scaleList = Array.from(new Set([...g.affectedList, ...g.path]))
 
   const cp = { x: 0, y: 0, z: 0 }
+  // 기본 섬유 정점별 감쇠(엣지 위치 s 의 함수 — 모든 엣지 공통).
+  const edgeFade = new Float32Array(EDGE_SEGS * 2)
+  for (let k = 0; k < EDGE_SEGS * 2; k++) {
+    const s = edges.vS[k]
+    edgeFade[k] = 0.22 + 0.78 * Math.pow(Math.abs(2 * s - 1), 1.4)
+  }
+  const fatMats = [aff.mat, path.mat, rings2.mat, shell.mat]
   const camTarget = new T3.Vector3(-1.1, 0.45, 0)
 
   const update = (t: number) => {
@@ -233,7 +274,7 @@ export function setupSnTrace(ctx: ThreeContext): ThreeSetupResult {
     const E = g.eFrom.length
     const VPE = EDGE_SEGS * 2
     const calmK = 1 - 0.5 * st.calm
-    const baseI = 0.032 * calmK
+    const baseI = 0.024 * calmK
     for (let e = 0; e < E; e++) {
       const l = g.eLayer[e]
       const aff = g.affected[g.eFrom[e]] && g.affected[g.eTo[e]]
@@ -241,42 +282,79 @@ export function setupSnTrace(ctx: ThreeContext): ThreeSetupResult {
       const fl = st.ambig > 0 ? 0.5 + 0.5 * Math.sin(t * 6.5 + h * 40) : 0
       // 불확실: 하류(상위 조립→제품) 일수록 강하게 — 어디까지 퍼졌는지 모름.
       const amb = st.ambig * (0.025 + 0.06 * fl) * (0.55 + 0.25 * l)
-      const pIdx = pathEdgeIdx[e]
-      const lp = st.fwdLit - l
-      const sp = st.fwdSpark - l
-      const bLit = pIdx >= 0 ? st.backLit - pIdx : -1
-      const bSp = pIdx >= 0 ? st.backSpark - pIdx : -9
+      // 영향 엣지는 점등되면 팻 라인이 대신 그린다 → 기본선은 물러난다.
+      const dimAff = aff && st.fwdLit > l ? 0.3 : 1
       let o = e * VPE * 3
       for (let k = 0; k < VPE; k++, o += 3) {
-        const s = edges.vS[e * VPE + k]
-        let r = baseI * 0.86 + amb * AMBER[0]
-        let gg = baseI * 0.97 + amb * AMBER[1]
-        let b = baseI * 1.12 + amb * AMBER[2]
-        if (aff && lp > 0) {
-          const lit = clamp01((lp - s) * 6)
-          const d = (sp - s) * 5
-          const head = sp > -0.2 && sp < 1.3 ? Math.exp(-d * d) : 0
-          const I = lit * (0.11 + 0.025 * Math.sin(t * 2.2 + h * 6)) + head * 0.55
-          r += TEAL[0] * I
-          gg += TEAL[1] * I
-          b += TEAL[2] * I
-        }
-        if (pIdx >= 0 && bLit > 0) {
-          // 역추적: 자식(s=1) → 부모(s=0) 방향으로 점등.
-          const lit = clamp01((bLit - (1 - s)) * 6)
-          const d = (bSp - (1 - s)) * 5
-          const head = bSp > -0.2 && bSp < 1.3 ? Math.exp(-d * d) : 0
-          const I = lit * 0.9 + head * 2.2
-          r += WHITE_TEAL[0] * I
-          gg += WHITE_TEAL[1] * I
-          b += WHITE_TEAL[2] * I
-        }
+        // 섬유 중간은 옅게(끝점 근처만 또렷) — 머리카락처럼 뭉개지지 않게.
+        const w = edgeFade[k] * dimAff
+        const r = (baseI * 0.86 + amb * AMBER[0]) * w
+        const gg = (baseI * 0.97 + amb * AMBER[1]) * w
+        const b = (baseI * 1.12 + amb * AMBER[2]) * w
         C[o] = r
         C[o + 1] = gg
         C[o + 2] = b
       }
     }
     edges.colAttr.needsUpdate = true
+
+    // ── 팻 라인: 영향 군집(순방향 점등) ──
+    {
+      const AC = aff.colors
+      let k = 0
+      for (const e of g.affectedEdges) {
+        const l = g.eLayer[e]
+        const h = g.eHash[e]
+        const lp = st.fwdLit - l
+        const sp = st.fwdSpark - l
+        for (let j = 0; j < aff.segs; j++, k++) {
+          for (let end = 0; end < 2; end++) {
+            const s = aff.sA[k * 2 + end]
+            let I = 0
+            if (lp > 0) {
+              const lit = clamp01((lp - s) * 6)
+              const d = (sp - s) * 5
+              const head = sp > -0.2 && sp < 1.3 ? Math.exp(-d * d) : 0
+              I = lit * (0.1 + 0.025 * Math.sin(t * 2.2 + h * 6)) + head * 0.55
+            }
+            const o = k * 6 + end * 3
+            AC[o] = TEAL[0] * I
+            AC[o + 1] = TEAL[1] * I
+            AC[o + 2] = TEAL[2] * I
+          }
+        }
+      }
+      aff.buf.needsUpdate = true
+    }
+    // ── 팻 라인: 역추적 경로(자식 s=1 → 부모 s=0) ──
+    {
+      const PC = path.colors
+      let k = 0
+      for (let pIdx = 0; pIdx < g.pathEdges.length; pIdx++) {
+        const bLit = st.backLit - pIdx
+        const bSp = st.backSpark - pIdx
+        for (let j = 0; j < path.segs; j++, k++) {
+          for (let end = 0; end < 2; end++) {
+            const s = path.sA[k * 2 + end]
+            let I = 0
+            if (bLit > 0) {
+              const lit = clamp01((bLit - (1 - s)) * 6)
+              const d = (bSp - (1 - s)) * 5
+              const head = bSp > -0.2 && bSp < 1.3 ? Math.exp(-d * d) : 0
+              I = lit * 0.62 + head * 1.6
+            }
+            const o = k * 6 + end * 3
+            PC[o] = WHITE_TEAL[0] * I
+            PC[o + 1] = WHITE_TEAL[1] * I
+            PC[o + 2] = WHITE_TEAL[2] * I
+          }
+        }
+      }
+      path.buf.needsUpdate = true
+    }
+    // 레이어 링: 수기 구간엔 호박색으로 흐려지고, 추적 이후 차분한 청색.
+    rings2.mat.color.setRGB(0.29 + 0.55 * st.ambig, 0.7 - 0.2 * st.ambig, 0.8 - 0.55 * st.ambig)
+    rings2.mat.opacity = 0.16 + 0.08 * st.calm
 
     // ── 노드 색 ──
     nodes.forEach((mesh, l) => {
@@ -428,7 +506,7 @@ export function setupSnTrace(ctx: ThreeContext): ThreeSetupResult {
     lotShell.visible = st.lotFound > 0.001
     lotShell.scale.setScalar(1 + (1 - st.lotFound) * 1.5 + 0.04 * Math.sin(t * 3))
     lotShell.rotation.y = t * 0.4
-    ;(lotShell.material as THREE.LineBasicMaterial).color.setRGB(1.6, 0.95, 0.42).multiplyScalar(st.lotFound)
+    shell.mat.color.setRGB(1.6, 0.95, 0.42).multiplyScalar(st.lotFound)
 
     // ── 게이트 + 토큰 ──
     const gateVis = st.hero ? easeOutCubic(seg(t, T.gateStart - 0.6, T.gateStart)) : 1
@@ -463,7 +541,7 @@ export function setupSnTrace(ctx: ThreeContext): ThreeSetupResult {
     const gS = proj(gp.x, gp.y + 0.7, gp.z)
     placeLabel(elGate, gS.x, gS.y, st.blocked ? Math.min(1, gateVis) : 0)
     LAYERS.forEach((L, i) => {
-      const s = proj(L.x, L.y - L.r - 0.55, 0)
+      const s = proj(L.x, L.y - L.r - 0.72, 0)
       placeLabel(elLayers[i], s.x, s.y, 0.9)
     })
     if (elBox) {
@@ -494,9 +572,14 @@ export function setupSnTrace(ctx: ThreeContext): ThreeSetupResult {
 
   return {
     update,
+    resize(w, h) {
+      for (const m of fatMats) m.resolution.set(w, h)
+    },
     dispose() {
       tex.dispose()
       ringGeo.dispose()
+      envRT.dispose()
+      scene.environment = null
       scene.fog = null
     },
   }

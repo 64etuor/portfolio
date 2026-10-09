@@ -1,7 +1,22 @@
 import type * as T3 from 'three'
 import type { ThreeContext, ThreeSetupResult } from '../_host/three/types'
 import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg } from '../_host/three/helpers'
-import { buildBox, buildEnvironment, buildGate, buildMatrix, buildPads, buildRails, buildSignals, buildToken, hdr, makeSprite, pointsMat, rng } from './build'
+import {
+  buildBox,
+  buildEnvironment,
+  buildGate,
+  buildMatrix,
+  buildPads,
+  buildRails,
+  buildShadows,
+  buildSignals,
+  buildToken,
+  hdr,
+  loadAddons,
+  makeSprite,
+  pointsMat,
+  rng,
+} from './build'
 import { COLORS, LAYOUT, PERIOD, SOURCES, TL } from './data'
 
 // 타임라인 런타임. update(t) 는 t 만으로 상태를 결정한다(정지 프레임 = 재생 프레임).
@@ -42,29 +57,62 @@ export async function setupWorkRadar(ctx: ThreeContext): Promise<ThreeSetupResul
   }
 
   scene.fog = new THREE.FogExp2(COLORS.bg, 0.034)
-  scene.add(new THREE.AmbientLight(0xffffff, 0.4))
-  const dir = new THREE.DirectionalLight(0xffffff, 0.8)
-  dir.position.set(-3, 8, 6)
-  scene.add(dir)
+  // 키(따뜻한 위쪽) + 림(차가운 뒤쪽) + 낮은 앰비언트
+  scene.add(new THREE.HemisphereLight(0xcfe3df, 0x060807, 0.35))
+  const key = new THREE.DirectionalLight(0xfff1e2, 1.1)
+  key.position.set(-3, 8, 6)
+  scene.add(key)
+  const rim = new THREE.DirectionalLight(0x4ab3cc, 0.55)
+  rim.position.set(5, 4, -9)
+  scene.add(rim)
 
-  // 유리 박스 반사용 환경맵(절차적).
-  const { RoomEnvironment } = await import('three/examples/jsm/environments/RoomEnvironment.js')
+  // 금속/유리 반사용 환경맵(절차적, 낮은 강도).
+  const [{ RoomEnvironment }, A] = await Promise.all([import('three/examples/jsm/environments/RoomEnvironment.js'), loadAddons()])
   const pmrem = new THREE.PMREMGenerator(renderer)
   const envRT = pmrem.fromScene(new RoomEnvironment(), 0.04)
   scene.environment = envRT.texture
+  scene.environmentIntensity = 0.55
   pmrem.dispose()
 
   const sprite = makeSprite(THREE)
   buildEnvironment(THREE, scene, sprite)
-  const matrix = buildMatrix(THREE, scene)
-  const rails = buildRails(THREE, scene)
+  const matrix = buildMatrix(THREE, A, scene)
+  const rails = buildRails(THREE, A, scene)
   const gate = buildGate(THREE, scene)
-  const box = buildBox(THREE, scene)
-  const pads = buildPads(THREE, scene)
-  const signals = buildSignals(THREE, scene)
-  const tokD = buildToken(THREE, scene, sprite, COLORS.phosphor)
-  const tokJ = buildToken(THREE, scene, sprite, COLORS.amber)
-  const tokX = buildToken(THREE, scene, sprite, COLORS.amber)
+  const box = buildBox(THREE, A, scene)
+  const pads = buildPads(THREE, A, scene)
+  const signals = buildSignals(THREE, A, scene)
+  const tokD = buildToken(THREE, A, scene, sprite, COLORS.phosphor)
+  const tokJ = buildToken(THREE, A, scene, sprite, COLORS.amber)
+  const tokX = buildToken(THREE, A, scene, sprite, COLORS.amber)
+
+  // 접지 그림자(소프트 데칼)
+  const msz = LAYOUT.matrix.size + 1.6
+  buildShadows(THREE, scene, [
+    [LAYOUT.matrix.x, LAYOUT.matrix.z, msz, msz],
+    [LAYOUT.box.c[0], LAYOUT.box.c[2], LAYOUT.box.w + 1.4, LAYOUT.box.d + 1.4],
+    [LAYOUT.gate[0], LAYOUT.gate[2], 1.1, 1.1],
+    ...rails.feet.map(([x, z]) => [x, z, 0.55, 0.55] as [number, number, number, number]),
+  ])
+
+  // 한도 링 라벨 앵커 — 링 위 고정점(비드가 아니라). 박스 오른쪽에 위→아래로 쌓이도록 고른다.
+  box.group.updateMatrixWorld(true)
+  const ringAnchor = box.rings.map((rg, i) => {
+    const want = LAYOUT.box.c[1] + [-0.3, 0.32, 0.95][i]
+    const best = new THREE.Vector3()
+    const p = new THREE.Vector3()
+    let score = -Infinity
+    for (let k = 0; k < 96; k++) {
+      const a = (k / 96) * Math.PI * 2
+      p.set(Math.cos(a) * rg.r, Math.sin(a) * rg.r, 0).applyMatrix4(rg.outer.matrixWorld)
+      const sc = p.x + p.z * 0.25 - Math.abs(p.y - want) * 2.2
+      if (sc > score) {
+        score = sc
+        best.copy(p)
+      }
+    }
+    return best
+  })
 
   // 박스 내부 작동 글로우
   const coreMat = new THREE.SpriteMaterial({
@@ -139,6 +187,9 @@ export async function setupWorkRadar(ctx: ThreeContext): Promise<ThreeSetupResul
 
   // 재사용 임시 객체
   const dummy = new THREE.Object3D()
+  const eul = new THREE.Euler()
+  const qFly = new THREE.Quaternion()
+  const qRest = new THREE.Quaternion()
   const tmpC = new THREE.Color()
   const tA = new THREE.Vector3()
   const tB = new THREE.Vector3()
@@ -360,17 +411,19 @@ export async function setupWorkRadar(ctx: ThreeContext): Promise<ThreeSetupResul
       const u = loopT(t + g.phase * CYCLE, CYCLE) / CYCLE
       let sc = 1
       let br = 0.8
+      let settle = 0
       if (u < FLY) {
         const f = easeInOutCubic(u / FLY)
         bez(g.s, g.c, g.l, f, tA)
         br = 1.8 + (1 - f) * 0.8
         sc = 0.6 + 0.4 * Math.min(1, u / 0.05)
+        settle = easeInOutCubic(seg(u, FLY - 0.05, FLY))
       } else if (u < SINK) {
         tA.copy(g.l)
-        const land = seg(u, FLY, FLY + 0.03)
-        tA.y += Math.sin(t * 1.7 + g.phase * 20) * 0.03 * land
-        br = 0.55 + 1.6 * (1 - seg(u, FLY, FLY + 0.06))
+        settle = 1
+        br = 0.6 + 1.6 * (1 - seg(u, FLY, FLY + 0.06)) + 0.08 * Math.sin(t * 1.3 + g.phase * 20)
       } else {
+        settle = 1
         const k = seg(u, SINK, 1)
         tA.copy(g.l)
         tA.y -= k * 0.15
@@ -378,7 +431,11 @@ export async function setupWorkRadar(ctx: ThreeContext): Promise<ThreeSetupResul
         br = 0.55 * (1 - k)
       }
       dummy.position.copy(tA)
-      dummy.rotation.set(t * g.spin * 0.6 + g.phase * 6, t * g.spin + g.phase * 9, 0)
+      eul.set(t * g.spin * 0.6 + g.phase * 6, t * g.spin + g.phase * 9, 0)
+      qFly.setFromEuler(eul)
+      eul.set(0, g.yaw, 0)
+      qRest.setFromEuler(eul)
+      dummy.quaternion.slerpQuaternions(qFly, qRest, settle)
       dummy.scale.setScalar(Math.max(0.0001, sc))
       dummy.updateMatrix()
       const mesh = signals.meshes[g.src]
@@ -422,11 +479,12 @@ export async function setupWorkRadar(ctx: ThreeContext): Promise<ThreeSetupResul
     const autoLit = 0.3 + 0.7 * seg(t, 1.5, 2.4)
     const propLit = 0.25 + 0.75 * seg(t, 4.9, 5.7)
     rails.mats.dec.color.copy(white).multiplyScalar(1.25 * decLit)
-    rails.mats.decGlow.opacity = 0.35 * decLit
+    rails.mats.decGlow.uniforms.uOpacity.value = 0.42 * decLit
     rails.mats.branch.color.copy(white).multiplyScalar(0.55 * decLit)
     rails.mats.auto.color.copy(amber).multiplyScalar(1.25 * autoLit)
-    rails.mats.autoGlow.opacity = 0.35 * autoLit
+    rails.mats.autoGlow.uniforms.uOpacity.value = 0.42 * autoLit
     rails.mats.prop.color.copy(propCol).multiplyScalar(0.75 * propLit)
+    rails.mats.propGlow.uniforms.uOpacity.value = 0.3 * propLit
 
     let fo = 0
     for (const f of flows) {
@@ -533,18 +591,17 @@ export async function setupWorkRadar(ctx: ThreeContext): Promise<ThreeSetupResul
     label('urgent', tA.set(mx - h + 0.2, 0, h + 0.45), 0.7)
     label('important', tA.set(mx - h - 0.35, 0, h - 0.2), 0.7)
     rails.decA.getPointAt(0.58, tB)
+    tB.y += 0.32
+    tB.x -= 0.25
     label('decision', tB, seg(t, 1.0, 1.7))
     rails.auto.getPointAt(0.34, tB)
     label('auto', tB, seg(t, 1.7, 2.4))
     label('gate', tA.copy(gateP).add(tB.set(0, 1.25, 0)), 0.75 + 0.25 * Math.max(open, pulse))
     label('job', tA.copy(boxC).add(tB.set(0, -LAYOUT.box.h / 2 - 0.15, LAYOUT.box.d / 2)), 0.25 + 0.75 * seg(t, 2.6, 3.2))
-        const killShow = win(tc, TL.xHit, TL.xHit + 0.15, TL.xDead + 0.5, TL.xDead + 1.0)
+    const killShow = win(tc, TL.xHit, TL.xHit + 0.15, TL.xDead + 0.5, TL.xDead + 1.0)
     const ringOp = 0.2 + 0.8 * seg(t, 2.6, 3.4)
-    for (let i = 0; i < 3; i++) {
-      bead(i, tA)
-      label(`ring${i}` as LabelKey, tA, ringOp * (i === 2 ? 1 - killShow : 0.9))
-    }
-    label('killed', killHit, killShow)
+    for (let i = 0; i < 3; i++) label(`ring${i}` as LabelKey, ringAnchor[i], ringOp * (i === 2 ? 1 - killShow : 0.9))
+    label('killed', tA.copy(killHit).add(tB.set(0.1, -0.22, 0.1)), killShow)
     if (j.p && j.prop > 0) label('proposal', j.p, win(tc, TL.jProp - 0.1, TL.jProp + 0.2, TL.jPass, TL.jPass + 0.3))
     else label('proposal', hidden, 0)
     for (let i = 0; i < 3; i++) label(`pad${i}` as LabelKey, tA.copy(padP[i]).add(tB.set(0.75, 0.1, 0)), 0.8)

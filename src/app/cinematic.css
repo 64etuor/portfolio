@@ -285,7 +285,7 @@
   border-radius: 999px;
   padding: 6px 14px;
   font-size: 12px;
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-family: var(--font-mono, 'JetBrains Mono', 'Pretendard Variable', monospace);
   letter-spacing: 0.03em;
   cursor: pointer;
   transition: border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;

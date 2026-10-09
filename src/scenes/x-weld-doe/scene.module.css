@@ -11,7 +11,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  font-family: 'JetBrains Mono', 'IBM Plex Sans KR', 'Pretendard', ui-monospace, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   color: #d7d7d7;
   font-size: 12px;
   letter-spacing: 0.02em;

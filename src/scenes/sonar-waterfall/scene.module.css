@@ -15,7 +15,7 @@
   --txt: #bfe6ff;
   --txt-dim: #5a86a8;
   color: var(--txt);
-  font-family: 'IBM Plex Mono', 'Share Tech Mono', 'IBM Plex Sans KR', monospace;
+  font-family: 'IBM Plex Mono', 'Pretendard Variable', monospace;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
 }
@@ -63,7 +63,7 @@
   align-items: center;
   background: linear-gradient(180deg, #06192e, #03101d);
   border-bottom: 1px solid var(--line);
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   letter-spacing: 0.5px;
 }
 
@@ -193,7 +193,7 @@
 
 .name {
   color: #eafaff;
-  font-family: 'IBM Plex Sans KR';
+  font-family: 'Pretendard Variable', sans-serif;
   font-size: 25px;
   font-weight: 700;
   letter-spacing: 1px;
@@ -277,7 +277,7 @@
 
 .cname {
   color: #dff2ff;
-  font-family: 'IBM Plex Sans KR';
+  font-family: 'Pretendard Variable', sans-serif;
   font-size: 12px;
   font-weight: 600;
   line-height: 1.25;
@@ -613,7 +613,7 @@
 .card h2 {
   margin: 5px 0 3px;
   color: #eafaff;
-  font-family: 'IBM Plex Sans KR';
+  font-family: 'Pretendard Variable', sans-serif;
   font-size: 24px;
   font-weight: 700;
   letter-spacing: 0.5px;
@@ -630,7 +630,7 @@
 .desc {
   margin-bottom: 18px;
   color: var(--txt);
-  font-family: 'IBM Plex Sans KR';
+  font-family: 'Pretendard Variable', sans-serif;
   font-size: 13.5px;
   line-height: 1.85;
 }

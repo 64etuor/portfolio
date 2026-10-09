@@ -502,18 +502,18 @@ function drawLabels(
   ctx.textAlign = 'left'
 
   const subA = (0.45 - 0.15 * S.ax) * seam * S.wRev[0]
-  ctx.font = "700 13px 'JetBrains Mono', monospace"
+  ctx.font = "700 13px 'JetBrains Mono', 'Pretendard Variable', monospace"
   ctx.fillStyle = rgba(DIMC, subA)
   ctx.fillText('MANUFACTURING SUBSTRATE', W * 0.115, H * 0.955)
-  ctx.font = "600 11px 'JetBrains Mono', monospace"
+  ctx.font = "600 11px 'JetBrains Mono', 'Pretendard Variable', monospace"
   ctx.fillStyle = rgba([90, 90, 90], subA)
   ctx.fillText('제조 · 설비 · 공정 — 물성(기반)', W * 0.115, H * 0.974)
 
   const strA = 0.75 * S.data * seam
-  ctx.font = "700 13px 'JetBrains Mono', monospace"
+  ctx.font = "700 13px 'JetBrains Mono', 'Pretendard Variable', monospace"
   ctx.fillStyle = rgba(AZ, strA)
   ctx.fillText('KNOWLEDGE STRATUM', W * 0.115, H * 0.066)
-  ctx.font = "600 11px 'JetBrains Mono', monospace"
+  ctx.font = "600 11px 'JetBrains Mono', 'Pretendard Variable', monospace"
   ctx.fillStyle = rgba(mix([90, 90, 90], AZ, S.data), strA * 0.85)
   ctx.fillText('데이터 · 지식 — 경쟁력(상층)', W * 0.115, H * 0.086)
 

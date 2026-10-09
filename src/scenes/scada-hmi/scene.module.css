@@ -20,7 +20,7 @@
     radial-gradient(1200px 700px at 50% -10%, #18222b 0%, transparent 60%),
     linear-gradient(180deg, #0a0e12 0%, #0c1014 100%);
   color: var(--txt);
-  font-family: 'Pretendard Variable', Pretendard, 'Segoe UI', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
 }
@@ -43,7 +43,7 @@
 }
 
 .root :global(.mono) {
-  font-family: 'Share Tech Mono', 'Courier New', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   letter-spacing: 0.04em;
 }
 
@@ -130,7 +130,7 @@
   display: grid;
   place-items: center;
   color: #39d6ff;
-  font: 700 11px/1 'Share Tech Mono', monospace;
+  font: 700 11px/1 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.brand h1) {
@@ -264,7 +264,7 @@
 .root :global(nav.tabs .tag) {
   margin-left: 7px;
   color: var(--txt-dim);
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 9px;
 }
 
@@ -438,7 +438,7 @@
   border-radius: 4px;
   background: rgba(57, 182, 255, 0.07);
   color: var(--info);
-  font: 600 10px 'Share Tech Mono', monospace;
+  font: 600 10px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.mimic-wrap) {
@@ -501,13 +501,13 @@
 
 .root :global(.pv-tile .lbl .tg) {
   color: var(--info);
-  font: 600 8.5px 'Share Tech Mono', monospace;
+  font: 600 8.5px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.pv-tile .num) {
   margin-top: 8px;
   color: var(--pv);
-  font: 700 26px/1 'Share Tech Mono', monospace;
+  font: 700 26px/1 'Share Tech Mono', 'Pretendard Variable', monospace;
   text-shadow: 0 0 12px rgba(57, 214, 255, 0.3);
 }
 
@@ -530,7 +530,7 @@
 .root :global(.pv-tile .sp) {
   margin-top: 6px;
   color: var(--sp);
-  font: 600 9px 'Share Tech Mono', monospace;
+  font: 600 9px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.inv-grid) {
@@ -567,7 +567,7 @@
 
 .root :global(.role-code) {
   color: var(--info);
-  font: 700 11px 'Share Tech Mono', monospace;
+  font: 700 11px 'Share Tech Mono', 'Pretendard Variable', monospace;
   letter-spacing: 0.12em;
 }
 
@@ -586,7 +586,7 @@
 
 .root :global(.role-flow) {
   color: var(--sp);
-  font: 700 11px 'Share Tech Mono', monospace;
+  font: 700 11px 'Share Tech Mono', 'Pretendard Variable', monospace;
   line-height: 1.5;
 }
 
@@ -599,7 +599,7 @@
   border-radius: 4px;
   background: rgba(33, 208, 122, 0.1);
   color: var(--run);
-  font: 700 10px 'Share Tech Mono', monospace;
+  font: 700 10px 'Share Tech Mono', 'Pretendard Variable', monospace;
   white-space: nowrap;
 }
 
@@ -638,7 +638,7 @@
 
 .root :global(.inv-stat .v b) {
   color: #21d07a;
-  font: 700 14px 'Share Tech Mono', monospace;
+  font: 700 14px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.inv-note) {
@@ -726,7 +726,7 @@
 .root :global(.sp-row .info .yr) {
   margin-top: 2px;
   color: var(--txt-dim);
-  font: 600 9px 'Share Tech Mono', monospace;
+  font: 600 9px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.sp-row .val) {
@@ -735,7 +735,7 @@
 
 .root :global(.sp-row .val .pv) {
   color: var(--pv);
-  font: 700 16px 'Share Tech Mono', monospace;
+  font: 700 16px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.sp-row .val .un) {
@@ -767,7 +767,7 @@
 
 .root :global(.alm-item .ts) {
   color: var(--txt-dim);
-  font: 600 10px 'Share Tech Mono', monospace;
+  font: 600 10px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.alm-item .desc) {
@@ -777,7 +777,7 @@
 .root :global(.alm-item .st) {
   padding: 2px 8px;
   border-radius: 3px;
-  font: 600 9px 'Share Tech Mono', monospace;
+  font: 600 9px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.st.ALM) {
@@ -863,7 +863,7 @@
 
 .root :global(.io-tag .io-addr) {
   color: var(--info);
-  font: 600 8.5px 'Share Tech Mono', monospace;
+  font: 600 8.5px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.q-grid) {
@@ -883,7 +883,7 @@
 
 .root :global(.q-card .big) {
   color: var(--run);
-  font: 700 34px/1 'Share Tech Mono', monospace;
+  font: 700 34px/1 'Share Tech Mono', 'Pretendard Variable', monospace;
   text-shadow: 0 0 14px rgba(33, 208, 122, 0.3);
 }
 
@@ -897,7 +897,7 @@
 .root :global(.q-card .delta) {
   margin-top: 6px;
   color: var(--info);
-  font: 600 10px 'Share Tech Mono', monospace;
+  font: 600 10px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.hist) {
@@ -918,7 +918,7 @@
 
 .root :global(.hist-row .when) {
   color: var(--sp);
-  font: 700 13px 'Share Tech Mono', monospace;
+  font: 700 13px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.hist-row .when small) {
@@ -962,7 +962,7 @@
   border-radius: 4px;
   background: rgba(33, 208, 122, 0.1);
   color: var(--run);
-  font: 600 9.5px 'Share Tech Mono', monospace;
+  font: 600 9.5px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.contact-bar) {
@@ -980,7 +980,7 @@
   gap: 8px;
   color: var(--txt);
   text-decoration: none;
-  font: 600 12px 'Share Tech Mono', monospace;
+  font: 600 12px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.contact-bar a:hover) {
@@ -1059,7 +1059,7 @@
 
 .root :global(.para-tank .ph .root) {
   color: var(--info);
-  font: 700 13px 'Share Tech Mono', monospace;
+  font: 700 13px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.para-tank .ph .nm) {
@@ -1143,7 +1143,7 @@
   color: #fff;
   text-align: center;
   text-shadow: 0 0 8px rgba(0, 0, 0, 0.8);
-  font: 700 18px 'Share Tech Mono', monospace;
+  font: 700 18px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.para-tank .cap) {
@@ -1188,19 +1188,19 @@
   display: block;
   margin-top: 2px;
   color: var(--txt-dim);
-  font: 600 8.5px 'Share Tech Mono', monospace;
+  font: 600 8.5px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.ssot-row .pv) {
   text-align: right;
-  font: 700 17px 'Share Tech Mono', monospace;
+  font: 700 17px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.ssot-row .sp) {
   color: var(--sp);
   text-align: right;
   white-space: nowrap;
-  font: 600 9px 'Share Tech Mono', monospace;
+  font: 600 9px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.gap-queue) {
@@ -1224,7 +1224,7 @@
 .root :global(.gap-item .rk) {
   width: 22px;
   color: var(--txt-dim);
-  font: 700 11px 'Share Tech Mono', monospace;
+  font: 700 11px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.gap-item .lk) {
@@ -1238,7 +1238,7 @@
 
 .root :global(.gap-item .dep) {
   color: var(--pv);
-  font: 700 13px 'Share Tech Mono', monospace;
+  font: 700 13px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.gap-item .qd) {
@@ -1247,7 +1247,7 @@
   border-radius: 3px;
   background: rgba(33, 208, 122, 0.12);
   color: var(--run);
-  font: 600 9px 'Share Tech Mono', monospace;
+  font: 600 9px 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .root :global(.gridrow) {

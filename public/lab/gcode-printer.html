@@ -21,8 +21,8 @@
   --hot:#ff4d4d;          /* 노즐 온도 */
   --warm:#ff9a3c;
   --solid:#3ddc97;        /* 솔리드 레이어/완료 그린 */
-  --mono:"SFMono-Regular",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic",monospace;
-  --sans:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
+  --mono:'JetBrains Mono', 'Pretendard Variable', monospace;
+  --sans:'Pretendard Variable', sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -959,7 +959,7 @@ function drawFixtureAnnotations(){
     {p:[102,78], text:"기준 리브", dx:-18, dy:24},
   ];
   ctx.save();
-  ctx.font='10px "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace';
+  ctx.font='10px "JetBrains Mono", "Pretendard Variable", monospace';
   ctx.textBaseline="middle";
   for(const l of labels){
     const [wx,wy]=jigWorld(l.p[0],l.p[1]);

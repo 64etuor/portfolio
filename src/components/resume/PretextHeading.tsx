@@ -41,7 +41,7 @@ export function PretextHeading({ label, id }: { label: string; id?: string }) {
     const text = `${MARK} ${label}`
     // font/letter-spacing mirror the .rz-h2 rule (12px JetBrains Mono, 0.34em).
     const FS = 12
-    const FONT = `600 ${FS}px 'JetBrains Mono', ui-monospace, monospace`
+    const FONT = `600 ${FS}px 'JetBrains Mono', 'Pretendard Variable', monospace`
     const TRACK = FS * 0.34
     const BASE_Y = 13
 

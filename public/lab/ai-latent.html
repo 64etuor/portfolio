@@ -25,8 +25,8 @@
   --c-dev:#c9a3ff;        /* 지식공학 */
   --c-ai:#46e6b0;         /* AI Agent */
   --c-phil:#f6c177;       /* 철학 */
-  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic",monospace;
-  --sans:"Pretendard Variable","Pretendard","Apple SD Gothic Neo","Helvetica Neue",-apple-system,system-ui,sans-serif;
+  --mono:'JetBrains Mono', 'Pretendard Variable', monospace;
+  --sans:'Pretendard Variable', sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%}
@@ -649,7 +649,7 @@ function draw(now){
     g.addColorStop(1, hex(col,0));
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,130,0,7);ctx.fill();
     // domain label
-    ctx.font="10px ui-monospace, monospace";
+    ctx.font="10px 'JetBrains Mono', 'Pretendard Variable', monospace";
     ctx.fillStyle=hex(col, faded?0.22:0.78);
     ctx.fillText(dom, cx-16, cy-104);
   });
@@ -737,7 +737,7 @@ function draw(now){
     ctx.beginPath();ctx.arc(n.x-r*0.3,n.y-r*0.3,r*0.35,0,7);ctx.fill();
     // label on hover/lit
     if((isHover||n.lit>0.4) && !faded){
-      ctx.font="11px ui-monospace, monospace";
+      ctx.font="11px 'JetBrains Mono', 'Pretendard Variable', monospace";
       ctx.fillStyle=hex(n.color,1);
       ctx.fillText(n.label, n.x+r+6, n.y+3);
     }

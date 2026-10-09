@@ -5,14 +5,14 @@
   --bg: #050505;
   --bg2: #101010;
   --gold: #f0c879;
-  --mono: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  --mono: 'JetBrains Mono', 'Pretendard Variable', monospace;
 
   position: absolute;
   inset: 0;
   overflow: hidden;
   background: radial-gradient(ellipse 130% 130% at 50% 45%, #101010 0%, #050505 60%, #000 100%);
   color: var(--scene-phos);
-  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
 }
@@ -79,7 +79,7 @@
   position: absolute;
   z-index: 34;
   color: var(--scene-phos-deep);
-  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 10.5px;
   letter-spacing: 0.28em;
   text-transform: uppercase;
@@ -113,7 +113,7 @@
   left: 5.4%;
   top: 12.2%;
   pointer-events: none;
-  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: clamp(10px, 0.82vw, 15px);
   letter-spacing: 0.42em;
   color: var(--scene-phos-dim);
@@ -127,7 +127,7 @@
 }
 
 .kr {
-  font-family: 'Pretendard Variable', 'Pretendard', 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-family: 'Pretendard Variable', sans-serif;
 }
 
 /* hero typography — line 1 (upper thesis) */

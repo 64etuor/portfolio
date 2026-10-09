@@ -8,7 +8,7 @@
   overflow: hidden;
   background: #070a0f;
   color: #e8edf6;
-  font-family: "Pretendard Variable", Pretendard, "Apple SD Gothic Neo", -apple-system, system-ui, sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
 }
@@ -39,7 +39,7 @@
   pointer-events: none;
 }
 .bootMark {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 11px;
   letter-spacing: 0.32em;
   color: #5d6a82;
@@ -111,7 +111,7 @@
   color: #9aa6bd;
 }
 .brandTw {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9.5px;
   letter-spacing: 0.28em;
   text-transform: uppercase;
@@ -143,7 +143,7 @@
   color: #9aa6bd;
 }
 .clock {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   color: #e8edf6;
   font-size: 11.5px;
 }
@@ -173,14 +173,14 @@
   min-width: 96px;
 }
 .kpiK {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 8.5px;
   letter-spacing: 0.14em;
   color: #5d6a82;
   text-transform: uppercase;
 }
 .kpiV {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 15px;
   font-weight: 700;
   margin-top: 2px;
@@ -216,7 +216,7 @@
   font-weight: 700;
 }
 .ctlHSub {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 8.5px;
   letter-spacing: 0.2em;
   color: #5d6a82;
@@ -300,7 +300,7 @@
 .btn {
   width: 100%;
   text-align: center;
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 10px;
   letter-spacing: 0.18em;
   text-transform: uppercase;
@@ -368,7 +368,7 @@
   margin-top: 1px;
 }
 .monoLabel {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 8px;
   letter-spacing: 0.18em;
   color: #5d6a82;
@@ -376,7 +376,7 @@
   margin-bottom: 8px;
 }
 .monoLabelSm {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 8px;
   letter-spacing: 0.18em;
   color: #5d6a82;
@@ -388,7 +388,7 @@
 .hint {
   right: 20px;
   bottom: 20px;
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 10px;
   letter-spacing: 0.06em;
   color: #5d6a82;
@@ -424,7 +424,7 @@
   gap: 7px;
 }
 .badge {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 8px;
   letter-spacing: 0.14em;
   color: #c9a3ff;
@@ -434,7 +434,7 @@
   text-transform: uppercase;
 }
 .xdHSub {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 8.5px;
   letter-spacing: 0.16em;
   color: #5d6a82;
@@ -473,7 +473,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 8px;
   font-weight: 800;
   letter-spacing: 0.08em;
@@ -490,7 +490,7 @@
 .flLabel.ai  { color: #c9a3ff; }
 .flSub { font-size: 9px; color: #5d6a82; margin-top: 2px; line-height: 1.4; }
 .flVal {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 11px;
   font-weight: 700;
   flex: 0 0 auto;
@@ -515,7 +515,7 @@
   gap: 5px;
 }
 .streamRqh {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 8px;
   letter-spacing: 0.18em;
   color: #5d6a82;
@@ -542,7 +542,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9px;
   letter-spacing: 0.04em;
   border-top: 1px solid #151b27;
@@ -553,7 +553,7 @@
 .xdStateVal.pend { color: #ffb454; }
 .xdStateVal.ai   { color: #c9a3ff; }
 .xdPort {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9px;
   color: #5d6a82;
   line-height: 1.55;
@@ -616,7 +616,7 @@
 }
 .dtClose:hover { color: #e8edf6; border-color: #5d6a82; }
 .dtStation {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9.5px;
   letter-spacing: 0.26em;
   text-transform: uppercase;
@@ -625,7 +625,7 @@
 .dtCo { font-size: 22px; font-weight: 800; margin-top: 7px; letter-spacing: -0.01em; }
 .dtRole { font-size: 12.5px; color: #9aa6bd; margin-top: 5px; }
 .dtPeriod {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 10.5px;
   color: #5d6a82;
   margin-top: 9px;
@@ -635,7 +635,7 @@
   align-items: center;
   gap: 7px;
   margin-top: 12px;
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9.5px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
@@ -646,7 +646,7 @@
 .dtStatusLamp { width: 7px; height: 7px; border-radius: 50%; }
 .dtBody { padding: 20px 24px 40px; display: flex; flex-direction: column; gap: 20px; }
 .dtSec .dtSecH {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9px;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -656,7 +656,7 @@
 .dtMetrics { display: grid; grid-template-columns: 1fr 1fr; gap: 9px; }
 .metric { border: 1px solid #1c2333; border-radius: 10px; padding: 11px 12px; background: rgba(255, 255, 255, 0.015); }
 .metricMv {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 17px;
   font-weight: 700;
   line-height: 1;
@@ -676,7 +676,7 @@
 .dtListIt b { color: #e8edf6; font-weight: 700; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip {
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 10px;
   letter-spacing: 0.04em;
   color: #9aa6bd;
@@ -689,7 +689,7 @@
   margin-top: auto;
   padding: 16px 24px;
   border-top: 1px solid #151b27;
-  font-family: "SF Mono", ui-monospace, "JetBrains Mono", "Roboto Mono", Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 10.5px;
   color: #5d6a82;
   display: flex;

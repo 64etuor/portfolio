@@ -75,7 +75,7 @@ function drawPage(g: CanvasRenderingContext2D, W: number, H: number, type: DocTy
   g.fillStyle = hexRgba(col, 0.92)
   g.fillRect(14 * s, 14 * s, chipW, 24 * s)
   g.fillStyle = '#000'
-  g.font = `700 ${16 * s}px "JetBrains Mono", ui-monospace, monospace`
+  g.font = `700 ${16 * s}px 'JetBrains Mono', 'Pretendard Variable', monospace`
   g.textBaseline = 'middle'
   g.fillText(type, 23 * s, 26.5 * s)
 
@@ -83,7 +83,7 @@ function drawPage(g: CanvasRenderingContext2D, W: number, H: number, type: DocTy
   let y = 54 * s
   if (opts.hero) {
     g.fillStyle = 'rgba(225,230,232,0.9)'
-    g.font = `600 ${15 * s}px "IBM Plex Sans KR", "Malgun Gothic", sans-serif`
+    g.font = `600 ${15 * s}px 'Pretendard Variable', sans-serif`
     g.fillText(opts.hero.file, chipW + 24 * s, 26.5 * s)
   }
 

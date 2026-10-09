@@ -14,7 +14,7 @@
     --phos-deep:#3a3a3a;
     --gold:#f0c879;        /* 교집합 — the single bright accent */
     --gold-hot:#fff1cf;
-    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,'Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',monospace;
+    --mono:'JetBrains Mono', 'Pretendard Variable', monospace;
   }
   @font-face{
     font-family:'JetBrains Mono';font-display:swap;font-weight:400;
@@ -315,7 +315,7 @@ function drawOrbitTerms(T){
   ctx.textAlign='center'; ctx.textBaseline='middle';
   const fpx=Math.max(11,Math.min(15,MIN*0.0135));
   const draw=(arr,cx,tint)=>{
-    ctx.font="600 "+fpx+"px 'Pretendard Variable', 'Pretendard', sans-serif";
+    ctx.font="600 "+fpx+"px 'Pretendard Variable', sans-serif";
     for(const tt of arr){
       const ang=tt.base + Math.sin(T*0.22+tt.ph)*0.05;
       const rr=R*tt.rad;
@@ -449,7 +449,7 @@ function drawParticles(T, c){
 
     // carrier term label — visible only near the crossing
     if(p.carrier && p.label && central>0.30){
-      ctx.font="700 "+tfpx+"px 'Pretendard Variable', 'Pretendard', sans-serif";
+      ctx.font="700 "+tfpx+"px 'Pretendard Variable', sans-serif";
       ctx.fillStyle=rgba(GOLDH, 0.85*central*c);
       ctx.shadowColor=rgba(GOLD,0.7); ctx.shadowBlur=10*central;
       ctx.fillText(p.label, x, y-p.sz-9);
@@ -482,7 +482,7 @@ function drawLabels(c, goldPulse){
   const tagpx=Math.max(9,Math.min(12,MIN*0.011));
   const lx=LCX - R*0.60, rx=RCX + R*0.60;
 
-  ctx.font="800 "+bigpx+"px 'Pretendard Variable', 'Pretendard', sans-serif";
+  ctx.font="800 "+bigpx+"px 'Pretendard Variable', sans-serif";
   // 제조
   ctx.fillStyle=rgba(mix(PHOS,WARM,0.4), 0.92);
   ctx.shadowColor=rgba(WARM,0.35); ctx.shadowBlur=12;
@@ -493,7 +493,7 @@ function drawLabels(c, goldPulse){
   ctx.fillText('IT', rx, CY-bigpx*0.18);
   ctx.shadowBlur=0;
 
-  ctx.font="700 "+tagpx+"px 'JetBrains Mono', monospace";
+  ctx.font="700 "+tagpx+"px 'JetBrains Mono', 'Pretendard Variable', monospace";
   ctx.fillStyle=rgba(mix(DIM,WARM,0.4), 0.7);
   ctx.fillText('MANUFACTURING', lx, CY+bigpx*0.55);
   ctx.fillStyle=rgba(mix(DIM,COOL,0.4), 0.7);
@@ -503,12 +503,12 @@ function drawLabels(c, goldPulse){
   if(HY>0 && c>0.18){
     const a=smooth((c-0.18)/0.4);
     const yTag=CY-HY-tagpx*2.1;
-    ctx.font="800 "+Math.max(14,Math.min(22,MIN*0.020))+"px 'Pretendard Variable', 'Pretendard', sans-serif";
+    ctx.font="800 "+Math.max(14,Math.min(22,MIN*0.020))+"px 'Pretendard Variable', sans-serif";
     ctx.fillStyle=rgba(GOLDH, (0.5+0.45*goldPulse)*a);
     ctx.shadowColor=rgba(GOLD,0.8); ctx.shadowBlur=16*a;
     ctx.fillText('교집합', CX, yTag);
     ctx.shadowBlur=0;
-    ctx.font="700 "+tagpx+"px 'JetBrains Mono', monospace";
+    ctx.font="700 "+tagpx+"px 'JetBrains Mono', 'Pretendard Variable', monospace";
     ctx.fillStyle=rgba(GOLD, 0.6*a);
     ctx.fillText('INTERSECTION', CX, yTag+tagpx*1.9);
   }

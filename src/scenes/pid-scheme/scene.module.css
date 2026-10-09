@@ -24,7 +24,7 @@
   inset: 0;
   overflow: auto;
   background: #070910;
-  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Courier New', monospace;
+  font-family: 'DM Mono', 'Pretendard Variable', monospace;
   color: var(--txt);
   word-break: keep-all;
   line-height: 1.45;

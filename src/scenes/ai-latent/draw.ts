@@ -76,7 +76,7 @@ export function drawLatentScene({ g, W, H, dt, tRef, nodes, links, hoverNode, di
     grad.addColorStop(0, hexA(col, faded ? 0.04 : 0.12))
     grad.addColorStop(1, hexA(col, 0))
     g.fillStyle = grad; g.beginPath(); g.arc(cx, cy, 130, 0, 7); g.fill()
-    g.font = '10px ui-monospace, monospace'
+    g.font = '10px "JetBrains Mono", "Pretendard Variable", monospace'
     g.fillStyle = hexA(col, faded ? 0.22 : 0.78)
     g.fillText(dom, cx - 16, cy - 104)
   })
@@ -158,7 +158,7 @@ export function drawLatentScene({ g, W, H, dt, tRef, nodes, links, hoverNode, di
     g.fillStyle = hexA('#ffffff', faded ? 0.1 : 0.5)
     g.beginPath(); g.arc(n.x - r * 0.3, n.y - r * 0.3, r * 0.35, 0, 7); g.fill()
     if ((isHover || n.lit > 0.4) && !faded) {
-      g.font = '11px ui-monospace, monospace'
+      g.font = '11px "JetBrains Mono", "Pretendard Variable", monospace'
       g.fillStyle = hexA(n.color, 1)
       g.fillText(n.label, n.x + r + 6, n.y + 3)
     }

@@ -9,7 +9,7 @@
     radial-gradient(1200px 700px at 50% -10%, #101010 0%, #050505 60%),
     #050505;
   color: var(--scene-phos);
-  font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
 }
@@ -20,7 +20,7 @@
 }
 
 .mono {
-  font-family: 'JetBrains Mono', 'SF Mono', ui-monospace, Menlo, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 
 /* ===== Instrument frame ===== */
@@ -88,7 +88,7 @@
   letter-spacing: 0.16em;
   margin-top: 3px;
   text-transform: uppercase;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .brand .model b {
   color: #ffb300;
@@ -111,7 +111,7 @@
   display: flex;
   align-items: center;
   gap: 7px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .dot {
   width: 7px;
@@ -210,7 +210,7 @@
   text-transform: uppercase;
   pointer-events: none;
   text-shadow: 0 0 6px rgba(255, 179, 0, 0.3);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   z-index: 2;
 }
 
@@ -243,7 +243,7 @@
   text-transform: uppercase;
   color: var(--scene-phos-dim);
   font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .panel .hd .k {
   color: #ffb300;
@@ -277,7 +277,7 @@
   color: var(--scene-phos-dim);
   margin-bottom: 11px;
   font-weight: 800;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .chrow {
   display: flex;
@@ -302,7 +302,7 @@
   display: grid;
   place-items: center;
   transition: 0.16s;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .chbtn[data-on='1'] {
   background: currentColor;
@@ -371,13 +371,13 @@
   text-transform: uppercase;
   color: var(--scene-phos-dim);
   font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .knob .val {
   font-size: 11px;
   color: #ffb300;
   font-weight: 700;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 
 /* segmented + sliders */
@@ -393,7 +393,7 @@
   background: transparent;
   border: 0;
   color: var(--scene-phos-dim);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-weight: 700;
   font-size: 11px;
   padding: 8px 4px;
@@ -417,14 +417,14 @@
   color: var(--scene-phos-dim);
   width: 60px;
   letter-spacing: 0.06em;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .slider .sv {
   font-size: 10.5px;
   color: #ffb300;
   width: 46px;
   text-align: right;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-weight: 700;
 }
 .range {
@@ -459,7 +459,7 @@
   color: var(--scene-phos-dim);
   line-height: 1.5;
   margin-top: 4px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .modnote b {
   color: #ffb300;
@@ -476,7 +476,7 @@
   border-radius: 9px;
   background: linear-gradient(180deg, #171a1c, #0e1011);
   color: var(--scene-phos);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-weight: 700;
   font-size: 12px;
   padding: 11px 8px;
@@ -515,7 +515,7 @@
   width: 100%;
   border-collapse: collapse;
   font-size: 11.5px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .meas td {
   padding: 7px 6px;
@@ -556,7 +556,7 @@
   font-size: 10px;
   line-height: 1.55;
   color: var(--scene-phos-dim);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .routineNote b {
   color: #ffb300;
@@ -609,7 +609,7 @@
   border-radius: 6px;
   padding: 4px 8px;
   letter-spacing: 0.02em;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .chip.hi {
   color: #ffb300;

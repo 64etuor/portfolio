@@ -307,7 +307,7 @@ function drawBoundary(ctx: CanvasRenderingContext2D, L: Layout, t: number) {
   ctx.save()
   ctx.translate(x - 14, y0 + (y1 - y0) * 0.12)
   ctx.rotate(-Math.PI / 2)
-  ctx.font = '600 10px "JetBrains Mono",monospace'
+  ctx.font = '600 10px "JetBrains Mono", "Pretendard Variable", monospace'
   ctx.textAlign = 'right'
   ctx.fillStyle = 'rgba(141,141,141,.85)'
   ctx.fillText('HERMES MCP · 단일 진입점', 0, 0)
@@ -326,17 +326,17 @@ function drawAgents(ctx: CanvasRenderingContext2D, L: Layout) {
     ctx.fillStyle = COL.read; ctx.shadowColor = COL.read; ctx.shadowBlur = 8; ctx.fill(); ctx.shadowBlur = 0
 
     ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'
-    ctx.font = '700 12px "Pretendard Variable","Pretendard",sans-serif'; ctx.fillStyle = '#d7d7d7'
+    ctx.font = '700 12px "Pretendard Variable", sans-serif'; ctx.fillStyle = '#d7d7d7'
     ctx.fillText(a.label, x + 13, y + a.h * 0.42)
-    ctx.font = '500 9.5px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(141,141,141,.95)'
+    ctx.font = '500 9.5px "JetBrains Mono", "Pretendard Variable", monospace'; ctx.fillStyle = 'rgba(141,141,141,.95)'
     ctx.fillText(a.role, x + 13, y + a.h * 0.42 + 15)
-    ctx.font = '500 8px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(79,224,196,.85)'; ctx.textAlign = 'left'
+    ctx.font = '500 8px "JetBrains Mono", "Pretendard Variable", monospace'; ctx.fillStyle = 'rgba(79,224,196,.85)'; ctx.textAlign = 'left'
     ctx.fillText('→ hermes.mcp', x + 13, y + a.h - 9)
   })
 
-  ctx.font = '600 9.5px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(141,141,141,.7)'; ctx.textAlign = 'center'
+  ctx.font = '600 9.5px "JetBrains Mono", "Pretendard Variable", monospace'; ctx.fillStyle = 'rgba(141,141,141,.7)'; ctx.textAlign = 'center'
   ctx.fillText('RUNTIME AGENTS', L.agents[0].x, L.agents[0].y - L.agents[0].h / 2 - 14)
-  ctx.fillStyle = 'rgba(58,58,58,.9)'; ctx.font = '500 8px "JetBrains Mono",monospace'
+  ctx.fillStyle = 'rgba(58,58,58,.9)'; ctx.font = '500 8px "JetBrains Mono", "Pretendard Variable", monospace'
   ctx.fillText('graphiti 직접 호출 없음', L.agents[0].x, L.agents[0].y - L.agents[0].h / 2 - 2)
 }
 
@@ -352,22 +352,22 @@ function drawHermes(ctx: CanvasRenderingContext2D, L: Layout) {
   ctx.lineWidth = 1.4; ctx.strokeStyle = 'rgba(79,224,196,.34)'; ctx.stroke()
 
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'
-  ctx.font = '800 16px "Pretendard Variable","Pretendard",sans-serif'; ctx.fillStyle = '#e7faf5'
+  ctx.font = '800 16px "Pretendard Variable", sans-serif'; ctx.fillStyle = '#e7faf5'
   ctx.fillText('HERMES', h.x + h.w * 0.07, h.y + h.h * 0.115)
-  ctx.font = '600 10px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(79,224,196,.9)'
+  ctx.font = '600 10px "JetBrains Mono", "Pretendard Variable", monospace'; ctx.fillStyle = 'rgba(79,224,196,.9)'
   ctx.fillText('CONTROL PLANE', h.x + h.w * 0.07 + 86, h.y + h.h * 0.115)
-  ctx.font = '500 10px "Pretendard Variable","Pretendard",sans-serif'; ctx.fillStyle = 'rgba(141,141,141,.95)'
+  ctx.font = '500 10px "Pretendard Variable", sans-serif'; ctx.fillStyle = 'rgba(141,141,141,.95)'
   ctx.fillText('제어 평면 · 유일한 진입점 · 라우팅 / 권한 / 정본 / 적재', h.x + h.w * 0.07, h.y + h.h * 0.115 + 17)
 
   L.modules.forEach((m) => {
     rr(ctx, m.x, m.y, m.w, m.h, 9)
     ctx.fillStyle = 'rgba(8,9,9,.9)'; ctx.fill()
     ctx.lineWidth = 1; ctx.strokeStyle = 'rgba(60,72,70,.95)'; ctx.stroke()
-    ctx.font = '700 12px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(79,224,196,.9)'; ctx.textAlign = 'left'
+    ctx.font = '700 12px "JetBrains Mono", "Pretendard Variable", monospace'; ctx.fillStyle = 'rgba(79,224,196,.9)'; ctx.textAlign = 'left'
     ctx.fillText(m.n, m.x + 11, m.y + m.h * 0.42)
-    ctx.font = '700 12.5px "Pretendard Variable","Pretendard",sans-serif'; ctx.fillStyle = '#d7d7d7'
+    ctx.font = '700 12.5px "Pretendard Variable", sans-serif'; ctx.fillStyle = '#d7d7d7'
     ctx.fillText(m.title, m.x + 30, m.y + m.h * 0.42)
-    ctx.font = '500 9px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(141,141,141,.85)'
+    ctx.font = '500 9px "JetBrains Mono", "Pretendard Variable", monospace'; ctx.fillStyle = 'rgba(141,141,141,.85)'
     ctx.fillText(m.sub, m.x + 30, m.y + m.h * 0.42 + 15)
     ctx.beginPath(); ctx.arc(m.x + m.w - 9, m.y + m.h - 9, 2.2, 0, 7)
     ctx.fillStyle = 'rgba(79,224,196,.6)'; ctx.fill()
@@ -412,12 +412,12 @@ function drawGraphiti(ctx: CanvasRenderingContext2D, L: Layout, t: number) {
   ctx.moveTo(g.x + g.w * 0.5, g.y + g.h + 10)
   ctx.lineTo(g.x + g.w * 0.5 + dx * slices, g.y + g.h + 10 + dy * slices)
   ctx.stroke(); ctx.setLineDash([])
-  ctx.font = '500 8.5px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(141,141,141,.7)'; ctx.textAlign = 'left'
+  ctx.font = '500 8.5px "JetBrains Mono", "Pretendard Variable", monospace'; ctx.fillStyle = 'rgba(141,141,141,.7)'; ctx.textAlign = 'left'
   ctx.fillText('t →  temporal', g.x + g.w * 0.5 + 6, g.y + g.h + 5 + dy * slices)
 
-  ctx.font = '600 10px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(141,141,141,.9)'; ctx.textAlign = 'center'
+  ctx.font = '600 10px "JetBrains Mono", "Pretendard Variable", monospace'; ctx.fillStyle = 'rgba(141,141,141,.9)'; ctx.textAlign = 'center'
   ctx.fillText('GRAPHITI · temporal graph index', g.x + g.w / 2, g.y - 14)
-  ctx.font = '500 9px "Pretendard Variable","Pretendard",sans-serif'; ctx.fillStyle = 'rgba(224,104,90,.7)'
+  ctx.font = '500 9px "Pretendard Variable", sans-serif'; ctx.fillStyle = 'rgba(224,104,90,.7)'
   ctx.fillText('HIDDEN · 런타임 직접 접근 ✕', g.x + g.w / 2, g.y - 2)
 }
 
@@ -429,9 +429,9 @@ function drawCanon(ctx: CanvasRenderingContext2D, L: Layout) {
   ctx.lineWidth = 1.3; ctx.strokeStyle = 'rgba(230,178,79,.5)'; ctx.stroke()
   ctx.fillStyle = COL.gov; ctx.fillRect(x, y + 6, 3, c.h - 12)
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'
-  ctx.font = '700 12.5px "Pretendard Variable","Pretendard",sans-serif'; ctx.fillStyle = '#f0dcab'
+  ctx.font = '700 12.5px "Pretendard Variable", sans-serif'; ctx.fillStyle = '#f0dcab'
   ctx.fillText('OKF · 정본 문서 포맷', x + 14, y + c.h * 0.44)
-  ctx.font = '500 9px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(230,178,79,.8)'
+  ctx.font = '500 9px "JetBrains Mono", "Pretendard Variable", monospace'; ctx.fillStyle = 'rgba(230,178,79,.8)'
   ctx.fillText('llmwiki canonical bundle', x + 14, y + c.h * 0.44 + 15)
 }
 
@@ -450,9 +450,9 @@ function drawPRGate(ctx: CanvasRenderingContext2D, L: Layout, t: number) {
     ctx.stroke()
   }
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic'
-  ctx.font = '700 12.5px "Pretendard Variable","Pretendard",sans-serif'; ctx.fillStyle = '#f0dcab'
+  ctx.font = '700 12.5px "Pretendard Variable", sans-serif'; ctx.fillStyle = '#f0dcab'
   ctx.fillText('PR PROPOSAL · 리뷰 게이트', x + 34, y + p.h * 0.44)
-  ctx.font = '500 9px "JetBrains Mono",monospace'; ctx.fillStyle = 'rgba(230,178,79,.8)'
+  ctx.font = '500 9px "JetBrains Mono", "Pretendard Variable", monospace'; ctx.fillStyle = 'rgba(230,178,79,.8)'
   ctx.fillText('write → review → merge', x + 34, y + p.h * 0.44 + 15)
 }
 
@@ -473,7 +473,7 @@ function drawReject(ctx: CanvasRenderingContext2D, L: Layout, t: number) {
     ctx.moveTo(to.x - ss, to.y - ss); ctx.lineTo(to.x + ss, to.y + ss)
     ctx.moveTo(to.x + ss, to.y - ss); ctx.lineTo(to.x - ss, to.y + ss)
     ctx.stroke()
-    ctx.font = '600 8.5px "JetBrains Mono",monospace'; ctx.fillStyle = applyA(COL.deny, 0.85); ctx.textAlign = 'left'
+    ctx.font = '600 8.5px "JetBrains Mono", "Pretendard Variable", monospace'; ctx.fillStyle = applyA(COL.deny, 0.85); ctx.textAlign = 'left'
     ctx.fillText('직접 write 거부', to.x + 12, to.y + 3)
   } else {
     ctx.beginPath(); ctx.arc(px, py, 2.4, 0, 7); ctx.fillStyle = COL.deny; ctx.fill()

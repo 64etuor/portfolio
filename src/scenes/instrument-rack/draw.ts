@@ -306,7 +306,7 @@ export function buildGaugeSvg(svg: SVGSVGElement, gaugeRef: MutableRefObject<Gau
       x: lp[0].toFixed(1),
       y: (lp[1] + 3).toFixed(1),
       'text-anchor': 'middle',
-      'font-family': "'DM Mono',monospace",
+      'font-family': "'DM Mono', 'Pretendard Variable', monospace",
       'font-size': '8',
       fill: v === 15 ? '#39ff8a' : '#7e8c87',
     })
@@ -332,7 +332,7 @@ export function buildGaugeSvg(svg: SVGSVGElement, gaugeRef: MutableRefObject<Gau
     x: cx,
     y: (cy - 26).toFixed(1),
     'text-anchor': 'middle',
-    'font-family': "'DM Mono',monospace",
+    'font-family': "'DM Mono', 'Pretendard Variable', monospace",
     'font-size': '19',
     'font-weight': '800',
     fill: '#39ff8a',

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { subscribe } from './raf'
 import type { Frame, TickFn, UseSceneCanvasOptions } from './types'
 import { localizeSceneText } from './localize'
+import { ensureSceneFonts } from './fonts'
 
 const DPR_CAP = 2
 const MAX_DT = 1 / 20 // 탭 복귀/스톨 후 dt 폭주 캡(초)
@@ -99,6 +100,18 @@ export function useSceneCanvas(draw: TickFn, opts: UseSceneCanvasOptions = {}) {
     ro.observe(cv)
     return () => ro.disconnect()
   }, [applySize, renderStatic, running, reduced])
+
+  // 웹폰트(한글 서브셋 포함) 도착 후 정지 프레임을 다시 그린다 — 폰트 로딩 전에 그린
+  // 포스터/정지 프레임이 OS 대체 폰트로 남지 않게. 재생 중이면 다음 tick 이 덮어쓴다.
+  useEffect(() => {
+    let alive = true
+    ensureSceneFonts().then(() => {
+      if (alive) renderStatic()
+    })
+    return () => {
+      alive = false
+    }
+  }, [renderStatic])
 
   // reduced-motion 감지 — state 로 관리해 변경 시 tick effect 재실행.
   useEffect(() => {

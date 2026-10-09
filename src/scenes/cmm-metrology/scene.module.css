@@ -15,8 +15,8 @@
   --amber: #ffb84d;
   --datum: #6fb4ff;
   --probe: #ffd34d;
-  --mono: 'JetBrains Mono', 'SF Mono', ui-monospace, 'Roboto Mono', Menlo, Consolas, monospace;
-  --sans: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', -apple-system, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', 'Pretendard Variable', monospace;
+  --sans: 'Pretendard Variable', sans-serif;
 
   color: var(--ink);
   font-family: var(--sans);

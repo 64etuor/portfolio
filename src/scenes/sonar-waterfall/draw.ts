@@ -8,7 +8,7 @@ function drawStaticOverlay(g: CanvasRenderingContext2D, engine: Engine) {
   const H = engine.h
   const sx = W / engine.history.width
 
-  g.font = "9px 'Share Tech Mono', monospace"
+  g.font = "9px 'Share Tech Mono', 'Pretendard Variable', monospace"
   g.textBaseline = 'top'
   g.textAlign = 'left'
 
@@ -35,7 +35,7 @@ function drawStaticOverlay(g: CanvasRenderingContext2D, engine: Engine) {
   }
 
   g.save()
-  g.font = "10px 'IBM Plex Sans KR', sans-serif"
+  g.font = "10px 'Pretendard Variable', sans-serif"
   for (let c = 0; c < NCH; c++) {
     const x = engine.chX[c] * sx
     const cw = engine.colW * sx
@@ -71,7 +71,7 @@ function drawDynamicOverlay(g: CanvasRenderingContext2D, engine: Engine) {
   g.fillStyle = 'rgba(8,16,4,0.88)'
   g.fillRect(x + 3, y + 2, 262, 13)
   g.fillStyle = '#ffe27a'
-  g.font = "9px 'Share Tech Mono', monospace"
+  g.font = "9px 'Share Tech Mono', 'Pretendard Variable', monospace"
   g.textBaseline = 'top'
   g.textAlign = 'left'
   g.fillText('◆ DOE LOCK: 진폭×가압력×용착시간 최적점 · 불량율 로브 냉각', x + 6, y + 4)

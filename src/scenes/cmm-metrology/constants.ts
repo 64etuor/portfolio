@@ -6,7 +6,7 @@ export const ISO_X = { x: 0.866, y: 0.5 }
 export const ISO_Y = { x: -0.866, y: 0.5 }
 export const CYCLE_HOLD_MS = 4200
 export const BOOT_MS = 820
-export const FONT_MONO = '"JetBrains Mono","SF Mono",ui-monospace,"Roboto Mono",Menlo,Consolas,monospace'
+export const FONT_MONO = '"JetBrains Mono", "Pretendard Variable", monospace'
 
 export const CSS = {
   pass: '#3ce6a4',

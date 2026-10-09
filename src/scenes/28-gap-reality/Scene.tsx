@@ -239,36 +239,36 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
       g.moveTo(bx, my - 5)
       g.lineTo(bx, my + 5)
       g.stroke()
-      g.font = "600 13px 'Pretendard Variable', 'Pretendard', sans-serif"
+      g.font = "600 13px 'Pretendard Variable', sans-serif"
       g.fillStyle = rgba(GAPC, (0.5 + 0.4 * gv) * dv)
       g.textAlign = 'left'
       g.textBaseline = 'middle'
       g.fillText('격차', bx + 11, my - 8)
-      g.font = "700 9px 'JetBrains Mono', monospace"
+      g.font = "700 9px 'JetBrains Mono', 'Pretendard Variable', monospace"
       g.fillStyle = rgba(GAPC, 0.42 * dv)
       g.fillText('GAP', bx + 11, my + 6)
     }
 
     drawDot(g, exDx, exDy, PHOS, pulse, dv)
-    g.font = "600 17px 'Pretendard Variable', 'Pretendard', sans-serif"
+    g.font = "600 17px 'Pretendard Variable', sans-serif"
     g.textAlign = 'left'
     g.textBaseline = 'middle'
     g.fillStyle = rgba(PHOS, 0.95 * dv)
     g.fillText('기대', exDx + 14, exDy - 2)
-    g.font = "700 9px 'JetBrains Mono', monospace"
+    g.font = "700 9px 'JetBrains Mono', 'Pretendard Variable', monospace"
     g.fillStyle = rgba(DIM, 0.8 * dv)
     g.fillText('EXPECTATION', exDx + 14, exDy + 13)
 
     drawDot(g, rlDx, rlDy, GAPC, pulse, dv)
-    g.font = "700 17px 'Pretendard Variable', 'Pretendard', sans-serif"
+    g.font = "700 17px 'Pretendard Variable', sans-serif"
     g.fillStyle = rgba(GAPC, 0.98 * dv)
     g.fillText('성과', rlDx + 14, rlDy + (rlDy > exDy ? 2 : -2))
-    g.font = "700 9px 'JetBrains Mono', monospace"
+    g.font = "700 9px 'JetBrains Mono', 'Pretendard Variable', monospace"
     g.fillStyle = rgba(GAPC, 0.6 * dv)
     g.fillText('REALITY', rlDx + 14, rlDy + 17)
 
     /* 7) 하단 축 캡션 */
-    g.font = "10px 'JetBrains Mono', monospace"
+    g.font = "10px 'JetBrains Mono', 'Pretendard Variable', monospace"
     g.fillStyle = rgba(DIM, 0.55 * dv)
     g.textAlign = 'right'
     g.textBaseline = 'alphabetic'

@@ -3,7 +3,7 @@
   inset: 0;
   pointer-events: none;
   color: var(--scene-phos, #d7d7d7);
-  font-family: 'IBM Plex Mono', var(--font-mono, 'JetBrains Mono'), ui-monospace, monospace;
+  font-family: 'IBM Plex Mono', var(--font-mono, 'JetBrains Mono'), 'JetBrains Mono', 'Pretendard Variable', monospace;
   --teal: #4fe0c4;
   --blue: #4ab3cc;
   --amber: #d98a3d;
@@ -30,7 +30,7 @@
   align-self: center;
 }
 .tagTitle {
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-weight: 600;
   letter-spacing: 0.06em;
   color: #e6e6e6;
@@ -73,7 +73,7 @@
 }
 .phaseTitle {
   text-shadow: 0 1px 12px rgba(0, 0, 0, 0.9);
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-weight: 600;
   font-size: clamp(15px, 1.45vw, 23px);
   letter-spacing: 0.01em;
@@ -140,13 +140,13 @@
   min-width: 3ch;
 }
 .unit {
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-size: clamp(13px, 1.2vw, 19px);
   color: var(--amber);
   letter-spacing: 0.04em;
 }
 .heroLabel {
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-size: clamp(11px, 0.92vw, 14.5px);
   color: #d7d7d7;
   letter-spacing: 0.04em;
@@ -164,7 +164,7 @@
   will-change: opacity;
 }
 .stVal {
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-weight: 600;
   font-size: clamp(14px, 1.35vw, 21px);
   color: var(--teal);
@@ -197,7 +197,7 @@
   display: inline-block;
   transform: translate(-100%, -50%);
   padding-right: 10px;
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-size: clamp(10px, 0.78vw, 12.5px);
   letter-spacing: 0.06em;
   color: #bfe9ee;
@@ -205,7 +205,7 @@
 }
 .panelLabel {
   margin-top: -22px;
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-weight: 600;
   font-size: clamp(10px, 0.82vw, 13px);
   letter-spacing: 0.08em;

@@ -2,7 +2,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  font-family: var(--font-mono, 'JetBrains Mono', ui-monospace, monospace);
+  font-family: var(--font-mono, 'JetBrains Mono', 'Pretendard Variable', monospace);
   color: #d7d7d7;
   overflow: hidden;
 }

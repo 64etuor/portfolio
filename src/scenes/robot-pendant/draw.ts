@@ -68,7 +68,7 @@ export function drawGrid(g: CanvasRenderingContext2D, rt: Runtime, w: number, h:
     g.fillRect(cx - 26, h - 30, 52, 8)
     g.fillStyle = COMPANY[wp.co].color
     g.globalAlpha = i === rt.state.running || i === rt.state.selected ? 1 : 0.4
-    g.font = '700 9px ui-monospace,monospace'
+    g.font = '700 9px "JetBrains Mono", "Pretendard Variable", monospace'
     g.textAlign = 'center'
     g.fillText(`P${wp.id}`, cx, h - 12)
     g.globalAlpha = 1

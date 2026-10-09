@@ -2,8 +2,8 @@
   position: absolute;
   inset: 0;
   overflow: hidden;
-  --mono: var(--font-mono, 'DM Mono', 'JetBrains Mono', ui-monospace, monospace);
-  --sans: 'Pretendard', 'Pretendard Variable', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+  --mono: var(--font-mono, 'DM Mono', 'Pretendard Variable', monospace);
+  --sans: 'Pretendard Variable', sans-serif;
   color: #d7d7d7;
 }
 

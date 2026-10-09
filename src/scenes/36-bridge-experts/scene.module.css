@@ -9,8 +9,8 @@
   --warm: #d98a3d;
   --cold: #4ab3cc;
   --conv: #4fe0c4;
-  --kr: 'Pretendard Variable', 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
-  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --kr: 'Pretendard Variable', sans-serif;
+  --mono: 'JetBrains Mono', 'Pretendard Variable', monospace;
 
   color: var(--phos);
   font-family: var(--kr);

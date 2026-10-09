@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { subscribe } from '../raf'
+import { ensureSceneFonts } from '../fonts'
 import type { ThreeContext, ThreeSceneOptions, ThreeSetup, ThreeSetupResult } from './types'
 
 const DPR_CAP = 2
@@ -92,6 +93,8 @@ export function useThreeScene(setup: ThreeSetup, opts: ThreeSceneOptions = {}) {
         import('three/examples/jsm/postprocessing/RenderPass.js'),
         import('three/examples/jsm/postprocessing/UnrealBloomPass.js'),
         import('three/examples/jsm/postprocessing/OutputPass.js'),
+        // CanvasTexture 에 굽는 글자가 OS 대체 폰트로 고정되지 않도록 웹폰트를 먼저 받는다.
+        ensureSceneFonts(),
       ])
       if (destroyed) return
 

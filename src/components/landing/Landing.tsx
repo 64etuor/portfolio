@@ -201,7 +201,7 @@ export function Landing() {
         {/* all landing text rendered with the pretext letter-physics, 2.5s in */}
         <PretextText
           text={heroPortfolio}
-          fontFamily="'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace"
+          fontFamily="'JetBrains Mono', 'Pretendard Variable', monospace"
           fontWeight={500}
           fontPx={11}
           letterSpacing={5}
@@ -215,7 +215,7 @@ export function Landing() {
             이름 위에서 같은 pretext 등장 효과로 조립 (필름 엔딩과 자연스럽게 연결) */}
         <PretextText
           text={heroItsMe}
-          fontFamily="'Playfair Display', 'Noto Serif KR', serif"
+          fontFamily="'Playfair Display', 'Noto Serif KR', 'Pretendard Variable', serif"
           fontStyle="italic"
           fontWeight={500}
           fontPx={33}
@@ -228,7 +228,7 @@ export function Landing() {
         />
         <PretextText
           text={heroName}
-          fontFamily="'Playfair Display', 'Noto Serif KR', serif"
+          fontFamily="'Playfair Display', 'Noto Serif KR', 'Pretendard Variable', serif"
           fontWeight={600}
           fontPx={62}
           letterSpacing={5}
@@ -240,7 +240,7 @@ export function Landing() {
         />
         <PretextText
           text={heroTagline}
-          fontFamily="'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace"
+          fontFamily="'JetBrains Mono', 'Pretendard Variable', monospace"
           fontWeight={500}
           fontPx={16}
           letterSpacing={0}

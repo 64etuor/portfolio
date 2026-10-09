@@ -16,8 +16,8 @@
   --hue-b: #b07fd6;
   --hue-c: #e6cf6a;
   --grid: rgba(255, 255, 255, 0.025);
-  --mono: 'JetBrains Mono', 'SF Mono', ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
-  --sans: 'Inter', 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', 'Pretendard Variable', monospace;
+  --sans: 'Pretendard Variable', sans-serif;
 
   position: absolute;
   inset: 0;

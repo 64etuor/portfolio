@@ -6,7 +6,7 @@
   inset: 0;
   overflow: hidden;
   color: var(--scene-phos);
-  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   word-break: keep-all;
   -webkit-font-smoothing: none;
   background: radial-gradient(ellipse 135% 135% at 60% 46%, #101010 0%, #050505 60%, #000 100%);
@@ -21,7 +21,7 @@
 }
 
 .kr {
-  font-family: 'Pretendard Variable', 'Pretendard', 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-family: 'Pretendard Variable', sans-serif;
 }
 
 /* scanlines + vignette overlay */

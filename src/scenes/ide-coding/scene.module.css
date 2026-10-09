@@ -16,7 +16,7 @@
   --num: #9bb6ac;
   --pu: #6d7682;
   --cm: #4d545d;
-  --mono: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  --mono: 'JetBrains Mono', 'Pretendard Variable', monospace;
   --lh: 22px;
   color: var(--txt);
   font-family: var(--mono);

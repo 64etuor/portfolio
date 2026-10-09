@@ -26,8 +26,8 @@
   --c-elen: #ffb454; /* PLC 시퀀스 */
   --c-sol: #54d6ff; /* 취출 로봇 */
   --c-mir: #c9a3ff; /* JIG 연동 */
-  --mono: 'SF Mono', ui-monospace, 'JetBrains Mono', 'Roboto Mono', Menlo, Consolas, monospace;
-  --sans: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', -apple-system, system-ui, sans-serif;
+  --mono: 'JetBrains Mono', 'Pretendard Variable', monospace;
+  --sans: 'Pretendard Variable', sans-serif;
 
   display: flex;
   align-items: center;

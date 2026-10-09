@@ -76,7 +76,7 @@ export function drawPipe(ctx: SceneCtx, g: CanvasRenderingContext2D, fr: Frame):
       }
       g.stroke()
       g.fillStyle = open ? C.signal : C.amber
-      g.font = '700 8px ui-monospace,monospace'
+      g.font = '700 8px "JetBrains Mono", "Pretendard Variable", monospace'
       g.textAlign = 'center'
       g.fillText(open ? 'GATE↑' : 'GATE✕', mx, a.y - 22)
     }
@@ -149,17 +149,17 @@ export function drawPipe(ctx: SceneCtx, g: CanvasRenderingContext2D, fr: Frame):
       g.fill()
     }
     g.fillStyle = isCur ? C.signal : active ? C.ink2 : C.ink3
-    g.font = '700 11px ui-monospace,monospace'
+    g.font = '700 11px "JetBrains Mono", "Pretendard Variable", monospace'
     g.textAlign = 'center'
     g.fillText(nd.name, nd.x, nd.y + nd.r + 15)
-    g.font = '600 8px ui-monospace,monospace'
+    g.font = '600 8px "JetBrains Mono", "Pretendard Variable", monospace'
     g.fillStyle = C.ink3
     g.fillText(`§${i}`, nd.x, nd.y + nd.r + 26)
     g.restore()
   })
 
   g.fillStyle = C.ink3
-  g.font = '600 9px ui-monospace,monospace'
+  g.font = '600 9px "JetBrains Mono", "Pretendard Variable", monospace'
   g.textAlign = 'left'
   g.fillText('event flow → readiness gate → next stage', 6, 16)
 
@@ -289,7 +289,7 @@ export function drawGraph(ctx: SceneCtx, g: CanvasRenderingContext2D, fr: Frame)
     g.globalAlpha = 1
     if (node.lit > 0.4) {
       g.fillStyle = C.signal
-      g.font = '700 8px ui-monospace,monospace'
+      g.font = '700 8px "JetBrains Mono", "Pretendard Variable", monospace'
       g.textAlign = 'center'
       g.fillText(node.label, node.x, node.y - node.r - 4)
     }

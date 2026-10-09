@@ -7,7 +7,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  font-family: var(--font-mono, 'JetBrains Mono'), ui-monospace, monospace;
+  font-family: var(--font-mono, 'JetBrains Mono'), 'JetBrains Mono', 'Pretendard Variable', monospace;
   color: #d7d7d7;
   --teal: #4fe0c4;
   --blue: #4ab3cc;

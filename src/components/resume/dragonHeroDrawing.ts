@@ -411,7 +411,7 @@ export function drawRunes(ctx: CanvasRenderingContext2D, state: DragonHeroState)
       runeX[i] = Math.random() * W
     }
     ctx.globalAlpha = runeOp[i] * (0.5 + Math.sin(time * 0.4 + runePhase[i]) * 0.5)
-    ctx.font = `${runeSz[i]}px 'JetBrains Mono', monospace`
+    ctx.font = `${runeSz[i]}px 'JetBrains Mono', 'Pretendard Variable', monospace`
     ctx.fillText(runeC[i], runeX[i] + Math.sin(time * 0.7 + runePhase[i]) * 12, runeY[i])
   }
   ctx.globalAlpha = 1
@@ -453,7 +453,7 @@ export function drawParticles(ctx: CanvasRenderingContext2D, state: DragonHeroSt
   ctx.textBaseline = 'middle'
   for (let i = 0; i < state.emberCount; i++) {
     ctx.globalAlpha = Math.min(1, emLife[i] * 2)
-    ctx.font = `${emSize[i]}px 'JetBrains Mono', monospace`
+    ctx.font = `${emSize[i]}px 'JetBrains Mono', 'Pretendard Variable', monospace`
     ctx.fillStyle = ACCENT
     ctx.fillText(emCh[i], emX[i], emY[i])
   }
@@ -461,7 +461,7 @@ export function drawParticles(ctx: CanvasRenderingContext2D, state: DragonHeroSt
     const t = 1 - pLife[i]
     const sz = pSize[i] * (0.4 + pLife[i] * 0.6)
     ctx.globalAlpha = pLife[i] * 0.85
-    ctx.font = `${sz}px 'JetBrains Mono', monospace`
+    ctx.font = `${sz}px 'JetBrains Mono', 'Pretendard Variable', monospace`
     ctx.fillStyle = fireColor(t)
     ctx.fillText(pCh[i], pX[i], pY[i])
   }
@@ -507,7 +507,7 @@ export function drawDragon(ctx: CanvasRenderingContext2D, state: DragonHeroState
     if (CFG.spines && i >= 4 && i <= 30 && i % 3 === 0) {
       const sa = angle + Math.PI / 2
       ctx.globalAlpha = 0.32
-      ctx.font = `${size * (0.6 + Math.sin(time * 3 + i) * 0.15)}px 'JetBrains Mono', monospace`
+      ctx.font = `${size * (0.6 + Math.sin(time * 3 + i) * 0.15)}px 'JetBrains Mono', 'Pretendard Variable', monospace`
       ctx.fillStyle = color
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
@@ -522,7 +522,7 @@ export function drawDragon(ctx: CanvasRenderingContext2D, state: DragonHeroState
       const w1 = angle + Math.PI / 2 + wp
       const w2 = angle - Math.PI / 2 - wp
       ctx.globalAlpha = 0.4
-      ctx.font = `${ws}px 'JetBrains Mono', monospace`
+      ctx.font = `${ws}px 'JetBrains Mono', 'Pretendard Variable', monospace`
       ctx.fillStyle = color
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
@@ -534,7 +534,7 @@ export function drawDragon(ctx: CanvasRenderingContext2D, state: DragonHeroState
     ctx.translate(chX[i], chY[i])
     ctx.rotate(angle)
     ctx.globalAlpha = 1
-    ctx.font = `bold ${size}px 'JetBrains Mono', monospace`
+    ctx.font = `bold ${size}px 'JetBrains Mono', 'Pretendard Variable', monospace`
     ctx.fillStyle = color
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
@@ -558,7 +558,7 @@ export function drawDragon(ctx: CanvasRenderingContext2D, state: DragonHeroState
   ctx.fill()
   ctx.globalAlpha = 1
   ctx.fillStyle = breathing ? PHOS_HI : ACCENT
-  ctx.font = `16px 'JetBrains Mono', monospace`
+  ctx.font = `16px 'JetBrains Mono', 'Pretendard Variable', monospace`
   ctx.textAlign = 'center'
   ctx.textBaseline = 'middle'
   ctx.fillText(time % 5 > 4.7 ? '—' : breathing ? '◉' : '⊙', ex, ey)

@@ -7,7 +7,7 @@
   --phos-dim: var(--scene-phos-dim);
   --phos-deep: var(--scene-phos-deep);
   --accent: #6fb6ff;
-  --mono: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace;
+  --mono: 'JetBrains Mono', 'Pretendard Variable', monospace;
   --s: min(1vw, 1.778vh);
 
   position: absolute;

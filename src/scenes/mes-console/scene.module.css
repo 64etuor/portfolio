@@ -14,7 +14,7 @@
   --txt-dim: #6f857c;
   --txt-faint: #41534c;
   color: var(--txt);
-  font-family: 'IBM Plex Sans KR', 'JetBrains Mono', monospace;
+  font-family: 'Pretendard Variable', sans-serif;
   font-size: 13px;
   line-height: 1.45;
   word-break: keep-all;
@@ -66,16 +66,16 @@
 }
 
 .mono {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 
 .cond {
-  font-family: 'Oswald', sans-serif;
+  font-family: 'Oswald', 'Pretendard Variable', sans-serif;
   letter-spacing: 0.02em;
 }
 
 .num {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum';
 }
@@ -120,7 +120,7 @@
 }
 
 .title {
-  font-family: 'Oswald', sans-serif;
+  font-family: 'Oswald', 'Pretendard Variable', sans-serif;
   font-weight: 700;
   font-size: 16px;
   letter-spacing: 0.06em;
@@ -161,7 +161,7 @@
 .v {
   font-size: 13px;
   color: var(--txt);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 
 .v.g {
@@ -297,7 +297,7 @@
 }
 
 .hTitle {
-  font-family: 'Oswald', sans-serif;
+  font-family: 'Oswald', 'Pretendard Variable', sans-serif;
   font-weight: 600;
   font-size: 13px;
   letter-spacing: 0.1em;
@@ -310,7 +310,7 @@
   font-size: 9px;
   color: var(--txt-faint);
   letter-spacing: 0.14em;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 
 .pBody {
@@ -343,7 +343,7 @@
 
 .gv {
   margin-top: -10px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-weight: 700;
   font-size: 22px;
 }
@@ -367,7 +367,7 @@
   display: flex;
   flex-direction: column;
   gap: 9px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 11px;
 }
 
@@ -407,7 +407,7 @@
   display: flex;
   gap: 18px;
   margin-top: 8px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 11px;
 }
 
@@ -453,7 +453,7 @@
 .kv {
   margin: 8px 0 4px;
   color: var(--amber);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-weight: 800;
   font-size: 34px;
   line-height: 1;
@@ -524,7 +524,7 @@
   margin-bottom: 6px;
   color: var(--txt-faint);
   border-bottom: 1px solid var(--line);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9px;
 }
 
@@ -550,7 +550,7 @@
   color: var(--cyan);
   font-size: 9px;
   letter-spacing: 0.1em;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 
 .gn {
@@ -580,7 +580,7 @@
   border-radius: 2px;
   overflow: hidden;
   cursor: default;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9.5px;
   white-space: nowrap;
   transition: filter 0.2s;
@@ -618,7 +618,7 @@
   top: -14px;
   left: -12px;
   color: var(--red);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 8px;
   letter-spacing: 0.1em;
 }
@@ -629,7 +629,7 @@
   gap: 0;
   height: 120px;
   overflow: hidden;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 11px;
 }
 
@@ -745,7 +745,7 @@
   background: rgba(255, 255, 255, 0.015);
   border: 1px solid var(--line2);
   color: var(--txt);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 10px;
 }
 
@@ -775,7 +775,7 @@
 
 .root svg text {
   fill: var(--txt-dim);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9px;
 }
 
@@ -784,7 +784,7 @@
   gap: 14px;
   margin-top: 6px;
   color: var(--txt-dim);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9.5px;
 }
 
@@ -811,7 +811,7 @@
 .dtable {
   width: 100%;
   border-collapse: collapse;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 10.5px;
 }
 
@@ -877,7 +877,7 @@
 .fv {
   margin-top: 3px;
   color: var(--txt);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 13px;
 }
 
@@ -893,7 +893,7 @@
 .sectionTag {
   margin: 6px 2px;
   color: var(--txt-faint);
-  font-family: 'Oswald', sans-serif;
+  font-family: 'Oswald', 'Pretendard Variable', sans-serif;
   font-size: 10px;
   letter-spacing: 0.3em;
   text-transform: uppercase;
@@ -977,7 +977,7 @@
 }
 
 .andonState {
-  font-family: 'Oswald', sans-serif;
+  font-family: 'Oswald', 'Pretendard Variable', sans-serif;
   font-weight: 600;
   font-size: 11px;
   letter-spacing: 0.1em;
@@ -1002,7 +1002,7 @@
   gap: 6px;
   margin-left: auto;
   color: var(--txt-faint);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9px;
   letter-spacing: 0.08em;
 }
@@ -1017,7 +1017,7 @@
   border: 1px solid var(--line2);
   border-radius: 2px;
   color: var(--txt-faint);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9px;
   letter-spacing: 0.1em;
   transition: all 0.3s;
@@ -1062,14 +1062,14 @@
   align-items: center;
   gap: 7px;
   color: #dfeae5;
-  font-family: 'Oswald', sans-serif;
+  font-family: 'Oswald', 'Pretendard Variable', sans-serif;
   font-weight: 600;
   font-size: 12px;
   letter-spacing: 0.06em;
 }
 
 .pj {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 11px;
 }
 
@@ -1098,7 +1098,7 @@
   padding-top: 7px;
   color: var(--txt-dim);
   border-top: 1px solid var(--line);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 9.5px;
   line-height: 1.6;
 }

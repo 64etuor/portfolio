@@ -8,7 +8,7 @@
   overflow: hidden;
   background: #0a0e14;
   color: #c9d4e3;
-  font-family: 'JetBrains Mono','SF Mono','Fira Code',ui-monospace,'Cascadia Code',Consolas,monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -212,7 +212,7 @@
 .root :global(.node .sub) { font-size: 10.5px; color: #6b7787; line-height: 1.5 }
 .root :global(.node .foot) { display: flex; align-items: center; gap: 8px; padding: 7px 11px; border-top: 1px solid #1f2733; background: rgba(0,0,0,.18); font-size: 9.5px; color: #414c5c }
 .root :global(.node .foot .dur) { margin-left: auto; color: #6b7787 }
-.root :global(.node .runid) { color: #414c5c; font-family: ui-monospace, monospace }
+.root :global(.node .runid) { color: #414c5c; font-family: 'JetBrains Mono', 'Pretendard Variable', monospace }
 
 .root :global(.node.metric) { width: 170px }
 .root :global(.node.metric .big) { font-size: 24px; font-weight: 700; letter-spacing: -.5px; line-height: 1 }

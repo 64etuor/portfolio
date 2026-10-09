@@ -25,7 +25,7 @@
   body{
     background:var(--bg);
     color:var(--txt);
-    font-family:'IBM Plex Mono','Share Tech Mono','IBM Plex Sans KR','Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',Menlo,Consolas,monospace;
+    font-family:'IBM Plex Mono', 'Pretendard Variable', monospace;
     word-break:keep-all;
     overflow:hidden;
     -webkit-font-smoothing:antialiased;
@@ -56,7 +56,7 @@
     display:flex;align-items:center;
     background:linear-gradient(180deg,#06192e,#03101d);
     border-bottom:1px solid var(--line);
-    font-family:'Share Tech Mono','Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',Menlo,Consolas,monospace;
+    font-family:'Share Tech Mono', 'Pretendard Variable', monospace;
     letter-spacing:.5px;
   }
   .topbar .tag{
@@ -88,7 +88,7 @@
   .corner.tr{top:-1px;right:-1px;border-left:none;border-bottom:none;}
   .corner.bl{bottom:-1px;left:-1px;border-right:none;border-top:none;}
   .corner.br{bottom:-1px;right:-1px;border-left:none;border-top:none;}
-  .ident .name{font-family:'IBM Plex Sans KR';font-size:25px;font-weight:700;color:#eafaff;letter-spacing:1px;}
+  .ident .name{font-family:'Pretendard Variable', sans-serif;font-size:25px;font-weight:700;color:#eafaff;letter-spacing:1px;}
   .ident .role{font-size:10.5px;color:var(--teal);margin-top:5px;line-height:1.5;letter-spacing:.3px;}
   .ident .sub{font-size:9px;color:var(--txt-dim);margin-top:7px;letter-spacing:1px;font-family:'Share Tech Mono';}
 
@@ -104,7 +104,7 @@
   .chrow:hover{background:rgba(72,230,255,.08);border-color:var(--line);}
   .chrow .dot{width:9px;height:9px;border-radius:1px;box-shadow:0 0 7px currentColor;}
   .chrow .cn{font-size:8.5px;color:var(--txt-dim);font-family:'Share Tech Mono';letter-spacing:.5px;}
-  .chrow .cname{font-family:'IBM Plex Sans KR';font-size:12px;font-weight:600;color:#dff2ff;line-height:1.25;}
+  .chrow .cname{font-family:'Pretendard Variable', sans-serif;font-size:12px;font-weight:600;color:#dff2ff;line-height:1.25;}
   .chrow .freq{font-size:8.5px;color:var(--txt-dim);text-align:right;font-family:'Share Tech Mono';line-height:1.3;}
   .chrow .freq b{display:block;color:var(--cyan);font-size:10px;}
   .chrow .open{position:absolute;right:6px;bottom:4px;font-size:7px;color:var(--ink-dim);letter-spacing:1px;opacity:0;transition:opacity .15s;}
@@ -188,9 +188,9 @@
   .card .x{position:absolute;top:12px;right:16px;cursor:pointer;color:var(--txt-dim);font-size:18px;font-family:'Share Tech Mono';}
   .card .x:hover{color:var(--hot);}
   .card .ch-id{font-family:'Share Tech Mono';font-size:10px;letter-spacing:3px;color:var(--cyan);}
-  .card h2{font-family:'IBM Plex Sans KR';font-size:24px;color:#eafaff;margin:5px 0 3px;font-weight:700;letter-spacing:.5px;}
+  .card h2{font-family:'Pretendard Variable', sans-serif;font-size:24px;color:#eafaff;margin:5px 0 3px;font-weight:700;letter-spacing:.5px;}
   .card .band{font-family:'Share Tech Mono';font-size:9px;color:var(--txt-dim);letter-spacing:1.5px;margin-bottom:16px;}
-  .card .desc{font-family:'IBM Plex Sans KR';font-size:13.5px;line-height:1.85;color:var(--txt);margin-bottom:18px;}
+  .card .desc{font-family:'Pretendard Variable', sans-serif;font-size:13.5px;line-height:1.85;color:var(--txt);margin-bottom:18px;}
   .card .desc em{color:var(--cyan);font-style:normal;font-weight:600;}
   .card .grp-l{font-family:'Share Tech Mono';font-size:9px;letter-spacing:2px;color:var(--ink-dim);margin:0 0 8px;display:flex;align-items:center;gap:6px;}
   .card .grp-l::after{content:"";flex:1;height:1px;background:var(--grid);}
@@ -620,7 +620,7 @@
     octx.clearRect(0,0,W,H);
     const sx=W/wf.width; // device->css scale for x offsets
     // column separators + labels at top
-    octx.font="9px 'Share Tech Mono', monospace";
+    octx.font="9px 'Share Tech Mono', 'Pretendard Variable', monospace";
     octx.textBaseline="top";
     for(let c=0;c<NCH;c++){
       const x=chX[c]*sx;
@@ -643,7 +643,7 @@
     }
     // draw rotated channel names along bottom of each column
     octx.save();
-    octx.font="10px 'IBM Plex Sans KR', sans-serif";
+    octx.font="10px 'Pretendard Variable', sans-serif";
     for(let c=0;c<NCH;c++){
       const x=chX[c]*sx, cw=colW*sx;
       octx.save();
@@ -765,7 +765,7 @@
       octx.fillStyle="rgba(8,16,4,0.88)";
       octx.fillRect(x+3,y+2,262,13);
       octx.fillStyle="#ffe27a";
-      octx.font="9px 'Share Tech Mono', monospace";
+      octx.font="9px 'Share Tech Mono', 'Pretendard Variable', monospace";
       octx.textBaseline="top";
       octx.fillText("◆ DOE LOCK: 진폭×가압력×용착시간 최적점 · 불량율 로브 냉각",x+6,y+4);
       octx.restore();

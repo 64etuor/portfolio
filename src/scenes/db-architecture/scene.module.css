@@ -28,7 +28,7 @@
   inset: 0;
   background: var(--bg);
   color: var(--ink);
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   word-break: keep-all;
   overflow: hidden;
   -webkit-font-smoothing: antialiased;
@@ -47,7 +47,7 @@
   z-index: 0;
 }
 .mono {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 
 /* ===== layout shell ===== */

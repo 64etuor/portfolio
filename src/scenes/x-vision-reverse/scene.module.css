@@ -4,7 +4,7 @@
   z-index: 1;
   pointer-events: none;
   color: #d7d7d7;
-  font-family: var(--font-mono, 'JetBrains Mono'), ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-mono, 'JetBrains Mono'), 'JetBrains Mono', 'Pretendard Variable', monospace;
   overflow: hidden;
 }
 
@@ -170,10 +170,10 @@
   gap: 12px;
   font-size: 17px;
   letter-spacing: 0.02em;
-  font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
 }
 .idx {
-  font-family: var(--font-mono, 'JetBrains Mono'), ui-monospace, monospace;
+  font-family: var(--font-mono, 'JetBrains Mono'), 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 11px;
   letter-spacing: 0.14em;
   color: #8d8d8d;
@@ -199,7 +199,7 @@
 
 /* 한글이 섞인 라벨: 산세리프 + 좁은 자간(모노 자간이 한글에선 벌어짐) */
 .ko {
-  font-family: 'Pretendard', 'Noto Sans KR', system-ui, sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   letter-spacing: 0.02em;
   text-transform: none;
 }

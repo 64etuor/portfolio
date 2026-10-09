@@ -7,7 +7,7 @@
   overflow: hidden;
   background: #020705;
   color: #9ff5cf;
-  font-family: 'IBM Plex Mono', 'Share Tech Mono', monospace;
+  font-family: 'IBM Plex Mono', 'Pretendard Variable', monospace;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
 }
@@ -60,7 +60,7 @@
   gap: 0;
   background: linear-gradient(180deg, #072215, #03130b);
   border-bottom: 1px solid rgba(46, 255, 163, 0.28);
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   letter-spacing: 0.5px;
 }
 
@@ -149,7 +149,7 @@
 }
 
 .topbarOnline {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 11px;
   color: #2effa3;
 }
@@ -212,7 +212,7 @@
 }
 
 .identName {
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-size: 24px;
   font-weight: 700;
   color: #eafff2;
@@ -228,7 +228,7 @@
 }
 
 .identRole {
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-size: 11px;
   color: #ffb031;
   margin-top: 8px;
@@ -288,12 +288,12 @@
 }
 
 .legendLbl {
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
 }
 
 .legendCnt {
   margin-left: auto;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   color: #4f9a7a;
   font-size: 11px;
 }
@@ -318,7 +318,7 @@
 }
 
 .hudCellV {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 18px;
   color: #2effa3;
   text-shadow: 0 0 8px rgba(46, 255, 163, 0.4);
@@ -356,7 +356,7 @@
 }
 
 .ladPx {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 11px;
   color: #4f9a7a;
   flex: 0 0 22px;
@@ -364,7 +364,7 @@
 }
 
 .ladPl {
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-size: 10px;
   color: #4f9a7a;
   display: flex;
@@ -376,7 +376,7 @@
   font-size: 8px;
   color: #4f9a7a;
   opacity: 0.7;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   letter-spacing: 0.3px;
 }
 
@@ -405,7 +405,7 @@
 }
 
 .ladRule {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 8px;
   letter-spacing: 1.5px;
   color: #ffb031;
@@ -422,7 +422,7 @@
 }
 
 .creedQ {
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-size: 11px;
   line-height: 1.5;
   color: #9ff5cf;
@@ -434,7 +434,7 @@
 }
 
 .creedR {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 8px;
   letter-spacing: 0.6px;
   color: #4f9a7a;
@@ -472,7 +472,7 @@
 
 .ovCorner {
   position: absolute;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 10px;
   color: #4f9a7a;
   letter-spacing: 1.5px;
@@ -515,7 +515,7 @@
   border: 1px solid #3fe0ff;
   background: rgba(63, 224, 255, 0.08);
   color: #3fe0ff;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 11px;
   letter-spacing: 2px;
   padding: 7px 18px;
@@ -570,7 +570,7 @@
   grid-template-columns: 42px 52px 48px 46px 1fr;
   gap: 4px;
   align-items: center;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 10px;
   padding: 5px 10px;
 }
@@ -633,7 +633,7 @@
 }
 
 .trackId {
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-size: 10px;
   color: #9ff5cf;
   white-space: nowrap;
@@ -650,7 +650,7 @@
 }
 
 .vchip {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 8px;
   letter-spacing: 0.3px;
   margin-left: 5px;
@@ -704,7 +704,7 @@
   gap: 0;
   background: linear-gradient(180deg, #03130b, #020705);
   border-top: 1px solid rgba(46, 255, 163, 0.28);
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 10px;
   letter-spacing: 1px;
   overflow: hidden;
@@ -831,14 +831,14 @@
 }
 
 .dcTrkno {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 11px;
   color: #ffb031;
   letter-spacing: 2px;
 }
 
 .dcId {
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-size: 21px;
   font-weight: 700;
   color: #eafff2;
@@ -867,7 +867,7 @@
   transition: 0.15s;
   flex: 0 0 28px;
   background: transparent;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 .dcClose:hover {
@@ -897,7 +897,7 @@
 }
 
 .dcSolV {
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 16px;
   color: #2effa3;
   text-shadow: 0 0 8px rgba(46, 255, 163, 0.4);
@@ -906,7 +906,7 @@
 
 .dcBody {
   padding: 18px 20px;
-  font-family: 'IBM Plex Sans KR', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
 }
 
 .dcVerdict {
@@ -914,7 +914,7 @@
   align-items: center;
   gap: 10px;
   flex-wrap: wrap;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   font-size: 10px;
   letter-spacing: 0.5px;
   padding: 8px 11px;
@@ -974,7 +974,7 @@
 
 .dcAchItemB {
   color: #2effa3;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
   flex: 0 0 auto;
 }
 
@@ -995,7 +995,7 @@
   border: 1px solid rgba(46, 255, 163, 0.12);
   color: #4f9a7a;
   padding: 3px 8px;
-  font-family: 'Share Tech Mono', monospace;
+  font-family: 'Share Tech Mono', 'Pretendard Variable', monospace;
 }
 
 @media (max-width: 1100px) {

@@ -6,7 +6,7 @@
   inset: 0;
   overflow: hidden;
   color: var(--scene-phos);
-  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   word-break: keep-all;
   -webkit-font-smoothing: none;
   background: radial-gradient(ellipse 130% 130% at 50% 48%, #101010 0%, #050505 60%, #000 100%);
@@ -49,7 +49,7 @@
 }
 
 .kr {
-  font-family: 'Pretendard Variable', 'Pretendard', 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-family: 'Pretendard Variable', sans-serif;
 }
 
 /* film flicker overlay */
@@ -118,7 +118,7 @@
   z-index: 14;
   left: 5.4%;
   top: 12.2%;
-  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: clamp(10px, 0.82vw, 15px);
   letter-spacing: 0.42em;
   color: var(--scene-phos-dim);
@@ -246,7 +246,7 @@
   max-width: calc(var(--s) * 78);
 }
 .srcWord {
-  font-family: 'Pretendard Variable', 'Pretendard', 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-family: 'Pretendard Variable', sans-serif;
   font-weight: 600;
   font-size: calc(var(--s) * 3.5);
   line-height: 1.18;
@@ -265,7 +265,7 @@
   min-height: calc(var(--s) * 2.2);
 }
 .glsWord {
-  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: calc(var(--s) * 1.12);
   color: var(--scene-phos-dim);
   letter-spacing: 0.04em;
@@ -297,7 +297,7 @@
   z-index: 13;
 }
 .ansWord {
-  font-family: 'Pretendard Variable', 'Pretendard', 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-family: 'Pretendard Variable', sans-serif;
   font-weight: 500;
   font-size: calc(var(--s) * 2.55);
   line-height: 1.3;

@@ -173,7 +173,7 @@ export function drawContacts(g: CanvasRenderingContext2D, CX: number, CY: number
     }
 
     const labAlpha = glow * 0.8
-    g.font = (c.priority || c.type === 'gate') ? "600 11px 'IBM Plex Sans KR'" : "10px 'IBM Plex Sans KR'"
+    g.font = (c.priority || c.type === 'gate') ? "600 11px 'Pretendard Variable', sans-serif" : "10px 'Pretendard Variable', sans-serif"
     g.fillStyle = 'rgba(' + col + ',' + labAlpha + ')'
     g.textAlign = x > CX ? 'left' : 'right'
     const ox = x > CX ? sz + 8 : -(sz + 8)

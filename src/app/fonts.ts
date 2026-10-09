@@ -24,6 +24,7 @@ import './pretendard.css'
 // JetBrains Mono — primary code/mono. Family: 'JetBrains Mono'.
 import '@fontsource/jetbrains-mono/400.css'
 import '@fontsource/jetbrains-mono/500.css'
+import '@fontsource/jetbrains-mono/600.css'
 import '@fontsource/jetbrains-mono/700.css'
 import '@fontsource/jetbrains-mono/800.css'
 
@@ -31,11 +32,7 @@ import '@fontsource/jetbrains-mono/800.css'
 // IBM Plex Mono · Oswald)는 여기서 제거하고 src/scenes/_styles/scene-fonts.ts 로 옮겼다.
 // SceneHost 와 함께 씬 청크에 실려, 씬을 마운트하는 라우트에서만 로드된다(랜딩/resume 제외).
 
-// Inter — UI sans. Family: 'Inter'.
-import '@fontsource/inter/400.css'
-import '@fontsource/inter/500.css'
-import '@fontsource/inter/600.css'
-import '@fontsource/inter/700.css'
+// Inter 는 제거 — Pretendard 의 라틴 글리프가 Inter 기반이라 중복.
 
 // Cormorant Garamond — editorial serif. Family: 'Cormorant Garamond'.
 import '@fontsource/cormorant-garamond/500.css'

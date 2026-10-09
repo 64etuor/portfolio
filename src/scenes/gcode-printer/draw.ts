@@ -97,7 +97,7 @@ export function drawFixtureAnnotations(g: CanvasRenderingContext2D, cam: Cam, la
     { p: [102, 78], text: '기준 리브', dx: -18, dy: 24 },
   ]
   g.save()
-  g.font = '10px "SFMono-Regular", ui-monospace, Menlo, Consolas, monospace'
+  g.font = '10px "JetBrains Mono", "Pretendard Variable", monospace'
   g.textBaseline = 'middle'
   for (const l of labels) {
     const [wx, wy] = jigWorld(l.p[0], l.p[1])

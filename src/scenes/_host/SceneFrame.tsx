@@ -100,7 +100,7 @@ const hintStyle = {
   color: 'rgba(255,255,255,0.62)',
   fontSize: 10,
   letterSpacing: '0.08em',
-  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+  fontFamily: '"JetBrains Mono", "Pretendard Variable", monospace',
   pointerEvents: 'none',
 } as const
 
@@ -112,5 +112,5 @@ const fallbackStyle = {
   color: 'rgba(255,255,255,0.4)',
   fontSize: 12,
   letterSpacing: '0.2em',
-  fontFamily: 'ui-monospace, SFMono-Regular, Menlo, monospace',
+  fontFamily: '"JetBrains Mono", "Pretendard Variable", monospace',
 } as const

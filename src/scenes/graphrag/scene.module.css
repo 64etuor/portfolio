@@ -6,7 +6,7 @@
   inset: 0;
   overflow: hidden;
   color: var(--scene-phos);
-  font-family: 'Pretendard Variable', 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   -webkit-font-smoothing: antialiased;
   word-break: keep-all;
   background: radial-gradient(130% 92% at 50% 44%, #0d0d0d 0%, #070707 50%, #030303 100%);
@@ -31,7 +31,7 @@
   justify-content: center;
   align-items: center;
   gap: 16px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 11px;
   letter-spacing: 4px;
   color: var(--scene-phos-dim);
@@ -74,7 +74,7 @@
   justify-content: center;
   flex-wrap: wrap;
   gap: 22px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 10.5px;
   letter-spacing: 1.5px;
   color: var(--scene-phos-dim);

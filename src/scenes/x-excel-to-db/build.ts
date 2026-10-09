@@ -28,8 +28,8 @@ export const COL = {
 
 const hdr = (THREE: Three, hex: number, k: number) => new THREE.Color(hex).multiplyScalar(k)
 
-const FONT_KR = '"IBM Plex Sans KR", "Pretendard", "Noto Sans KR", sans-serif'
-const FONT_MONO = '"IBM Plex Mono", "JetBrains Mono", ui-monospace, monospace'
+const FONT_KR = '"Pretendard Variable", sans-serif'
+const FONT_MONO = '"IBM Plex Mono", "Pretendard Variable", monospace'
 
 export async function loadFonts() {
   if (typeof document === 'undefined' || !document.fonts) return

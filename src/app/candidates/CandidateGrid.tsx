@@ -20,7 +20,7 @@ export function CandidateGrid() {
             </div>
             <figcaption style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 2px', fontSize: 13 }}>
               <span>
-                <b style={{ fontFamily: 'ui-monospace, monospace', marginRight: 8 }}>{String(i + 1).padStart(2, '0')}</b>
+                <b style={{ fontFamily: '"JetBrains Mono", "Pretendard Variable", monospace', marginRight: 8 }}>{String(i + 1).padStart(2, '0')}</b>
                 {s.title}
               </span>
               <Link href={`/s/${s.slug}`} style={{ color: 'var(--accent)' }}>

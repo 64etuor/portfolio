@@ -538,9 +538,9 @@ export function PidSchemeView({
       {/* SVG global styles — inline so they're scoped to this scene's DOM */}
       <style>{`
         #scheme .train-band{fill:rgba(74,168,255,0.025);stroke:#1a2030;stroke-width:1;stroke-dasharray:4 3;}
-        #scheme .train-label{font-size:13px;font-weight:800;fill:#4aa8ff;letter-spacing:1px;font-family:'DM Mono',ui-monospace,monospace;}
-        #scheme .train-sub{font-size:9.5px;fill:#5a6a82;font-family:'DM Mono',ui-monospace,monospace;}
-        #scheme text{font-family:'DM Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,'Courier New',monospace;}
+        #scheme .train-label{font-size:13px;font-weight:800;fill:#4aa8ff;letter-spacing:1px;font-family:'DM Mono', 'Pretendard Variable', monospace;}
+        #scheme .train-sub{font-size:9.5px;fill:#5a6a82;font-family:'DM Mono', 'Pretendard Variable', monospace;}
+        #scheme text{font-family:'DM Mono', 'Pretendard Variable', monospace;}
         #scheme .pipe{fill:none;stroke:#3a4860;stroke-width:3;}
         #scheme .pipe-flow{fill:none;stroke:#36d9d9;stroke-width:2.4;stroke-dasharray:9 11;animation:pid-flow 1.4s linear infinite;}
         #scheme .pipe-elec{fill:none;stroke:#4aa8ff;stroke-width:1.6;stroke-dasharray:7 5;}

@@ -272,10 +272,10 @@ function drawLabels(ctx: CanvasRenderingContext2D, leftNodes: NodePoint[], right
   const lTop = leftNodes[0]
   const rTop = rightNodes[0]
   ctx.fillStyle = rgba(col, 0.55 + 0.3 * warm)
-  ctx.font = "700 15px 'JetBrains Mono', monospace"
+  ctx.font = "700 15px 'JetBrains Mono', 'Pretendard Variable', monospace"
   ctx.fillText('현장', lTop.x, lTop.y - 26)
   ctx.fillText('기술', rTop.x, rTop.y - 26)
-  ctx.font = "500 9.5px 'JetBrains Mono', monospace"
+  ctx.font = "500 9.5px 'JetBrains Mono', 'Pretendard Variable', monospace"
   ctx.fillStyle = rgba(col, 0.4 + 0.25 * warm)
   ctx.fillText('FIELD · 공정·설비·사람', lTop.x, lTop.y - 12)
   ctx.fillText('TECH · 데이터·AI·시스템', rTop.x, rTop.y - 12)

@@ -215,23 +215,23 @@ function drawLabels(g: CanvasRenderingContext2D, time: number, cx: number, cy: n
   const ry = cy + h * 0.013
   g.save()
   g.textAlign = 'center'
-  g.font = "700 14px 'JetBrains Mono', monospace"
+  g.font = "700 14px 'JetBrains Mono', 'Pretendard Variable', monospace"
   g.fillStyle = rgba(WARM, 0.7 + 0.2 * breath)
   g.shadowColor = rgba(WARM, 0.4)
   g.shadowBlur = 10
   g.fillText('제조', lx, ly - 9)
   g.shadowBlur = 0
-  g.font = "500 9px 'JetBrains Mono', monospace"
+  g.font = "500 9px 'JetBrains Mono', 'Pretendard Variable', monospace"
   g.fillStyle = rgba(WARM, 0.45)
   g.fillText('MANUFACTURING', lx, ly + 8)
 
-  g.font = "700 14px 'JetBrains Mono', monospace"
+  g.font = "700 14px 'JetBrains Mono', 'Pretendard Variable', monospace"
   g.fillStyle = rgba(COLD, 0.7 + 0.2 * (1 - breath))
   g.shadowColor = rgba(COLD, 0.4)
   g.shadowBlur = 10
   g.fillText('디지털', rx, ry - 9)
   g.shadowBlur = 0
-  g.font = "500 9px 'JetBrains Mono', monospace"
+  g.font = "500 9px 'JetBrains Mono', 'Pretendard Variable', monospace"
   g.fillStyle = rgba(COLD, 0.45)
   g.fillText('DIGITAL', rx, ry + 8)
   g.restore()

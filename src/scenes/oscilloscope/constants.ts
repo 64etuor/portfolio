@@ -3,7 +3,7 @@
 // ============================================================
 import type { Seg } from './types'
 
-export const MONO = '"JetBrains Mono","SF Mono",ui-monospace,monospace'
+export const MONO = '"JetBrains Mono", "Pretendard Variable", monospace'
 
 export const COL = {
   c1: '#ffb300',

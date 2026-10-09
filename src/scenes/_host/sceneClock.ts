@@ -22,6 +22,15 @@ import { createContext, useContext } from 'react'
 export interface SceneClock {
   /** Shot-local elapsed seconds, clamped to [0, shot duration]. */
   now(): number | null
+  /**
+   * ms left until the master clock crosses into the NEXT shot — negative once
+   * this shot has overrun its manifest budget (e.g. because it hasn't been able
+   * to reveal the next shot yet). Optional: only scenes that need to shed their
+   * own background work during an overrun (e.g. 41-perspectives' iframes, which
+   * keep ticking on their own schedule regardless of `running`) need to read
+   * this. Everything else can ignore it.
+   */
+  remainingMs?(): number
 }
 
 export const SceneClockContext = createContext<SceneClock | null>(null)

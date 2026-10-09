@@ -38,6 +38,23 @@ function unloadSrc(p: ProcNode) {
   p.iframe.src = 'about:blank'
 }
 
+/**
+ * Force every iframe on a side to `about:blank`, regardless of the pan-window gate.
+ *
+ * This scene's `running` prop only gates its OWN canvas rAF — each loaded iframe is
+ * a separate same-origin document with its own independent requestAnimationFrame
+ * loop, which keeps consuming the main thread even while this scene is still the
+ * film's visible slot. In the film, if the NEXT shot can't paint before this one's
+ * manifest end (observed: 30-collision staged but starved of main-thread time by
+ * these iframes, revealed ~9s late), that contention is self-reinforcing — the cut
+ * that would stop these iframes never arrives because these iframes are part of
+ * what's blocking it. Called once this scene detects (via SceneClock) that it has
+ * overrun its shot's budget, so the handoff gets a clear thread to finish on.
+ */
+export function unloadAll(nodes: ProcNode[]) {
+  for (const p of nodes) unloadSrc(p)
+}
+
 export function syncSide(nodes: ProcNode[], set: Screen[], cOf: (i: number) => number, gate: number, f: number) {
   for (let i = 0; i < nodes.length; i++) {
     const node = nodes[i]

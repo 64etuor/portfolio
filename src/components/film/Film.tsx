@@ -33,8 +33,11 @@ const srOnly: CSSProperties = {
 }
 
 /** Builds the SceneClock passed to a slot: shot-local seconds from the master clock. */
-function clockFor(shot: { start: number; duration: number }, filmT: number): SceneClock {
-  return { now: () => Math.max(0, Math.min(filmT - shot.start, shot.duration)) / 1000 }
+function clockFor(shot: { start: number; end: number; duration: number }, filmT: number): SceneClock {
+  return {
+    now: () => Math.max(0, Math.min(filmT - shot.start, shot.duration)) / 1000,
+    remainingMs: () => shot.end - filmT,
+  }
 }
 
 /**

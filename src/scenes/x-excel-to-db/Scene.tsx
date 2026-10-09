@@ -22,7 +22,7 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
   return (
     <SceneHost bg={BG} film={false} label={pick(HUD.label, en)}>
       <div ref={ref} style={{ position: 'absolute', inset: 0 }} />
-      <div ref={hudRef} className={s.hud} aria-hidden>
+      <div ref={hudRef} className={s.hud} data-locale={en ? 'en' : 'ko'} aria-hidden>
         <div className={s.tag}>
           <span className={s.tagDot} />
           <span className={s.tagTitle}>{pick(HUD.project, en)}</span>

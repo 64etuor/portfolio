@@ -25,6 +25,7 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
       <div
         className={s.hud}
         data-hud
+        data-locale={locale === 'en' ? 'en' : 'ko'}
       >
         <div className={s.head}>
           <div className={s.kicker}>{tx.kicker}</div>

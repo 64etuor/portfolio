@@ -16,7 +16,6 @@
   background: radial-gradient(ellipse 130% 120% at 50% 0%, var(--pj-bg2) 0%, var(--pj-bg) 62%, #000 100%);
   color: var(--pj-ink);
   font-family: var(--font-sans);
-  -webkit-font-smoothing: antialiased;
   padding: clamp(28px, 5vw, 64px) 20px 96px;
   overflow-x: hidden;
   word-break: keep-all;
@@ -64,8 +63,9 @@
 }
 .pj-eyebrow {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.28em;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-label);
+  font-variant-numeric: tabular-nums;
   color: var(--pj-dim);
   margin: 0 0 14px;
   text-transform: uppercase;
@@ -73,20 +73,21 @@
 .pj-eyebrow .pj-acc { color: var(--pj-acc); }
 .pj-title {
   font-family: var(--font-serif);
-  font-weight: 600;
-  font-size: clamp(28px, 5vw, 48px);
-  line-height: 1.12;
+  font-weight: 600; /* Noto Serif KR 은 600 만 로드 */
+  font-size: var(--fs-3xl);
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-heading);
   color: #f3f4f6;
   margin: 0 0 12px;
 }
 .pj-role {
-  font-size: 13.5px;
+  font-size: var(--fs-base);
   color: var(--pj-dim);
   margin: 0 0 20px;
 }
 .pj-summary {
-  font-size: clamp(14px, 1.6vw, 16px);
-  line-height: 1.75;
+  font-size: var(--fs-md);
+  line-height: var(--lh-body);
   color: #c8ccd2;
   max-width: 64ch;
   margin: 0;
@@ -111,16 +112,17 @@
   padding: 5px 11px;
   background: color-mix(in oklab, var(--pj-acc) 6%, transparent);
 }
-.pj-kpi-v { font-family: var(--font-mono); font-size: 13px; font-weight: 600; color: var(--pj-acc); }
-.pj-kpi-l { font-size: 11px; color: var(--pj-dim); }
+.pj-kpi-v { font-family: var(--font-mono); font-size: var(--fs-sm); font-weight: 600; font-variant-numeric: tabular-nums; color: var(--pj-acc); }
+.pj-kpi-l { font-size: var(--fs-xs); color: var(--pj-dim); }
 
 /* ── section + prose ── */
 .pj-section { margin-top: 42px; }
 .pj-h2 {
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: var(--fs-sm);
   font-weight: 600;
-  letter-spacing: 0.3em;
+  line-height: var(--lh-tight);
+  letter-spacing: var(--track-label);
   color: var(--pj-dim);
   text-transform: uppercase;
   margin: 0 0 20px;
@@ -128,8 +130,8 @@
   border-bottom: 1px solid var(--pj-line);
 }
 .pj-p {
-  font-size: clamp(14px, 1.5vw, 15.5px);
-  line-height: 1.85;
+  font-size: var(--fs-md);
+  line-height: var(--lh-body);
   color: #c4c8ce;
   margin: 0 0 15px;
   overflow-wrap: break-word;
@@ -140,8 +142,8 @@
 .pj-ul li {
   position: relative;
   padding-left: 17px;
-  font-size: 14px;
-  line-height: 1.66;
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
   color: #c2c6cc;
 }
 .pj-ul li::before { content: "▸"; position: absolute; left: 0; top: 2px; color: var(--pj-acc); font-size: 10px; }
@@ -174,14 +176,15 @@
 }
 .pj-metric-v {
   font-family: var(--font-mono);
-  font-size: clamp(20px, 2.6vw, 27px);
+  font-size: var(--fs-xl);
   font-weight: 700;
+  font-variant-numeric: tabular-nums;
   color: var(--pj-acc);
   line-height: 1;
   margin: 0 0 8px;
 }
-.pj-metric-l { font-size: 12.5px; font-weight: 600; color: #e2e5e9; margin: 0; }
-.pj-metric-n { font-size: 11.5px; color: var(--pj-dim); margin: 4px 0 0; line-height: 1.5; }
+.pj-metric-l { font-size: var(--fs-sm); font-weight: 600; line-height: var(--lh-snug); color: #e2e5e9; margin: 0; }
+.pj-metric-n { font-size: var(--fs-xs); color: var(--pj-dim); margin: 4px 0 0; line-height: var(--lh-snug); }
 
 /* ── gallery ── */
 .pj-gallery { display: flex; flex-direction: column; gap: 22px; }
@@ -194,7 +197,7 @@
   border-radius: 10px;
   background: #000;
 }
-.pj-cap { font-family: var(--font-mono); font-size: 11.5px; letter-spacing: 0.04em; color: var(--pj-dim); margin: 9px 0 0; }
+.pj-cap { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--track-kr); color: var(--pj-dim); margin: 9px 0 0; }
 
 /* ── diagram ── */
 .pj-diagram { width: 100%; }
@@ -208,7 +211,7 @@
 .pj-stack { list-style: none; display: flex; flex-wrap: wrap; gap: 7px; margin: 0; padding: 0; }
 .pj-stack li {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-xs);
   letter-spacing: 0.02em;
   color: #c8ccd2;
   border: 1px solid var(--pj-line);
@@ -230,8 +233,8 @@
 }
 .pj-nav a {
   font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.04em;
+  font-size: var(--fs-sm);
+  letter-spacing: var(--track-kr);
   color: var(--pj-dim);
   transition: color 0.16s;
 }
@@ -260,9 +263,14 @@
 .pj-card:hover { border-color: color-mix(in oklab, var(--pj-acc) 45%, var(--pj-line)); transform: translateY(-2px); }
 .pj-card-thumb { aspect-ratio: 16 / 10; background: #000; object-fit: cover; width: 100%; border-bottom: 1px solid var(--pj-line); }
 .pj-card-body { padding: 15px 16px 17px; display: flex; flex-direction: column; gap: 7px; }
-.pj-card-eyebrow { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.14em; color: var(--pj-acc); text-transform: uppercase; }
-.pj-card-title { font-family: var(--font-serif); font-size: 20px; font-weight: 600; color: #eef1f4; margin: 0; line-height: 1.2; }
-.pj-card-kpi { font-family: var(--font-mono); font-size: 11.5px; color: var(--pj-dim); margin-top: auto; }
+.pj-card-eyebrow { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: var(--track-label); font-variant-numeric: tabular-nums; color: var(--pj-acc); text-transform: uppercase; }
+.pj-card-title { font-family: var(--font-serif); font-size: var(--fs-lg); font-weight: 600; letter-spacing: var(--track-heading); color: #eef1f4; margin: 0; line-height: var(--lh-tight); }
+.pj-card-kpi { font-family: var(--font-mono); font-size: var(--fs-xs); font-variant-numeric: tabular-nums; color: var(--pj-dim); margin-top: auto; }
+
+/* 한글이 들어가는 라벨(회사명·섹션명)은 KO 로케일에서 트래킹 0 — 넓은 자간은 라틴 전용 */
+.pj-eyebrow:lang(ko),
+.pj-h2:lang(ko),
+.pj-card-eyebrow:lang(ko) { letter-spacing: var(--track-kr); }
 
 @media (max-width: 560px) {
   .pj-nav { flex-direction: column; align-items: flex-start; }

@@ -5,6 +5,7 @@
   font-family: var(--font-mono), 'JetBrains Mono', 'Pretendard Variable', monospace;
   color: var(--scene-phos, #d7d7d7);
   z-index: 2;
+  container-type: size;
 }
 
 .head {
@@ -15,18 +16,21 @@
 .kicker {
   font-size: 11px;
   letter-spacing: 0.22em;
+  font-variant-numeric: tabular-nums;
   color: var(--scene-phos-dim, #8d8d8d);
 }
 .title {
   margin-top: 8px;
+  font-family: var(--font-sans);
   font-size: 22px;
-  letter-spacing: 0.06em;
-  font-weight: 500;
+  letter-spacing: var(--track-heading);
+  line-height: var(--lh-tight);
+  font-weight: 600;
 }
 .stack {
   margin-top: 8px;
   font-size: 10.5px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.04em;
   color: #4ab3cc;
   opacity: 0.85;
 }
@@ -45,8 +49,12 @@
   transform: translate(-50%, 0);
   white-space: nowrap;
   font-size: 10.5px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.02em;
   color: #a3a3a3;
+}
+/* EN 레이어명은 대문자 라틴 전용 → 넓은 자간 */
+.hud[data-locale='en'] .layer {
+  letter-spacing: 0.18em;
 }
 .layer i {
   font-style: normal;
@@ -64,14 +72,14 @@
   padding: 0 0 18px 18px;
   white-space: nowrap;
   font-size: 11px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.02em;
   border-left: 1px solid currentColor;
   transform: translate(0, -6px);
 }
 .tag em {
   font-style: normal;
   font-size: 12.5px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   font-weight: 600;
 }
 .tagRed {
@@ -121,7 +129,7 @@
   left: 0;
   top: -22px;
   font-size: 11.5px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.02em;
   white-space: nowrap;
 }
 .boxLabel b {
@@ -148,8 +156,9 @@
   display: flex;
   flex-direction: column;
   gap: 9px;
+  font-family: var(--font-sans);
   font-size: 12.5px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
 }
 .steps li {
   opacity: 0;
@@ -190,13 +199,15 @@
 }
 .award span {
   font-size: 26px;
-  letter-spacing: 0.04em;
+  letter-spacing: var(--track-heading);
+  line-height: var(--lh-tight);
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
   text-shadow: 0 0 18px rgba(79, 224, 196, 0.35);
 }
 .award small {
   font-size: 11px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.02em;
   color: var(--scene-phos-dim, #8d8d8d);
 }
 
@@ -230,8 +241,43 @@
   top: 50%;
   transform: translate(0, -50%);
   font-size: 110px;
-  font-weight: 300;
+  font-weight: 400;
   color: #e8a35c;
   text-shadow: 0 0 24px rgba(217, 138, 61, 0.6);
   opacity: 0;
+}
+
+/* 갤러리 카드(작은 컨테이너): 타이틀 + 수상 라인만 */
+@container (max-width: 699px) {
+  .anchor,
+  .box,
+  .stack,
+  .steps li:not(.award) {
+    display: none;
+  }
+  .head {
+    left: 16px;
+    top: 14px;
+  }
+  .kicker {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+  }
+  .title {
+    margin-top: 5px;
+    font-size: 18px;
+  }
+  .steps {
+    left: 16px;
+    bottom: 14px;
+  }
+  .award {
+    margin-top: 0;
+  }
+  .award span {
+    font-size: 18px;
+  }
+  .award small {
+    font-size: 10px;
+  }
 }

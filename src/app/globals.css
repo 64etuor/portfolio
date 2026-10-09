@@ -106,9 +106,10 @@
   align-items: center;
   gap: 7px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 500;
-  letter-spacing: 0.16em;
+  /* 라벨은 양 로케일 모두 라틴 전용(content/site.ts chrome.*) → 라벨 트래킹 허용 */
+  letter-spacing: var(--track-label);
   text-transform: uppercase;
   color: var(--shell-btn-muted);
   background: transparent;
@@ -167,8 +168,8 @@
 }
 /* Brand wordmark (left) — elegant serif */
 .site-bar__brand {
-  font-family: 'Playfair Display', var(--font-serif), serif;
-  font-size: clamp(15px, 1.5vw, 19px);
+  font-family: var(--font-display);
+  font-size: clamp(15px, 1.5vw, var(--fs-lg));
   font-weight: 600;
   letter-spacing: 0.01em;
   color: var(--ink);
@@ -183,6 +184,8 @@
   left: 50%;
   transform: translateX(-50%);
 }
+/* 우측 액션(PRINT·Open)은 언어 스위처 옆으로 — space-between 이 가운데로 보내 HOME 과 겹치던 문제 */
+.site-bar .home ~ .chrome-btn { margin-left: auto; }
 @media print { .site-bar { display: none !important; } }
 
 /* ===== 전역 라우트 전환 (app/template.tsx) — 매 네비게이션마다 재생되는 CRT 컷 ===== */

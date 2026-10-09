@@ -23,7 +23,7 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
   return (
     <SceneHost bg={PALETTE.bg} film={false} label={en ? 'KIP · evidence locators' : 'KIP · 근거 위치'}>
       <div ref={ref} style={{ position: 'absolute', inset: 0 }} />
-      <div className={s.hud} data-hud aria-hidden>
+      <div className={s.hud} data-hud data-locale={en ? 'en' : 'ko'} aria-hidden>
         <div className={s.title}>
           <div className={s.kicker}>{pick(TEXT.kicker, en)}</div>
           <div className={s.sub}>{pick(TEXT.sub, en)}</div>

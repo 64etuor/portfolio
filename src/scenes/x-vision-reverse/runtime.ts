@@ -1,6 +1,7 @@
 import type * as THREE_NS from 'three'
 import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg } from '../_host/three/helpers'
 import type { ThreeContext, ThreeSetup } from '../_host/three/types'
+import { canvasFont, ensureSceneFonts } from '../_host/fonts'
 import { C, studioScene, buildFloor, buildMachine, buildScanner, buildTray, machineX, materials } from './build'
 import { CELL_TOP, COLS, HUD_LINES, MACHINES, OK_CELLS, REV_COL, REV_ROW, ROWS, T, TRAY_TOP, cellX, cellZ } from './data'
 
@@ -50,6 +51,13 @@ export function createSetup(): ThreeSetup {
     scene.add(scanLight)
     const redLight = new THREE.PointLight(C.red, 0, 1.6, 2)
     scene.add(redLight)
+
+    // ── 캔버스 텍스처 글꼴 선로딩(모니터 화면 문구; 700 은 기본 로딩 스펙에 없음) ──
+    const SCREEN_TEXT = 'POLARITY INSERT / NUT ASSY JIG CAM 01 · LOT-0417'
+    await Promise.race([
+      Promise.all([ensureSceneFonts(SCREEN_TEXT), document.fonts?.load(canvasFont(700, 13, 'mono'), SCREEN_TEXT).catch(() => undefined)]),
+      new Promise((r) => setTimeout(r, 1500)),
+    ])
 
     // ── 지오메트리 ──
     const M = materials(THREE)

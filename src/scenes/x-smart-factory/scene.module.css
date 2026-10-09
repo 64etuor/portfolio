@@ -6,6 +6,7 @@
   font-family: var(--font-mono), 'JetBrains Mono', 'Pretendard Variable', monospace;
   color: #d7d7d7;
   overflow: hidden;
+  container-type: size;
 }
 
 /* 3D 앵커: runtime 이 translate3d 로 이동 — 자식이 오프셋을 가진다. */
@@ -21,7 +22,7 @@
   transform: translate(-100%, -50%);
   white-space: nowrap;
   font-size: 11px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.02em;
   color: #e3a866;
   padding: 3px 8px;
   border-left: 2px solid rgba(217, 138, 61, 0.8);
@@ -44,6 +45,7 @@
 .stock b {
   font-size: 15px;
   font-weight: 600;
+  font-variant-numeric: tabular-nums;
 }
 .stock i {
   font-style: normal;
@@ -65,7 +67,7 @@
     inset 0 0 18px rgba(79, 224, 196, 0.06);
   backdrop-filter: blur(3px);
   font-size: 11px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 .card::after {
   content: '';
@@ -101,7 +103,7 @@
 .cardHead span {
   font-size: 13px;
   font-weight: 600;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   color: var(--c);
   text-shadow: 0 0 10px var(--c);
 }
@@ -109,7 +111,7 @@
   font-style: normal;
   font-size: 10px;
   color: #8d8d8d;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.02em;
 }
 
 .modules {
@@ -185,6 +187,7 @@
   text-align: right;
 }
 .qty b {
+  font-variant-numeric: tabular-nums;
   color: #ffc58a;
   font-size: 13px;
   font-weight: 600;
@@ -207,23 +210,28 @@
   margin: 0 0 8px;
   font-size: 30px;
   font-weight: 600;
-  letter-spacing: 0.02em;
+  letter-spacing: var(--track-heading);
+  line-height: var(--lh-tight);
   color: #eeeeee;
-  font-family: inherit;
+  font-family: var(--font-sans);
 }
 .meta {
   font-size: 12px;
   color: #8d8d8d;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
   line-height: 1.6;
+  font-family: var(--font-sans);
 }
 .period {
   color: #d7d7d7;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 .role {
   margin-top: 8px;
   font-size: 11px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
+  font-family: var(--font-sans);
   color: #b0b0b0;
   padding-left: 8px;
   border-left: 1px solid rgba(79, 224, 196, 0.6);
@@ -242,7 +250,7 @@
   gap: 10px;
   align-items: center;
   font-size: 12px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
   color: #555;
   transition: color 0.4s;
 }
@@ -279,7 +287,8 @@
   bottom: 0;
   white-space: nowrap;
   font-size: 13px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
+  font-family: var(--font-sans);
   color: #d7d7d7;
 }
 .phaseFinal {
@@ -313,5 +322,43 @@
   .card {
     min-width: 150px;
     font-size: 10px;
+  }
+}
+
+/* 갤러리 카드(작은 컨테이너): 타이틀 + 최종 단계 문구만 */
+@container (max-width: 699px) {
+  .anchor,
+  .systems,
+  .meta,
+  .role {
+    display: none;
+  }
+  .head {
+    left: 16px;
+    top: 14px;
+    max-width: calc(100% - 32px);
+  }
+  .kicker {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    margin-bottom: 5px;
+  }
+  .title {
+    font-size: 20px;
+    margin: 0;
+  }
+  .phases {
+    left: 16px;
+    right: 16px;
+    bottom: 14px;
+    width: auto;
+    height: auto;
+  }
+  .phase {
+    font-size: 11px;
+    line-height: var(--lh-snug);
+    white-space: normal;
+    width: 100%;
+    text-align: right;
   }
 }

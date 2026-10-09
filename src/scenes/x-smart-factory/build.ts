@@ -1,5 +1,6 @@
 import type * as THREE from 'three'
 import type { Three } from '../_host/three/types'
+import { canvasFont } from '../_host/fonts'
 import { BENCH_X, COLORS, LIFT, LINES, PANELS, T, TABLET_X } from './data'
 
 // 지오메트리/머티리얼 빌더. 물리 바닥(어두운 실물) + 홀로그램 트윈(셰이더로 스캔·부상).
@@ -202,7 +203,7 @@ function barcodeTexture(TH: Three) {
     if (rnd() > 0.4) g.fillRect(x, 6, w, 46)
     x += w + 1 + Math.floor(rnd() * 2)
   }
-  g.font = '13px monospace'
+  g.font = canvasFont(400, 13, 'mono')
   g.fillText('8 801234 041721', 14, 66)
   const tex = new TH.CanvasTexture(c)
   tex.colorSpace = TH.SRGBColorSpace

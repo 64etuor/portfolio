@@ -16,7 +16,7 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
   return (
     <SceneHost bg={BG} film={false} label={`${L.title} · ${L.heroLabel} +24%`}>
       <div ref={ref} style={{ position: 'absolute', inset: 0 }} />
-      <div className={s.hud} aria-hidden data-lob-hud="">
+      <div className={s.hud} aria-hidden data-lob-hud="" data-locale={locale === 'en' ? 'en' : 'ko'}>
         {BOTTLENECKS.map((b) => {
           const from = b.key === 'neck' ? b.ctBefore.toFixed(2) : String(b.ctBefore)
           return (

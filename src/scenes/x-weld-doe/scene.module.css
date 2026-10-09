@@ -15,6 +15,7 @@
   color: #d7d7d7;
   font-size: 12px;
   letter-spacing: 0.02em;
+  container-type: size;
 }
 
 .titleBox {
@@ -28,17 +29,22 @@
   color: #8d8d8d;
   text-transform: uppercase;
 }
+/* KO 키커는 한글이 섞여 넓은 자간이 벌어져 보임 */
+.hud[data-locale='ko'] .kicker {
+  letter-spacing: 0.02em;
+}
 .title {
   margin-top: 8px;
+  font-family: var(--font-sans);
   font-size: clamp(18px, 1.75vw, 26px);
-  letter-spacing: 0.01em;
+  letter-spacing: var(--track-heading);
   font-weight: 600;
 }
 .factors {
   margin-top: 4px;
   font-size: 13px;
   color: #4fe0c4;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 
 .slider {
@@ -52,10 +58,10 @@
 .sliderLabel {
   color: #d7d7d7;
   margin-right: 4px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 .sliderEnd {
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 .track {
   position: relative;
@@ -114,7 +120,7 @@
   padding: 0;
   list-style: none;
   font-size: 11px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 .phases li {
   display: flex;
@@ -147,7 +153,7 @@
 }
 .counterLabel {
   font-size: 11px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: #8d8d8d;
 }
 .counter {
@@ -177,7 +183,8 @@
   margin-top: 4px;
   font-size: 12px;
   color: #8d8d8d;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .cost {
@@ -199,12 +206,14 @@
 .costMain {
   font-size: clamp(13px, 1.15vw, 17px);
   color: #d7d7d7;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
 }
 .costNote {
   font-size: 10px;
   color: #8d8d8d;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
 }
 
 .lbl {
@@ -219,7 +228,7 @@
   transform: translate(-50%, -50%);
   white-space: nowrap;
   font-size: 10.5px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   color: #8d8d8d;
 }
 .lblHot > span,
@@ -235,4 +244,36 @@
 }
 .lblCool > span {
   color: #4fe0c4;
+}
+
+/* 갤러리 카드(~512×288): 제목 + 불량률 카운터만 */
+@container (max-width: 699px) {
+  .titleBox {
+    left: 14px;
+    top: 12px;
+  }
+  .kicker,
+  .factors,
+  .slider,
+  .legend,
+  .phases,
+  .cost,
+  .counterFrom,
+  .lbl {
+    display: none;
+  }
+  .title {
+    margin-top: 0;
+    font-size: 17px;
+  }
+  .counterBox {
+    left: 14px;
+    bottom: 12px;
+  }
+  .counterLabel {
+    font-size: 10px;
+  }
+  .counter {
+    font-size: 36px;
+  }
 }

@@ -66,6 +66,13 @@ export function useThreeScene(setup: ThreeSetup, opts: ThreeSceneOptions = {}) {
     const res = resultRef.current
     if (!ctx || !res) return
     res.update(t, dt)
+    if (dt === 0) {
+      // 정지 프레임(포스터·프리스테이징·?t=): update 안에서 옮긴 카메라의 행렬이 아직 갱신 전이라
+      // HUD 투영이 이전 위치 기준으로 계산된다. 행렬을 갱신하고 한 번 더 돌려 라벨을 맞춘다.
+      ctx.scene.updateMatrixWorld()
+      ctx.camera.updateMatrixWorld()
+      res.update(t, dt)
+    }
     if (ctx.composer) ctx.composer.render(dt)
     else ctx.renderer.render(ctx.scene, ctx.camera)
   }, [])

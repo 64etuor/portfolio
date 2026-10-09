@@ -74,7 +74,7 @@ export function LandingAmbientWords() {
         .lp-word {
           position: absolute;
           transform: translate(-50%, -50%) rotate(var(--rot, 0deg));
-          font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
+          font-family: var(--font-mono);
           font-weight: 500;
           font-size: clamp(13px, 1.5vw, 22px);
           letter-spacing: 0.16em;

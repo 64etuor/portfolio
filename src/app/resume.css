@@ -17,7 +17,6 @@
     radial-gradient(ellipse 130% 120% at 50% 0%, var(--rz-bg2) 0%, var(--rz-bg) 58%, #000 100%);
   color: var(--rz-phos);
   font-family: var(--font-mono);
-  -webkit-font-smoothing: antialiased;
   padding: clamp(28px, 5vw, 72px) 20px 80px;
   overflow-x: hidden;
 }
@@ -46,6 +45,8 @@
 .rz-root .kr {
   font-family: var(--font-sans);
   word-break: keep-all;
+  /* 한글 요소는 자간 0 — 단일 클래스 규칙의 라벨 트래킹(.rz-skill-name 등)을 덮는다 */
+  letter-spacing: var(--track-kr);
 }
 
 /* ── masthead ── */
@@ -56,8 +57,8 @@
 }
 .rz-eyebrow {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.42em;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-label);
   color: var(--rz-dim);
   margin: 0 0 14px;
 }
@@ -97,8 +98,8 @@
   border: 0;
 }
 .rz-summary {
-  font-size: clamp(13px, 1.5vw, 15.5px);
-  line-height: 1.7;
+  font-size: var(--fs-md);
+  line-height: var(--lh-body);
   color: #c2c6cc;
   max-width: 62ch;
   margin: 0 0 22px;
@@ -115,11 +116,11 @@
   display: flex;
   align-items: baseline;
   gap: 9px;
-  font-size: 13px;
+  font-size: var(--fs-sm);
 }
 .rz-contact .rz-k {
-  font-size: 9.5px;
-  letter-spacing: 0.2em;
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--track-label);
   color: var(--rz-deep);
 }
 .rz-contact a {
@@ -142,16 +143,16 @@
 }
 .rz-cl-to {
   font-family: var(--font-mono);
-  font-size: 12px;
-  letter-spacing: 0.12em;
+  font-size: var(--fs-sm);
+  letter-spacing: var(--track-label); /* 'To. Hiring Manager' — 양 로케일 라틴 */
   color: var(--rz-acc);
   margin: 0 0 18px;
 }
 /* Paragraphs flow freely: no hard breaks in the source, Korean wraps at word
    (eojeol) boundaries, and `text-wrap: pretty` avoids orphan/awkward breaks. */
 .rz-cl-body p {
-  font-size: clamp(13px, 1.45vw, 15px);
-  line-height: 1.85;
+  font-size: var(--fs-md);
+  line-height: var(--lh-body);
   color: #c4c8ce;
   margin: 0 0 16px;
   word-break: keep-all;
@@ -176,7 +177,7 @@
 }
 .rz-cl-signoff {
   margin: 26px 0 0;
-  font-size: 13.5px;
+  font-size: var(--fs-base);
   color: var(--rz-dim);
   display: flex;
   flex-wrap: wrap;
@@ -248,26 +249,27 @@
 }
 .rz-entry:last-child::after { display: none; }
 .rz-entry-head { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
-.rz-entry-title { font-family: var(--font-sans); font-size: clamp(16px, 2vw, 19px); font-weight: 700; color: #eef1f4; margin: 0; }
-.rz-entry-role { font-size: 13px; color: var(--rz-acc); margin: 3px 0 0; }
+.rz-entry-title { font-family: var(--font-sans); font-size: var(--fs-lg); font-weight: 700; line-height: var(--lh-tight); letter-spacing: var(--track-heading); color: #eef1f4; margin: 0; }
+.rz-entry-role { font-size: var(--fs-sm); color: var(--rz-acc); margin: 3px 0 0; }
 .rz-period {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.06em;
+  font-size: var(--fs-xs);
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
   color: var(--rz-dim);
   white-space: nowrap;
 }
-.rz-entry-sum { font-size: 13.5px; line-height: 1.65; color: #b9bdc4; margin: 11px 0 9px; }
+.rz-entry-sum { font-size: var(--fs-base); line-height: var(--lh-body); color: #b9bdc4; margin: 11px 0 9px; }
 .rz-bullets { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
 .rz-bullets li {
   position: relative;
   padding-left: 16px;
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: var(--fs-base);
+  line-height: var(--lh-body);
   color: #c2c6cc;
 }
 .rz-bullets li::before { content: "▸"; position: absolute; left: 0; color: var(--rz-deep); font-size: 10px; top: 2px; }
-.rz-bullets-sm li { font-size: 12.5px; color: #b2b6bd; }
+.rz-bullets-sm li { font-size: var(--fs-sm); color: #b2b6bd; }
 
 /* ── projects ── */
 .rz-projects { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -281,14 +283,14 @@
   gap: 9px;
 }
 .rz-card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
-.rz-card-title { font-family: var(--font-sans); font-size: 15px; font-weight: 700; color: #eaedf0; margin: 0; line-height: 1.35; }
-.rz-card-org { font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.05em; color: var(--rz-dim); white-space: nowrap; }
-.rz-card-role { font-size: 12px; color: var(--rz-acc); margin: 0; }
-.rz-card-desc { font-size: 12.5px; line-height: 1.6; color: #aeb2b9; margin: 0; }
+.rz-card-title { font-family: var(--font-sans); font-size: var(--fs-md); font-weight: 700; letter-spacing: var(--track-heading); color: #eaedf0; margin: 0; line-height: var(--lh-tight); }
+.rz-card-org { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: 0.02em; color: var(--rz-dim); white-space: nowrap; }
+.rz-card-role { font-size: var(--fs-sm); color: var(--rz-acc); margin: 0; }
+.rz-card-desc { font-size: var(--fs-sm); line-height: var(--lh-body); color: #aeb2b9; margin: 0; }
 .rz-chips { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 0; padding: 0; }
 .rz-chips li {
   font-family: var(--font-mono);
-  font-size: 10.5px;
+  font-size: var(--fs-xs);
   letter-spacing: 0.02em;
   color: #c8ccd2;
   border: 1px solid var(--rz-line);
@@ -300,8 +302,8 @@
 
 /* project → /projects/<slug> detail affordances */
 .rz-projects-lead {
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: var(--fs-sm);
+  line-height: var(--lh-body);
   color: var(--rz-dim);
   margin: 0 0 18px;
 }
@@ -322,8 +324,8 @@
   align-self: flex-end;
   margin-top: 2px;
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.04em;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-kr); /* '프로젝트 상세 보기 →' */
   color: var(--rz-acc);
   border-bottom: 1px solid transparent;
   transition: border-color 0.16s;
@@ -332,14 +334,14 @@
 
 /* ── skills ── */
 .rz-skills { display: grid; grid-template-columns: 1fr 1fr; gap: 20px 28px; }
-.rz-skill-name { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.16em; color: var(--rz-acc); margin: 0 0 11px; text-transform: uppercase; }
+.rz-skill-name { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--track-label); /* KO 는 .kr 이 0 으로 덮음 */ color: var(--rz-acc); margin: 0 0 11px; text-transform: uppercase; }
 
 /* ── education + certs ── */
 .rz-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 28px 44px; }
 .rz-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 16px; }
 .rz-list-row { display: flex; justify-content: space-between; align-items: baseline; gap: 14px; }
-.rz-list-title { font-family: var(--font-sans); font-size: 14px; font-weight: 600; color: #e6e9ec; margin: 0; }
-.rz-list-sub { font-size: 12px; color: var(--rz-dim); margin: 3px 0 0; }
+.rz-list-title { font-family: var(--font-sans); font-size: var(--fs-base); font-weight: 600; line-height: var(--lh-snug); color: #e6e9ec; margin: 0; }
+.rz-list-sub { font-size: var(--fs-sm); color: var(--rz-dim); margin: 3px 0 0; }
 
 /* ── footer ── */
 .rz-foot {
@@ -350,8 +352,8 @@
   gap: 10px;
   flex-wrap: wrap;
   font-family: var(--font-mono);
-  font-size: 10.5px;
-  letter-spacing: 0.08em;
+  font-size: var(--fs-2xs);
+  letter-spacing: var(--track-kr); /* 한글 이름 포함 */
   color: var(--rz-deep);
 }
 

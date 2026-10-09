@@ -31,7 +31,7 @@ export const SIGNALS_PER_SOURCE = 22
 export const COPY = {
   ko: {
     title: 'WORK RADAR',
-    sub: 'local-first 업무 콕핏 · 개인 프로젝트',
+    sub: 'local-first 업무 앱 · 개인 프로젝트',
     h1: '수집은 자동',
     h2: '승격은 사람',
     line2: '자동화는 결정 레일에 들어가지 않는다',
@@ -61,7 +61,7 @@ export const COPY = {
   },
   en: {
     title: 'WORK RADAR',
-    sub: 'local-first work cockpit · personal project',
+    sub: 'local-first desktop app · personal project',
     h1: 'Collection is automatic',
     h2: 'promotion is human',
     line2: 'Automation never enters the decision rail',

@@ -6,7 +6,8 @@
   color: #d7d7d7;
   font-family: var(--font-mono, 'JetBrains Mono'), 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 12px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
+  container-type: size;
   --teal: #4fe0c4;
   --blue: #4ab3cc;
   --amber: #d98a3d;
@@ -295,7 +296,7 @@
   margin-left: 6px;
   font-size: 10px;
   color: var(--dim);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
 }
 
 .headline .mValue {
@@ -306,4 +307,45 @@
 
 .headline {
   border-left-color: rgba(79, 224, 196, 0.5);
+}
+
+/* KO: 한글이 들어가는 라벨은 자간을 좁힌다(와이드 트래킹은 EN 대문자 라벨만). 제목은 sans. */
+.hud[data-locale='ko'] .kicker {
+  font-family: var(--font-sans, 'Pretendard Variable', sans-serif);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: var(--track-kr, 0);
+}
+.hud[data-locale='ko'] .sub,
+.hud[data-locale='ko'] .qLabel,
+.hud[data-locale='ko'] .surf,
+.hud[data-locale='ko'] .coreLabel i,
+.hud[data-locale='ko'] .tableTag,
+.hud[data-locale='ko'] .cardHead,
+.hud[data-locale='ko'] .cardMeta,
+.hud[data-locale='ko'] .mLabel {
+  letter-spacing: 0.02em;
+}
+
+/* 갤러리 카드(~512×288): 제목 + 헤드라인 지표만 */
+@container (max-width: 699px) {
+  .title {
+    left: 14px;
+    top: 12px;
+  }
+  .sub,
+  .query,
+  .anchor,
+  .card,
+  .captions,
+  .metric:not(.headline) {
+    display: none;
+  }
+  .metrics {
+    right: 14px;
+    bottom: 12px;
+  }
+  .headline .mValue {
+    font-size: 24px;
+  }
 }

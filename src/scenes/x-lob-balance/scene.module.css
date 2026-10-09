@@ -5,6 +5,7 @@
   font-family: var(--font-mono, 'JetBrains Mono', 'Pretendard Variable', monospace);
   color: #d7d7d7;
   overflow: hidden;
+  container-type: size;
 }
 
 /* ── 3D 앵커 라벨 (transform 은 런타임이 씀) ── */
@@ -92,6 +93,7 @@
   font-size: 15px;
   font-weight: 700;
   letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
   color: #4fe0c4;
   text-shadow: 0 0 10px rgba(79, 224, 196, 0.6);
   opacity: 0;
@@ -227,6 +229,7 @@
   margin-top: 6px;
   font-size: 13px;
   letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
   color: #4fe0c4;
 }
 
@@ -245,4 +248,62 @@
 }
 .arrow {
   opacity: 0;
+}
+
+.ctFrom {
+  font-variant-numeric: tabular-nums;
+}
+
+/* KO: 한글이 들어가는 라벨은 자간을 좁히고, 제목·단계·각주 문장은 sans 로 */
+.hud[data-locale='ko'] .name,
+.hud[data-locale='ko'] .jig,
+.hud[data-locale='ko'] .planeAnchor > span,
+.hud[data-locale='ko'] .kicker,
+.hud[data-locale='ko'] .heroLabel,
+.hud[data-locale='ko'] .heroSub {
+  letter-spacing: 0.02em;
+}
+.hud[data-locale='ko'] .title {
+  font-family: var(--font-sans, 'Pretendard Variable', sans-serif);
+  font-weight: 600;
+  letter-spacing: var(--track-heading, -0.015em);
+}
+.hud[data-locale='ko'] .beats,
+.hud[data-locale='ko'] .foot {
+  font-family: var(--font-sans, 'Pretendard Variable', sans-serif);
+  letter-spacing: var(--track-kr, 0);
+}
+.hud[data-locale='ko'] .beatNo {
+  font-family: var(--font-mono, 'JetBrains Mono', 'Pretendard Variable', monospace);
+}
+
+/* 갤러리 카드(~512×288): 제목 + 생산성 수치만 */
+@container (max-width: 699px) {
+  .head {
+    left: 14px;
+    top: 12px;
+  }
+  .kicker,
+  .beats,
+  .foot,
+  .heroSub,
+  .anchor,
+  .jigAnchor,
+  .planeAnchor {
+    display: none;
+  }
+  .title {
+    margin-top: 0;
+    font-size: 14px;
+  }
+  .hero {
+    right: 14px;
+    bottom: 12px;
+  }
+  .heroLabel {
+    font-size: 11px;
+  }
+  .heroNum {
+    font-size: 44px;
+  }
 }

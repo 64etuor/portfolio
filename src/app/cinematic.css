@@ -90,8 +90,8 @@
 }
 .lp-eyebrow {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.42em;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-label);
   color: #8d8d8d;
   margin: 0 0 14px;
 }
@@ -145,9 +145,9 @@
   align-items: center;
   gap: 8px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: var(--track-label); /* nav 라벨은 양 로케일 라틴(content/site.ts landing.nav) */
   text-transform: uppercase;
   color: var(--shell-btn-muted);
   background: transparent;
@@ -284,9 +284,9 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 999px;
   padding: 6px 14px;
-  font-size: 12px;
-  font-family: var(--font-mono, 'JetBrains Mono', 'Pretendard Variable', monospace);
-  letter-spacing: 0.03em;
+  font-size: var(--fs-sm);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
   cursor: pointer;
   transition: border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
 }

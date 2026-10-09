@@ -6,6 +6,7 @@
   color: #d7d7d7;
   font-family: var(--font-mono, 'JetBrains Mono'), 'JetBrains Mono', 'Pretendard Variable', monospace;
   overflow: hidden;
+  container-type: size;
 }
 
 .header {
@@ -213,4 +214,43 @@
   width: 760px;
   height: 300px;
   background: radial-gradient(ellipse at 0% 100%, rgba(2, 3, 4, 0.82) 0%, rgba(2, 3, 4, 0.5) 40%, transparent 72%);
+}
+
+/* 갤러리 카드(~512×288): 제목 + 핵심 지표(카운터 · 마지막 줄)만 남긴다 */
+@container (max-width: 699px) {
+  .header {
+    top: 12px;
+    left: 14px;
+    font-size: 11px;
+  }
+  .counter {
+    top: 10px;
+    right: 14px;
+  }
+  .dim,
+  .ng,
+  .tag,
+  .mc,
+  .ok,
+  .revSub,
+  .line:not(:last-child) {
+    display: none;
+  }
+  .count {
+    font-size: 16px;
+  }
+  .revMain {
+    font-size: 12px;
+  }
+  .lines {
+    left: 14px;
+    bottom: 14px;
+  }
+  .line:last-child .txt {
+    font-size: 18px;
+  }
+  .hud::before {
+    width: 360px;
+    height: 140px;
+  }
 }

@@ -24,7 +24,7 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
 
   return (
     <SceneHost bg={COLORS.bg} film={false} label={en ? 'Work Radar · two rails' : 'Work Radar · 두 레일'}>
-      <div className={s.root} data-wr-root="">
+      <div className={s.root} data-wr-root="" data-locale={en ? 'en' : 'ko'}>
         <div ref={ref} className={s.canvas} />
 
         {/* 3D 앵커 라벨 (runtime 이 transform/opacity 갱신) */}

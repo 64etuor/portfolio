@@ -1,5 +1,6 @@
 import type * as THREE_NS from 'three'
 import type { Three } from '../_host/three/types'
+import { canvasFont } from '../_host/fonts'
 import { CELL_H, CELL_R, CELL_TOP, COLS, MACHINE_X, PITCH, REV_COL, REV_ROW, ROWS, TRAY_TOP, cellX, cellZ } from './data'
 
 // 지오메트리/머티리얼 빌더. 런타임 값은 전부 인자로 받은 THREE 에서.
@@ -137,10 +138,10 @@ export function screenTexture(THREE: Three, kind: 'kit' | 'insert' | 'battery' |
   g.lineWidth = 1
   g.strokeRect(6.5, 6.5, 243, 147)
   g.fillStyle = 'rgba(79,224,196,0.9)'
-  g.font = 'bold 13px monospace'
+  g.font = canvasFont(700, 13, 'mono')
   g.fillText(kind === 'battery' ? 'POLARITY' : kind === 'insert' ? 'INSERT / NUT' : 'ASSY JIG', 14, 26)
   g.fillStyle = 'rgba(215,215,215,0.55)'
-  g.font = '10px monospace'
+  g.font = canvasFont(400, 10, 'mono')
   g.fillText('CAM 01  ·  LOT-0417', 14, 42)
   if (kind === 'battery') {
     for (let r = 0; r < 4; r++)

@@ -14,6 +14,7 @@
   --amber: #d98a3d;
   --red: #ff5a4f;
   --dim: #8d8d8d;
+  container-type: size;
 }
 
 /* ── 투영 라벨 ── */
@@ -87,15 +88,19 @@
 }
 .tagMain {
   font-size: 12px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   color: var(--c);
   text-shadow: 0 0 10px color-mix(in srgb, var(--c) 55%, transparent);
 }
 .tagSub {
   font-size: 9.5px;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--dim);
+}
+/* EN 서브라벨은 대문자 라틴 전용 → 넓은 자간 */
+.hud[data-locale='en'] .tagSub {
+  letter-spacing: 0.14em;
 }
 
 .proto {
@@ -119,19 +124,23 @@
 }
 .org {
   font-size: 10.5px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
   color: var(--dim);
 }
 .titleMain {
   margin-top: 8px;
+  font-family: var(--font-sans);
   font-size: 19px;
-  letter-spacing: 0.04em;
+  font-weight: 600;
+  letter-spacing: var(--track-heading);
+  line-height: var(--lh-tight);
   color: #e6e6e6;
 }
 .meta {
   margin-top: 6px;
   font-size: 11px;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
   color: var(--teal);
 }
 
@@ -152,11 +161,12 @@
 }
 .ledgerHead {
   font-size: 10.5px;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.02em;
   color: var(--dim);
 }
 .ledgerSub {
   margin: 6px 0 12px;
+  font-family: var(--font-sans);
   font-size: 12px;
   color: #bdbdbd;
 }
@@ -169,6 +179,7 @@
   font-size: 13.5px;
 }
 .over {
+  font-variant-numeric: tabular-nums;
   color: var(--amber);
 }
 .mesVal {
@@ -206,8 +217,11 @@
   opacity: 0;
 }
 .headMain {
+  font-family: var(--font-sans);
   font-size: 30px;
-  letter-spacing: 0;
+  font-weight: 600;
+  letter-spacing: var(--track-heading);
+  line-height: var(--lh-tight);
   color: #f0f0f0;
   text-shadow: 0 0 22px rgba(79, 224, 196, 0.35);
 }
@@ -215,7 +229,8 @@
   margin-top: 8px;
   font-size: 13px;
   color: #b8b8b8;
-  letter-spacing: 0.04em;
+  font-family: var(--font-sans);
+  letter-spacing: 0.02em;
 }
 
 /* ── 스택 칩 ── */
@@ -230,7 +245,7 @@
 }
 .chip {
   font-size: 10.5px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.04em;
   padding: 4px 9px;
   border: 1px solid rgba(141, 141, 141, 0.25);
   color: rgba(141, 141, 141, 0.55);
@@ -261,5 +276,32 @@
   }
   .tagSub {
     display: none;
+  }
+}
+
+/* 갤러리 카드(작은 컨테이너): 타이틀 + 헤드라인만 */
+@container (max-width: 699px) {
+  .label,
+  .ledger,
+  .chips,
+  .org,
+  .meta,
+  .headSub {
+    display: none;
+  }
+  .title {
+    left: 16px;
+    top: 14px;
+  }
+  .titleMain {
+    margin-top: 0;
+    font-size: 15px;
+  }
+  .headline {
+    left: 16px;
+    bottom: 16px;
+  }
+  .headMain {
+    font-size: 22px;
   }
 }

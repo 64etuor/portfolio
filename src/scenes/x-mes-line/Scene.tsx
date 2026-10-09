@@ -45,7 +45,7 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
   return (
     <SceneHost bg="#04070a" film={false} label={p(COPY.title)}>
       <div ref={ref} className={s.canvas} />
-      <div className={s.hud} aria-hidden>
+      <div className={s.hud} data-locale={locale === 'en' ? 'en' : 'ko'} aria-hidden>
         {labels.map((l) => (
           <div key={l.id} ref={labelRef(l.id)} className={s.label} data-tone={l.tone} data-pos={POS[l.id]}>
             <div className={l.id.startsWith('p-') ? s.proto : s.tag}>

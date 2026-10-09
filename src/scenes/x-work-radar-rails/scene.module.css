@@ -5,6 +5,7 @@
   --mono: var(--font-mono, 'DM Mono', 'Pretendard Variable', monospace);
   --sans: 'Pretendard Variable', sans-serif;
   color: #d7d7d7;
+  container-type: size;
 }
 
 .canvas {
@@ -33,7 +34,7 @@
   white-space: nowrap;
   font-family: var(--mono);
   font-size: 11px;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.02em;
   line-height: 1.35;
   text-align: center;
   text-shadow: 0 0 8px rgba(0, 0, 0, 0.9);
@@ -43,7 +44,7 @@
   display: block;
   font-weight: 500;
   font-size: 12px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.02em;
 }
 
 .tag i {
@@ -58,7 +59,7 @@
   font-family: var(--sans);
   font-size: 15px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
 }
 
 .below {
@@ -142,6 +143,11 @@
   letter-spacing: 0.12em;
   color: #8d8d8d;
 }
+/* KO 는 한글이 섞여 넓은 자간 금지 */
+.root[data-locale='ko'] .sub,
+.root[data-locale='ko'] .legend {
+  letter-spacing: 0.02em;
+}
 .legend {
   list-style: none;
   margin: 18px 0 0;
@@ -206,7 +212,7 @@
   width: 300px;
   font-family: var(--mono);
   font-size: 10.5px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   pointer-events: none;
 }
 .logTitle {
@@ -240,7 +246,17 @@
   color: #f2c48d;
 }
 
-@media (max-width: 760px) {
+/* KO: 한글이 섞이는 라벨은 좁은 자간(넓은 모노 자간은 라틴 전용 문자열에만) */
+.root[data-locale='ko'] .tag,
+.root[data-locale='ko'] .tag b,
+.root[data-locale='ko'] .tag .big,
+.root[data-locale='ko'] .sub,
+.root[data-locale='ko'] .legend,
+.root[data-locale='ko'] .hudBR {
+  letter-spacing: 0.02em;
+}
+
+@container (max-width: 760px) {
   .hudBR,
   .legend,
   .anchors .dim {
@@ -253,5 +269,31 @@
   .hudBL {
     left: 18px;
     bottom: 18px;
+  }
+}
+
+/* 갤러리 카드(~512×288): 제목 + 헤드라인만 */
+@container (max-width: 699px) {
+  .anchors,
+  .sub,
+  .line2,
+  .stack {
+    display: none;
+  }
+  .hudTL {
+    left: 14px;
+    top: 12px;
+  }
+  .title {
+    font-size: 11px;
+    letter-spacing: 0.32em;
+  }
+  .hudBL {
+    left: 14px;
+    right: 14px;
+    bottom: 14px;
+  }
+  .headline {
+    font-size: 20px;
   }
 }

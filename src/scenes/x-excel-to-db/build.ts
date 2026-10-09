@@ -1,5 +1,6 @@
 import type * as THREE_NS from 'three'
 import type { Three } from '../_host/three/types'
+import { FONT_SANS, ensureSceneFonts } from '../_host/fonts'
 import { mulberry32 } from '../_host/random'
 import {
   CELL_D,
@@ -28,16 +29,21 @@ export const COL = {
 
 const hdr = (THREE: Three, hex: number, k: number) => new THREE.Color(hex).multiplyScalar(k)
 
-const FONT_KR = '"Pretendard Variable", sans-serif'
-const FONT_MONO = '"IBM Plex Mono", "Pretendard Variable", monospace'
+const FONT_KR = FONT_SANS
+// IBM Plex Mono(라틴) 뒤에 Pretendard — 파일명 접미사의 한글('최종', '사본')은 Pretendard 로.
+const FONT_MONO = "'IBM Plex Mono', 'Pretendard Variable', monospace"
 
+const SHEET_SUFFIXES = ['_v3_최종.xlsx', '_0412.xlsx', '_rev2.xlsx', '(사본).xlsx'] as const
+const ERR_CELLS = ['#REF!', '#N/A', '#VALUE!'] as const
+
+/** 아틀라스에 구울 모든 글자의 Pretendard 조각 + IBM Plex Mono 500 을 미리 로드. */
 export async function loadFonts() {
-  if (typeof document === 'undefined' || !document.fonts) return
-  const wait = Promise.all([
-    document.fonts.load(`600 40px ${FONT_KR}`, '생산실적공수불량워크오더'),
-    document.fonts.load(`500 20px ${FONT_MONO}`, '0123456789.xlsx'),
-  ])
-  await Promise.race([wait, new Promise((r) => setTimeout(r, 900))]).catch(() => undefined)
+  const text = [...SHEET_TABS, ...SHEET_SUFFIXES, ...ERR_CELLS, '0123456789.'].join(' ')
+  const plex =
+    typeof document !== 'undefined' && document.fonts
+      ? document.fonts.load(`500 20px ${FONT_MONO}`, text).catch(() => undefined)
+      : Promise.resolve()
+  await Promise.all([ensureSceneFonts(text), Promise.race([plex, new Promise((r) => setTimeout(r, 1500))])])
 }
 
 // ─────────────────────────── 시트 아틀라스 ───────────────────────────
@@ -61,7 +67,7 @@ function drawSheet(g: CanvasRenderingContext2D, ox: number, oy: number, idx: num
   g.fillText(tab, 18, 33)
   g.font = `500 17px ${FONT_MONO}`
   g.fillStyle = 'rgba(8,12,12,0.7)'
-  const suffix = ['_v3_최종.xlsx', '_0412.xlsx', '_rev2.xlsx', '(사본).xlsx'][idx % 4]
+  const suffix = SHEET_SUFFIXES[idx % 4]
   const tw = g.measureText(suffix).width
   g.fillText(suffix, TW - tw - 16, 34)
   // 그리드
@@ -102,7 +108,7 @@ function drawSheet(g: CanvasRenderingContext2D, ox: number, oy: number, idx: num
     g.fillStyle = 'rgba(255,70,60,0.85)'
     g.fillRect(x + 1, y + 1, cw - 2, ch - 2)
     g.fillStyle = 'rgba(255,255,255,0.95)'
-    g.fillText(['#REF!', '#N/A', '#VALUE!'][k % 3], x + 6, y + ch / 2 + 1)
+    g.fillText(ERR_CELLS[k % 3], x + 6, y + ch / 2 + 1)
   }
   g.strokeStyle = 'rgba(255,255,255,0.32)'
   g.lineWidth = 1.5

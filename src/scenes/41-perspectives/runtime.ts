@@ -1,6 +1,7 @@
 import type React from 'react'
 import { buildLayout, panEnv } from './draw'
 import type { LayoutState, ProcNode, Screen } from './types'
+import { setStyles } from '../legacy-style'
 
 export const labUrl = (file: string) => (file.startsWith('/') ? file : `/lab/${file}`)
 export const makeProcNodes = (count: number): ProcNode[] => Array.from({ length: count }, () => ({ root: null, scr: null, iframe: null }))
@@ -9,12 +10,9 @@ export function layoutSide(nodes: ProcNode[], side: -1 | 1, w: number, h: number
   const left = side < 0 ? w * 0.045 : w - w * 0.045 - pw
   nodes.forEach((p, i) => {
     if (!p.root || !p.scr || !p.iframe) return
-    p.root.style.left = `${left}px`
-    p.root.style.top = `${h * 0.115 + i * h * 0.158}px`
-    p.root.style.width = `${pw}px`
-    p.scr.style.width = `${pw}px`
-    p.scr.style.height = `${ph}px`
-    p.iframe.style.transform = `scale(${(pw / 1280).toFixed(4)})`
+    setStyles(p.root, { left: `${left}px`, top: `${h * 0.115 + i * h * 0.158}px`, width: `${pw}px` })
+    setStyles(p.scr, { width: `${pw}px`, height: `${ph}px` })
+    setStyles(p.iframe, { transform: `scale(${(pw / 1280).toFixed(4)})` })
   })
 }
 

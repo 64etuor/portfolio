@@ -10,6 +10,7 @@ import { PALETTE_LIGHT_GRAY, PALETTE_DIM } from '../_host/palette'
 import { ease, smoothstep as ramp, lerp } from '../_host/math'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
+import { setStyles } from '../legacy-style'
 
 /* ════════════════════════════════════════════════════════════════
    SCENE 02 · 선언 — AX ERA  (33-ax-era.html 이식)
@@ -182,8 +183,7 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
     if (statusRef.current && statusTxt !== lastStatusRef.current) {
       lastStatusRef.current = statusTxt
       statusRef.current.textContent = statusTxt
-      statusRef.current.style.color = statusCol
-      statusRef.current.style.textShadow = '0 0 12px ' + statusCol.replace('1)', '0.45)')
+      setStyles(statusRef.current, { color: statusCol, textShadow: '0 0 12px ' + statusCol.replace('1)', '0.45)') })
     }
 
     // ---- TYPOGRAPHY: word refs array parallel to l1words ----
@@ -209,9 +209,11 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
           '0 0 ' + (10 + 30 * S.ax).toFixed(0) + 'px rgba(78,163,240,' + (0.25 + 0.45 * S.ax).toFixed(2) + '),' +
           '0 0 ' + (34 + 64 * S.ax).toFixed(0) + 'px rgba(78,163,240,' + (0.10 + 0.22 * S.ax).toFixed(2) + ')'
       }
-      el.style.opacity = op.toFixed(3)
-      el.style.transform = 'translateY(' + ty.toFixed(1) + 'px) scale(' + sc.toFixed(3) + ')'
-      el.style.filter = 'blur(' + ((1 - r) * 5).toFixed(2) + 'px)'
+      setStyles(el, {
+        opacity: op.toFixed(3),
+        transform: 'translateY(' + ty.toFixed(1) + 'px) scale(' + sc.toFixed(3) + ')',
+        filter: 'blur(' + ((1 - r) * 5).toFixed(2) + 'px)',
+      })
     }
 
     if (l1w2Ref.current) {
@@ -219,14 +221,18 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
     }
 
     if (l2aRef.current) {
-      l2aRef.current.style.opacity = (S.l2a * seam).toFixed(3)
-      l2aRef.current.style.transform = 'translateY(' + ((1 - S.l2a) * 12).toFixed(1) + 'px)'
-      l2aRef.current.style.filter = 'blur(' + ((1 - S.l2a) * 4).toFixed(2) + 'px)'
+      setStyles(l2aRef.current, {
+        opacity: (S.l2a * seam).toFixed(3),
+        transform: 'translateY(' + ((1 - S.l2a) * 12).toFixed(1) + 'px)',
+        filter: 'blur(' + ((1 - S.l2a) * 4).toFixed(2) + 'px)',
+      })
     }
     if (l2bRef.current) {
-      l2bRef.current.style.opacity = (S.l2b * seam).toFixed(3)
-      l2bRef.current.style.transform = 'translateY(' + ((1 - S.l2b) * 12).toFixed(1) + 'px)'
-      l2bRef.current.style.filter = 'blur(' + ((1 - S.l2b) * 4).toFixed(2) + 'px)'
+      setStyles(l2bRef.current, {
+        opacity: (S.l2b * seam).toFixed(3),
+        transform: 'translateY(' + ((1 - S.l2b) * 12).toFixed(1) + 'px)',
+        filter: 'blur(' + ((1 - S.l2b) * 4).toFixed(2) + 'px)',
+      })
     }
 
     // ---- CANVAS ----

@@ -6,8 +6,8 @@ export function Gallery({ items }: { items: GalleryItem[] }) {
   if (!items?.length) return null
   return (
     <div className="pj-gallery">
-      {items.map((g, i) => (
-        <figure className="pj-fig" key={i}>
+      {items.map((g) => (
+        <figure className="pj-fig" key={g.src}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={g.src} alt={g.caption ?? ''} loading="lazy" decoding="async" />
           {g.caption ? <figcaption className="pj-cap">{g.caption}</figcaption> : null}

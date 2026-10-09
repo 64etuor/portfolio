@@ -3,6 +3,7 @@ import { COMM } from './constants'
 import type { Frame } from '../_host/types'
 import type { SceneCtx } from './types'
 import { get } from './dom'
+import { setStyles } from '../legacy-style'
 import { buildGraph, buildTrace, fireTrace, layoutPipe, stepLive } from './runtime'
 
 /** 에이전트 run-line 진행 애니메이션 — pipe 프레임 now 로 구동되는 DOM 갱신. */
@@ -12,10 +13,9 @@ export function runlines(ctx: SceneCtx, now: number): void {
     const i = Number(el.dataset.i)
     if (ctx.agentsRef.current[i] && ctx.agentsRef.current[i].status === 'run') {
       const w = (now / 14 + i * 60) % 100
-      el.style.width = `${w}%`
-      el.style.opacity = '0.6'
+      setStyles(el, { width: `${w}%`, opacity: '0.6' })
     } else {
-      el.style.width = '0'
+      setStyles(el, { width: '0' })
     }
   })
 }
@@ -23,11 +23,15 @@ export function runlines(ctx: SceneCtx, now: number): void {
 /** wiki 레이어 flow 글로우 이동 — pipe 프레임 now 로 구동되는 DOM 갱신. */
 export function wikiFlow(ctx: SceneCtx, now: number): void {
   const s = ctx.s
-  ctx.rootRef.current?.querySelectorAll<HTMLElement>(`.${s.flow}`).forEach((flow) => {
+  const flows = ctx.rootRef.current?.querySelectorAll<HTMLElement>(`.${s.flow}`)
+  if (!flows) return
+  // Read every parent width first, then write — interleaving clientWidth reads
+  // with transform writes would force a synchronous layout per element.
+  const widths = Array.from(flows, (flow) => flow.parentElement?.clientWidth ?? 0)
+  flows.forEach((flow, i) => {
     const d = Number(flow.dataset.d)
     const t = (now / 1400 + d * 0.33) % 1
-    const wparent = flow.parentElement?.clientWidth ?? 0
-    flow.style.transform = `translateX(${t * (wparent + 40) - 40}px)`
+    flow.style.transform = `translateX(${t * (widths[i] + 40) - 40}px)`
   })
 }
 

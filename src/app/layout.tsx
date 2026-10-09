@@ -54,6 +54,20 @@ const personJsonLd = {
   sameAs: [PROFILE.contact.github, PROFILE.contact.githubPage],
 }
 
+// JSON.stringify does not HTML-escape: a `</script>` (or `<!--`) inside any string
+// value would break out of the <script> element. Escape the HTML-significant
+// characters and the JS line separators as \uXXXX — identical parsed JSON.
+const JSON_LD_ESCAPES: Record<string, string> = {
+  '<': '\\u003c',
+  '>': '\\u003e',
+  '&': '\\u0026',
+  '\u2028': '\\u2028',
+  '\u2029': '\\u2029',
+}
+function serializeJsonLd(value: unknown): string {
+  return JSON.stringify(value).replace(/[<>&\u2028\u2029]/g, (ch) => JSON_LD_ESCAPES[ch])
+}
+
 // Skip-link styles: visually-hidden until focused, then revealed top-left above
 // all chrome. Scoped inline so globals.css is untouched (server component — CSS
 // :focus, not JS handlers). Keep this CSS as a single source for the .skip-link.
@@ -71,7 +85,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SkipToContent />
           <script
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+            dangerouslySetInnerHTML={{ __html: serializeJsonLd(personJsonLd) }}
           />
           <SiteHeader />
           {/* Pages render their own <main> (landing / resume / some scenes), so this

@@ -126,7 +126,7 @@ export function PipelineDagView({
           <div ref={panel.piconRef} style={{ width:40, height:40, borderRadius:9, display:'flex', alignItems:'center', justifyContent:'center', fontSize:19, background:'rgba(255,255,255,.04)', border:'1px solid #1f2733', flexShrink:0 }}>&#11041;</div>
           <div style={{ flex:1, minWidth:0 }}>
             <div ref={panel.pnameRef} style={{ fontSize:15, fontWeight:700, color:'#fff', lineHeight:1.3 }}>node</div>
-            <div ref={panel.pmetaRef} style={{ fontSize:10.5, color:'#6b7787', marginTop:4, display:'flex', gap:8, flexWrap:'wrap' }} />
+            <div ref={panel.pmetaRef} style={{ fontSize:12, color:'#6b7787', marginTop:4, display:'flex', gap:8, flexWrap:'wrap' }} />
           </div>
           <div id="pclose" style={{ marginLeft:'auto', cursor:'pointer', color:'#6b7787', fontSize:18, lineHeight:1, width:28, height:28, display:'flex', alignItems:'center', justifyContent:'center', borderRadius:6, flexShrink:0 }}>&#10005;</div>
         </div>

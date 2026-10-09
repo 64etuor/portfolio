@@ -30,7 +30,8 @@ export function topoOrder(nodes: NodeDef[], edges: [string, string][]): string[]
   const adj: Record<string, string[]> = {}
   nodes.forEach(n => { indeg[n.id] = 0; adj[n.id] = [] })
   edges.forEach(([a, b]) => { if (adj[a] && indeg[b] != null) { adj[a].push(b); indeg[b]++ } })
-  const q = nodes.filter(n => indeg[n.id] === 0).map(n => n.id)
+  const q: string[] = []
+  for (const n of nodes) if (indeg[n.id] === 0) q.push(n.id)
   const order: string[] = []
   while (q.length) {
     const id = q.shift()!; order.push(id)

@@ -41,8 +41,21 @@ const LOGO = [
   '|_|     \\___/|_| |_|   SYS-BIOS  CORE',
 ]
 
-function esc(t: string) {
-  return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+/* POST log lines are built as DOM nodes (text + styled spans), not HTML strings. */
+function span(className: string, ...children: (string | Node)[]) {
+  const el = document.createElement('span')
+  el.className = className
+  el.append(...children)
+  return el
+}
+
+function fillPostLine(ln: HTMLElement, item: (typeof POST)[number]) {
+  ln.textContent = item.t ?? ''
+  if (item.tag) ln.append(' ', span(s.tagOk, '[ OK ]'))
+}
+
+function fillMemLine(ln: HTMLElement, mb: string) {
+  ln.replaceChildren(span(s.membar, 'Memory Test : ', span(s.membarFill, mb), ' MB OK'))
 }
 
 export default function Scene({ running = true, onReady }: SceneProps) {
@@ -90,10 +103,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         if (done) return
         v += Math.max(1, Math.round((TARGET - v) / 5))
         if (v >= TARGET) v = TARGET
-        lineEl.innerHTML =
-          `<span class="${s.membar}">Memory Test : <span class="${s.membarFill}">` +
-          String(v).padStart(4, ' ') +
-          '</span> MB OK</span>'
+        fillMemLine(lineEl, String(v).padStart(4, ' '))
         if (v < TARGET) {
           timers.push(setTimeout(step, 22))
         } else {
@@ -148,9 +158,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
           const ln = document.createElement('div')
           ln.className = s.line + ' ' + (item.s === 'ok' ? s.ok : s.dim)
-          let html = esc(item.t ?? '')
-          if (item.tag) html += ` <span class="${s.tagOk}">[ OK ]</span>`
-          ln.innerHTML = html
+          fillPostLine(ln, item)
           logRef.current?.appendChild(ln)
           idx++
           timers.push(setTimeout(next, 185))
@@ -164,17 +172,15 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       if (screenRef.current) screenRef.current.style.opacity = '1'
       if (logoRef.current) logoRef.current.textContent = LOGO.join('\n')
       if (logRef.current) {
-        logRef.current.innerHTML = ''
+        logRef.current.replaceChildren()
         POST.forEach((item) => {
           const ln = document.createElement('div')
           if (item.mem) {
             ln.className = s.line
-            ln.innerHTML = `<span class="${s.membar}">Memory Test : <span class="${s.membarFill}">2048</span> MB OK</span>`
+            fillMemLine(ln, '2048')
           } else {
             ln.className = s.line + ' ' + (item.s === 'ok' ? s.ok : s.dim)
-            let html = esc(item.t ?? '')
-            if (item.tag) html += ` <span class="${s.tagOk}">[ OK ]</span>`
-            ln.innerHTML = html
+            fillPostLine(ln, item)
           }
           logRef.current?.appendChild(ln)
         })

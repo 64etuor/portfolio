@@ -17,13 +17,10 @@ export interface Scene {
   bg: string
 }
 
-export const SCENES: Scene[] = SCENES_CATALOG.filter((s) => s.registry).map((s) => ({
-  id: s.id as string,
-  slug: s.slug,
-  file: s.file,
-  title: s.title,
-  domain: s.domain as string,
-  bg: s.bg,
-}))
+export const SCENES: Scene[] = SCENES_CATALOG.flatMap((s) =>
+  s.registry
+    ? [{ id: s.id as string, slug: s.slug, file: s.file, title: s.title, domain: s.domain as string, bg: s.bg }]
+    : [],
+)
 
 export const sceneById = (id: string) => SCENES.find((s) => s.id === id || s.slug === id)

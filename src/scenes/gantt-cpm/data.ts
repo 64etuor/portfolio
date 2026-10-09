@@ -771,7 +771,7 @@ export const ROWS: Row[] = (() => {
   const out: Row[] = []
   COMPANIES.forEach((c) => {
     out.push(c)
-    PROJECTS.filter((p) => p.parent === c.id).forEach((p) => out.push(p))
+    for (const p of PROJECTS) if (p.parent === c.id) out.push(p)
   })
   return out
 })()

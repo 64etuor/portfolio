@@ -25,6 +25,7 @@ import {
   flowDotSvg,
   drawSmStr,
   drawRecStr,
+  escHtml,
 } from './draw'
 import { KEYWORDS, TYPES, CDC_MAX_LINES, ERD_AUTO_INTERVAL, PACKET_SEG_MS } from './constants'
 import type { Packet, RuntimeGate } from './types'
@@ -163,8 +164,7 @@ export function setupRuntime(rootEl: HTMLElement, gate: RuntimeGate): () => void
     m.tables.forEach((t) => {
       const el = document.createElement('div')
       el.className = s.tbl
-      el.style.left = t.x + 'px'
-      el.style.top = t.y + 'px'
+      el.style.cssText = 'left:' + t.x + 'px;top:' + t.y + 'px'
       el.dataset.name = t.name
       const cols = t.cols
         .map((c) => {
@@ -496,8 +496,9 @@ export function setupRuntime(rootEl: HTMLElement, gate: RuntimeGate): () => void
     line.className = s.cdcLine
     const tagCls = cdcTagClass(type)
     const tagLbl = cdcTagLabel(type)
-    const msgHtml = msg
-      .replace(/<val>(.*?)<\/val>/g, '<span class="' + s.val + '">$1</span>')
+    // Escape first, then re-introduce only the <val> markers as styled spans.
+    const msgHtml = escHtml(msg)
+      .replace(/&lt;val&gt;(.*?)&lt;\/val&gt;/g, '<span class="' + s.val + '">$1</span>')
       .replace(tableRe, '<span class="' + s.tbl + '">$1</span>')
     line.innerHTML =
       '<span class="' + s.cdcTs + '">' + ts + '</span><span class="' + cls('cdcTag') + ' ' + tagCls + '">' + tagLbl + '</span><span class="' + s.cdcMsg + '">' + msgHtml + '</span>'
@@ -570,8 +571,7 @@ export function setupRuntime(rootEl: HTMLElement, gate: RuntimeGate): () => void
     FLOW_NODES.forEach((n) => {
       const el = document.createElement('div')
       el.className = cls('node', n.cls)
-      el.style.left = n.x * W + 'px'
-      el.style.top = n.y * H + 'px'
+      el.style.cssText = 'left:' + n.x * W + 'px;top:' + n.y * H + 'px'
       el.innerHTML =
         '<div class="' + s.nh + '"><span class="' + s.ic + '">' + n.ic + '</span>' + n.t + '</div><div class="' + s.ns + '">' + n.s + '</div>' + (n.pill ? '<span class="' + s.pill + '">' + n.pill + '</span>' : '')
       archStage.appendChild(el)

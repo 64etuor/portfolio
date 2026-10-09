@@ -158,8 +158,8 @@ test.describe('instrument and scene routes', () => {
     await expect(page).toHaveScreenshot(name, { ...SNAP_OPTS, mask });
   }
 
-  test('/s/oscilloscope', async ({ page }) => {
-    await sceneSnapshot(page, '/s/oscilloscope', 'scene-oscilloscope.png');
+  test('/s/weld-doe', async ({ page }) => {
+    await sceneSnapshot(page, '/s/weld-doe', 'scene-weld-doe.png');
   });
 
   test('/s/robot-pendant', async ({ page }) => {
@@ -174,8 +174,8 @@ test.describe('instrument and scene routes', () => {
     await sceneSnapshot(page, '/s/agent-governance', 'scene-agent-governance.png');
   });
 
-  test('/s/cmm-metrology', async ({ page }) => {
-    await sceneSnapshot(page, '/s/cmm-metrology', 'scene-cmm-metrology.png');
+  test('/s/vision-inspection', async ({ page }) => {
+    await sceneSnapshot(page, '/s/vision-inspection', 'scene-vision-inspection.png');
   });
 
   test('/s/decision-os', async ({ page }) => {
@@ -190,8 +190,8 @@ test.describe('instrument and scene routes', () => {
     await sceneSnapshot(page, '/s/weld-thermal', 'scene-weld-thermal.png');
   });
 
-  test('/s/radar-sonar', async ({ page }) => {
-    await sceneSnapshot(page, '/s/radar-sonar', 'scene-radar-sonar.png');
+  test('/s/work-radar', async ({ page }) => {
+    await sceneSnapshot(page, '/s/work-radar', 'scene-work-radar.png');
   });
 
   test('/s/gantt-cpm', async ({ page }) => {

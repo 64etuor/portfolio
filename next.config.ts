@@ -23,6 +23,38 @@ const nextConfig: NextConfig = {
   // never double-invokes, is unaffected). Disable so dev matches prod timing.
   reactStrictMode: false,
 
+  // 은퇴한 레거시 씬 / three.js 후보(x-*) 슬러그 → 승격된 씬 슬러그. 구 링크·북마크 보존.
+  // /lab/<key>.html 은 x-* 씬과 은퇴 씬 모두 정적 HTML 이 없으므로 단독 라우트로 보낸다.
+  async redirects() {
+    const retired: Record<string, string> = {
+      'radar-sonar': 'work-radar',
+      graphrag: 'kip-evidence',
+      'mes-console': 'mes-line',
+      'digital-twin': 'smart-factory',
+      'sonar-waterfall': 'weld-doe',
+      'cmm-metrology': 'vision-inspection',
+      oscilloscope: 'vision-inspection',
+      'ai-latent': 'sn-trace',
+    }
+    const promoted: Record<string, string> = {
+      'x-work-radar-rails': 'work-radar',
+      'x-kip-evidence': 'kip-evidence',
+      'x-mes-line': 'mes-line',
+      'x-smart-factory': 'smart-factory',
+      'x-weld-doe': 'weld-doe',
+      'x-vision-reverse': 'vision-inspection',
+      'x-sn-trace': 'sn-trace',
+      'x-excel-to-db': 'excel-to-db',
+      'x-lob-balance': 'line-balance',
+    }
+    const all = { ...retired, ...promoted }
+    return [
+      ...Object.entries(all).map(([from, to]) => ({ source: `/s/${from}`, destination: `/s/${to}`, permanent: true })),
+      ...Object.entries(all).map(([from, to]) => ({ source: `/lab/${from}.html`, destination: `/s/${to}`, permanent: true })),
+      { source: '/candidates', destination: '/scenes', permanent: true },
+    ]
+  },
+
   async headers() {
     const isDev = process.env.NODE_ENV !== 'production'
     // CSP notes:

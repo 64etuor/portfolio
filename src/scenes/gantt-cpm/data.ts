@@ -868,8 +868,8 @@ export const SKILLS: SkillGroup[] = [
 export const REWIND_ROUTES: Record<string, string> = {
   eunseong: '/s/instrument-rack',
   elentec: '/s/weld-thermal',
-  solaredge: '/s/mes-console',
-  bridge: '/s/digital-twin',
+  solaredge: '/s/mes-line',
+  bridge: '/s/smart-factory',
   startup: '/s/pid-scheme',
-  epilogue: '/s/radar-sonar',
+  epilogue: '/s/work-radar',
 }

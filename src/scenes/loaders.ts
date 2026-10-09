@@ -9,7 +9,7 @@ export type SceneLoader = () => Promise<{ default: ComponentType<SceneProps> }>
 // import() 리터럴은 Next 코드스플릿을 위해 반드시 정적 문자열로 남는다(catalog 로 추출 금지).
 const SCENE_LOADERS = {
   '05-bios-boot': () => import('./05-bios-boot/Scene'),
-  // ── three.js 후보 씬(/candidates 검토용) ──
+  // ── three.js 씬 ──
   'x-smart-factory': () => import('./x-smart-factory/Scene'),
   'x-mes-line': () => import('./x-mes-line/Scene'),
   'x-excel-to-db': () => import('./x-excel-to-db/Scene'),
@@ -31,24 +31,16 @@ const SCENE_LOADERS = {
   '41-perspectives': () => import('./41-perspectives/Scene'),
   '42-era-shift': () => import('./42-era-shift/Scene'),
   'agent-governance': () => import('./agent-governance/Scene'),
-  'ai-latent': () => import('./ai-latent/Scene'),
-  'cmm-metrology': () => import('./cmm-metrology/Scene'),
   'db-architecture': () => import('./db-architecture/Scene'),
   'decision-os': () => import('./decision-os/Scene'),
-  'digital-twin': () => import('./digital-twin/Scene'),
   'gantt-cpm': () => import('./gantt-cpm/Scene'),
   'gcode-printer': () => import('./gcode-printer/Scene'),
-  graphrag: () => import('./graphrag/Scene'),
   'ide-coding': () => import('./ide-coding/Scene'),
   'instrument-rack': () => import('./instrument-rack/Scene'),
-  'mes-console': () => import('./mes-console/Scene'),
-  oscilloscope: () => import('./oscilloscope/Scene'),
   'pid-scheme': () => import('./pid-scheme/Scene'),
   'pipeline-dag': () => import('./pipeline-dag/Scene'),
-  'radar-sonar': () => import('./radar-sonar/Scene'),
   'robot-pendant': () => import('./robot-pendant/Scene'),
   'scada-hmi': () => import('./scada-hmi/Scene'),
-  'sonar-waterfall': () => import('./sonar-waterfall/Scene'),
   'weld-thermal': () => import('./weld-thermal/Scene'),
 } satisfies Record<string, SceneLoader>
 

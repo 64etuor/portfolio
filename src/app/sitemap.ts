@@ -23,7 +23,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified,
   }))
 
-  const sceneRoutes = SCENE_CATALOG.filter((s) => !('candidate' in s)).map((s) => ({
+  const sceneRoutes = SCENE_CATALOG.map((s) => ({
     url: `${BASE}/s/${s.slug}`,
     lastModified,
   }))

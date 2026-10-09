@@ -13,11 +13,11 @@ export const DIM: RGB = PALETTE_DIM
 
 
 export const FIELD: Screen[] = [
-  { file: 'sonar-waterfall.html', title: '초음파 용착', tag: 'ULTRASONIC' },
+  { file: 'x-weld-doe.html', title: '초음파 용착', tag: 'ULTRASONIC' },
   { file: 'weld-thermal.html', title: 'Nd:YAG 레이저 용접', tag: 'Nd:YAG' },
-  { file: 'oscilloscope.html', title: '스팟 용접 검사', tag: 'SPOT' },
+  { file: 'robot-pendant.html', title: '스팟 용접 검사', tag: 'SPOT' },
   { file: 'gcode-printer.html', title: '적층제조', tag: 'AM' },
-  { file: 'cmm-metrology.html', title: 'CMM 정밀 측정', tag: 'CMM' },
+  { file: 'x-vision-reverse.html', title: 'CMM 정밀 측정', tag: 'CMM' },
 ]
 export const DEV: Screen[] = [
   { file: 'pid-scheme.html', title: '시스템 토폴로지', tag: 'P&ID' },

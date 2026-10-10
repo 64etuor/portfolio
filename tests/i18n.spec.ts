@@ -5,8 +5,8 @@ test('Korean locale preserves intentional English brand and navigation copy', as
 
   await expect(page.getByRole('link', { name: 'Portfolio' })).toBeVisible()
   await expect(page.getByRole('link', { name: 'Projects' })).toBeVisible()
-  await expect(page.locator('canvas[aria-label="PORTFOLIO"]')).toBeVisible()
-  await expect(page.locator('canvas[aria-label="Designing an awesome future"]')).toBeVisible()
+  // Hero copy is painted on aria-hidden canvases; the accessible name lives in the sr-only <h1>.
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('YANGHA PARK')
 })
 
 test('language choice persists and updates shared gallery content', async ({ page }) => {

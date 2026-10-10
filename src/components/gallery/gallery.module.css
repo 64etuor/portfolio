@@ -52,7 +52,7 @@
 @media (max-width: 1100px) { .grid { grid-template-columns: 1fr; } }
 .card { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--panel); display: flex; flex-direction: column; }
 .bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
-.tt { font-size: var(--fs-base); font-weight: 700; line-height: var(--lh-snug); }
+.tt { margin: 0; font-size: var(--fs-base); font-weight: 700; line-height: var(--lh-snug); } /* <h2> — keeps h1 → h2 → (scene h3) order */
 .tag { flex: none; font-size: var(--fs-2xs); font-weight: 700; letter-spacing: var(--track-label); text-transform: uppercase; color: var(--accent); }
 .cardFilm .tag { color: var(--film); }
 .desc { padding: 10px 16px; font-size: var(--fs-sm); color: var(--muted); line-height: var(--lh-body); min-height: 38px; }
@@ -63,7 +63,7 @@
 .frameWrap { position: relative; aspect-ratio: 16 / 10; background: #000; overflow: hidden; border-top: 1px solid var(--line); transform: translateZ(0); }
 .placeholder {
   position: absolute; inset: 0; display: grid; place-items: center;
-  font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--track-kr); color: #3b4049;
+  font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--track-kr); color: #7a828d; /* ≥4.5:1 on #000 */
 }
 
 .actions { display: flex; gap: 8px; padding: 12px 16px; }
@@ -77,7 +77,7 @@
 .an { font-size: var(--fs-lg); font-weight: 700; line-height: var(--lh-tight); letter-spacing: var(--track-heading); }
 .ac { float: right; font-family: var(--font-mono); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; color: var(--muted); }
 .ad { margin-top: 8px; color: var(--muted); font-size: var(--fs-sm); line-height: var(--lh-body); }
-.al { margin-top: 14px; font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: 0.02em; color: #5a6470; }
+.al { margin-top: 14px; font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: 0.02em; color: #8a94a0; } /* ≥4.5:1 on the card (#15171c); was #5a6470 = 2.98:1 */
 .footer { margin-top: 30px; color: var(--muted); font-size: var(--fs-sm); font-variant-numeric: tabular-nums; }
 /* 태그는 KO 에서 한글('원가', '운영 OS' 등) — 넓은 자간은 EN 라틴 라벨에만 */
 .tag:lang(ko) { letter-spacing: var(--track-kr); }

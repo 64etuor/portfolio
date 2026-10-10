@@ -2,12 +2,14 @@ import { GalleryGrid } from '@/components/gallery/GalleryGrid'
 import { SCENES_GALLERY } from '@/components/gallery/data'
 import { GalleryPageShell } from '@/components/gallery/GalleryPageShell'
 import { SITE } from '@content/site'
+import { pageMetadata } from '../seo'
 
-export const metadata = {
+export const metadata = pageMetadata({
   title: SITE.pages.scenes.ko,
   description:
     'DX→AX manifesto film — boot, SCENE 01–10, and ending. Explore interactive portfolio scenes in narrative order.',
-}
+  path: '/scenes',
+})
 
 export default function ScenesPage() {
   return (

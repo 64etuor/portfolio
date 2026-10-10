@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageMetadata } from '../../seo'
 import { notFound } from 'next/navigation'
 import { AREA_META, SKILL_AREAS, type SkillAreaKey } from '@/components/gallery/data'
 import { SkillAreaContent } from '@/components/gallery/SkillAreaContent'
@@ -12,7 +13,7 @@ export async function generateMetadata({
   const found = SKILL_AREAS.find((a) => a.key === area)
   if (!found) return {}
   const meta = AREA_META[found.key as SkillAreaKey]
-  return { title: `${meta.heading.en} · Skills`, description: meta.sub.en }
+  return pageMetadata({ title: `${meta.heading.en} · Skills`, description: meta.sub.en, path: `/skills/${found.key}` })
 }
 
 export function generateStaticParams() {

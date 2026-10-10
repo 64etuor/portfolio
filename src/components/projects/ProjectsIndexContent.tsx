@@ -2,11 +2,13 @@
 
 import type { CSSProperties } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { enabledProjects } from '@content/projects'
 import { COMPANY_ACCENT } from '@content/projects/types'
 import { projectForLocale } from '@content/i18n/portfolio-en'
 import { SITE } from '@content/site'
 import { useLocale } from '@/components/LocaleProvider'
+import { IMAGE_DIMS } from './imageDims'
 
 export function ProjectsIndexContent() {
   const { locale, t } = useLocale()
@@ -21,15 +23,25 @@ export function ProjectsIndexContent() {
         <h1 className="pj-title">{t(SITE.project.indexTitle)}</h1>
       </div>
       <div className="pj-index-grid">
-        {projects.map((project) => {
+        {projects.map((project, index) => {
           const topKpi = project.metrics[0]
-          const thumbnail = project.gallery?.[0]?.src
+          const thumbnail = project.gallery?.find((g) => IMAGE_DIMS[g.src])?.src
           const cardStyle = { '--pj-acc': COMPANY_ACCENT[project.hero.companyKey] } as CSSProperties
           return (
             <Link key={project.slug} href={`/projects/${project.slug}`} className="pj-card" style={cardStyle}>
               {thumbnail ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img className="pj-card-thumb" src={thumbnail} alt="" loading="lazy" decoding="async" />
+                <Image
+                  className="pj-card-thumb"
+                  src={thumbnail}
+                  alt=""
+                  width={IMAGE_DIMS[thumbnail][0]}
+                  height={IMAGE_DIMS[thumbnail][1]}
+                  sizes="(max-width: 600px) 100vw, 440px"
+                  // The first two thumbnails sit above the fold on mobile (one column) and
+                  // either can be the LCP element — fetch them eagerly at high priority
+                  // instead of lazy-loading after layout. The rest stay lazy.
+                  priority={index < 2}
+                />
               ) : null}
               <div className="pj-card-body">
                 <span className="pj-card-eyebrow">{project.hero.company} · {project.hero.period}</span>

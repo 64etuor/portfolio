@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageMetadata } from '../../seo'
 import { notFound } from 'next/navigation'
 import { COMPOSITIONS, compBySlug } from '@/compositions'
 import { sceneById } from '@/scenes/registry'
@@ -12,7 +13,7 @@ export async function generateMetadata({
   const { comp } = await params
   const c = compBySlug(comp)
   if (!c) return {}
-  return { title: `${c.title} · Composition`, description: c.blurb }
+  return pageMetadata({ title: `${c.title} · Composition`, description: c.blurb, path: `/c/${comp}` })
 }
 
 export function generateStaticParams() {

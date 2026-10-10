@@ -201,5 +201,7 @@ export function PretextText({
     }
   }, [text, fontFamily, fontWeight, fontPx, color, width, height, delay, letterSpacing, stylePrefix])
 
-  return <canvas ref={ref} aria-label={text} style={{ width, height, display: 'block', pointerEvents: 'auto', ...style }} />
+  // Canvas pixels are invisible to assistive tech; the caller renders the same copy as
+  // real (visually-hidden) text, so the canvas itself is decorative.
+  return <canvas ref={ref} aria-hidden style={{ width, height, display: 'block', pointerEvents: 'auto', ...style }} />
 }

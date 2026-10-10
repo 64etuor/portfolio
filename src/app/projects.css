@@ -261,7 +261,7 @@
   transition: border-color 0.18s, transform 0.18s;
 }
 .pj-card:hover { border-color: color-mix(in oklab, var(--pj-acc) 45%, var(--pj-line)); transform: translateY(-2px); }
-.pj-card-thumb { aspect-ratio: 16 / 10; background: #000; object-fit: cover; width: 100%; border-bottom: 1px solid var(--pj-line); }
+.pj-card-thumb { aspect-ratio: 16 / 10; background: #000; object-fit: cover; width: 100%; height: auto; border-bottom: 1px solid var(--pj-line); }
 .pj-card-body { padding: 15px 16px 17px; display: flex; flex-direction: column; gap: 7px; }
 .pj-card-eyebrow { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: var(--track-label); font-variant-numeric: tabular-nums; color: var(--pj-acc); text-transform: uppercase; }
 .pj-card-title { font-family: var(--font-serif); font-size: var(--fs-lg); font-weight: 600; letter-spacing: var(--track-heading); color: #eef1f4; margin: 0; line-height: var(--lh-tight); }

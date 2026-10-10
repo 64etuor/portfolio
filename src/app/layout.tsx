@@ -43,6 +43,8 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
 }
 
+const ON_VERCEL = Boolean(process.env.VERCEL)
+
 const personJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Person',
@@ -92,8 +94,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               skip target is a <div> — a wrapping <main> here would create duplicate/
               nested main landmarks. One <main> per page stays owned by the page. */}
           <div id="main">{children}</div>
-          <SpeedInsights />
-          <Analytics />
+          {/* The beacons' /_vercel/* scripts only exist on Vercel's edge; anywhere else
+              (local `next start`, self-hosting) they 404 and log console errors. */}
+          {ON_VERCEL && <SpeedInsights />}
+          {ON_VERCEL && <Analytics />}
         </LocaleProvider>
       </body>
     </html>

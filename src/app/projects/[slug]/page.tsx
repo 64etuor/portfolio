@@ -1,4 +1,5 @@
 import type { Metadata } from 'next'
+import { pageMetadata } from '../../seo'
 import type { CSSProperties } from 'react'
 import { notFound } from 'next/navigation'
 import { enabledProjects, projectBySlug } from '@content/projects'
@@ -15,7 +16,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const p = projectBySlug(slug)
   if (!p) return {}
   const desc = p.summary || `${p.hero.company} · ${p.hero.period} · ${p.hero.title}`
-  return { title: `${p.hero.title} · Project`, description: desc }
+  return pageMetadata({ title: `${p.hero.title} · Project`, description: desc, path: `/projects/${p.slug}` })
 }
 
 export default async function ProjectPage({ params }: { params: Promise<{ slug: string }> }) {

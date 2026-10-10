@@ -12,7 +12,8 @@
     "gen:resume": "tsx scripts/gen-resume.ts",
     "audit:react": "react-doctor ./src",
     "audit:lh": "lighthouse http://localhost:3000 --only-categories=performance,accessibility,best-practices,seo --preset=desktop --view",
-    "ingest:projects": "tsx scripts/ingest-projects.ts"
+    "ingest:projects": "tsx scripts/ingest-projects.ts",
+    "gen:image-dims": "node scripts/gen-image-dims.mjs"
   },
   "dependencies": {
     "@fontsource/cormorant-garamond": "^5.2.11",

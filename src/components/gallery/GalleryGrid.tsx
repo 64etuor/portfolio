@@ -32,7 +32,7 @@ export function GalleryGrid({ cards }: { cards: GalleryCard[] }) {
         return (
           <article key={card.file} className={`${styles.card}${film ? ` ${styles.cardFilm}` : ''}`}>
             <div className={styles.bar}>
-              <span className={styles.tt}>{t(card.title)}</span>
+              <h2 className={styles.tt}>{t(card.title)}</h2>
               <span className={styles.tag}>{t(card.tag)}</span>
             </div>
             <div className={styles.desc}>{t(card.desc)}</div>

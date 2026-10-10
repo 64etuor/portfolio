@@ -16,13 +16,14 @@ interface GalleryPageShellProps {
 export function GalleryPageShell({ title, sub, footer, footerValues, children }: GalleryPageShellProps) {
   const { locale, t } = useLocale()
   return (
-    <div className={styles.page}>
+    // The page's single <main> landmark (root layout deliberately renders none).
+    <main className={styles.page}>
       <header>
         <h1 className={styles.h1}>{t(title)}</h1>
         <p className={styles.sub}>{t(sub)}</p>
       </header>
       {children}
       <footer className={styles.footer}>{footerValues ? formatCopy(footer, locale, footerValues) : t(footer)}</footer>
-    </div>
+    </main>
   )
 }

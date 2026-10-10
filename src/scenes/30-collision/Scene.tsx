@@ -328,7 +328,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
                 (tk.ko ? '600 ' : '400 ') +
                 fpx +
                 "px " +
-                (tk.ko ? "'Pretendard Variable', sans-serif" : "'JetBrains Mono', monospace")
+                (tk.ko ? "'Pretendard Variable', sans-serif" : "'JetBrains Mono', 'Pretendard Variable', monospace")
               g.fillText(tk.txt, tx, y)
             }
           }
@@ -340,7 +340,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           (tk.ko ? '600 ' : '400 ') +
           fpx +
           "px " +
-          (tk.ko ? "'Pretendard Variable', sans-serif" : "'JetBrains Mono', monospace")
+          (tk.ko ? "'Pretendard Variable', sans-serif" : "'JetBrains Mono', 'Pretendard Variable', monospace")
         g.shadowColor = rgba(col, 0.5)
         g.shadowBlur = 8
         g.fillStyle = rgba(col, 0.9)

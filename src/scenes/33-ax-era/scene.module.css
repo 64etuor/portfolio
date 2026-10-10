@@ -9,7 +9,7 @@
   inset: 0;
   overflow: hidden;
   color: var(--scene-phos);
-  font-family: 'Pretendard Variable', 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
   background: radial-gradient(135% 100% at 50% 30%, #0c0c0e 0%, #070708 52%, #030303 100%);
@@ -34,7 +34,7 @@
   left: 5.4%;
   top: 12.2%;
   pointer-events: none;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: clamp(10px, 0.82vw, 15px);
   letter-spacing: 0.42em;
   color: var(--scene-phos-dim);
@@ -58,7 +58,7 @@
   justify-content: center;
   align-items: center;
   gap: 18px;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 11px;
   letter-spacing: 5px;
   color: var(--scene-phos-dim);
@@ -99,7 +99,7 @@
   justify-content: center;
   gap: 16px;
   align-items: center;
-  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 10.5px;
   letter-spacing: 3px;
   color: var(--scene-phos-deep);
@@ -133,7 +133,7 @@
 }
 
 .l1 {
-  font-family: 'Pretendard Variable', 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-weight: 800;
   font-size: clamp(34px, 5.6vw, 92px);
   letter-spacing: -1.6px;
@@ -196,7 +196,7 @@
 }
 
 .l2 {
-  font-family: 'Pretendard Variable', 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-weight: 600;
   font-size: clamp(16px, 2.3vw, 38px);
   letter-spacing: -0.4px;
@@ -219,4 +219,11 @@
 .hot {
   color: #cfe8ff;
   text-shadow: 0 0 18px rgba(78, 163, 240, 0.55), 0 0 46px rgba(78, 163, 240, 0.22);
+}
+
+/* 한글이 들어가는 요소는 자간 0.02em 이하 — EN 로케일(라틴 전용)은 위의 넓은 자간 유지 */
+.sceneId:lang(ko),
+.status:lang(ko),
+.footer:lang(ko) {
+  letter-spacing: 0.02em;
 }

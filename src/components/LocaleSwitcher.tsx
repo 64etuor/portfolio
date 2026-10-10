@@ -14,8 +14,10 @@ export function LocaleSwitcher({ className }: { className?: string }) {
           type="button"
           onClick={() => setLocale(option)}
           aria-pressed={locale === option}
-          aria-label={option === 'ko' ? t(SITE.locale.korean) : t(SITE.locale.english)}
-          style={{ minWidth: 46, minHeight: 42, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.36)', borderRadius: 4, background: locale === option ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.34)', color: '#fff', cursor: 'pointer', font: '600 12px/1 "DM Mono", ui-monospace, monospace', letterSpacing: '0.08em' }}
+          // Accessible name must contain the visible label ("KO"/"EN") — WCAG 2.5.3
+          // label-in-name — so voice-control users can say what they see.
+          aria-label={`${option.toUpperCase()} — ${option === 'ko' ? t(SITE.locale.korean) : t(SITE.locale.english)}`}
+          style={{ minWidth: 46, minHeight: 42, padding: '10px 12px', border: '1px solid rgba(255,255,255,0.36)', borderRadius: 4, background: locale === option ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.34)', color: '#fff', cursor: 'pointer', font: '600 var(--fs-sm)/1 var(--font-mono)', letterSpacing: '0.08em' }}
         >
           {option.toUpperCase()}
         </button>

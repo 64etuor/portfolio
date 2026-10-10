@@ -67,6 +67,18 @@ type NavItem = { href: string; label: string; icon: ReactNode; primary?: boolean
 
 const TX_MS = 720
 
+const SR_ONLY: React.CSSProperties = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  padding: 0,
+  margin: -1,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+}
+
 /**
  * Landing — the portfolio home. A full-screen Spline robot (runtime) under the
  * film's dark CRT-noir tone. Pressing a nav button fires a transition: the robot
@@ -120,8 +132,10 @@ export function Landing() {
   function onLoad(app: Application) {
     splineRef.current = app
     setRobotIn(true)
-    // expose for scene inspection (objects / variables / events) during dev
-    ;(window as unknown as { __spline?: Application }).__spline = app
+    // expose for scene inspection (objects / variables / events) — dev only
+    if (process.env.NODE_ENV !== 'production') {
+      ;(window as unknown as { __spline?: Application }).__spline = app
+    }
   }
 
   // Scene warp on navigation: dolly the camera ("Camera 2", z≈1000) in toward the
@@ -198,10 +212,19 @@ export function Landing() {
       <LandingAmbientWords />
 
       <div className="lp-content">
+        {/* The visible hero copy below is canvas-painted (letter physics), which AT and
+            crawlers cannot read — so the same copy ships as real, visually-hidden text:
+            the page's single <h1> (name) plus its tagline. */}
+        <h1 style={SR_ONLY}>
+          {heroName} — {heroPortfolio}
+        </h1>
+        <p style={SR_ONLY}>
+          {heroItsMe} {heroTagline}
+        </p>
         {/* all landing text rendered with the pretext letter-physics, 2.5s in */}
         <PretextText
           text={heroPortfolio}
-          fontFamily="'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace"
+          fontFamily="'JetBrains Mono', 'Pretendard Variable', monospace"
           fontWeight={500}
           fontPx={11}
           letterSpacing={5}
@@ -215,7 +238,7 @@ export function Landing() {
             이름 위에서 같은 pretext 등장 효과로 조립 (필름 엔딩과 자연스럽게 연결) */}
         <PretextText
           text={heroItsMe}
-          fontFamily="'Playfair Display', 'Noto Serif KR', serif"
+          fontFamily="'Playfair Display', 'Noto Serif KR', 'Pretendard Variable', serif"
           fontStyle="italic"
           fontWeight={500}
           fontPx={33}
@@ -228,7 +251,7 @@ export function Landing() {
         />
         <PretextText
           text={heroName}
-          fontFamily="'Playfair Display', 'Noto Serif KR', serif"
+          fontFamily="'Playfair Display', 'Noto Serif KR', 'Pretendard Variable', serif"
           fontWeight={600}
           fontPx={62}
           letterSpacing={5}
@@ -240,7 +263,7 @@ export function Landing() {
         />
         <PretextText
           text={heroTagline}
-          fontFamily="'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace"
+          fontFamily="'JetBrains Mono', 'Pretendard Variable', monospace"
           fontWeight={500}
           fontPx={16}
           letterSpacing={0}

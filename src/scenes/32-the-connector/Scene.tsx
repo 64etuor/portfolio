@@ -3,6 +3,7 @@
 import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
+import { canvasFont } from '../_host/fonts'
 import { useSceneReady } from '../_host/useSceneReady'
 import { rgba, mix } from '../_host/color'
 import type { RGB } from '../_host/color'
@@ -267,15 +268,15 @@ function drawChasm(ctx: CanvasRenderingContext2D, W: number, H: number, time: nu
 function drawLabels(ctx: CanvasRenderingContext2D, leftNodes: NodePoint[], rightNodes: NodePoint[], warm: number) {
   const col = mix([120, 120, 120], TEAL, warm)
   ctx.save()
-  ctx.font = "600 13px var(--mono), monospace"
+  ctx.font = canvasFont(600, 13, 'mono')
   ctx.textAlign = 'center'
   const lTop = leftNodes[0]
   const rTop = rightNodes[0]
   ctx.fillStyle = rgba(col, 0.55 + 0.3 * warm)
-  ctx.font = "700 15px 'JetBrains Mono', monospace"
+  ctx.font = "700 15px 'JetBrains Mono', 'Pretendard Variable', monospace"
   ctx.fillText('현장', lTop.x, lTop.y - 26)
   ctx.fillText('기술', rTop.x, rTop.y - 26)
-  ctx.font = "500 9.5px 'JetBrains Mono', monospace"
+  ctx.font = "500 9.5px 'JetBrains Mono', 'Pretendard Variable', monospace"
   ctx.fillStyle = rgba(col, 0.4 + 0.25 * warm)
   ctx.fillText('FIELD · 공정·설비·사람', lTop.x, lTop.y - 12)
   ctx.fillText('TECH · 데이터·AI·시스템', rTop.x, rTop.y - 12)

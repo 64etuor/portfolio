@@ -18,8 +18,8 @@ export function Hero({ project }: { project: ProjectContent }) {
       {summary ? <p className="pj-summary">{summary}</p> : null}
       {chips.length > 0 ? (
         <ul className="pj-kpis">
-          {chips.map((m, i) => (
-            <li className="pj-kpi" key={i}>
+          {chips.map((m) => (
+            <li className="pj-kpi" key={`${m.label}|${m.value}`}>
               <span className="pj-kpi-v">{m.value}</span>
               {m.label ? <span className="pj-kpi-l">{m.label}</span> : null}
             </li>

@@ -10,11 +10,7 @@ import '@fontsource/share-tech-mono/400.css'
 import '@fontsource/dm-mono/400.css'
 import '@fontsource/dm-mono/500.css'
 
-// IBM Plex Sans KR — KR UI (sonar-waterfall, radar-sonar, db-architecture, mes-console)
-import '@fontsource/ibm-plex-sans-kr/400.css'
-import '@fontsource/ibm-plex-sans-kr/500.css'
-import '@fontsource/ibm-plex-sans-kr/600.css'
-import '@fontsource/ibm-plex-sans-kr/700.css'
+// 한글은 전부 Pretendard Variable(전역)로 통일 — 씬별 한글 폰트(IBM Plex Sans KR) 제거.
 
 // IBM Plex Mono — secondary mono (sonar-waterfall, radar-sonar)
 import '@fontsource/ibm-plex-mono/400.css'

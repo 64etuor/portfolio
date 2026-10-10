@@ -21,14 +21,45 @@
   --shell-btn-hover-glow: 0 0 14px rgba(224, 122, 95, 0.2);
   --shell-btn-transition-duration: 160ms;
   --shell-btn-transition-easing: ease;
-  --font-sans: 'Pretendard Variable', Pretendard, 'Apple SD Gothic Neo', system-ui, sans-serif;
-  --font-serif: 'Cormorant Garamond', 'Noto Serif KR', serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  /* ── 타이포그래피 토큰 (Windows·macOS 동일 렌더) ──
+     한글은 항상 Pretendard Variable 로 떨어지게 스택을 구성한다(OS 폰트 이름 금지). */
+  --font-sans: 'Pretendard Variable', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Pretendard Variable', monospace;
+  --font-serif: 'Cormorant Garamond', 'Noto Serif KR', 'Pretendard Variable', serif;
+  --font-display: 'Playfair Display', 'Noto Serif KR', 'Pretendard Variable', serif;
+  /* 크기 스케일 */
+  --fs-2xs: 10px;
+  --fs-xs: 11px;
+  --fs-sm: 12.5px;
+  --fs-base: 14px;
+  --fs-md: 15.5px;
+  --fs-lg: 19px;
+  --fs-xl: 24px;
+  --fs-2xl: clamp(28px, 4vw, 36px);
+  --fs-3xl: clamp(32px, 5vw, 48px);
+  --lh-tight: 1.2;
+  --lh-snug: 1.4;
+  --lh-body: 1.65;
+  /* 자간: 넓은 트래킹은 라틴 대문자 라벨에만. 한글이 들어갈 수 있는 요소는 --track-kr. */
+  --track-label: 0.14em;
+  --track-kr: 0;
+  --track-heading: -0.015em;
+}
+
+@layer utilities {
+  /* 숫자 정렬: 지표·표·카운터 */
+  .num {
+    font-variant-numeric: tabular-nums;
+  }
 }
 
 @layer base {
   html {
     -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    font-kerning: normal;
     color-scheme: dark;
   }
   body {
@@ -75,9 +106,10 @@
   align-items: center;
   gap: 7px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 500;
-  letter-spacing: 0.16em;
+  /* 라벨은 양 로케일 모두 라틴 전용(content/site.ts chrome.*) → 라벨 트래킹 허용 */
+  letter-spacing: var(--track-label);
   text-transform: uppercase;
   color: var(--shell-btn-muted);
   background: transparent;
@@ -136,8 +168,8 @@
 }
 /* Brand wordmark (left) — elegant serif */
 .site-bar__brand {
-  font-family: 'Playfair Display', var(--font-serif), serif;
-  font-size: clamp(15px, 1.5vw, 19px);
+  font-family: var(--font-display);
+  font-size: clamp(15px, 1.5vw, var(--fs-lg));
   font-weight: 600;
   letter-spacing: 0.01em;
   color: var(--ink);
@@ -152,6 +184,8 @@
   left: 50%;
   transform: translateX(-50%);
 }
+/* 우측 액션(PRINT·Open)은 언어 스위처 옆으로 — space-between 이 가운데로 보내 HOME 과 겹치던 문제 */
+.site-bar .home ~ .chrome-btn { margin-left: auto; }
 @media print { .site-bar { display: none !important; } }
 
 /* ===== 전역 라우트 전환 (app/template.tsx) — 매 네비게이션마다 재생되는 CRT 컷 ===== */

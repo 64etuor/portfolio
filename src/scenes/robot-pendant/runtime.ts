@@ -156,8 +156,7 @@ export function selectLine(rt: Runtime, i: number, fromUser: boolean) {
     `<div class="tpcard"><div class="tph">PLC 시퀀스 · 취출/단축 <span class="chk">STEP/조건/출력</span></div><div class="plcwrap"><div class="plcscroll">${plcRowsHtml(rt)}</div></div></div>` +
     `</div>` +
     `<div class="regs">${wp.regs
-      .filter((r) => r[0])
-      .map((r) => `<span class="reg">${r[0]}${r[1] ? ` <b>${r[1]}</b>` : ''}</span>`)
+      .map((r) => (r[0] ? `<span class="reg">${r[0]}${r[1] ? ` <b>${r[1]}</b>` : ''}</span>` : ''))
       .join('')}</div>`
 
   setText(rt, 'mi-cur', `P[${wp.id}]`)

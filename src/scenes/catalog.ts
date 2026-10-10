@@ -57,15 +57,18 @@ export const SCENE_CATALOG = [
 
   // ── 프로젝트 + 경력 — 프로젝트(자기주도) ──
   { key: 'pipeline-dag', file: f('pipeline-dag'), slug: 'pipeline-dag', title: 'Notion OS — 조직 운영 시스템', bg: '#0c0e12', id: '03', domain: '프로젝트', registry: true, gallery: true },
-  { key: 'radar-sonar', file: f('radar-sonar'), slug: 'radar-sonar', title: 'Work Radar — AI 워크플로우 콕핏', bg: '#060a08', id: '13', domain: '프로젝트', registry: true, gallery: true },
+  { key: 'x-work-radar-rails', file: f('x-work-radar-rails'), slug: 'work-radar', title: 'Work Radar · 결정 레일과 자동화 레일', bg: '#050706', id: '13', domain: '프로젝트', registry: true, gallery: true },
 
   // ── 프로젝트 + 경력 — 경력(제조 3社) ──
   { key: 'instrument-rack', file: f('instrument-rack'), slug: 'instrument-rack', title: '생산관리 · 원가 제1원칙', bg: '#0b0d0f', id: '20', domain: '제조·원가', registry: true, gallery: true },
-  { key: 'sonar-waterfall', file: f('sonar-waterfall'), slug: 'sonar-waterfall', title: '초음파 용착 DOE', bg: '#060a10', id: '18', domain: '제조·용착', registry: true, gallery: true },
+  { key: 'x-weld-doe', file: f('x-weld-doe'), slug: 'weld-doe', title: '초음파 용착 DOE', bg: '#060508', id: '18', domain: '제조·용착', registry: true, gallery: true },
+  { key: 'x-lob-balance', file: f('x-lob-balance'), slug: 'line-balance', title: 'LOB 라인 밸런싱', bg: '#050607', id: '10', domain: '제조·라인', registry: true, gallery: true },
   { key: 'scada-hmi', file: f('scada-hmi'), slug: 'scada-hmi', title: 'SCM · 재고 최적화', bg: '#0e1217', id: '15', domain: '물류·SCM', registry: true, gallery: true },
   { key: 'gantt-cpm', file: f('gantt-cpm'), slug: 'gantt-cpm', title: '커리어 타임라인 — 경력 + 프로젝트', bg: '#0c0f14', id: '17', domain: '경력 종합', registry: true, gallery: true },
-  { key: 'mes-console', file: f('mes-console'), slug: 'mes-console', title: 'MES 구축', bg: '#0a0a0c', id: '01', domain: '제조·MES', registry: true, gallery: true },
-  { key: 'cmm-metrology', file: f('cmm-metrology'), slug: 'cmm-metrology', title: 'CMM 정밀 측정 · GD&T 검사', bg: '#0a0e14', id: '12', domain: '계측·CMM', registry: true, gallery: true },
+  { key: 'x-mes-line', file: f('x-mes-line'), slug: 'mes-line', title: '신제품 라인 MES 자체 개발', bg: '#04070a', id: '01', domain: '제조·MES', registry: true, gallery: true },
+  { key: 'x-sn-trace', file: f('x-sn-trace'), slug: 'sn-trace', title: '공정 추적성 · S/N 관리', bg: '#05060a', id: '04', domain: '품질·추적성', registry: true, gallery: true },
+  { key: 'x-excel-to-db', file: f('x-excel-to-db'), slug: 'excel-to-db', title: '엑셀 → DB 전환', bg: '#06070a', id: '08', domain: '데이터·DB', registry: true, gallery: true },
+  { key: 'x-vision-reverse', file: f('x-vision-reverse'), slug: 'vision-inspection', title: '비전 검사 · 셀 역삽 검출', bg: '#040506', id: '12', domain: '품질·검사', registry: true, gallery: true },
 
   // ── 스킬 ──
   { key: 'weld-thermal', file: f('weld-thermal'), slug: 'weld-thermal', title: '산업 용접 기술', bg: '#0a0410', id: '11', domain: '공정기술', registry: true, gallery: true },
@@ -76,15 +79,13 @@ export const SCENE_CATALOG = [
   // ── 개발(갤러리 dev 영역 전용) ──
   { key: 'ide-coding', file: f('ide-coding'), slug: 'ide-coding', title: 'IDE 코딩 화면', bg: '#050608', gallery: true },
 
-  // ── 철학 ──
-  { key: 'digital-twin', file: f('digital-twin'), slug: 'digital-twin', title: '도메인 지식의 미래 유용성', bg: '#0b0b0d', id: '06', domain: '크로스도메인', registry: true, gallery: true },
-  { key: 'oscilloscope', file: f('oscilloscope'), slug: 'oscilloscope', title: '품질에 철저한 성격', bg: '#0a0e0c', id: '09', domain: '품질', registry: true, gallery: true },
+  // ── 크로스도메인 ──
+  { key: 'x-smart-factory', file: f('x-smart-factory'), slug: 'smart-factory', title: '스마트 팩토리 도입', bg: '#05070a', id: '06', domain: '제조·스마트팩토리', registry: true, gallery: true },
 
   // ── 지식관리 ──
-  { key: 'ai-latent', file: f('ai-latent'), slug: 'ai-latent', title: '볼트 semantic map', bg: '#07080d', id: '04', domain: '지식·AI', registry: true, gallery: true },
   { key: 'agent-governance', file: f('agent-governance'), slug: 'agent-governance', title: 'Boule 거버넌스', bg: '#0a0d0f', id: '23', domain: 'AI 거버넌스', registry: true, gallery: true },
   { key: 'decision-os', file: f('decision-os'), slug: 'decision-os', title: 'Decision OS', bg: '#0a0d12', id: '25', domain: '의사결정', registry: true, gallery: true },
-  { key: 'graphrag', file: f('graphrag'), slug: 'graphrag', title: 'GraphRAG / 신경-기호', bg: '#080a0f', id: '26', domain: 'AI', registry: true, gallery: true },
+  { key: 'x-kip-evidence', file: f('x-kip-evidence'), slug: 'kip-evidence', title: 'KIP · 근거 위치 검색', bg: '#05060a', id: '26', domain: '지식·검색', registry: true, gallery: true },
 
   // ── 보류(parked) — 홈/릴 제외 ──
   { key: 'gcode-printer', file: f('gcode-printer'), slug: 'gcode-printer', title: 'G-code 3D 프린터 빌드', bg: '#0e1116', id: '07', domain: '적층제조', registry: true, gallery: true },
@@ -103,3 +104,6 @@ export function catalogEntry(idOrSlug: string): SceneEntry | undefined {
     (s) => s.key === base || s.slug === base || s.id === idOrSlug,
   )
 }
+
+/** public/lab 에 정적 HTML 원본이 있는 씬인지. three.js 씬(x-*)은 React 전용이라 없다. */
+export const hasLabPage = (s: { file: string }): boolean => !s.file.startsWith('x-')

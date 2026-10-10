@@ -1,0 +1,312 @@
+.canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-family: var(--font-mono, 'JetBrains Mono'), 'JetBrains Mono', 'Pretendard Variable', monospace;
+  color: #d7d7d7;
+  --teal: #4fe0c4;
+  --blue: #4ab3cc;
+  --amber: #d98a3d;
+  --red: #ff5a4f;
+  --dim: #8d8d8d;
+  container-type: size;
+}
+
+/* ── 투영 라벨 ── */
+.label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+  --c: #d7d7d7;
+}
+.label[data-tone='legacy'] {
+  --c: var(--amber);
+}
+.label[data-tone='tcp'],
+.label[data-tone='client'] {
+  --c: var(--blue);
+}
+.label[data-tone='opc'],
+.label[data-tone='core'],
+.label[data-tone='dash'] {
+  --c: var(--teal);
+}
+
+.tag {
+  position: absolute;
+  transform: translate(-50%, -100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  white-space: nowrap;
+  margin-top: -6px;
+  padding: 3px 7px 4px;
+  background: rgba(4, 7, 10, 0.62);
+  border-radius: 2px;
+}
+.label[data-pos='below'] .tag {
+  transform: translate(-50%, 0);
+  margin-top: 8px;
+}
+.label[data-pos='below'] .tag::after {
+  bottom: auto;
+  top: -8px;
+  height: 8px;
+}
+.label[data-pos='right'] .tag {
+  transform: translate(10px, -50%);
+  margin-top: 0;
+  align-items: flex-start;
+  border-left: 1px solid var(--c);
+}
+.label[data-pos='right'] .tag::after {
+  display: none;
+}
+.label[data-pos='left'] .proto {
+  transform: translate(calc(-100% - 10px), -50%);
+}
+.tag::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 50%;
+  width: 1px;
+  height: 6px;
+  background: var(--c);
+  opacity: 0.7;
+}
+.tagMain {
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--c);
+  text-shadow: 0 0 10px color-mix(in srgb, var(--c) 55%, transparent);
+}
+.tagSub {
+  font-size: 9.5px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+/* EN 서브라벨은 대문자 라틴 전용 → 넓은 자간 */
+.hud[data-locale='en'] .tagSub {
+  letter-spacing: 0.14em;
+}
+
+.proto {
+  position: absolute;
+  transform: translate(10px, -50%);
+  white-space: nowrap;
+  padding: 3px 8px;
+  border: 1px solid color-mix(in srgb, var(--c) 55%, transparent);
+  background: rgba(4, 7, 10, 0.55);
+  border-radius: 2px;
+}
+.proto .tagMain {
+  font-size: 11px;
+}
+
+/* ── 타이틀 ── */
+.title {
+  position: absolute;
+  left: 44px;
+  top: 38px;
+}
+.org {
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  color: var(--dim);
+}
+.titleMain {
+  margin-top: 8px;
+  font-family: var(--font-sans);
+  font-size: 19px;
+  font-weight: 600;
+  letter-spacing: var(--track-heading);
+  line-height: var(--lh-tight);
+  color: #e6e6e6;
+}
+.product {
+  margin-top: 5px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  letter-spacing: 0.01em;
+  color: #a9b3b6;
+}
+.meta {
+  margin-top: 6px;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  color: var(--teal);
+}
+
+/* ── 예산 레저(오프닝) ── */
+.ledger {
+  position: absolute;
+  left: 44px;
+  top: 50%;
+  margin-top: -40px;
+  width: 400px;
+  padding: 18px 20px 14px;
+  border: 1px solid rgba(215, 215, 215, 0.18);
+  border-left: 2px solid rgba(215, 215, 215, 0.5);
+  background: linear-gradient(90deg, rgba(4, 7, 10, 0.86), rgba(4, 7, 10, 0.55));
+  backdrop-filter: blur(3px);
+  transform-origin: left top;
+  will-change: transform, opacity;
+}
+.ledgerHead {
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  color: var(--dim);
+}
+.ledgerSub {
+  margin: 6px 0 12px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  color: #bdbdbd;
+}
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 9px 0;
+  border-top: 1px dashed rgba(215, 215, 215, 0.16);
+  font-size: 13.5px;
+}
+.over {
+  font-variant-numeric: tabular-nums;
+  color: var(--amber);
+}
+.mesVal {
+  display: inline-flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.missing {
+  color: var(--red);
+  opacity: var(--flick, 1);
+  text-shadow: 0 0 12px rgba(255, 90, 79, 0.65);
+  font-weight: 600;
+}
+.built {
+  color: var(--teal);
+  opacity: var(--stamp, 0);
+  transform: translateX(calc((1 - var(--stamp, 0)) * 8px));
+  text-shadow: 0 0 12px rgba(79, 224, 196, 0.6);
+}
+.row[data-state='built'] .missing {
+  color: var(--dim);
+  text-shadow: none;
+  text-decoration: line-through;
+  font-weight: 400;
+}
+.row[data-state='missing'] {
+  background: linear-gradient(90deg, rgba(255, 90, 79, 0.1), transparent 70%);
+}
+
+/* ── 헤드라인 ── */
+.headline {
+  position: absolute;
+  left: 44px;
+  bottom: 74px;
+  opacity: 0;
+}
+.headMain {
+  font-family: var(--font-sans);
+  font-size: 30px;
+  font-weight: 600;
+  letter-spacing: var(--track-heading);
+  line-height: var(--lh-tight);
+  color: #f0f0f0;
+  text-shadow: 0 0 22px rgba(79, 224, 196, 0.35);
+}
+.headSub {
+  margin-top: 8px;
+  font-size: 13px;
+  color: #b8b8b8;
+  font-family: var(--font-sans);
+  letter-spacing: 0.02em;
+}
+
+/* ── 스택 칩 ── */
+.chips {
+  position: absolute;
+  left: 44px;
+  right: 44px;
+  bottom: 30px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip {
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  padding: 4px 9px;
+  border: 1px solid rgba(141, 141, 141, 0.25);
+  color: rgba(141, 141, 141, 0.55);
+  border-radius: 2px;
+  transition:
+    color 0.35s,
+    border-color 0.35s,
+    background 0.35s;
+}
+.chip[data-on='1'] {
+  color: #e2e2e2;
+  border-color: rgba(79, 224, 196, 0.6);
+  background: rgba(79, 224, 196, 0.08);
+}
+
+@media (max-width: 760px) {
+  .ledger {
+    width: 300px;
+    left: 20px;
+  }
+  .title,
+  .headline,
+  .chips {
+    left: 20px;
+  }
+  .headMain {
+    font-size: 24px;
+  }
+  .tagSub {
+    display: none;
+  }
+}
+
+/* 갤러리 카드(작은 컨테이너): 타이틀 + 헤드라인만 */
+@container (max-width: 699px) {
+  .label,
+  .ledger,
+  .chips,
+  .org,
+  .product,
+  .meta,
+  .headSub {
+    display: none;
+  }
+  .title {
+    left: 16px;
+    top: 14px;
+  }
+  .titleMain {
+    margin-top: 0;
+    font-size: 15px;
+  }
+  .headline {
+    left: 16px;
+    bottom: 16px;
+  }
+  .headMain {
+    font-size: 22px;
+  }
+}

@@ -363,14 +363,18 @@ export function buildTrace(ctx: SceneCtx): void {
   if (!nodes.length) return
   const start = nodes.findIndex((node) => node.label === 'LLM Wiki')
   const nextTrace = [start < 0 ? 0 : start]
+  const visited = new Set(nextTrace)
   for (let h = 0; h < 3; h++) {
     const last = nextTrace[nextTrace.length - 1]
-    const cands = edges
-      .filter((edge) => edge[0] === last || edge[1] === last)
-      .map((edge) => (edge[0] === last ? edge[1] : edge[0]))
-      .filter((node) => !nextTrace.includes(node))
+    const cands: number[] = []
+    for (const [a, b] of edges) {
+      const other = a === last ? b : b === last ? a : -1
+      if (other >= 0 && !visited.has(other)) cands.push(other)
+    }
     if (!cands.length) break
-    nextTrace.push(cands[Math.floor(Math.random() * cands.length)])
+    const pick = cands[Math.floor(Math.random() * cands.length)]
+    nextTrace.push(pick)
+    visited.add(pick)
   }
   ctx.trace.current = nextTrace
   ctx.traceProg.current = 0
@@ -379,12 +383,20 @@ export function buildTrace(ctx: SceneCtx): void {
 export function fireTrace(ctx: SceneCtx): void {
   const nodes = ctx.graphNodes.current
   if (!nodes.length || !ctx.trace.current.length) return
-  const labels = ctx.trace.current.map((i) => nodes[i]?.label).filter(Boolean)
   const gtrace = get(ctx, 'gtrace')
-  if (gtrace) {
-    gtrace.innerHTML =
-      'multi-hop: ' + labels.map((label) => `<b>${label}</b>`).join(' → ') + ' · cite: LLM Wiki schema-layer'
+  if (!gtrace) return
+  // Built as DOM (text nodes + <b>) rather than an HTML string.
+  const parts: (string | Node)[] = ['multi-hop: ']
+  for (const i of ctx.trace.current) {
+    const label = nodes[i]?.label
+    if (!label) continue
+    if (parts.length > 1) parts.push(' → ')
+    const b = document.createElement('b')
+    b.textContent = label
+    parts.push(b)
   }
+  parts.push(' · cite: LLM Wiki schema-layer')
+  gtrace.replaceChildren(...parts)
 }
 
 export function stepLive(ctx: SceneCtx, now: number, dt: number): void {

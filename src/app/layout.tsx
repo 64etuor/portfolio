@@ -43,6 +43,8 @@ export const metadata: Metadata = {
   manifest: '/site.webmanifest',
 }
 
+const ON_VERCEL = Boolean(process.env.VERCEL)
+
 const personJsonLd = {
   '@context': 'https://schema.org',
   '@type': 'Person',
@@ -52,6 +54,20 @@ const personJsonLd = {
   description: PROFILE.identity.tagline,
   url: PROFILE.contact.url,
   sameAs: [PROFILE.contact.github, PROFILE.contact.githubPage],
+}
+
+// JSON.stringify does not HTML-escape: a `</script>` (or `<!--`) inside any string
+// value would break out of the <script> element. Escape the HTML-significant
+// characters and the JS line separators as \uXXXX — identical parsed JSON.
+const JSON_LD_ESCAPES: Record<string, string> = {
+  '<': '\\u003c',
+  '>': '\\u003e',
+  '&': '\\u0026',
+  '\u2028': '\\u2028',
+  '\u2029': '\\u2029',
+}
+function serializeJsonLd(value: unknown): string {
+  return JSON.stringify(value).replace(/[<>&\u2028\u2029]/g, (ch) => JSON_LD_ESCAPES[ch])
 }
 
 // Skip-link styles: visually-hidden until focused, then revealed top-left above
@@ -71,15 +87,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <SkipToContent />
           <script
             type="application/ld+json"
-            dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+            dangerouslySetInnerHTML={{ __html: serializeJsonLd(personJsonLd) }}
           />
           <SiteHeader />
           {/* Pages render their own <main> (landing / resume / some scenes), so this
               skip target is a <div> — a wrapping <main> here would create duplicate/
               nested main landmarks. One <main> per page stays owned by the page. */}
           <div id="main">{children}</div>
-          <SpeedInsights />
-          <Analytics />
+          {/* The beacons' /_vercel/* scripts only exist on Vercel's edge; anywhere else
+              (local `next start`, self-hosting) they 404 and log console errors. */}
+          {ON_VERCEL && <SpeedInsights />}
+          {ON_VERCEL && <Analytics />}
         </LocaleProvider>
       </body>
     </html>

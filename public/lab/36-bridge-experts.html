@@ -14,8 +14,8 @@
     --warm:#d98a3d;        /* 제조 · MANUFACTURING (씬6 충돌의 현업색) */
     --cold:#4ab3cc;        /* 디지털 · DIGITAL (씬6 충돌의 시스템색) */
     --conv:#4fe0c4;        /* 수렴 · 한 사람 (씬8 인사이트 청록의 연장) */
-    --kr:"Pretendard Variable","Pretendard","Pretendard Variable",-apple-system,sans-serif;
-    --mono:"JetBrains Mono",ui-monospace,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic",Menlo,Consolas,monospace;
+    --kr:'Pretendard Variable', sans-serif;
+    --mono:'JetBrains Mono', 'Pretendard Variable', monospace;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{height:100%;}
@@ -399,21 +399,21 @@
     ctx.save();
     ctx.textAlign='center';
     // 제조 (warm, left tip)
-    ctx.font="700 14px 'JetBrains Mono', monospace";
+    ctx.font="700 14px 'JetBrains Mono', 'Pretendard Variable', monospace";
     ctx.fillStyle=rgba(WARM,0.7+0.2*breath);
     ctx.shadowColor=rgba(WARM,0.4); ctx.shadowBlur=10;
     ctx.fillText("제조", lx, ly-9);
     ctx.shadowBlur=0;
-    ctx.font="500 9px 'JetBrains Mono', monospace";
+    ctx.font="500 9px 'JetBrains Mono', 'Pretendard Variable', monospace";
     ctx.fillStyle=rgba(WARM,0.45);
     ctx.fillText("MANUFACTURING", lx, ly+8);
     // 디지털 (cold, right tip)
-    ctx.font="700 14px 'JetBrains Mono', monospace";
+    ctx.font="700 14px 'JetBrains Mono', 'Pretendard Variable', monospace";
     ctx.fillStyle=rgba(COLD,0.7+0.2*(1-breath));
     ctx.shadowColor=rgba(COLD,0.4); ctx.shadowBlur=10;
     ctx.fillText("디지털", rx, ry-9);
     ctx.shadowBlur=0;
-    ctx.font="500 9px 'JetBrains Mono', monospace";
+    ctx.font="500 9px 'JetBrains Mono', 'Pretendard Variable', monospace";
     ctx.fillStyle=rgba(COLD,0.45);
     ctx.fillText("DIGITAL", rx, ry+8);
     ctx.restore();

@@ -5,8 +5,8 @@
   --phos-deep: var(--scene-phos-deep);
   --acc: #52e6cf;
   --acc-bright: #c7fbf1;
-  --kr: 'Pretendard Variable', 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
-  --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --kr: 'Pretendard Variable', sans-serif;
+  --mono: 'JetBrains Mono', 'Pretendard Variable', monospace;
 
   color: var(--phos);
   font-family: var(--kr);
@@ -197,4 +197,12 @@
 .l2 .acc {
   color: var(--acc-bright);
   text-shadow: 0 0 26px rgba(82, 230, 207, 0.6), 0 0 70px rgba(82, 230, 207, 0.3);
+}
+
+/* 한글이 들어가는 요소는 자간 0.02em 이하 — EN 로케일(라틴 전용)은 위의 넓은 자간 유지 */
+.kicker:lang(ko),
+.status:lang(ko),
+.bl:lang(ko),
+.footer .go:lang(ko) {
+  letter-spacing: 0.02em;
 }

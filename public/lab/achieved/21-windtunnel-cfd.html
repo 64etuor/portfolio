@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>박양하 · 풍동 / CFD 유동해석 (Wind Tunnel · Kiosk Thermal-Airflow)</title>
+<style>
+  :root{
+    --bg:#05080b;
+    --bg2:#0a1016;
+    --grid:#0f1a23;
+    --ink:#d3e7f3;
+    --steel:#7d99ad;
+    --tag:#5b7384;
+    --panel:#0a1118;
+    --panel-line:#1c2b37;
+    --flow:#34d6ff;
+    --hot:#ff4524;
+    --warm:#ffa524;
+    --cool:#1e6bff;
+    --ok:#33e58e;
+    --converge:#8cf25a;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+    font-family:"Helvetica Neue",Arial,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+    word-break:keep-all;overflow-x:hidden}
+  body{
+    background:
+      radial-gradient(1300px 760px at 72% -12%, #0c1a24 0%, transparent 60%),
+      repeating-linear-gradient(0deg, var(--grid) 0 1px, transparent 1px 36px),
+      repeating-linear-gradient(90deg, var(--grid) 0 1px, transparent 1px 36px),
+      var(--bg);
+  }
+  .wrap{max-width:1720px;margin:0 auto;padding:20px 24px 80px}
+
+  /* ---------- header cartouche ---------- */
+  header{
+    display:flex;justify-content:space-between;align-items:stretch;
+    border:1.5px solid var(--panel-line);
+    background:linear-gradient(180deg,#0c1721,#080e13);
+    margin-bottom:16px;
+  }
+  .cart-left{padding:14px 22px;border-right:1.5px solid var(--panel-line)}
+  .cart-left .iso{font-size:10.5px;letter-spacing:.34em;color:var(--tag);margin-bottom:7px}
+  .cart-left h1{margin:0;font-size:29px;letter-spacing:.02em;font-weight:800;color:#eaf7ff}
+  .cart-left h1 .en{color:var(--flow);font-weight:600;font-size:.62em;letter-spacing:.06em}
+  .cart-left .sub{margin-top:7px;font-size:12.5px;color:var(--steel);letter-spacing:.01em;max-width:640px;line-height:1.5}
+  .cart-right{display:flex;flex-wrap:wrap}
+  .cart-cell{padding:11px 16px;border-left:1px solid var(--panel-line);min-width:118px;display:flex;flex-direction:column;justify-content:center}
+  .cart-cell .k{font-size:9px;letter-spacing:.2em;color:var(--tag);text-transform:uppercase}
+  .cart-cell .v{font-size:14px;color:var(--ink);margin-top:4px;font-variant-numeric:tabular-nums}
+  .cart-cell .v.big{font-size:21px;font-weight:800;color:var(--flow)}
+  .cart-cell .v.big.warn{color:var(--hot)}
+  .pulse{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--ok);margin-right:6px;
+    box-shadow:0 0 8px var(--ok);animation:blink 1.6s infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* ---------- layout ---------- */
+  .stage{display:grid;grid-template-columns:1fr 360px;gap:14px;align-items:start}
+  .tunnel-box{position:relative;border:1.5px solid var(--panel-line);
+    background:#03060a;overflow:hidden}
+  canvas.flow{display:block;width:100%;height:auto}
+
+  /* overlay HUD on canvas */
+  .overlay{position:absolute;inset:0;pointer-events:none;font-variant-numeric:tabular-nums}
+  .hud-corner{position:absolute;font-size:10.5px;letter-spacing:.14em;color:#8fb6cc;
+    text-shadow:0 0 6px #000,0 0 2px #000}
+  .hud-tl{top:11px;left:13px}
+  .hud-tr{top:11px;right:13px;text-align:right}
+  .hud-bl{bottom:11px;left:13px}
+  .hud-tl .big,.hud-tr .big{font-size:14px;font-weight:800;color:#dff2ff;letter-spacing:.06em}
+  .scan{color:var(--tag);font-size:9.5px;letter-spacing:.22em;margin-top:3px}
+  .badge{display:inline-block;padding:2px 7px;border:1px solid var(--panel-line);
+    background:rgba(8,16,22,.75);margin-top:5px;letter-spacing:.18em;font-size:9px}
+  .badge.run{border-color:var(--ok);color:var(--ok)}
+  .badge.before{border-color:var(--hot);color:var(--hot)}
+
+  /* colorbar legend */
+  .colorbar{position:absolute;right:14px;bottom:14px;width:150px;pointer-events:none}
+  .cb-grad{height:11px;border:1px solid #25333f;
+    background:linear-gradient(90deg,#0a2a8a,#1e6bff,#19c4d6,#3ee58e,#cfe53e,#ffa524,#ff4524,#a8170a)}
+  .cb-labels{display:flex;justify-content:space-between;font-size:8.5px;color:#9db8cb;margin-top:3px;letter-spacing:.1em}
+  .cb-title{font-size:9px;letter-spacing:.2em;color:#8fb6cc;margin-bottom:4px;text-shadow:0 0 5px #000}
+
+  /* ---------- side panel ---------- */
+  .panel{border:1.5px solid var(--panel-line);background:var(--panel)}
+  .panel + .panel{margin-top:13px}
+  .panel h2{margin:0;padding:10px 14px;font-size:11.5px;letter-spacing:.26em;color:#bcd6e6;
+    border-bottom:1.5px solid var(--panel-line);background:#0a1219;text-transform:uppercase;
+    display:flex;justify-content:space-between;align-items:center}
+  .panel h2 .n{color:var(--tag);font-size:9px;letter-spacing:.18em}
+
+  .readout{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--panel-line)}
+  .ro{background:#08101a;padding:9px 11px}
+  .ro .k{font-size:8.5px;letter-spacing:.16em;color:var(--tag);text-transform:uppercase}
+  .ro .v{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink);margin-top:3px}
+  .ro .v small{font-size:10px;font-weight:600;color:var(--steel);margin-left:2px}
+  .ro .v.flow{color:var(--flow)}
+  .ro .v.warn{color:var(--hot)}
+  .ro .v.cool{color:var(--ok)}
+  .ro .v.warm{color:var(--warm)}
+
+  /* controls */
+  .ctl{padding:13px 14px}
+  .ctl-row{margin-bottom:14px}
+  .ctl-row:last-child{margin-bottom:2px}
+  .ctl-lab{display:flex;justify-content:space-between;font-size:10px;letter-spacing:.14em;color:var(--steel);margin-bottom:7px}
+  .ctl-lab b{color:var(--flow);font-weight:800;font-variant-numeric:tabular-nums}
+  input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:3px;
+    background:#1c2b37;outline:none;border-radius:2px}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;
+    width:15px;height:15px;border-radius:50%;background:var(--flow);cursor:pointer;
+    box-shadow:0 0 9px -1px var(--flow);border:2px solid #06121a}
+  input[type=range]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--flow);
+    cursor:pointer;border:2px solid #06121a}
+
+  /* cooling toggle (the delight) */
+  .cool-toggle{display:flex;border:1.5px solid var(--panel-line);overflow:hidden;cursor:pointer}
+  .cool-toggle div{flex:1;text-align:center;padding:11px 6px;font-size:11px;letter-spacing:.12em;
+    transition:.22s;background:#08101a;color:var(--steel);font-weight:700}
+  .cool-toggle .seg-before.act{background:linear-gradient(180deg,#3a0f08,#240a06);color:var(--hot);box-shadow:inset 0 0 0 1px var(--hot)}
+  .cool-toggle .seg-after.act{background:linear-gradient(180deg,#06281a,#04150f);color:var(--ok);box-shadow:inset 0 0 0 1px var(--ok)}
+  .cool-sub{font-size:8.5px;letter-spacing:.1em;color:var(--tag);margin-top:8px;line-height:1.45}
+
+  /* layer buttons */
+  .layers{display:flex;gap:6px;padding:0 14px 13px}
+  .layers button{flex:1;background:#08101a;border:1px solid var(--panel-line);color:var(--steel);
+    padding:8px 4px;font-size:10px;letter-spacing:.1em;cursor:pointer;font-family:inherit;font-weight:700;transition:.16s}
+  .layers button:hover{border-color:var(--flow);color:var(--ink)}
+  .layers button.on{border-color:var(--flow);color:var(--flow);background:#0c1c26;box-shadow:inset 0 0 0 1px var(--flow)}
+
+  /* residual mini-plot */
+  .resid{padding:12px 14px}
+  canvas.residplot{display:block;width:100%;height:108px;background:#060d14;border:1px solid #16222c}
+  .resid-leg{display:flex;gap:14px;font-size:9px;letter-spacing:.1em;color:var(--tag);margin-top:7px;flex-wrap:wrap}
+  .resid-leg span b{font-weight:800}
+  .conv-tag{font-size:9.5px;letter-spacing:.16em;margin-top:8px;padding:5px 8px;
+    border:1px dashed var(--panel-line);color:var(--steel);text-align:center}
+  .conv-tag.done{border-color:var(--converge);color:var(--converge)}
+
+  /* metrics strip */
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--panel-line);
+    border:1.5px solid var(--panel-line);margin-top:14px}
+  .metric{background:linear-gradient(180deg,#0a131b,#070d13);padding:14px 14px}
+  .metric .mk{font-size:9px;letter-spacing:.2em;color:var(--tag);text-transform:uppercase}
+  .metric .mv{font-size:27px;font-weight:800;color:var(--flow);margin-top:5px;font-variant-numeric:tabular-nums;line-height:1}
+  .metric .mv.warn{color:var(--hot)}
+  .metric .mv.ok{color:var(--ok)}
+  .metric .md{font-size:10px;color:var(--steel);margin-top:5px;letter-spacing:.02em}
+
+  /* bottom info row */
+  .botrow{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:14px}
+  .info{border:1.5px solid var(--panel-line);background:var(--panel)}
+  .info .body{padding:13px 16px;font-size:12px;color:var(--steel);line-height:1.7}
+  .info .body b{color:var(--ink);font-weight:700}
+  .chiplist{display:flex;flex-wrap:wrap;gap:7px;padding:0 16px 15px}
+  .chip{font-size:10.5px;letter-spacing:.06em;padding:5px 11px;border:1px solid var(--panel-line);
+    background:#08101a;color:#a9c6d8}
+  .chip.k{border-color:#2a4a3a;color:var(--ok)}
+  .specrow{display:flex;justify-content:space-between;padding:8px 16px;border-top:1px solid #11202a;font-size:11.5px}
+  .specrow:first-of-type{border-top:none}
+  .specrow .sk{color:var(--tag);letter-spacing:.08em}
+  .specrow .sv{color:var(--ink);font-variant-numeric:tabular-nums}
+
+  .contact{display:flex;gap:18px;flex-wrap:wrap;align-items:center;
+    border:1.5px solid var(--panel-line);background:linear-gradient(180deg,#0b141c,#070d12);
+    padding:14px 18px;margin-top:14px}
+  .contact .who{font-size:13px;font-weight:800;color:#eaf7ff;letter-spacing:.04em}
+  .contact a,.contact .c{font-size:12px;color:var(--steel);text-decoration:none;letter-spacing:.02em}
+  .contact a:hover{color:var(--flow)}
+  .contact .dot{color:var(--panel-line)}
+
+  footer{margin-top:22px;font-size:10px;color:var(--tag);letter-spacing:.16em;text-align:center}
+
+  @media (max-width:1180px){
+    .stage{grid-template-columns:1fr}
+    .panel.side2{display:none}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="cart-left">
+      <div class="iso">CFD SOLVER · INCOMPRESSIBLE · k-ε TURBULENCE · STEADY-STATE (모델/추정값)</div>
+      <h1>풍동 / CFD 유동해석 <span class="en">WIND TUNNEL · KIOSK THERMAL-AIRFLOW</span></h1>
+      <div class="sub">박양하 — 기구설계(CadQuery·Draftsight) / 공정 엔지니어. 해석 대상: Mirrorless 키오스크
+        <b style="color:#cfe7f5">kiosk_v3.py</b> 파라메트릭 모델 — 50" VESA 400 디스플레이 + Canon EOS R100 캐노피.
+        80mm 팬 좌측 흡기 / 우측 배기, 루버 gap 1.0mm, GPU 열부하 냉각 시나리오를 유동가시화.</div>
+    </div>
+    <div class="cart-right">
+      <div class="cart-cell"><span class="k">Solver</span><span class="v">FVM · SIMPLE</span></div>
+      <div class="cart-cell"><span class="k">Status</span><span class="v" id="hd-status"><span class="pulse"></span>SOLVING</span></div>
+      <div class="cart-cell"><span class="k">Re 수</span><span class="v big" id="hd-re">—</span></div>
+      <div class="cart-cell"><span class="k">GPU 표면온도</span><span class="v big warn" id="hd-gpu">—</span></div>
+    </div>
+  </header>
+
+  <div class="stage">
+    <!-- ================= TUNNEL CANVAS ================= -->
+    <div class="tunnel-box">
+      <canvas class="flow" id="flow" width="1180" height="700"></canvas>
+      <div class="overlay">
+        <div class="hud-corner hud-tl">
+          <div class="big">TEST SECTION · 1180 × 700 mm</div>
+          <div class="scan">INLET ◀ 좌측 흡기 80mm FAN · 배기 ▶ 우측</div>
+          <div class="badge run" id="ov-mode">MODE · COOLING ON (AFTER)</div>
+        </div>
+        <div class="hud-corner hud-tr">
+          <div class="big" id="ov-vel">U∞ = 2.4 m/s</div>
+          <div class="scan">FIELD · <span id="ov-field">VELOCITY MAGNITUDE</span></div>
+          <div class="scan" id="ov-iter">ITER 0 · res 1.0e+00</div>
+        </div>
+        <div class="hud-corner hud-bl">
+          <div class="scan">PROBE · GPU HEATSINK (열원)</div>
+          <div class="big" id="ov-probe" style="color:#ff7a4a">T_surf = —</div>
+        </div>
+        <div class="colorbar">
+          <div class="cb-title" id="cb-title">VELOCITY |U| (m/s)</div>
+          <div class="cb-grad"></div>
+          <div class="cb-labels"><span id="cb-lo">0</span><span id="cb-mid">2.5</span><span id="cb-hi">5.0</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ================= CONTROL / READOUT ================= -->
+    <div>
+      <div class="panel">
+        <h2>HUD READOUT <span class="n">LIVE · 모델값</span></h2>
+        <div class="readout">
+          <div class="ro"><div class="k">INLET 풍속 U∞</div><div class="v flow" id="ro-vel">2.40 <small>m/s</small></div></div>
+          <div class="ro"><div class="k">REYNOLDS 수</div><div class="v flow" id="ro-re">—</div></div>
+          <div class="ro"><div class="k">ΔP 압력강하</div><div class="v" id="ro-dp">—</div></div>
+          <div class="ro"><div class="k">유량 CFM</div><div class="v flow" id="ro-cfm">—</div></div>
+          <div class="ro"><div class="k">팬 RPM</div><div class="v" id="ro-rpm">—</div></div>
+          <div class="ro"><div class="k">GPU T_surf</div><div class="v warn" id="ro-gpu">—</div></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>CONTROL DECK <span class="n">PARAMETRIC</span></h2>
+        <div class="ctl">
+          <div class="ctl-row">
+            <div class="ctl-lab"><span>INLET 풍속 U∞</span><b id="lab-vel">2.4 m/s</b></div>
+            <input type="range" id="sl-vel" min="40" max="600" value="240">
+          </div>
+          <div class="ctl-row">
+            <div class="ctl-lab"><span>받음각 (ANGLE OF ATTACK)</span><b id="lab-aoa">0°</b></div>
+            <input type="range" id="sl-aoa" min="-18" max="18" value="0">
+          </div>
+          <div class="ctl-row">
+            <div class="ctl-lab"><span>STREAMLINE 밀도</span><b id="lab-den">표준</b></div>
+            <input type="range" id="sl-den" min="600" max="3200" value="1700">
+          </div>
+          <div class="ctl-row">
+            <div class="ctl-lab"><span>냉각 설계 (COOLING)</span><b id="lab-cool" style="color:var(--ok)">적용 후</b></div>
+            <div class="cool-toggle" id="cool-toggle">
+              <div class="seg-before" data-c="0">BEFORE · 미적용</div>
+              <div class="seg-after act" data-c="1">AFTER · 80mm+루버</div>
+            </div>
+            <div class="cool-sub">토글 시 GPU 핫스팟(적색)이 식고 후류(wake) streamline이 재정렬됩니다 — 80mm 흡배기 + 루버 gap 1.0mm 최적화 효과.</div>
+          </div>
+        </div>
+        <div class="layers">
+          <button class="on" data-f="vel" id="f-vel">|U| 속도장</button>
+          <button data-f="press" id="f-press">압력 P</button>
+          <button data-f="vort" id="f-vort">와도 ω</button>
+        </div>
+      </div>
+
+      <div class="panel side2">
+        <h2>RESIDUAL / 수렴 <span class="n">CONVERGENCE</span></h2>
+        <div class="resid">
+          <canvas class="residplot" id="resid" width="640" height="216"></canvas>
+          <div class="resid-leg">
+            <span style="color:#34d6ff"><b>—</b> continuity</span>
+            <span style="color:#ffa524"><b>—</b> momentum</span>
+            <span style="color:#33e58e"><b>—</b> energy</span>
+          </div>
+          <div class="conv-tag" id="conv-tag">SOLVING · residual ↓</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ================= METRICS (CFD / THERMAL READINGS) ================= -->
+  <div class="metrics">
+    <div class="metric"><div class="mk">Reynolds 수</div><div class="mv" id="mt-re">—</div><div class="md">U∞·L/ν · 난류 영역</div></div>
+    <div class="metric"><div class="mk">ΔP 압력강하</div><div class="mv" id="mt-dp">—</div><div class="md">루버 gap 1.0mm 기준</div></div>
+    <div class="metric"><div class="mk">유량 CFM</div><div class="mv ok" id="mt-cfm">—</div><div class="md">80mm 흡배기 팬</div></div>
+    <div class="metric"><div class="mk">GPU 표면온도</div><div class="mv warn" id="mt-gpu">—</div><div class="md">냉각 적용 후 하강</div></div>
+  </div>
+
+  <!-- ================= BOTTOM INFO ================= -->
+  <div class="botrow">
+    <div class="info">
+      <h2 style="margin:0;padding:10px 14px;font-size:11.5px;letter-spacing:.26em;color:#bcd6e6;border-bottom:1.5px solid var(--panel-line);background:#0a1219;text-transform:uppercase">설계 시나리오 · DESIGN NARRATIVE</h2>
+      <div class="body">
+        키오스크 내부 GPU는 밀폐 캐비닛에서 <b>핫스팟(적색 고온)</b>을 형성합니다. CadQuery 파라메트릭 모델
+        <b>kiosk_v3.py</b>에서 80mm 팬을 좌측 흡기 / 우측 배기로 배치하고, 판금 패널에 <b>루버(louver) gap 1.0mm</b>를
+        파라메트릭으로 컷하여 유로(flow path)를 확보했습니다. CFD 가시화 결과 흡기→히트싱크→배기 streamline이 정렬되며
+        후류 와류가 줄고 <b>GPU 표면온도가 하강</b>합니다. 광학축은 렌즈중심→얼굴 target, tilt ~18°로 별도 구속.
+        <span style="color:#7d99ad">(모든 수치는 모델·추정값 — 실측 풍동 데이터 아님)</span>
+      </div>
+      <div class="chiplist">
+        <span class="chip k">CadQuery</span><span class="chip k">Draftsight</span><span class="chip k">KS 판금설계</span>
+        <span class="chip k">비전검사</span><span class="chip">프레임 F01–F17</span><span class="chip">판금 P01–P16</span>
+        <span class="chip">KS D 3512 / 8334</span><span class="chip">RAL 7016 matte</span><span class="chip">VESA 400</span>
+      </div>
+    </div>
+    <div class="info">
+      <h2 style="margin:0;padding:10px 14px;font-size:11.5px;letter-spacing:.26em;color:#bcd6e6;border-bottom:1.5px solid var(--panel-line);background:#0a1219;text-transform:uppercase">PART SPEC · kiosk_v3</h2>
+      <div class="specrow"><span class="sk">디스플레이</span><span class="sv">50" · VESA 400</span></div>
+      <div class="specrow"><span class="sk">카메라</span><span class="sv">Canon EOS R100 캐노피</span></div>
+      <div class="specrow"><span class="sk">냉각 팬</span><span class="sv">80mm × 2 (흡기/배기)</span></div>
+      <div class="specrow"><span class="sk">루버 gap</span><span class="sv">1.0 mm (parametric)</span></div>
+      <div class="specrow"><span class="sk">광학축 tilt</span><span class="sv">~18° (렌즈→얼굴)</span></div>
+      <div class="specrow"><span class="sk">도장</span><span class="sv">RAL 7016 matte</span></div>
+    </div>
+  </div>
+
+  <div class="contact">
+    <span class="who">박양하 · PARK YANGHA</span>
+    <span class="dot">·</span>
+    <a href="mailto:64etuor@gmail.com">64etuor@gmail.com</a>
+    <span class="dot">·</span>
+    <a href="https://github.com/64etuor" target="_blank" rel="noopener">github.com/64etuor</a>
+    <span class="dot">·</span>
+    <span class="c">010-0000-0000</span>
+  </div>
+
+  <footer>WIND TUNNEL CFD VISUALIZATION · CANVAS 2D ADVECTION FIELD · 모델/추정값 (NOT MEASURED) · © PARK YANGHA</footer>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var flow = document.getElementById('flow');
+  var ctx = flow.getContext('2d');
+  var W = flow.width, H = flow.height;
+
+  // off-screen field buffer for heat/pressure colormap (low-res for speed)
+  var FX = 236, FY = 140;                 // field grid resolution
+  var cellW = W/FX, cellH = H/FY;
+  var fbuf = document.createElement('canvas'); fbuf.width = FX; fbuf.height = FY;
+  var fctx = fbuf.getContext('2d');
+  var fimg = fctx.createImageData(FX, FY);
+
+  // ---- state ----
+  var S = {
+    U: 2.4,            // inlet velocity m/s (slider/100)
+    aoa: 0,            // angle of attack deg
+    density: 1700,     // particle count
+    cooling: 1,        // 0 before, 1 after
+    field: 'vel',      // vel | press | vort
+    iter: 0,
+    res: 1.0,          // residual (continuity) display
+    coolMix: 1.0       // animated 0..1 toward cooling state
+  };
+
+  // ===== KIOSK OBSTACLE GEOMETRY (recognizable silhouette) =====
+  // Defined in canvas coords. Display body (tall box) + camera canopy on top.
+  // Flow goes left->right. We embed it slightly right-of-center.
+  function kioskGeom(){
+    var cx = W*0.50, top = H*0.16, bot = H*0.92;
+    var bodyW = W*0.155;
+    var bx0 = cx - bodyW/2, bx1 = cx + bodyW/2;
+    return {
+      cx:cx,
+      // main display body
+      bx0:bx0, bx1:bx1, by0:top+H*0.06, by1:bot,
+      // canopy (camera) - small box on top, slightly forward
+      cnx0: cx - W*0.058, cnx1: cx + W*0.018, cny0: top, cny1: top+H*0.06,
+      // GPU heat source location (lower-inside the body, near exhaust side)
+      gpux: cx + W*0.028, gpuy: bot - H*0.20,
+      // intake louver (left face), exhaust louver (right face)
+      intakeY: bot - H*0.28, exhaustY: bot - H*0.18
+    };
+  }
+  var K = kioskGeom();
+
+  // signed-ish "inside obstacle" test + rounded influence
+  function insideKiosk(x,y){
+    if(x>=K.bx0 && x<=K.bx1 && y>=K.by0 && y<=K.by1) return true;
+    if(x>=K.cnx0 && x<=K.cnx1 && y>=K.cny0 && y<=K.cny1) return true;
+    return false;
+  }
+
+  // ===== VECTOR FIELD around obstacle =====
+  // potential-flow-ish: uniform flow + doublet/blockage + thermal plume buoyancy.
+  // returns {vx,vy} in field units (px/frame scaled by U)
+  function velAt(x,y){
+    var base = S.U;                       // m/s -> visual speed
+    var ux = base, uy = 0;
+    // angle of attack rotates inflow
+    var a = S.aoa*Math.PI/180;
+    ux = base*Math.cos(a); uy = base*Math.sin(a);
+
+    // --- blockage by body: push flow around the rectangle ---
+    // distance to body horizontally/vertically -> deflection
+    var cxk = (K.bx0+K.bx1)/2, cyk=(K.by0+K.by1)/2;
+    var halfW=(K.bx1-K.bx0)/2, halfH=(K.by1-K.by0)/2;
+    var dx = (x-cxk)/(halfW*1.55);
+    var dy = (y-cyk)/(halfH*1.15);
+    var r2 = dx*dx + dy*dy + 0.0001;
+
+    if(x < K.bx1+W*0.16){
+      // doublet-like deflection: vertical push proportional to vertical offset, strong near body
+      var infl = Math.exp(-Math.max(0,(x-K.bx0))/(W*0.10));
+      // upstream slowdown / stagnation in front
+      var front = 0;
+      if(x < K.bx0){
+        var fd = (K.bx0 - x)/(W*0.20);
+        front = Math.exp(-fd*2.2);
+        // deflect away from centerline vertically
+        var off = (y-cyk)/halfH;
+        uy += base*0.95*front*Math.sign(off)*Math.min(1,Math.abs(off)*1.6);
+        ux *= (1 - 0.7*front*Math.max(0,1-Math.abs(off)*0.7));
+      }
+      // alongside acceleration (speed-up over top/bottom edges)
+      if(x>=K.bx0 && x<=K.bx1+W*0.02){
+        var edgeTop = Math.exp(-Math.abs(y-K.by0)/(H*0.05));
+        var edgeBot = Math.exp(-Math.abs(y-K.by1)/(H*0.05));
+        ux *= 1 + 1.3*(edgeTop+edgeBot);
+        uy += -base*1.1*edgeTop + base*0.2*edgeBot;
+      }
+    }
+
+    // --- WAKE behind the body: recirculation + vortex shedding ---
+    if(x > K.bx1){
+      var wd = (x - K.bx1);
+      var wakeLen = W*(0.34 - (S.cooling? 0.0 : 0.06)); // before: messier/shorter reattach
+      var wf = Math.exp(-wd/(wakeLen));
+      // base velocity deficit in wake
+      var inWakeBand = Math.exp(-Math.pow((y-cyk)/(halfH*1.05),2));
+      ux *= (1 - 0.72*wf*inWakeBand);
+      // vortex shedding (Karman street) — oscillating cross velocity
+      var freq = 0.10 + base*0.03;
+      var ph = (x*0.018) - tGlobal*freq;
+      var shed = Math.sin(ph) * inWakeBand * wf;
+      // cooling AFTER => aligned wake (less shedding); BEFORE => turbulent
+      var turb = S.cooling ? 0.45 : 1.25;
+      // animate between states
+      turb = 0.45 + (1-S.coolMix)*(1.25-0.45);
+      uy += base * shed * turb;
+      // small recirculation just behind base
+      if(wd < W*0.07){
+        uy += -Math.sign(y-cyk)*base*0.6*Math.exp(-wd/(W*0.05))*inWakeBand;
+      }
+    }
+
+    // --- intake / exhaust jets (louvers) ---
+    // intake on left face sucks in; exhaust on right face blows out (right)
+    var ej = jetField(x,y);
+    ux += ej.x; uy += ej.y;
+
+    // --- thermal plume / buoyancy from GPU hotspot (rises) ---
+    var hd2 = Math.pow(x-K.gpux,2)/Math.pow(W*0.10,2) + Math.pow(y-K.gpuy,2)/Math.pow(H*0.16,2);
+    var heat = Math.exp(-hd2);
+    // before cooling: stronger trapped plume swirling; after: swept out by exhaust
+    var plumeStr = (0.55 + (1-S.coolMix)*0.9);
+    uy += -base*plumeStr*heat*0.5;            // rises
+    ux += base*0.2*heat*S.coolMix;            // after: swept toward exhaust
+
+    return {x:ux, y:uy};
+  }
+
+  function jetField(x,y){
+    var out = {x:0,y:0};
+    var strength = (0.6 + 0.5*S.coolMix) * S.U;
+    // exhaust: right face, blows right
+    var ex = K.bx1, ey = K.exhaustY;
+    var d2e = Math.pow((x-ex)/(W*0.10),2) + Math.pow((y-ey)/(H*0.05),2);
+    var ge = Math.exp(-d2e);
+    if(x>=ex) out.x += strength*1.3*ge;
+    // intake: left face, sucks (flow toward face)
+    var ix=K.bx0, iy=K.intakeY;
+    var d2i = Math.pow((x-ix)/(W*0.09),2) + Math.pow((y-iy)/(H*0.05),2);
+    var gi = Math.exp(-d2i);
+    if(x<=ix) out.x += strength*0.5*gi*0.0; // intake mostly continuity, minor
+    if(x<=ix) out.y += (iy-y)>0? -strength*0.2*gi : strength*0.2*gi;
+    return out;
+  }
+
+  // ===== TEMPERATURE FIELD (for thermal layer & GPU readout) =====
+  // returns 0..1 normalized temperature
+  function tempAt(x,y){
+    var hd2 = Math.pow(x-K.gpux,2)/Math.pow(W*0.085,2) + Math.pow(y-K.gpuy,2)/Math.pow(H*0.10,2);
+    var core = Math.exp(-hd2);
+    // plume trail upward + drift to exhaust depending on cooling
+    var px = x - K.gpux, py = y - K.gpuy;
+    var driftX = S.coolMix*W*0.04;
+    var pd2 = Math.pow((px-driftX)/(W*0.07),2) + Math.pow((py+H*0.10)/(H*0.16),2);
+    var plume = Math.exp(-pd2)*0.6;
+    var t = Math.max(core, plume*(0.5+(1-S.coolMix)*0.6));
+    // overall hotness scaled by cooling: before hotter
+    var hot = 0.62 + (1-S.coolMix)*0.38;
+    return Math.min(1, t*hot);
+  }
+
+  // ===== COLORMAP (blue->cyan->green->yellow->red) =====
+  function jet(t){
+    t = t<0?0:t>1?1:t;
+    var r,g,b;
+    // 5-stop jet-ish
+    if(t<0.25){ var k=t/0.25; r=10; g=42+(108)*k; b=138+(117)*k; }
+    else if(t<0.45){ var k=(t-0.25)/0.20; r=10+(15)*k; g=150+(46)*k; b=255-(40)*k; }
+    else if(t<0.62){ var k=(t-0.45)/0.17; r=25+(37)*k; g=196+(33)*k; b=215-(73)*k; }
+    else if(t<0.78){ var k=(t-0.62)/0.16; r=62+(145)*k; g=229+(0)*k; b=142-(80)*k; }
+    else if(t<0.9){ var k=(t-0.78)/0.12; r=207+(48)*k; g=229-(64)*k; b=62-(26)*k; }
+    else { var k=(t-0.9)/0.10; r=255; g=165-(140)*k; b=36-(26)*k; }
+    return [r|0,g|0,b|0];
+  }
+
+  // ===== render the field colormap into low-res buffer =====
+  function renderField(){
+    var d = fimg.data;
+    var maxSpeed = Math.max(1.2, S.U*2.6);
+    for(var j=0;j<FY;j++){
+      for(var i=0;i<FX;i++){
+        var x = (i+0.5)*cellW, y=(j+0.5)*cellH;
+        var idx = (j*FX+i)*4;
+        if(insideKiosk(x,y)){
+          // body: dark steel, but show internal heat tint near GPU
+          var tt = tempAt(x,y);
+          d[idx]=18+tt*70; d[idx+1]=24+tt*8; d[idx+2]=30; d[idx+3]=255;
+          continue;
+        }
+        var v = velAt(x,y);
+        var t;
+        if(S.field==='vel'){
+          var sp = Math.sqrt(v.x*v.x+v.y*v.y);
+          t = sp/maxSpeed;
+        } else if(S.field==='press'){
+          // pressure ~ Bernoulli: high where slow (stagnation), low where fast
+          var sp2 = (v.x*v.x+v.y*v.y);
+          var dyn = sp2/(maxSpeed*maxSpeed);
+          t = 0.5 + (0.5 - dyn*0.5);   // invert: slow=high P
+          // stagnation front spike
+          t = Math.min(1, t);
+        } else { // vort
+          // approximate vorticity via finite diff of vy in x and vx in y
+          var e=cellW*1.2;
+          var va=velAt(x+e,y), vb=velAt(x-e,y), vc=velAt(x,y+e), vd=velAt(x,y-e);
+          var w = (va.y-vb.y)/(2*e) - (vc.x-vd.x)/(2*e);
+          t = 0.5 + w*22;
+        }
+        // blend thermal: overlay heat near GPU on velocity/pressure too
+        var th = tempAt(x,y);
+        if(th>0.18 && S.field!=='vort'){ t = Math.max(t, 0.55+th*0.45); }
+        var c = jet(t);
+        d[idx]=c[0]; d[idx+1]=c[1]; d[idx+2]=c[2]; d[idx+3]=255;
+      }
+    }
+    fctx.putImageData(fimg,0,0);
+  }
+
+  // ===== PARTICLES (streamlines / traces) =====
+  var parts = [];
+  function seedParticles(n){
+    parts.length = 0;
+    for(var i=0;i<n;i++){ parts.push(newPart(true)); }
+  }
+  function newPart(anywhere){
+    var x = anywhere? Math.random()*W : -Math.random()*W*0.1;
+    var y = Math.random()*H;
+    return {x:x, y:y, px:x, py:y, life: 40+Math.random()*120, age:0};
+  }
+  function stepParticles(){
+    var n = parts.length;
+    var dtv = 0.9 * (1 + S.U*0.02);
+    for(var i=0;i<n;i++){
+      var p = parts[i];
+      p.px = p.x; p.py = p.y;
+      var v = velAt(p.x, p.y);
+      var sp = Math.sqrt(v.x*v.x+v.y*v.y)+1e-6;
+      var step = dtv*(2.4);
+      p.x += (v.x/Math.max(sp,0.4))*step* (0.5+sp*0.5);
+      p.y += (v.y/Math.max(sp,0.4))*step* (0.5+sp*0.5);
+      p.age++;
+      // respawn if exit / inside body / too old
+      if(p.x>W+8 || p.x<-W*0.15 || p.y<-8 || p.y>H+8 || insideKiosk(p.x,p.y) || p.age>p.life){
+        var np = newPart(false);
+        p.x=np.x; p.y=np.y; p.px=p.x; p.py=p.y; p.age=0; p.life=np.life;
+      }
+    }
+  }
+
+  // ===== KIOSK DRAW (silhouette outline + features) =====
+  function drawKiosk(){
+    ctx.save();
+    // body fill subtle (already colored in field as steel) — draw crisp outline
+    ctx.lineWidth=2; ctx.strokeStyle='rgba(180,210,228,0.85)';
+    ctx.shadowColor='rgba(52,214,255,0.5)'; ctx.shadowBlur=8;
+    // body
+    ctx.strokeRect(K.bx0,K.by0,K.bx1-K.bx0,K.by1-K.by0);
+    // screen inner rect
+    ctx.shadowBlur=0; ctx.lineWidth=1.2; ctx.strokeStyle='rgba(120,160,185,0.55)';
+    ctx.strokeRect(K.bx0+12,K.by0+14, (K.bx1-K.bx0)-24, (K.by1-K.by0)*0.55);
+    ctx.fillStyle='rgba(30,107,255,0.10)';
+    ctx.fillRect(K.bx0+12,K.by0+14, (K.bx1-K.bx0)-24, (K.by1-K.by0)*0.55);
+    // canopy (camera box)
+    ctx.lineWidth=2; ctx.strokeStyle='rgba(180,210,228,0.85)';
+    ctx.shadowColor='rgba(52,214,255,0.5)'; ctx.shadowBlur=6;
+    ctx.strokeRect(K.cnx0,K.cny0,K.cnx1-K.cnx0,K.cny1-K.cny0);
+    ctx.shadowBlur=0;
+    // camera lens circle on canopy
+    ctx.beginPath();
+    var lcx=(K.cnx0+ (K.cnx1-K.cnx0)*0.32), lcy=(K.cny0+K.cny1)/2;
+    ctx.arc(lcx,lcy,9,0,Math.PI*2);
+    ctx.strokeStyle='rgba(52,214,255,0.9)'; ctx.lineWidth=2; ctx.stroke();
+    ctx.beginPath(); ctx.arc(lcx,lcy,3.5,0,Math.PI*2); ctx.fillStyle='rgba(52,214,255,0.8)'; ctx.fill();
+    // optical axis line (lens -> face target, tilt ~18 down-right)
+    ctx.setLineDash([4,4]); ctx.strokeStyle='rgba(255,165,36,0.6)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(lcx,lcy);
+    var ax=lcx-180, ay=lcy+180*Math.tan(18*Math.PI/180);
+    ctx.lineTo(ax,ay); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle='rgba(255,165,36,0.7)'; ctx.font='9px Arial';
+    ctx.fillText('tilt 18° → face', ax-6, ay+12);
+
+    // intake louvers (left face)
+    drawLouvers(K.bx0, K.intakeY, -1);
+    // exhaust louvers (right face)
+    drawLouvers(K.bx1, K.exhaustY, 1);
+
+    // GPU heat source marker
+    var tt = tempAt(K.gpux,K.gpuy);
+    var pulse = 0.5+0.5*Math.sin(tGlobal*4);
+    var hotCol = S.coolMix>0.5 ? 'rgba(255,150,40,' : 'rgba(255,60,30,';
+    ctx.beginPath(); ctx.arc(K.gpux,K.gpuy, 13+pulse*4*(1-S.coolMix*0.6),0,Math.PI*2);
+    ctx.fillStyle=hotCol+(0.18+0.18*(1-S.coolMix))+')'; ctx.fill();
+    ctx.beginPath(); ctx.arc(K.gpux,K.gpuy,7,0,Math.PI*2);
+    var jc = jet(tt); ctx.fillStyle='rgb('+jc[0]+','+jc[1]+','+jc[2]+')'; ctx.fill();
+    ctx.lineWidth=1; ctx.strokeStyle='rgba(255,255,255,0.5)'; ctx.stroke();
+    ctx.font='8px Arial'; ctx.fillStyle='rgba(255,210,180,0.95)';
+    ctx.fillText('GPU', K.gpux-9, K.gpuy-12);
+
+    ctx.restore();
+  }
+  function drawLouvers(faceX, cy, dir){
+    ctx.save();
+    ctx.strokeStyle='rgba(120,170,200,0.8)'; ctx.lineWidth=1.4;
+    for(var k=-4;k<=4;k++){
+      var yy = cy + k*7;
+      ctx.beginPath();
+      ctx.moveTo(faceX, yy);
+      ctx.lineTo(faceX+dir*10, yy-3);
+      ctx.stroke();
+    }
+    // fan icon
+    ctx.beginPath(); ctx.arc(faceX+dir*18, cy, 10, 0,Math.PI*2);
+    ctx.strokeStyle='rgba(52,214,255,0.7)'; ctx.lineWidth=1.2; ctx.stroke();
+    ctx.save(); ctx.translate(faceX+dir*18,cy); ctx.rotate(tGlobal*6*dir);
+    ctx.strokeStyle='rgba(52,214,255,0.85)';
+    for(var b=0;b<3;b++){ ctx.rotate(Math.PI*2/3); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(7,2); ctx.stroke(); }
+    ctx.restore();
+    ctx.font='8px Arial'; ctx.fillStyle='rgba(150,190,215,0.9)';
+    ctx.fillText(dir<0?'IN':'OUT', faceX+dir*(dir<0?-12:24)+(dir<0?-4:-6), cy-14);
+    ctx.restore();
+  }
+
+  // inlet arrows on far left
+  function drawInletArrows(){
+    ctx.save();
+    ctx.strokeStyle='rgba(52,214,255,0.45)'; ctx.fillStyle='rgba(52,214,255,0.45)';
+    ctx.lineWidth=1.4;
+    var a = S.aoa*Math.PI/180;
+    for(var y=H*0.10;y<H*0.95;y+=H*0.11){
+      var x0=10, len=34+ S.U*4;
+      var x1=x0+len*Math.cos(a), y1=y+len*Math.sin(a);
+      ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y1); ctx.stroke();
+      // arrowhead
+      ctx.beginPath(); ctx.moveTo(x1,y1);
+      ctx.lineTo(x1-7*Math.cos(a-0.4),y1-7*Math.sin(a-0.4));
+      ctx.lineTo(x1-7*Math.cos(a+0.4),y1-7*Math.sin(a+0.4));
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // ===== RESIDUAL PLOT =====
+  var rcanvas = document.getElementById('resid');
+  var rctx = rcanvas.getContext('2d');
+  var RW=rcanvas.width, RH=rcanvas.height;
+  var residHist = {cont:[], mom:[], en:[]};
+  function pushResid(){
+    // residuals decay over iterations toward a converged floor; noise added
+    var it = S.iter;
+    var floor = 1e-4;
+    function decay(rate,off){ return Math.max(floor, Math.pow(10, -off - it*rate) * (0.7+0.6*Math.random())); }
+    residHist.cont.push(decay(0.010, 0.1));
+    residHist.mom.push(decay(0.0085, 0.0));
+    residHist.en.push(decay(0.012, 0.3));
+    var cap=240;
+    ['cont','mom','en'].forEach(function(k){ if(residHist[k].length>cap) residHist[k].shift(); });
+    S.res = residHist.cont[residHist.cont.length-1];
+  }
+  function drawResid(){
+    rctx.clearRect(0,0,RW,RH);
+    // log-scale background grid (1e0 .. 1e-5)
+    rctx.strokeStyle='#13202b'; rctx.lineWidth=1; rctx.font='8px Arial'; rctx.fillStyle='#3d566a';
+    for(var e=0;e<=5;e++){
+      var y = (e/5)*(RH-16)+8;
+      rctx.beginPath(); rctx.moveTo(28,y); rctx.lineTo(RW-4,y); rctx.stroke();
+      rctx.fillText('1e-'+e, 2, y+3);
+    }
+    // convergence target line
+    rctx.strokeStyle='rgba(140,242,90,0.4)'; rctx.setLineDash([3,3]);
+    var yt=(3.5/5)*(RH-16)+8; rctx.beginPath(); rctx.moveTo(28,yt); rctx.lineTo(RW-4,yt); rctx.stroke(); rctx.setLineDash([]);
+    function plot(arr,col){
+      if(arr.length<2) return;
+      rctx.strokeStyle=col; rctx.lineWidth=1.4; rctx.beginPath();
+      var n=arr.length;
+      for(var i=0;i<n;i++){
+        var x=28+(i/(240-1))*(RW-32);
+        var lg = Math.log10(arr[i]);             // 0 .. -5
+        var ny = (-lg/5)*(RH-16)+8;
+        if(i===0) rctx.moveTo(x,ny); else rctx.lineTo(x,ny);
+      }
+      rctx.stroke();
+    }
+    plot(residHist.mom,'#ffa524');
+    plot(residHist.cont,'#34d6ff');
+    plot(residHist.en,'#33e58e');
+  }
+
+  // ===== HUD UPDATE =====
+  function fmt(n,d){ return n.toLocaleString('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}); }
+  function updateHUD(){
+    var U=S.U;
+    // Reynolds: Re = U*L/nu , L=display char length ~1.1m, nu air=1.5e-5
+    var L=1.1, nu=1.5e-5;
+    var Re = U*L/nu;
+    // pressure drop across louvers ~ proportional to U^2 (model)
+    var dP = (0.5*1.2*U*U) * (S.cooling? 1.6 : 2.7); // Pa, before higher (restricted)
+    // CFM from fans: 80mm fan, scale with U and cooling
+    var cfm = (S.cooling? 1 : 0.45) * (18 + U*12);
+    var rpm = (S.cooling? 1:0.45) * (900 + U*620);
+    // GPU surface temp: ambient + load/cooling. before hot ~ up to 86, after cooled.
+    var tBefore = 52 + (U<2.0? (2.0-U)*0 :0); // not very U-sensitive before (poor airflow)
+    var gpuBefore = 86 - Math.min(8,(U-0.4)*1.5);
+    var gpuAfter = 58 - Math.min(14,(U-0.4)*4.0);
+    var gpu = gpuAfter + (1-S.coolMix)*(gpuBefore-gpuAfter);
+
+    document.getElementById('hd-re').textContent = (Re/1000).toFixed(1)+'k';
+    document.getElementById('hd-gpu').textContent = gpu.toFixed(0)+'°C';
+    document.getElementById('hd-gpu').className = 'v big '+(gpu>72?'warn':'');
+    var hgpu=document.getElementById('hd-gpu');
+    if(gpu<=72){ hgpu.style.color='var(--ok)'; } else { hgpu.style.color='var(--hot)'; }
+
+    document.getElementById('ro-vel').innerHTML = U.toFixed(2)+' <small>m/s</small>';
+    document.getElementById('ro-re').textContent = (Re/1000).toFixed(1)+'k';
+    document.getElementById('ro-dp').textContent = dP.toFixed(1)+' Pa';
+    document.getElementById('ro-cfm').textContent = cfm.toFixed(0)+' CFM';
+    document.getElementById('ro-rpm').textContent = rpm.toFixed(0)+' rpm';
+    var rg=document.getElementById('ro-gpu');
+    rg.textContent = gpu.toFixed(0)+' °C';
+    rg.className='v '+(gpu>72?'warn':'cool');
+
+    // bottom CFD/thermal metrics strip
+    var mre=document.getElementById('mt-re'); if(mre) mre.textContent=(Re/1000).toFixed(1)+'k';
+    var mdp=document.getElementById('mt-dp'); if(mdp) mdp.textContent=dP.toFixed(1)+' Pa';
+    var mcfm=document.getElementById('mt-cfm'); if(mcfm) mcfm.textContent=cfm.toFixed(0)+' CFM';
+    var mgpu=document.getElementById('mt-gpu'); if(mgpu){ mgpu.textContent=gpu.toFixed(0)+' °C'; mgpu.className='mv '+(gpu>72?'warn':'ok'); }
+
+    document.getElementById('ov-vel').textContent = 'U∞ = '+U.toFixed(1)+' m/s';
+    document.getElementById('ov-iter').textContent = 'ITER '+S.iter+' · res '+S.res.toExponential(1);
+    document.getElementById('ov-probe').textContent = 'T_surf = '+gpu.toFixed(0)+' °C';
+    document.getElementById('ov-probe').style.color = gpu>72?'#ff5a35':'#48e89a';
+
+    // colorbar / field labels
+    var maxSpeed=Math.max(1.2,U*2.6);
+    var ft = document.getElementById('ov-field'), cbT=document.getElementById('cb-title');
+    if(S.field==='vel'){ ft.textContent='VELOCITY MAGNITUDE'; cbT.textContent='VELOCITY |U| (m/s)';
+      document.getElementById('cb-lo').textContent='0';
+      document.getElementById('cb-mid').textContent=(maxSpeed/2).toFixed(1);
+      document.getElementById('cb-hi').textContent=maxSpeed.toFixed(1); }
+    else if(S.field==='press'){ ft.textContent='PRESSURE FIELD'; cbT.textContent='STATIC P (Pa, rel)';
+      document.getElementById('cb-lo').textContent='−';
+      document.getElementById('cb-mid').textContent='0';
+      document.getElementById('cb-hi').textContent='+'; }
+    else { ft.textContent='VORTICITY ω'; cbT.textContent='VORTICITY ω (1/s)';
+      document.getElementById('cb-lo').textContent='−';
+      document.getElementById('cb-mid').textContent='0';
+      document.getElementById('cb-hi').textContent='+'; }
+  }
+
+  // ===== MAIN LOOP =====
+  var tGlobal = 0;
+  var fieldTick = 0;
+  function loop(){
+    tGlobal += 0.016;
+    // animate cooling mix toward target
+    S.coolMix += (S.cooling - S.coolMix)*0.045;
+
+    // iterate solver (residual) a bit each frame for a while
+    if(S.iter < 240){ S.iter++; pushResid(); }
+    // when params change we already reset; convergence tag:
+    var convTag=document.getElementById('conv-tag');
+    if(S.res < 5e-4 && S.iter>40){ convTag.textContent='✓ CONVERGED · res '+S.res.toExponential(1); convTag.className='conv-tag done'; }
+    else { convTag.textContent='SOLVING · iter '+S.iter+' · res '+S.res.toExponential(1); convTag.className='conv-tag'; }
+
+    // re-render colormap field every 2 frames (perf)
+    fieldTick++;
+    if(fieldTick%2===0){ renderField(); }
+
+    // draw field (scaled up, smoothed)
+    ctx.imageSmoothingEnabled = true;
+    ctx.globalAlpha=1;
+    ctx.drawImage(fbuf,0,0,FX,FY,0,0,W,H);
+
+    // fade trail layer for particle streaks: overlay translucent dark
+    ctx.fillStyle='rgba(3,6,10,0.22)';
+    ctx.fillRect(0,0,W,H);
+    // slightly re-show field beneath via lower alpha tint already applied; draw particles
+    stepParticles();
+    ctx.lineWidth=1.1;
+    var n=parts.length;
+    for(var i=0;i<n;i++){
+      var p=parts[i];
+      var dx=p.x-p.px, dy=p.y-p.py;
+      var sp=Math.sqrt(dx*dx+dy*dy);
+      // color particle by local speed (white-hot fast, dim slow)
+      var v=velAt(p.x,p.y); var vm=Math.sqrt(v.x*v.x+v.y*v.y);
+      var tt=Math.min(1,vm/Math.max(1.2,S.U*2.6));
+      var alpha=0.25+tt*0.6;
+      // tint near hotspot reddish
+      var th=tempAt(p.x,p.y);
+      if(th>0.45){ ctx.strokeStyle='rgba(255,'+(150-th*90|0)+',90,'+alpha+')'; }
+      else { ctx.strokeStyle='rgba('+(180+tt*60|0)+','+(225)+',255,'+alpha+')'; }
+      ctx.beginPath(); ctx.moveTo(p.px,p.py); ctx.lineTo(p.x,p.y); ctx.stroke();
+    }
+
+    drawInletArrows();
+    drawKiosk();
+    updateHUD();
+    drawResid();
+
+    requestAnimationFrame(loop);
+  }
+
+  function resetSolve(){ S.iter=0; residHist.cont.length=0; residHist.mom.length=0; residHist.en.length=0; }
+
+  // ===== CONTROLS =====
+  var slVel=document.getElementById('sl-vel'), slAoa=document.getElementById('sl-aoa'),
+      slDen=document.getElementById('sl-den');
+  slVel.addEventListener('input',function(){
+    S.U=parseFloat(this.value)/100;
+    document.getElementById('lab-vel').textContent=S.U.toFixed(1)+' m/s';
+    resetSolve();
+  });
+  slAoa.addEventListener('input',function(){
+    S.aoa=parseFloat(this.value);
+    document.getElementById('lab-aoa').textContent=(S.aoa>0?'+':'')+S.aoa+'°';
+    resetSolve();
+  });
+  slDen.addEventListener('input',function(){
+    S.density=parseInt(this.value,10);
+    var lab = S.density<1100?'희박': S.density<2100?'표준':'고밀도';
+    document.getElementById('lab-den').textContent=lab;
+    seedParticles(S.density);
+  });
+
+  var coolToggle=document.getElementById('cool-toggle');
+  coolToggle.addEventListener('click',function(e){
+    var seg=e.target.closest('div[data-c]'); if(!seg) return;
+    setCooling(parseInt(seg.getAttribute('data-c'),10));
+  });
+  function setCooling(c){
+    S.cooling=c;
+    var segs=coolToggle.querySelectorAll('div[data-c]');
+    segs.forEach(function(s){ s.classList.toggle('act', parseInt(s.getAttribute('data-c'),10)===c); });
+    var lab=document.getElementById('lab-cool');
+    lab.textContent = c? '적용 후':'미적용';
+    lab.style.color = c? 'var(--ok)':'var(--hot)';
+    var ov=document.getElementById('ov-mode');
+    if(c){ ov.textContent='MODE · COOLING ON (AFTER)'; ov.className='badge run'; }
+    else { ov.textContent='MODE · COOLING OFF (BEFORE)'; ov.className='badge before'; }
+    resetSolve();
+  }
+
+  // field layer buttons
+  ['vel','press','vort'].forEach(function(f){
+    document.getElementById('f-'+f).addEventListener('click',function(){
+      S.field=f;
+      document.querySelectorAll('.layers button').forEach(function(b){ b.classList.remove('on'); });
+      this.classList.add('on');
+    });
+  });
+
+  // drag on canvas changes angle of attack (delight: AoA by dragging)
+  var dragging=false, dragY0=0, aoa0=0;
+  flow.addEventListener('mousedown',function(e){ dragging=true; dragY0=e.clientY; aoa0=S.aoa; flow.style.cursor='grabbing'; });
+  window.addEventListener('mouseup',function(){ dragging=false; flow.style.cursor='default'; });
+  window.addEventListener('mousemove',function(e){
+    if(!dragging) return;
+    var dy=(e.clientY-dragY0);
+    var na=Math.max(-18,Math.min(18, aoa0 + dy*0.06));
+    S.aoa=na; slAoa.value=na;
+    document.getElementById('lab-aoa').textContent=(na>0?'+':'')+na.toFixed(0)+'°';
+    resetSolve();
+  });
+
+  // ===== INIT (first paint friendly for headless) =====
+  function init(){
+    seedParticles(S.density);
+    renderField();
+    // pre-fill some residual history so plot is visible at first paint
+    for(var i=0;i<60;i++){ S.iter++; pushResid(); }
+    S.iter=0;
+    updateHUD();
+    loop();
+  }
+  if(document.fonts && document.fonts.ready){
+    document.fonts.ready.then(init);
+    // safety: also init after short delay in case fonts hang in headless
+    setTimeout(function(){ if(!parts.length) init(); }, 400);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>

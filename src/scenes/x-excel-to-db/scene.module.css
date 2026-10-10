@@ -1,0 +1,273 @@
+.hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  color: var(--scene-phos, #d7d7d7);
+  font-family: 'IBM Plex Mono', var(--font-mono, 'JetBrains Mono'), 'JetBrains Mono', 'Pretendard Variable', monospace;
+  --teal: #4fe0c4;
+  --blue: #4ab3cc;
+  --amber: #d98a3d;
+  --dim: #8d8d8d;
+  overflow: hidden;
+  container-type: size;
+}
+
+.tag {
+  position: absolute;
+  top: clamp(14px, 3.2vh, 30px);
+  left: clamp(14px, 2.4vw, 36px);
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: clamp(10px, 0.78vw, 12.5px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.tagDot {
+  width: 6px;
+  height: 6px;
+  background: var(--teal);
+  box-shadow: 0 0 10px var(--teal);
+  align-self: center;
+}
+.tagTitle {
+  font-family: 'Pretendard Variable', sans-serif;
+  font-weight: 600;
+  letter-spacing: var(--track-kr, 0);
+  text-transform: none;
+  color: #e6e6e6;
+}
+.tagOrg {
+  color: var(--dim);
+}
+
+.phases::before {
+  content: '';
+  position: absolute;
+  left: -60px;
+  right: -80px;
+  top: -40px;
+  bottom: -40px;
+  background: radial-gradient(ellipse at 30% 60%, rgba(5, 7, 10, 0.82), rgba(5, 7, 10, 0) 70%);
+  z-index: -1;
+}
+.phases {
+  position: absolute;
+  z-index: 0;
+  left: clamp(14px, 2.4vw, 36px);
+  bottom: clamp(16px, 5vh, 46px);
+  width: min(46vw, 640px);
+  height: 92px;
+}
+.phase {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  will-change: opacity, transform;
+}
+.phaseIdx {
+  font-size: clamp(9.5px, 0.7vw, 11.5px);
+  letter-spacing: 0.22em;
+  color: var(--teal);
+}
+.phaseTitle {
+  text-shadow: 0 1px 12px rgba(0, 0, 0, 0.9);
+  font-family: 'Pretendard Variable', sans-serif;
+  font-weight: 600;
+  font-size: clamp(15px, 1.45vw, 23px);
+  letter-spacing: 0.01em;
+  color: #ececec;
+}
+.phaseSub {
+  font-size: clamp(9.5px, 0.74vw, 12px);
+  letter-spacing: 0.08em;
+  color: var(--dim);
+}
+/* KO: 한글 캡션·라벨은 sans + 촘촘한 자간 (와이드 트래킹은 EN 대문자 라벨만) */
+.hud[data-locale='ko'] .tagOrg,
+.hud[data-locale='ko'] .gateway {
+  letter-spacing: 0.02em;
+}
+.hud[data-locale='ko'] .phaseSub,
+.hud[data-locale='ko'] .stNote {
+  font-family: var(--font-sans, 'Pretendard Variable', sans-serif);
+  letter-spacing: var(--track-kr, 0);
+}
+
+.hero {
+  position: absolute;
+  right: clamp(16px, 3.4vw, 60px);
+  top: 50%;
+  transform: translateY(-38%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  will-change: opacity;
+}
+.heroRow {
+  display: flex;
+  align-items: center;
+  gap: clamp(10px, 1.1vw, 18px);
+}
+.dial {
+  width: clamp(44px, 4.6vw, 76px);
+  height: clamp(44px, 4.6vw, 76px);
+  transform: rotate(-90deg);
+}
+.dialBase {
+  fill: none;
+  stroke: rgba(215, 215, 215, 0.16);
+  stroke-width: 5;
+}
+.dialArc {
+  fill: none;
+  stroke: var(--amber);
+  stroke-width: 7;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  filter: drop-shadow(0 0 4px rgba(217, 138, 61, 0.8));
+}
+.heroNum {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  line-height: 1;
+}
+.minus {
+  font-size: clamp(30px, 3.6vw, 60px);
+  color: var(--amber);
+  font-weight: 500;
+}
+.count {
+  font-size: clamp(40px, 5vw, 84px);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #f2f2f2;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 22px rgba(217, 138, 61, 0.35);
+  min-width: 3ch;
+}
+.unit {
+  font-family: 'Pretendard Variable', sans-serif;
+  font-size: clamp(13px, 1.2vw, 19px);
+  color: var(--amber);
+  letter-spacing: 0.02em;
+}
+.heroLabel {
+  font-family: 'Pretendard Variable', sans-serif;
+  font-size: clamp(11px, 0.92vw, 14.5px);
+  color: #d7d7d7;
+  letter-spacing: var(--track-kr, 0);
+}
+.heroNote {
+  color: var(--dim);
+}
+.st {
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(215, 215, 215, 0.14);
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  will-change: opacity;
+}
+.stVal {
+  font-family: 'Pretendard Variable', sans-serif;
+  font-weight: 600;
+  font-size: clamp(14px, 1.35vw, 21px);
+  font-variant-numeric: tabular-nums;
+  color: var(--teal);
+}
+.stNote {
+  font-size: clamp(9.5px, 0.72vw, 11.5px);
+  letter-spacing: 0.08em;
+  color: var(--dim);
+}
+.award {
+  font-size: clamp(9.5px, 0.7vw, 11.5px);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+  border: 1px solid rgba(141, 141, 141, 0.35);
+  padding: 4px 8px;
+  will-change: opacity;
+}
+
+.slabLabel,
+.panelLabel,
+.gateway {
+  position: absolute;
+  left: 0;
+  top: 0;
+  white-space: nowrap;
+  will-change: transform, opacity;
+}
+.slabLabel span {
+  display: inline-block;
+  transform: translate(-100%, -50%);
+  padding-right: 10px;
+  font-family: 'Pretendard Variable', sans-serif;
+  font-size: clamp(10px, 0.78vw, 12.5px);
+  letter-spacing: 0.02em;
+  color: #bfe9ee;
+  border-right: 2px solid var(--blue);
+}
+.panelLabel {
+  margin-top: -22px;
+  font-family: 'Pretendard Variable', sans-serif;
+  font-weight: 600;
+  font-size: clamp(10px, 0.82vw, 13px);
+  letter-spacing: 0.02em;
+  color: #cfeff5;
+}
+.gateway {
+  margin-left: 14px;
+  margin-top: -8px;
+  font-size: clamp(9px, 0.66vw, 11px);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--blue);
+}
+
+/* 갤러리 카드(~512×288): 제목 + 핵심 수치만 남긴다 */
+@container (max-width: 699px) {
+  .tag {
+    top: 12px;
+    left: 14px;
+    font-size: 11px;
+  }
+  .tagOrg,
+  .phases,
+  .heroLabel,
+  .st,
+  .award,
+  .slabLabel,
+  .panelLabel,
+  .gateway {
+    display: none;
+  }
+  .hero {
+    right: 16px;
+    top: auto;
+    bottom: 14px;
+    transform: none;
+    gap: 4px;
+  }
+  .dial {
+    width: 34px;
+    height: 34px;
+  }
+  .minus {
+    font-size: 22px;
+  }
+  .count {
+    font-size: 34px;
+  }
+  .unit {
+    font-size: 12px;
+  }
+}

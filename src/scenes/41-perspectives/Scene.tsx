@@ -6,9 +6,10 @@ import type { Frame, SceneProps } from '../_host/types'
 import { rgba, mix } from '../_host/color'
 import { clamp, lerp, ease } from '../_host/math'
 import { useSceneReady } from '../_host/useSceneReady'
+import { useSceneClock } from '../_host/sceneClock'
 import { COLD, COLDB, CYCLE, DEV, FIELD, NB, WARM, WARMB } from './constants'
 import { applyHero, devC, drawGears, drawSeam, drawSystem, drawTokens, fieldC, focalBreath, persp, setLabel } from './draw'
-import { makeProcNodes, syncLayout, syncSide } from './runtime'
+import { makeProcNodes, syncLayout, syncSide, unloadAll } from './runtime'
 import type { BucketItem, LayoutState, ProcNode } from './types'
 import { PerspectivesView } from './view'
 
@@ -28,6 +29,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const offsetRef = useRef<number | null>(null)
 
   useSceneReady(onReady)
+  const clock = useSceneClock()
 
   const getOffset = () => {
     if (offsetRef.current === null) {
@@ -60,8 +62,20 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     applyHero(fieldHeroRef.current, fieldVis, fieldDimRefs.current, (1 - intro) * 3.2, intro, heroStateRef.current)
     applyHero(devHeroRef.current, devVis, devDimRefs.current, 0, 1, heroStateRef.current)
 
-    syncSide(fieldProcRefs.current, FIELD, fieldC, fieldVis, f)
-    syncSide(devProcRefs.current, DEV, devC, devVis, f)
+    // Shed the iframes once the film's master clock says this shot has overrun its
+    // manifest budget (remainingMs goes negative — see sceneClock.ts): each loaded
+    // iframe is its own document with its own rAF loop, ticking regardless of
+    // `running`, and holding the main thread busy is exactly what delays the next
+    // shot's paint/reveal (the cause of the handoff being late in the first place).
+    // Below the gate, keep the normal pan-driven load/unload.
+    const overrun = (clock?.remainingMs?.() ?? 1) < 0
+    if (overrun) {
+      unloadAll(fieldProcRefs.current)
+      unloadAll(devProcRefs.current)
+    } else {
+      syncSide(fieldProcRefs.current, FIELD, fieldC, fieldVis, f)
+      syncSide(devProcRefs.current, DEV, devC, devVis, f)
+    }
 
     const puck = puckRef.current
     const pc = mix(WARM, COLD, sf)

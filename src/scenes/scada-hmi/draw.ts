@@ -24,9 +24,15 @@ export function setAttr(node: Element | null | undefined, name: string, value: s
   if (node) node.setAttribute(name, value)
 }
 
+/** Escape text for interpolation into the alarm-row HTML template. */
+function escHtml(v: string) {
+  return v.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+}
+
 export function fmtAlarmRow(a: AlarmEvent) {
   const op = Math.max(0.35, 1 - Math.min(a.age, 12) * 0.05)
-  return `<div class="alm-item" style="opacity:${op.toFixed(2)}"><span class="sev" style="background:${a.sev}"></span><span class="ts">${a.ts}</span><span class="desc">${a.desc}</span><span class="st ${a.st}">${a.st}</span></div>`
+  const st = escHtml(a.st)
+  return `<div class="alm-item" style="opacity:${op.toFixed(2)}"><span class="sev" style="background:${escHtml(a.sev)}"></span><span class="ts">${escHtml(a.ts)}</span><span class="desc">${escHtml(a.desc)}</span><span class="st ${st}">${st}</span></div>`
 }
 
 export function renderAlarms(events: AlarmEvent[], mini: HTMLDivElement | null, full: HTMLDivElement | null) {

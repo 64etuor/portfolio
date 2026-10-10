@@ -21,11 +21,11 @@ export const RUNE_CHARS = '龍火竜鱗焔ᚱᚦᛏ'.split('')
 
 // ── Fonts ──
 export const sans = (px: number) =>
-  `800 ${px}px 'Pretendard Variable', Pretendard, system-ui, sans-serif`
+  `800 ${px}px 'Pretendard Variable', sans-serif`
 export const sansMed = (px: number) =>
-  `600 ${px}px 'Pretendard Variable', Pretendard, system-ui, sans-serif`
+  `600 ${px}px 'Pretendard Variable', sans-serif`
 export const monoLabel = (px: number) =>
-  `500 ${px}px 'JetBrains Mono', ui-monospace, monospace`
+  `500 ${px}px 'JetBrains Mono', 'Pretendard Variable', monospace`
 
 // ── Config (playground defaults, lightly tuned for a masthead) ──
 export const CFG: DragonConfig = {

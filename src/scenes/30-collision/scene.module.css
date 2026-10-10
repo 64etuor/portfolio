@@ -7,7 +7,7 @@
   overflow: hidden;
   background: radial-gradient(ellipse 120% 120% at 50% 50%, #0e0e0e 0%, #050505 60%, #000 100%);
   color: #e2e2e2;
-  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, 'Cascadia Mono', Menlo, Consolas, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
 }
@@ -74,7 +74,7 @@
   position: absolute;
   z-index: 45;
   pointer-events: none;
-  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   letter-spacing: 1.5px;
   text-shadow: 0 0 6px rgba(0, 0, 0, 0.6);
 }
@@ -109,7 +109,7 @@
   left: 5.4%;
   top: 12.2%;
   pointer-events: none;
-  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: clamp(10px, 0.82vw, 15px);
   letter-spacing: 0.42em;
   color: var(--scene-phos-dim);
@@ -128,7 +128,7 @@
   pointer-events: none;
   top: 50%;
   transform: translateY(-50%);
-  font-family: 'Pretendard Variable', 'Pretendard', sans-serif;
+  font-family: 'Pretendard Variable', sans-serif;
   font-weight: 700;
   font-size: 13px;
   letter-spacing: 2px;
@@ -146,7 +146,7 @@
   text-shadow: 0 0 12px rgba(74, 179, 204, 0.3);
 }
 .sideEn {
-  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-weight: 400;
   font-size: 9px;
   letter-spacing: 2px;
@@ -162,7 +162,7 @@
   left: 50%;
   bottom: 24px;
   transform: translateX(-50%);
-  font-family: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, monospace;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
   font-size: 11px;
   letter-spacing: 4px;
   color: var(--scene-phos-dim);
@@ -183,4 +183,11 @@
 .dotOn {
   background: #e2e2e2;
   box-shadow: 0 0 8px #e2e2e2;
+}
+
+/* 한글이 들어가는 요소는 자간 0.02em 이하 — EN 로케일(라틴 전용)은 위의 넓은 자간 유지 */
+.eyebrow:lang(ko),
+.hudTr .hudK:lang(ko),
+.side:lang(ko) {
+  letter-spacing: 0.02em;
 }

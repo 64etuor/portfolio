@@ -1,0 +1,283 @@
+.hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-family: var(--font-mono), 'JetBrains Mono', 'Pretendard Variable', monospace;
+  color: var(--scene-phos, #d7d7d7);
+  z-index: 2;
+  container-type: size;
+}
+
+.head {
+  position: absolute;
+  left: 44px;
+  top: 38px;
+}
+.kicker {
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  font-variant-numeric: tabular-nums;
+  color: var(--scene-phos-dim, #8d8d8d);
+}
+.title {
+  margin-top: 8px;
+  font-family: var(--font-sans);
+  font-size: 22px;
+  letter-spacing: var(--track-heading);
+  line-height: var(--lh-tight);
+  font-weight: 600;
+}
+.stack {
+  margin-top: 8px;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  color: #4ab3cc;
+  opacity: 0.85;
+}
+
+/* 3D 앵커 — transform 으로 투영 좌표에 배치(좌상단 = 앵커점). */
+.anchor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.layer {
+  position: absolute;
+  transform: translate(-50%, 0);
+  white-space: nowrap;
+  font-size: 10.5px;
+  letter-spacing: 0.02em;
+  color: #a3a3a3;
+}
+/* EN 레이어명은 대문자 라틴 전용 → 넓은 자간 */
+.hud[data-locale='en'] .layer {
+  letter-spacing: 0.18em;
+}
+.layer i {
+  font-style: normal;
+  margin-right: 8px;
+  color: #4a4f55;
+}
+
+.tag {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0 0 18px 18px;
+  white-space: nowrap;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  border-left: 1px solid currentColor;
+  transform: translate(0, -6px);
+}
+.tag em {
+  font-style: normal;
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+  font-weight: 600;
+}
+.tagRed {
+  color: #ff6a5c;
+  text-shadow: 0 0 12px rgba(255, 70, 50, 0.45);
+}
+.tagAmber {
+  color: #e8a35c;
+  text-shadow: 0 0 12px rgba(217, 138, 61, 0.45);
+}
+.tagLeft {
+  transform: translate(-22px, -12px);
+}
+.tagLeft,
+.tagGate {
+  left: auto;
+  right: 0;
+  align-items: flex-end;
+  padding: 0 18px 10px 0;
+  border-left: 0;
+  border-right: 1px solid currentColor;
+}
+
+/* 영향 범위 박스 — 코너 브래킷 */
+.box {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  --c: #d98a3d;
+  background:
+    linear-gradient(var(--c), var(--c)) top left / 14px 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) top left / 1px 14px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 14px 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) top right / 1px 14px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 14px 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom left / 1px 14px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 14px 1px no-repeat,
+    linear-gradient(var(--c), var(--c)) bottom right / 1px 14px no-repeat;
+  will-change: transform, width, height, opacity;
+}
+.box[data-known='1'] {
+  --c: #4fe0c4;
+}
+.boxLabel {
+  position: absolute;
+  left: 0;
+  top: -22px;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+.boxLabel b {
+  position: absolute;
+  left: 0;
+  top: 0;
+  font-weight: 600;
+}
+.unknown {
+  color: #e8a35c;
+}
+.known {
+  color: #4fe0c4;
+  opacity: 0;
+}
+
+.steps {
+  position: absolute;
+  left: 44px;
+  bottom: 64px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+}
+.steps li {
+  opacity: 0;
+  padding-left: 14px;
+  position: relative;
+  will-change: transform, opacity;
+}
+.steps li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0.5em;
+  width: 6px;
+  height: 6px;
+  background: currentColor;
+}
+.step0 {
+  color: #e8a35c;
+}
+.step1 {
+  color: #4fe0c4;
+}
+.step2 {
+  color: #ff7a6c;
+}
+.award {
+  margin-top: 10px;
+  color: #ececec;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.steps .award::before {
+  display: none;
+}
+.steps .award {
+  padding-left: 0;
+}
+.award span {
+  font-size: 26px;
+  letter-spacing: var(--track-heading);
+  line-height: var(--lh-tight);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 18px rgba(79, 224, 196, 0.35);
+}
+.award small {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: var(--scene-phos-dim, #8d8d8d);
+}
+
+@media (max-width: 760px) {
+  .head {
+    left: 18px;
+    top: 18px;
+  }
+  .title {
+    font-size: 17px;
+  }
+  .steps {
+    left: 18px;
+    bottom: 18px;
+    font-size: 10.5px;
+  }
+  .award span {
+    font-size: 18px;
+  }
+  .layer {
+    display: none;
+  }
+}
+
+.tagGate {
+  color: #ff6a5c;
+}
+.q {
+  position: absolute;
+  left: calc(100% + 22px);
+  top: 50%;
+  transform: translate(0, -50%);
+  font-size: 110px;
+  font-weight: 400;
+  color: #e8a35c;
+  text-shadow: 0 0 24px rgba(217, 138, 61, 0.6);
+  opacity: 0;
+}
+
+/* 갤러리 카드(작은 컨테이너): 타이틀 + 수상 라인만 */
+@container (max-width: 699px) {
+  .anchor,
+  .box,
+  .stack,
+  .steps li:not(.award) {
+    display: none;
+  }
+  .head {
+    left: 16px;
+    top: 14px;
+  }
+  .kicker {
+    font-size: 9px;
+    letter-spacing: 0.16em;
+  }
+  .title {
+    margin-top: 5px;
+    font-size: 18px;
+  }
+  .steps {
+    left: 16px;
+    bottom: 14px;
+  }
+  .award {
+    margin-top: 0;
+  }
+  .award span {
+    font-size: 18px;
+  }
+  .award small {
+    font-size: 10px;
+  }
+}

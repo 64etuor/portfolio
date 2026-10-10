@@ -102,7 +102,7 @@ export function drawTokens(g: CanvasRenderingContext2D, w: number, h: number, ti
       const a = lerp(0.09, 0.86, sharp) * 0.92
       if (a < 0.045) continue
       const col = o.side === 'F' ? mix([150, 150, 150], WARMB, sharp) : mix([86, 98, 112], COLD, sharp)
-      g.font = o.side === 'F' ? `600 ${o.sz.toFixed(1)}px 'Pretendard Variable', 'Pretendard',sans-serif` : `500 ${o.sz.toFixed(1)}px 'JetBrains Mono',monospace`
+      g.font = o.side === 'F' ? `600 ${o.sz.toFixed(1)}px 'Pretendard Variable', sans-serif` : `500 ${o.sz.toFixed(1)}px 'JetBrains Mono', 'Pretendard Variable', monospace`
       if (sharp > 0.5 && !heavy) {
         g.shadowColor = rgba(col, 0.5 * sharp)
         g.shadowBlur = 10 * sharp
@@ -261,14 +261,14 @@ export function drawSystem(g: CanvasRenderingContext2D, w: number, h: number, ti
     g.fillStyle = rgba(COLDD, 0.14 * vm)
     roundRect(g, m.x, m.y, m.w, m.h, 6)
     g.fill()
-    g.font = `700 ${Math.max(10, Math.min(14, w * 0.0084))}px 'JetBrains Mono',monospace`
+    g.font = `700 ${Math.max(10, Math.min(14, w * 0.0084))}px 'JetBrains Mono', 'Pretendard Variable', monospace`
     g.fillStyle = rgba(COLDB, 0.85 * vm)
     g.fillText(m.label, m.cx, m.cy)
   }
   g.textAlign = 'start'
   g.textBaseline = 'alphabetic'
   const fs = Math.max(10, Math.min(15, w * 0.009))
-  g.font = `500 ${fs}px 'JetBrains Mono', monospace`
+  g.font = `500 ${fs}px 'JetBrains Mono', 'Pretendard Variable', monospace`
   for (const col of codeCols) {
     const drift = (time * 0.6) % (col.lh * 2)
     for (let li = 0; li < col.lines.length; li++) {

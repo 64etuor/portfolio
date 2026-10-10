@@ -90,8 +90,8 @@
 }
 .lp-eyebrow {
   font-family: var(--font-mono);
-  font-size: 11px;
-  letter-spacing: 0.42em;
+  font-size: var(--fs-xs);
+  letter-spacing: var(--track-label);
   color: #8d8d8d;
   margin: 0 0 14px;
 }
@@ -145,9 +145,9 @@
   align-items: center;
   gap: 8px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: var(--fs-xs);
   font-weight: 500;
-  letter-spacing: 0.16em;
+  letter-spacing: var(--track-label); /* nav 라벨은 양 로케일 라틴(content/site.ts landing.nav) */
   text-transform: uppercase;
   color: var(--shell-btn-muted);
   background: transparent;
@@ -284,9 +284,9 @@
   border: 1px solid rgba(255, 255, 255, 0.3);
   border-radius: 999px;
   padding: 6px 14px;
-  font-size: 12px;
-  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
-  letter-spacing: 0.03em;
+  font-size: var(--fs-sm);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
   cursor: pointer;
   transition: border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
 }
@@ -423,3 +423,14 @@
 .film-tx--bloom .ftx-b { position: absolute; left: 50%; top: 50%; width: 46vmax; height: 46vmax; transform: translate(-50%, -50%) scale(0); border-radius: 50%; mix-blend-mode: screen; opacity: 0; background: radial-gradient(circle, rgba(220, 245, 255, 0.55) 0%, rgba(150, 210, 255, 0.2) 40%, transparent 68%); animation: ftxb 720ms cubic-bezier(0.3, 0.7, 0.2, 1) forwards; }
 @keyframes ftxb { 0% { transform: translate(-50%, -50%) scale(0); opacity: 0; } 16% { opacity: 0.8; } 100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0; } }
 
+
+/* ===== 필름 슬롯 전환 (Film.tsx) — 끝 상태는 filter/transform 없음(정착 후 GPU 추가 패스 방지) ===== */
+@keyframes film-materialize {
+  0% { opacity: 0; filter: blur(11px); transform: scale(1.035); }
+  89% { opacity: 1; }
+  99.9% { filter: blur(0); transform: scale(1); }
+  100% { opacity: 1; filter: none; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  @keyframes film-materialize { from { opacity: 0; } to { opacity: 1; } }
+}

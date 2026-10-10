@@ -1,0 +1,311 @@
+.hud {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-family: var(--font-mono, 'JetBrains Mono', 'Pretendard Variable', monospace);
+  color: #d7d7d7;
+  overflow: hidden;
+  container-type: size;
+}
+
+/* ── 3D 앵커 라벨 (transform 은 런타임이 씀) ── */
+.anchor,
+.jigAnchor,
+.planeAnchor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.tag {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  padding: 6px 10px 7px;
+  background: rgba(5, 8, 10, 0.62);
+  border: 1px solid rgba(74, 179, 204, 0.35);
+  border-radius: 2px;
+  backdrop-filter: blur(3px);
+}
+
+.tag::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -14px;
+  width: 1px;
+  height: 13px;
+  background: linear-gradient(rgba(74, 179, 204, 0.6), transparent);
+}
+
+.name {
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: #8d8d8d;
+  text-transform: uppercase;
+}
+
+.ctRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 13px;
+}
+
+.ctKey {
+  color: #4ab3cc;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.ctFrom {
+  opacity: 0;
+  color: #8d8d8d;
+  text-decoration: line-through;
+  text-decoration-color: rgba(224, 80, 58, 0.7);
+}
+
+.ctVal {
+  font-size: 22px;
+  font-weight: 600;
+  color: #f2f2f2;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 0 12px rgba(79, 224, 196, 0.45);
+  min-width: 3.4ch;
+  text-align: right;
+}
+
+.ctUnit {
+  color: #8d8d8d;
+  font-size: 12px;
+  margin-left: -4px;
+}
+
+.pct {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+  color: #4fe0c4;
+  text-shadow: 0 0 10px rgba(79, 224, 196, 0.6);
+  opacity: 0;
+}
+
+.jig {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  color: #d98a3d;
+  padding: 3px 8px;
+  border-left: 2px solid #d98a3d;
+  background: rgba(20, 10, 2, 0.55);
+}
+
+.planeAnchor > span {
+  position: absolute;
+  right: 0;
+  top: 0;
+  transform: translateY(calc(-100% - 5px));
+  text-align: right;
+  white-space: nowrap;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
+.planeHot {
+  color: #ff7a63;
+  text-shadow: 0 0 8px rgba(224, 80, 58, 0.6);
+}
+
+.planeOk {
+  color: #4fe0c4;
+  text-shadow: 0 0 8px rgba(79, 224, 196, 0.6);
+  opacity: 0;
+}
+
+/* ── 고정 HUD ── */
+.head {
+  position: absolute;
+  left: clamp(16px, 3.2vw, 48px);
+  top: clamp(16px, 4vh, 40px);
+}
+
+.kicker {
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: #8d8d8d;
+}
+
+.title {
+  margin-top: 6px;
+  font-size: clamp(14px, 1.45vw, 20px);
+  letter-spacing: 0.06em;
+  color: #e6e6e6;
+}
+
+.beats {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.beats li {
+  color: #4a4f52;
+  transition: color 0.3s;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.beats li[data-on='done'] {
+  color: #8d8d8d;
+}
+
+.beats li[data-on='1'] {
+  color: #d98a3d;
+}
+
+.beats li[data-on='1'] .beatNo {
+  border-color: #d98a3d;
+}
+
+.beatNo {
+  font-size: 10px;
+  padding: 1px 4px;
+  border: 1px solid #2c3236;
+}
+
+.hero {
+  position: absolute;
+  right: clamp(16px, 3.2vw, 56px);
+  /* 하단에 두면 궤도 카메라에서 컨베이어 끝을 가린다 → 비어 있는 우상단으로 */
+  top: clamp(28px, 6vh, 64px);
+  text-align: right;
+  opacity: 0;
+}
+
+.heroLabel {
+  font-size: 13px;
+  letter-spacing: 0.24em;
+  color: #8d8d8d;
+}
+
+.heroNum {
+  font-size: clamp(48px, 6vw, 92px);
+  font-weight: 700;
+  line-height: 1;
+  color: #f4f4f4;
+  font-variant-numeric: tabular-nums;
+  text-shadow:
+    0 0 24px rgba(79, 224, 196, 0.45),
+    0 0 2px rgba(255, 255, 255, 0.4);
+  letter-spacing: -0.02em;
+}
+
+.heroPct {
+  font-size: 0.5em;
+  color: #4fe0c4;
+  margin-left: 4px;
+}
+
+.heroSub {
+  margin-top: 6px;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  font-variant-numeric: tabular-nums;
+  color: #4fe0c4;
+}
+
+.foot {
+  position: absolute;
+  left: clamp(16px, 3.2vw, 48px);
+  bottom: clamp(12px, 3vh, 24px);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: #5b6063;
+}
+
+.arrow {
+  color: #4fe0c4;
+  font-size: 12px;
+}
+.arrow {
+  opacity: 0;
+}
+
+.ctFrom {
+  font-variant-numeric: tabular-nums;
+}
+
+/* KO: 한글이 들어가는 라벨은 자간을 좁히고, 제목·단계·각주 문장은 sans 로 */
+.hud[data-locale='ko'] .name,
+.hud[data-locale='ko'] .jig,
+.hud[data-locale='ko'] .planeAnchor > span,
+.hud[data-locale='ko'] .kicker,
+.hud[data-locale='ko'] .heroLabel,
+.hud[data-locale='ko'] .heroSub {
+  letter-spacing: 0.02em;
+}
+.hud[data-locale='ko'] .title {
+  font-family: var(--font-sans, 'Pretendard Variable', sans-serif);
+  font-weight: 600;
+  letter-spacing: var(--track-heading, -0.015em);
+}
+.hud[data-locale='ko'] .beats,
+.hud[data-locale='ko'] .foot {
+  font-family: var(--font-sans, 'Pretendard Variable', sans-serif);
+  letter-spacing: var(--track-kr, 0);
+}
+.hud[data-locale='ko'] .beatNo {
+  font-family: var(--font-mono, 'JetBrains Mono', 'Pretendard Variable', monospace);
+}
+
+/* 갤러리 카드(~512×288): 제목 + 생산성 수치만 */
+@container (max-width: 699px) {
+  .head {
+    left: 14px;
+    top: 12px;
+  }
+  .kicker,
+  .beats,
+  .foot,
+  .heroSub,
+  .anchor,
+  .jigAnchor,
+  .planeAnchor {
+    display: none;
+  }
+  .title {
+    margin-top: 0;
+    font-size: 14px;
+  }
+  .hero {
+    right: 14px;
+    top: auto;
+    bottom: 12px;
+  }
+  .heroLabel {
+    font-size: 11px;
+  }
+  .heroNum {
+    font-size: 44px;
+  }
+}

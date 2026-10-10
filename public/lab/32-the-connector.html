@@ -12,8 +12,8 @@
     --phos-dim:#8d8d8d;
     --phos-deep:#3a3a3a;
     --link:#4fe0c4;        /* 연결을 빛내는 절제된 청록 인광 */
-    --kr:"Pretendard Variable","Pretendard","Pretendard Variable",-apple-system,sans-serif;
-    --mono:"JetBrains Mono",ui-monospace,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic",Menlo,Consolas,monospace;
+    --kr:'Pretendard Variable', sans-serif;
+    --mono:'JetBrains Mono', 'Pretendard Variable', monospace;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{height:100%;}
@@ -463,10 +463,10 @@
     // anchored near each shore top
     const lTop=leftNodes[0], rTop=rightNodes[0];
     ctx.fillStyle=rgba(col,0.55+0.3*warm);
-    ctx.font="700 15px 'JetBrains Mono', monospace";
+    ctx.font="700 15px 'JetBrains Mono', 'Pretendard Variable', monospace";
     ctx.fillText("현장", lTop.x, lTop.y-26);
     ctx.fillText("기술", rTop.x, rTop.y-26);
-    ctx.font="500 9.5px 'JetBrains Mono', monospace";
+    ctx.font="500 9.5px 'JetBrains Mono', 'Pretendard Variable', monospace";
     ctx.fillStyle=rgba(col,0.4+0.25*warm);
     ctx.fillText("FIELD · 공정·설비·사람", lTop.x, lTop.y-12);
     ctx.fillText("TECH · 데이터·AI·시스템", rTop.x, rTop.y-12);

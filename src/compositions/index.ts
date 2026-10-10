@@ -41,14 +41,14 @@ export const COMPOSITIONS: Composition[] = [
     title: '철학',
     audience: '문화 적합성',
     blurb: '크로스도메인·품질·위임 — 왜 그렇게 일하는가.',
-    scenes: ['06', '09'],
+    scenes: ['06', '12'],
   },
   {
     slug: 'knowledge',
     title: '지식관리',
     audience: 'AI·플랫폼',
     blurb: '지식을 운영 시스템으로 — 거버넌스·결정·검색.',
-    scenes: ['04', '23', '25', '26'],
+    scenes: ['23', '25', '26'],
   },
 ]
 

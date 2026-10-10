@@ -63,25 +63,27 @@ export const SKILL_AREAS: SkillArea[] = [
   {
     key: 'process',
     label: copy('공정', 'Process'),
-    blurb: copy('제조 · 계측 · 로보틱스 — 용접/적층/측정/로봇 교시와 디지털 트윈.', 'Manufacturing, metrology, and robotics — welding, additive manufacturing, measurement, robot teaching, and digital twins.'),
+    blurb: copy('제조 · 품질 · 로보틱스 — 용착 DOE, 용접, 비전 검사, 로봇 교시, 적층, 스마트 팩토리, 라인 밸런싱.', 'Manufacturing, quality, and robotics — welding DOE, welding, vision inspection, robot teaching, additive manufacturing, smart factory, and line balancing.'),
     cards: [
-      card('sonar-waterfall', '초음파 용착 DOE', 'Ultrasonic Welding DOE', '공정', 'Process', '조건 최적화 반응면 — 용착 파라미터 DOE 워터폴.', 'An optimization response surface — a waterfall view of welding-parameter DOE.'),
+      card('x-weld-doe', '초음파 용착 DOE', 'Ultrasonic Welding DOE', '용착', 'Welding', '진폭·가압력·시간 DOE로 최적 조건을 찾아 용착 불량률 15% → 0%대. 재작업·폐기 비용 연 6,800만원 절감.', 'A DOE over amplitude, pressure, and weld time found the optimal window: weld defects 15% → ~0%, saving ₩68M a year in rework and scrap.'),
       card('weld-thermal', 'Nd:YAG 레이저 용접기', 'Nd:YAG Laser Welder', '용접', 'Welding', '1064nm 펄스 — 레이저가 경로를 그리며 키홀/심/패턴 용접.', '1064 nm pulses — a laser traces paths for keyhole, seam, and pattern welding.'),
-      card('oscilloscope', '스팟 용접 전류 파형', 'Spot-welding Current Waveform', '계측', 'Metrology', '2차 전류 모니터 — AC/MFDC 파형, 라이브 오실로스코프 + 전류 모니터.', 'Secondary-current monitor — AC/MFDC waveforms with a live oscilloscope.'),
       card('robot-pendant', '티칭 펜던트 · 스팟용접', 'Teaching Pendant · Spot Welding', '로보틱스', 'Robotics', 'PROG[SPOT_WLD] 교시 — 로봇 스팟 용접 티칭 펜던트.', 'PROG[SPOT_WLD] teaching — a pendant for robot spot-welding programming.'),
       card('gcode-printer', '적층제조 치공구 빌드', 'Additive-manufacturing Jig Build', '적층제조', 'Additive manufacturing', 'Jig 직접 제작 — FDM 빌드 + 슬라이싱 파라미터.', 'Direct jig manufacturing — FDM build and slicing parameters.'),
-      card('cmm-metrology', 'CMM 정밀 측정', 'CMM Precision Measurement', '계측', 'Metrology', '3D 좌표측정 — 프로브 시퀀스·GD&T·검사성적서 자동발행.', '3D coordinate measurement — probe sequences, GD&T, and automated inspection reports.'),
-      card('digital-twin', '디지털 트윈', 'Digital Twin', '제조·3D', 'Manufacturing · 3D', '연결된 도메인 = 조직·공정의 디지털 트윈.', 'Connected domains form a digital twin of the organization and process.'),
+      card('x-vision-reverse', '비전 검사 · 셀 역삽 검출', 'Vision Inspection · Reversed Cells', '검사', 'Inspection', '배터리 모듈 셀 극성 역삽을 비전으로 검출. 유휴 비전 장비 4대를 재활용해 약 400만원 절감, 필드 불량 0건.', 'Vision check for reversed cell polarity in battery modules. Four idle vision machines reused (≈ ₩4M saved); zero field defects.'),
+      card('x-smart-factory', '스마트 팩토리 도입', 'Smart Factory Adoption', '스마트팩토리', 'Smart factory', '은성(2021.08–2022.01) — 과제 신청·PM·요구사항 수립. Ecount ERP·바코드·태블릿 생산현황으로 수기 기록을 대체.', 'Eunsung (2021.08–2022.01) — applied for the program, ran it as PM, wrote the requirements. Ecount ERP, barcodes, and tablet status boards replaced paper logs.'),
+      card('x-lob-balance', 'LOB 라인 밸런싱', 'LOB Line Balancing', '라인', 'Line', '병목 두 공정을 Jig로 단축(Neck C/T 16.72→12.76초, Function Test 55→28초). 라인 생산성 24% 향상.', 'Jigs cut the two bottlenecks (Neck C/T 16.72 → 12.76 s, function test 55 → 28 s). Line productivity +24%.'),
     ],
   },
   {
     key: 'dev',
     label: copy('개발', 'Development'),
-    blurb: copy('소프트웨어 · 데이터 — 도면·DB·MES·IDE로 보는 시스템 설계.', 'Software and data — system design seen through drawings, databases, MES, and IDEs.'),
+    blurb: copy('소프트웨어 · 데이터 — 도면·DB·MES·엑셀 전환·추적성·IDE로 보는 시스템 설계.', 'Software and data — system design seen through drawings, databases, MES, Excel migration, traceability, and IDEs.'),
     cards: [
       card('pid-scheme', 'P&ID 시스템 토폴로지', 'P&ID System Topology', '아키텍처', 'Architecture', 'ISA-5.1 — 소프트웨어 아키텍처를 P&ID 도면으로.', 'ISA-5.1 — software architecture represented as a P&ID drawing.'),
       card('db-architecture', 'DB 모델링 / 데이터 아키텍처', 'DB Modeling / Data Architecture', '데이터·DB', 'Data · DB', '엑셀 파편화 → 정규화 관계형 DB(26테이블 ERD).', 'Fragmented spreadsheets → normalized relational DB (26-table ERD).'),
-      card('mes-console', 'MES 실시간 운영 콘솔', 'MES Real-time Operations Console', '데이터', 'Data', '현장 운영 시스템 — MES/BI 실시간 콘솔.', 'A field-operations system — real-time MES/BI console.'),
+      card('x-mes-line', '신제품 라인 MES 자체 개발', 'New Line MES, Built In-house', 'MES', 'MES', '설비 예산에서 빠진 MES 외주비를 자체 개발로 대체 — PostgreSQL·Django·React, OCV/IR·비전 설비 연동. 3개월.', 'Built the MES in-house when outsourcing was missing from the equipment budget — PostgreSQL, Django, React, wired to OCV/IR and vision stations. Three months.'),
+      card('x-excel-to-db', '엑셀 → DB 전환', 'Excel → Database', '데이터', 'Data', '담당자별 엑셀 8종을 DB로 통합하고 Power BI 대시보드로 자동 갱신. 사무 공수 하루 451분 감축.', 'Eight per-owner Excel files moved into one database with an auto-refreshing Power BI dashboard. Office work cut by 451 minutes a day.'),
+      card('x-sn-trace', '공정 추적성 · S/N 관리', 'Process Traceability · S/N', '추적성', 'Traceability', '원자재 LOT → 조립 → 출하 S/N 계보 추적. 미등록 제품은 상위 공정 투입 차단. 2024 Core Value Award.', 'Genealogy from raw-material LOT through assembly to shipped S/N; unregistered units are blocked from later stations. 2024 Core Value Award.'),
       card('ide-coding', 'IDE 코딩 화면', 'IDE Coding Screen', '개발', 'Development', '라이브 타이핑 + 터미널 테스트(pnpm test → 6 passed) — 개발자의 코드 에디터.', 'Live typing + terminal tests (pnpm test → 6 passed) — a developer’s code editor.'),
     ],
   },
@@ -90,17 +92,16 @@ export const SKILL_AREAS: SkillArea[] = [
     label: copy('인프라', 'Infrastructure'),
     blurb: copy('시스템 · 관제 — 작업 관제와 에이전트 거버넌스.', 'Systems and control — work operations control and agent governance.'),
     cards: [
-      card('radar-sonar', 'Work Radar 관제 콕핏', 'Work Radar Control Cockpit', '관제', 'Operations control', 'PPI 스코프 — 작업 신호를 무한 재취득하는 관제 레이더.', 'A PPI scope — operations radar that continuously reacquires work signals.'),
+      card('x-work-radar-rails', 'Work Radar · 두 레일', 'Work Radar · Two Rails', '개인 프로젝트', 'Personal project', '일정·PR·백로그 신호는 자동 수집, 승격은 사람이 결정. 자동화(Codex job)는 샌드박스 제안 레일에서만 실행.', 'Calendar, PR, and backlog signals are collected automatically; a person decides what gets promoted. Automation (Codex jobs) runs only in a sandboxed proposal rail.'),
       card('agent-governance', 'AI 에이전트 거버넌스', 'AI Agent Governance', '거버넌스', 'Governance', 'Boule Control Room — 에이전트 자율성·권한·감사 관제.', 'Boule Control Room — control over agent autonomy, authority, and auditability.'),
     ],
   },
   {
     key: 'pkm',
     label: copy('PKM', 'PKM'),
-    blurb: copy('지식관리 — 볼트 의미지도와 Hermes 지식 컨트롤 플레인.', 'Knowledge management — a vault semantic map and the Hermes knowledge control plane.'),
+    blurb: copy('지식관리 — 문서 근거 위치를 붙이는 KIP 검색.', 'Knowledge management — KIP search that attaches source locations to answers.'),
     cards: [
-      card('ai-latent', '볼트 의미지도', 'Vault Semantic Map', 'PKM', 'PKM', 'BGE-M3 지식그래프 — 캡션 전환마다 크로스도메인 연결이 재형성. 테크스택·철학을 한 그래프로.', 'BGE-M3 knowledge graph — cross-domain links reform with each caption; tech stack and philosophy in one graph.'),
-      card('graphrag', 'Hermes 컨트롤 플레인', 'Hermes Control Plane', '지식 플랫폼', 'Knowledge platform', 'OKF 정본 · Graphiti 은닉 temporal index · Hermes MCP 단일 진입점 · PR write 게이트.', 'OKF source of truth · Graphiti hidden temporal index · Hermes MCP single entry point · PR write gate.'),
+      card('x-kip-evidence', 'KIP · 근거 위치 검색', 'KIP · Search with Source Locations', '지식 검색', 'Knowledge search', 'HWP·PDF·PPTX·XLSX를 하나의 색인으로. 답변 문장마다 원문 위치(파일·페이지·블록)를 붙이고, 표는 별도 단위로 다룬다.', 'HWP, PDF, PPTX, and XLSX in one index. Every answer sentence carries its source location (file · page · block); tables stay separate units.'),
     ],
   },
 ]
@@ -108,7 +109,7 @@ export const SKILL_AREAS: SkillArea[] = [
 // 허브/스킬 페이지 헤더 (skills.html). label 라인은 .al 텍스트.
 export const SKILLS_HUB = {
   title: copy('Skills · 영역별 실작업', 'Skills · Hands-on Work by Area'),
-  sub: copy('실제로 만든 시안 20종을 5개 영역으로 나눴습니다. 각 영역 페이지는 해당 시안만 지연로딩하여 가볍게 열립니다.', 'Twenty hands-on pieces grouped into five areas. Each area page lazy-loads only its own pieces for a lightweight experience.'),
+  sub: copy('실제로 만든 시안 21종을 5개 영역으로 나눴습니다. 각 영역 페이지는 해당 시안만 지연로딩하여 가볍게 열립니다.', 'Twenty-one hands-on pieces grouped into five areas. Each area page lazy-loads only its own pieces for a lightweight experience.'),
 }
 
 // 영역별 헤더 (skills-<area>.html) + 허브 카드 라벨 라인(.al).
@@ -119,14 +120,14 @@ export const AREA_META: Record<SkillAreaKey, { heading: LocalizedString; sub: Lo
     labelLine: copy('원가 · 간트 · Notion OS · 창고물류 SCM · Decision OS', 'Cost · Gantt · Notion OS · Warehouse SCM · Decision OS'),
   },
   process: {
-    heading: copy('공정 · 제조 · 계측 · 로보틱스', 'Process · Manufacturing · Metrology · Robotics'),
-    sub: copy('용접·적층·측정·로봇 교시와 디지털 트윈 — 현장 기술을 인터랙티브 계측으로.', 'Welding, additive manufacturing, measurement, robot teaching, and digital twins — hands-on engineering as interactive metrology.'),
-    labelLine: copy('DOE · 레이저 · 전류 · 로봇 · 적층 · CMM · 트윈', 'DOE · Laser · Current · Robot · Additive · CMM · Twin'),
+    heading: copy('공정 · 제조 · 품질 · 로보틱스', 'Process · Manufacturing · Quality · Robotics'),
+    sub: copy('용착 조건 최적화·용접·비전 검사·로봇 교시·적층·스마트 팩토리·라인 밸런싱 — 현장 개선 작업.', 'Weld-condition optimization, welding, vision inspection, robot teaching, additive manufacturing, smart factory, and line balancing — shop-floor improvement work.'),
+    labelLine: copy('DOE · 레이저 · 비전 · 로봇 · 적층 · 스마트팩토리 · LOB', 'DOE · Laser · Vision · Robot · Additive · Smart factory · LOB'),
   },
   dev: {
     heading: copy('개발 · 소프트웨어 · 데이터', 'Development · Software · Data'),
-    sub: copy('도면·DB·MES·IDE — 시스템을 설계하고 데이터를 구조화한 결과물.', 'Drawings, databases, MES, and IDEs — work that designs systems and structures data.'),
-    labelLine: copy('P&ID · DB · MES · IDE', 'P&ID · DB · MES · IDE'),
+    sub: copy('도면·DB·MES·엑셀 전환·추적성·IDE — 시스템을 설계하고 데이터를 구조화한 결과물.', 'Drawings, databases, MES, Excel migration, traceability, and IDEs — work that designs systems and structures data.'),
+    labelLine: copy('P&ID · DB · MES · 엑셀→DB · S/N · IDE', 'P&ID · DB · MES · Excel→DB · S/N · IDE'),
   },
   infra: {
     heading: copy('인프라 · 시스템 · 관제', 'Infrastructure · Systems · Operations Control'),
@@ -135,7 +136,7 @@ export const AREA_META: Record<SkillAreaKey, { heading: LocalizedString; sub: Lo
   },
   pkm: {
     heading: copy('PKM · 지식관리', 'PKM · Knowledge Management'),
-    sub: copy('지식을 흘려보내지 않고 구조로 — 볼트 의미지도와 Hermes 지식 컨트롤 플레인.', 'Keep knowledge from leaking away by turning it into structure — a vault semantic map and the Hermes knowledge control plane.'),
-    labelLine: copy('볼트 의미지도 · Hermes', 'Vault Semantic Map · Hermes'),
+    sub: copy('문서 속 지식을 근거와 함께 꺼낸다 — 답변마다 원문 위치를 붙이는 KIP.', 'Pull knowledge out of documents with its evidence — KIP attaches the source location to every answer.'),
+    labelLine: copy('KIP', 'KIP'),
   },
 }

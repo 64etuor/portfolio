@@ -1,5 +1,5 @@
-// db-architecture — pure geometry / SVG / HTML string builders.
-// No DOM refs, no closure state — all inputs via explicit parameters.
+// db-architecture — pure geometry / SVG / HTML string builders (+ the CTE tree
+// node builder). No closure state — all inputs via explicit parameters.
 
 import {
   SM_STATES,
@@ -9,6 +9,7 @@ import {
   REC_TREE,
   type DdlRow,
 } from './data'
+import { svg } from '../_host/richText'
 
 /** CSS-module class map (scene.module.css default export). */
 type ClassMap = Record<string, string>
@@ -236,26 +237,43 @@ export function drawSmStr(s: ClassMap, smCur: string): string {
   return str
 }
 
-/** Recursive-CTE BOM tree → SVG string for the given visible depth. */
-export function drawRecStr(recShown: number): string {
-  let str = ''
-  REC_TREE.forEach((n) => {
-    if (n.mgr == null) return
+/**
+ * Recursive-CTE BOM tree. Builds the SVG nodes once into `root` and returns an
+ * updater that only rewrites the depth-dependent attributes per tick.
+ */
+export function mountRecTree(root: Element): (recShown: number) => void {
+  const edges = REC_TREE.flatMap((n) => {
+    if (n.mgr == null) return []
     const p = REC_TREE.find((x) => x.id === n.mgr)!
-    const visible = n.depth <= recShown
-    const col = visible ? '#a78bfa' : '#1c2636'
-    str +=
-      '<path d="M' + p.x + ',' + (p.y + 13) + ' C' + p.x + ',' + (p.y + n.y) / 2 + ' ' + n.x + ',' + (p.y + n.y) / 2 + ' ' + n.x + ',' + (n.y - 13) + '" fill="none" stroke="' + col + '" stroke-width="' + (visible ? 1.8 : 1) + '" opacity="' + (visible ? 0.85 : 0.3) + '"/>'
+    const d = 'M' + p.x + ',' + (p.y + 13) + ' C' + p.x + ',' + (p.y + n.y) / 2 + ' ' + n.x + ',' + (p.y + n.y) / 2 + ' ' + n.x + ',' + (n.y - 13)
+    return [{ n, path: svg('path', { d, fill: 'none' }) }]
   })
-  REC_TREE.forEach((n) => {
-    const visible = n.depth <= recShown
-    const justIn = n.depth === recShown
-    const col = ['#3fb6ff', '#a78bfa', '#ffcb47', '#00e0a4'][n.depth]
-    const fill = visible ? (justIn ? col : '#141d29') : '#0e1620'
-    const stroke = visible ? col : '#1c2636'
-    const tcol = visible ? (justIn ? '#06140f' : col) : '#2a3a50'
-    str +=
-      '<g opacity="' + (visible ? 1 : 0.25) + '"><rect x="' + (n.x - 52) + '" y="' + (n.y - 14) + '" rx="8" width="104" height="28" fill="' + fill + '" stroke="' + stroke + '" stroke-width="' + (justIn ? 2.2 : 1.4) + '"/><text x="' + n.x + '" y="' + (n.y + 1) + '" text-anchor="middle" font-family="JetBrains Mono" font-size="11" font-weight="' + (justIn ? 700 : 500) + '" fill="' + tcol + '">' + n.name + '</text><text x="' + n.x + '" y="' + (n.y + 11) + '" text-anchor="middle" font-family="JetBrains Mono" font-size="7" fill="' + (visible ? '#5c708a' : '#1c2636') + '">#' + n.id + ' parent:' + (n.mgr === null ? 'null' : n.mgr) + '</text></g>'
+  const nodes = REC_TREE.map((n) => {
+    const rect = svg('rect', { x: n.x - 52, y: n.y - 14, rx: 8, width: 104, height: 28 })
+    const name = svg('text', { x: n.x, y: n.y + 1, 'text-anchor': 'middle', 'font-family': 'JetBrains Mono', 'font-size': 11 }, n.name)
+    const meta = svg('text', { x: n.x, y: n.y + 11, 'text-anchor': 'middle', 'font-family': 'JetBrains Mono', 'font-size': 7 }, '#' + n.id + ' parent:' + (n.mgr === null ? 'null' : n.mgr))
+    return { n, g: svg('g', null, rect, name, meta), rect, name, meta }
   })
-  return str
+  root.replaceChildren(...edges.map((e) => e.path), ...nodes.map((x) => x.g))
+
+  return (recShown) => {
+    for (const { n, path } of edges) {
+      const visible = n.depth <= recShown
+      path.setAttribute('stroke', visible ? '#a78bfa' : '#1c2636')
+      path.setAttribute('stroke-width', String(visible ? 1.8 : 1))
+      path.setAttribute('opacity', String(visible ? 0.85 : 0.3))
+    }
+    for (const { n, g, rect, name, meta } of nodes) {
+      const visible = n.depth <= recShown
+      const justIn = n.depth === recShown
+      const col = ['#3fb6ff', '#a78bfa', '#ffcb47', '#00e0a4'][n.depth]
+      g.setAttribute('opacity', String(visible ? 1 : 0.25))
+      rect.setAttribute('fill', visible ? (justIn ? col : '#141d29') : '#0e1620')
+      rect.setAttribute('stroke', visible ? col : '#1c2636')
+      rect.setAttribute('stroke-width', String(justIn ? 2.2 : 1.4))
+      name.setAttribute('font-weight', String(justIn ? 700 : 500))
+      name.setAttribute('fill', visible ? (justIn ? '#06140f' : col) : '#2a3a50')
+      meta.setAttribute('fill', visible ? '#5c708a' : '#1c2636')
+    }
+  }
 }

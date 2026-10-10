@@ -14,14 +14,13 @@ function loop(now: number) {
   rafId = null
   // 다음 프레임을 먼저 예약 — 콜백이 throw 해도 루프가 죽지 않는다.
   schedule()
-  // 복사본 순회 — 콜백이 도중에 구독 해제해도 안전.
-  for (const cb of Array.from(subs)) {
-    if (subs.has(cb)) {
-      try {
-        cb(now)
-      } catch (err) {
-        console.error('[raf] subscriber threw, continuing loop:', err)
-      }
+  // Set 직접 순회(매 프레임 배열 할당 없음) — 도중에 해제된 콜백은 건너뛰고, 도중에 추가된 콜백은
+  // 이번 프레임에 한 번 더 불릴 수 있다(첫 tick 이 now 기준으로 초기화하므로 무해).
+  for (const cb of subs) {
+    try {
+      cb(now)
+    } catch (err) {
+      console.error('[raf] subscriber threw, continuing loop:', err)
     }
   }
 }

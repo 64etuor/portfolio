@@ -1,6 +1,8 @@
 # Build output / caches — Vercel builds these itself; never upload (huge, >100MB files).
 /.next/
 /.next-verify/
+/.next-prod/
+/.next-*/
 /node_modules/
 
 # Non-app source/archive dirs — not needed at runtime (served assets live in public/).

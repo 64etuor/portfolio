@@ -11,7 +11,6 @@ import {
   PHOS,
   PHOS_HI,
   RUNE_N,
-  monoLabel,
   sans,
   sansMed,
 } from './dragonHeroPalette'
@@ -145,7 +144,7 @@ export function ResumeDragonHero({ nameEn, nameKr, title }: { nameEn: string; na
       const blocks: Block[] = [
         { text: nameEn.toUpperCase(), font: sans, size: big, color: PHOS_HI, alpha: 1, gap: big * 0.26 },
         { text: nameKr, font: sansMed, size: kr, color: PHOS, alpha: 0.92, gap: kr * 0.7 },
-        { text: title, font: monoLabel, size: ts, color: DIM, alpha: 0.78, gap: 0 },
+        { text: title, font: sansMed, size: ts * 1.06, color: DIM, alpha: 0.82, gap: 0 },
       ]
 
       // Vertical block: measure total height, then center within the box.
@@ -263,8 +262,20 @@ export function ResumeDragonHero({ nameEn, nameKr, title }: { nameEn: string; na
       emitFire(state, dt)
       updateParticlesAndEmbers(state, dt)
       render(ctx!, state)
-      raf = requestAnimationFrame(frame)
+      raf = onScreen ? requestAnimationFrame(frame) : 0
     }
+
+    // Park the loop while the masthead is scrolled out of view — the résumé body is
+    // long, and a full-bleed canvas redrawing off-screen burns the main thread (and
+    // battery) for nothing. Resuming re-bases lastTime so dt stays clamped sanely.
+    let onScreen = true
+    const io = new IntersectionObserver(([entry]) => {
+      onScreen = entry.isIntersecting
+      if (onScreen && !raf && !reduced) {
+        lastTime = performance.now()
+        raf = requestAnimationFrame(frame)
+      }
+    })
 
     // ── Reduced motion: a single static frame ──
     function staticFrame() {
@@ -344,8 +355,10 @@ export function ResumeDragonHero({ nameEn, nameKr, title }: { nameEn: string; na
       })
     }
     window.addEventListener('resize', onResize)
+    io.observe(canvas)
 
     return () => {
+      io.disconnect()
       cancelAnimationFrame(raf)
       cancelAnimationFrame(resizeRaf)
       window.removeEventListener('pointermove', onMove)

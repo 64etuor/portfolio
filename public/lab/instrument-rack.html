@@ -26,12 +26,12 @@
       radial-gradient(1300px 800px at 50% -8%, #101418 0%, var(--bg) 62%),
       var(--bg);
     color:var(--ink);
-    font-family:"Pretendard Variable",Pretendard,system-ui,sans-serif;
+    font-family:'Pretendard Variable', sans-serif;
     word-break:keep-all;
     -webkit-font-smoothing:antialiased;
     overflow-x:hidden;
   }
-  .mono{font-family:"DM Mono","SF Mono",ui-monospace,"Cascadia Code",Menlo,monospace}
+  .mono{font-family:'DM Mono', 'Pretendard Variable', monospace}
 
   /* ===== rack shell ===== */
   .wrap{max-width:1500px;margin:0 auto;padding:clamp(14px,2vw,30px)}
@@ -128,27 +128,27 @@
   .ledrow .led{width:8px;height:8px;border-radius:50%;background:#243038;box-shadow:inset 0 0 3px #000;flex:0 0 auto;transition:.15s}
   .ledrow.active .led,.ledrow:hover .led{background:var(--green);box-shadow:0 0 8px var(--green)}
   .ledrow .nm{font-size:11.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .ledrow .base{font-family:"DM Mono",monospace;font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
-  .ledrow .cut{font-family:"DM Mono",monospace;font-size:12px;font-weight:700;color:var(--green);text-align:right;font-variant-numeric:tabular-nums}
+  .ledrow .base{font-family:'DM Mono', 'Pretendard Variable', monospace;font-size:12px;color:var(--muted);text-align:right;font-variant-numeric:tabular-nums}
+  .ledrow .cut{font-family:'DM Mono', 'Pretendard Variable', monospace;font-size:12px;font-weight:700;color:var(--green);text-align:right;font-variant-numeric:tabular-nums}
   .ledrow .cut.zero{color:var(--muted2)}
   .ledtot{display:grid;grid-template-columns:1fr 78px 92px;gap:8px;align-items:center;
     margin-top:3px;padding:10px 11px;border-radius:6px;
     background:linear-gradient(180deg,#0c2417,#08160e);border:1px solid #1c5a3c}
   .ledtot .nm{font-size:11.5px;font-weight:800;color:var(--ink)}
-  .ledtot .base{font-family:"DM Mono",monospace;font-size:12px;color:var(--muted);text-align:right}
-  .ledtot .cut{font-family:"DM Mono",monospace;font-size:15px;font-weight:800;color:var(--green);text-align:right;text-shadow:0 0 6px rgba(57,255,138,.24)}
+  .ledtot .base{font-family:'DM Mono', 'Pretendard Variable', monospace;font-size:12px;color:var(--muted);text-align:right}
+  .ledtot .cut{font-family:'DM Mono', 'Pretendard Variable', monospace;font-size:15px;font-weight:800;color:var(--green);text-align:right;text-shadow:0 0 6px rgba(57,255,138,.24)}
 
   /* interrogation panel */
   .interro{margin-top:9px;border:1px solid var(--line);border-radius:7px;background:#0b0f12;
     padding:11px 13px;min-height:96px}
   .interro .qh{display:flex;align-items:center;gap:8px;margin-bottom:7px}
   .interro .qh .qt{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
-  .interro .qh .qn{margin-left:auto;font-family:"DM Mono",monospace;font-size:9.5px;color:var(--green)}
+  .interro .qh .qn{margin-left:auto;font-family:'DM Mono', 'Pretendard Variable', monospace;font-size:9.5px;color:var(--green)}
   .interro .qq{font-size:12px;font-weight:700;color:var(--ink);margin-bottom:6px;letter-spacing:-.01em}
-  .interro .qq::before{content:"❯ ";color:var(--green);font-family:"DM Mono",monospace}
+  .interro .qq::before{content:"❯ ";color:var(--green);font-family:'DM Mono', 'Pretendard Variable', monospace}
   .interro .qa{font-size:10.5px;color:var(--muted);line-height:1.6}
   .interro .qa b{color:var(--cyan);font-weight:700}
-  .interro .qlev{display:inline-block;margin-top:8px;font-family:"DM Mono",monospace;font-size:9px;
+  .interro .qlev{display:inline-block;margin-top:8px;font-family:'DM Mono', 'Pretendard Variable', monospace;font-size:9px;
     color:var(--green);border:1px solid #1c5a3c;background:#0a2417;border-radius:4px;padding:3px 8px;letter-spacing:.04em}
 
   /* ===== WATERFALL (right) ===== */
@@ -158,21 +158,21 @@
     box-shadow:inset 0 0 40px rgba(0,0,0,.85)}
   .wfchart .ovl{position:absolute;inset:0;pointer-events:none;
     background:repeating-linear-gradient(0deg,rgba(0,0,0,.16) 0 2px,transparent 2px 4px)}
-  .wfcorner{position:absolute;font-size:9px;color:#2a8a60;letter-spacing:.1em;font-weight:700;font-family:"DM Mono",monospace}
+  .wfcorner{position:absolute;font-size:9px;color:#2a8a60;letter-spacing:.1em;font-weight:700;font-family:'DM Mono', 'Pretendard Variable', monospace}
   .wfcorner.tl{top:8px;left:11px}.wfcorner.tr{top:8px;right:11px;color:var(--amber)}
   .wfcorner.br{bottom:6px;right:11px;color:var(--green)}
   .wfsvg{display:block;width:100%;height:auto;position:relative;z-index:1}
-  .wfaxis{font-family:"DM Mono",monospace;font-size:8px;fill:#2a8a60}
-  .wfcap{font-family:"Pretendard Variable",Pretendard,sans-serif;font-size:8.5px;fill:#8aa39a;font-weight:600}
-  .wfval{font-family:"DM Mono",monospace;font-size:9px;font-weight:700}
+  .wfaxis{font-family:'DM Mono', 'Pretendard Variable', monospace;font-size:8px;fill:#2a8a60}
+  .wfcap{font-family:'Pretendard Variable', sans-serif;font-size:8.5px;fill:#8aa39a;font-weight:600}
+  .wfval{font-family:'DM Mono', 'Pretendard Variable', monospace;font-size:9px;font-weight:700}
 
   .wfsteps{display:flex;flex-direction:column;gap:6px}
   .wfstep{display:grid;grid-template-columns:18px 1fr 64px;gap:9px;align-items:center;
     background:#0e1216;border:1px solid var(--line);border-radius:6px;padding:8px 11px}
-  .wfstep .si{font-family:"DM Mono",monospace;font-size:10px;font-weight:800;color:var(--amber);text-align:center}
+  .wfstep .si{font-family:'DM Mono', 'Pretendard Variable', monospace;font-size:10px;font-weight:800;color:var(--amber);text-align:center}
   .wfstep .sn{font-size:11px;font-weight:700}
   .wfstep .sd{font-size:9px;color:var(--muted);letter-spacing:.02em;margin-top:2px}
-  .wfstep .sv{font-family:"DM Mono",monospace;font-size:12px;font-weight:700;color:var(--green);text-align:right;font-variant-numeric:tabular-nums}
+  .wfstep .sv{font-family:'DM Mono', 'Pretendard Variable', monospace;font-size:12px;font-weight:700;color:var(--green);text-align:right;font-variant-numeric:tabular-nums}
   .wfstep.baseline{background:#161013;border-color:#3a2a14}
   .wfstep.baseline .si{color:var(--muted)}
   .wfstep.baseline .sv{color:var(--amber)}
@@ -182,14 +182,14 @@
 
   .illnote{font-size:9px;color:var(--muted);line-height:1.55;letter-spacing:.01em;
     background:#0e1216;border:1px solid var(--line);border-radius:5px;padding:8px 10px}
-  .illnote .flag{color:var(--amber);font-weight:700;font-family:"DM Mono",monospace}
+  .illnote .flag{color:var(--amber);font-weight:700;font-family:'DM Mono', 'Pretendard Variable', monospace}
   .illnote b{color:var(--green)}
 
   /* ===== levers strip ===== */
   .levgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
   @media(max-width:760px){.levgrid{grid-template-columns:repeat(2,1fr)}}
   .lev{background:#0e1216;border:1px solid var(--line);border-radius:6px;padding:10px 11px}
-  .lev .lk{font-family:"DM Mono",monospace;font-size:9px;color:var(--amber);letter-spacing:.06em;font-weight:700}
+  .lev .lk{font-family:'DM Mono', 'Pretendard Variable', monospace;font-size:9px;color:var(--amber);letter-spacing:.06em;font-weight:700}
   .lev .lt{font-size:11.5px;font-weight:700;margin-top:5px;line-height:1.3}
   .lev .ld{font-size:9.5px;color:var(--muted);margin-top:5px;line-height:1.45}
 
@@ -198,7 +198,7 @@
   .invrow{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:center;
     background:#0e1216;border:1px solid var(--line);border-radius:6px;padding:8px 11px}
   .invrow .nm{font-size:11px;font-weight:700}
-  .invrow .cap{font-size:9px;color:var(--muted);letter-spacing:.04em;font-family:"DM Mono",monospace}
+  .invrow .cap{font-size:9px;color:var(--muted);letter-spacing:.04em;font-family:'DM Mono', 'Pretendard Variable', monospace}
   .stled{display:flex;align-items:center;gap:6px;font-size:9px;font-weight:700;letter-spacing:.1em}
   .stled .d{width:7px;height:7px;border-radius:50%}
   .stled.ok{color:var(--green)} .stled.ok .d{background:var(--green);box-shadow:0 0 6px var(--green)}
@@ -215,13 +215,13 @@
     background:repeating-linear-gradient(0deg,rgba(0,0,0,.20) 0 2px,transparent 2px 4px);mix-blend-mode:multiply}
   .insth{display:flex;align-items:center;gap:8px;margin-bottom:9px;position:relative;z-index:2}
   .insth .it{font-size:9px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);font-weight:700}
-  .insth .iu{margin-left:auto;font-family:"DM Mono",monospace;font-size:8.5px;color:#2a8a60;letter-spacing:.06em}
+  .insth .iu{margin-left:auto;font-family:'DM Mono', 'Pretendard Variable', monospace;font-size:8.5px;color:#2a8a60;letter-spacing:.06em}
   .insth .il{width:6px;height:6px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:blink 1.3s steps(2,end) infinite}
 
   /* DMM digit roll */
   .dmm{position:relative;z-index:2}
   .dmm .dlabel{font-size:9px;color:var(--muted);letter-spacing:.04em;margin-bottom:6px}
-  .dmm .dwin{display:flex;align-items:flex-end;gap:1px;font-family:"DM Mono",monospace;
+  .dmm .dwin{display:flex;align-items:flex-end;gap:1px;font-family:'DM Mono', 'Pretendard Variable', monospace;
     background:#020604;border:1px solid #103022;border-radius:6px;padding:8px 10px;
     box-shadow:inset 0 0 16px rgba(0,0,0,.9)}
   .dmm .sign{font-size:30px;font-weight:800;color:var(--green);line-height:.9;text-shadow:0 0 8px rgba(57,255,138,.35)}
@@ -231,7 +231,7 @@
   .digit .col span{height:1em;display:flex;align-items:center;justify-content:center}
   .dmm .unit{font-size:18px;font-weight:800;color:var(--green);margin-left:3px;text-shadow:0 0 8px rgba(57,255,138,.35)}
   .dmm .drange{display:flex;justify-content:space-between;margin-top:7px;
-    font-family:"DM Mono",monospace;font-size:8.5px;color:var(--muted2);letter-spacing:.04em}
+    font-family:'DM Mono', 'Pretendard Variable', monospace;font-size:8.5px;color:var(--muted2);letter-spacing:.04em}
 
   /* scope */
   .scope{position:relative;z-index:2}
@@ -239,19 +239,19 @@
     box-shadow:inset 0 0 20px rgba(0,0,0,.9)}
   .scopewrap svg{display:block;width:100%;height:auto}
   .scopefoot{display:flex;justify-content:space-between;margin-top:7px;
-    font-family:"DM Mono",monospace;font-size:8.5px;color:var(--muted2);letter-spacing:.04em}
+    font-family:'DM Mono', 'Pretendard Variable', monospace;font-size:8.5px;color:var(--muted2);letter-spacing:.04em}
   .scopefoot b{color:var(--green)}
 
   /* gauge */
   .gauge{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center}
   .gauge svg{display:block;width:100%;max-width:200px;height:auto}
-  .gauge .gcap{margin-top:4px;font-family:"DM Mono",monospace;font-size:8.5px;color:var(--muted2);letter-spacing:.05em;text-align:center}
+  .gauge .gcap{margin-top:4px;font-family:'DM Mono', 'Pretendard Variable', monospace;font-size:8.5px;color:var(--muted2);letter-spacing:.05em;text-align:center}
   .gauge .gcap b{color:var(--green)}
 
   /* ===== footer ===== */
   .footu{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
   .chips{display:flex;gap:7px;flex-wrap:wrap}
-  .chip{font-size:10px;font-family:"DM Mono",monospace;color:var(--muted);
+  .chip{font-size:10px;font-family:'DM Mono', 'Pretendard Variable', monospace;color:var(--muted);
     border:1px solid var(--line2);border-radius:5px;padding:5px 9px;background:#0e1216;letter-spacing:.02em}
   .chip b{color:var(--green)}
   .label-strip{font-size:9px;color:var(--muted2);letter-spacing:.3em;text-transform:uppercase;
@@ -1044,7 +1044,7 @@
         stroke:(v===15?"#39ff8a":"rgba(170,190,182,0.5)"),"stroke-width":(v===15?2:1)}));
       var lp=pt(a,R-22);
       var t=el("text",{x:lp[0].toFixed(1),y:(lp[1]+3).toFixed(1),"text-anchor":"middle",
-        "font-family":"'DM Mono',monospace","font-size":"8","fill":(v===15?"#39ff8a":"#7e8c87")});
+        "font-family":"'DM Mono', 'Pretendard Variable', monospace","font-size":"8","fill":(v===15?"#39ff8a":"#7e8c87")});
       t.textContent=v; svg.appendChild(t);
     });
     // hub + needle
@@ -1054,7 +1054,7 @@
     svg.appendChild(el("circle",{cx:cx,cy:cy,r:5,fill:"#0a1410",stroke:"#39ff8a","stroke-width":1.5}));
     // center value
     var val=el("text",{x:cx,y:(cy-26).toFixed(1),"text-anchor":"middle",
-      "font-family":"'DM Mono',monospace","font-size":"19","font-weight":"800","fill":"#39ff8a"});
+      "font-family":"'DM Mono', 'Pretendard Variable', monospace","font-size":"19","font-weight":"800","fill":"#39ff8a"});
     val.setAttribute("filter","url(#ggGlow)");
     svg.appendChild(val);
     function setNeedle(v){

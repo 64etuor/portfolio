@@ -1,5 +1,16 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { ACTS } from './acts'
+import { loaderFor } from '@/scenes/loaders'
+
+/** Hard cap on how long any single shot can keep the audience on the OUTGOING
+ * scene while it waits for its own paint — anchored to when `currentFile` itself
+ * became current, not to whether it has made it into a slot yet. A contended main
+ * thread (e.g. 41-perspectives' iframes, each running their own independent rAF
+ * loop) can delay BOTH the staging effect and this timer, but anchoring to the
+ * file transition (not slot occupancy) means the cap still applies even if staging
+ * itself never got a turn — the previous version returned early whenever the file
+ * hadn't reached a slot yet, which is exactly the condition heavy contention causes. */
+const SAFETY_MS = 2500
 
 interface SceneBufferArgs {
   currentFile: string
@@ -24,9 +35,11 @@ interface SceneBuffer {
  * useSceneBuffer — the two-slot double-buffer reveal/blank logic.
  *
  * Two stable slots cross-fade between scenes. While one plays, the NEXT scene is
- * staged into the hidden slot (1100ms after the cut settles) mounted but frozen —
- * `running=false`, so it paints its t=0 frame and never subscribes to the rAF. That
- * makes the following cut instant without letting the scene run before it is seen.
+ * staged into the hidden slot as soon as the current cut settles — mounted but
+ * frozen (`running=false`), so it paints a static frame (at the master clock's
+ * current shot-local offset when a SceneClock is in scope — never a bare t=0) and
+ * never subscribes to the rAF. That makes the following cut instant without
+ * letting the scene run before it is seen.
  *
  * A slot is showable only once its scene has PAINTED, which it signals through
  * `onReady` → `revealOnLoad`. Holding a file is not the same as being ready: cutting
@@ -91,28 +104,63 @@ export function useSceneBuffer(args: SceneBufferArgs): SceneBuffer {
     })
   }, [currentFile, slotFiles, paintedFiles, visibleSlot, reduced, ready, cutTo])
 
-  // Safety: if a scene's `onReady` never fires (load stall), force-reveal after a
-  // cap so the film can't hang waiting for a frame that never paints.
+  // currentFile's own transition timestamp — stamped as soon as it changes,
+  // independent of whether it has reached a slot yet. The safety timer below is
+  // anchored to THIS, not to slot occupancy, so it still applies when a contended
+  // main thread delays staging itself (see SAFETY_MS comment above).
+  const currentSinceRef = useRef(0)
+  useEffect(() => {
+    currentSinceRef.current = performance.now()
+  }, [currentFile])
+
+  // Safety: if a scene's `onReady` never fires (load stall, or a contended main
+  // thread starving it of a paint turn), force-reveal after a cap so the film
+  // can't hang on the outgoing scene indefinitely. Acts even if the file hasn't
+  // made it into a slot yet — it forces that too — so a late STAGE is covered,
+  // not just a late PAINT.
   useEffect(() => {
     if (reduced || !ready || visible) return
-    const at = slotFiles.indexOf(currentFile)
-    if (at < 0) return
-    const t = setTimeout(() => {
-      // Mark it painted too, otherwise `visible` stays false, the clock never arms
-      // and the film hangs on the very scene this timer exists to rescue.
-      setPaintedFiles((prev) => {
-        if (prev[at] === currentFile) return prev
-        const n: [string | null, string | null] = [prev[0], prev[1]]
-        n[at] = currentFile
-        return n
-      })
-      cutTo(at)
-    }, 5000)
+    const elapsed = performance.now() - currentSinceRef.current
+    const t = setTimeout(
+      () => {
+        setSlotFiles((prev) => {
+          const at = prev.indexOf(currentFile)
+          if (at >= 0) return prev
+          const h = visibleSlot ^ 1
+          const n: [string | null, string | null] = [prev[0], prev[1]]
+          n[h] = currentFile
+          return n
+        })
+        setPaintedFiles((prev) => {
+          const at = slotFiles.indexOf(currentFile)
+          const h = at >= 0 ? at : visibleSlot ^ 1
+          if (prev[h] === currentFile) return prev
+          const n: [string | null, string | null] = [prev[0], prev[1]]
+          n[h] = currentFile
+          return n
+        })
+        cutTo(slotFiles.indexOf(currentFile) >= 0 ? slotFiles.indexOf(currentFile) : visibleSlot ^ 1)
+      },
+      Math.max(0, SAFETY_MS - elapsed),
+    )
     return () => clearTimeout(t)
-  }, [reduced, ready, visible, currentFile, slotFiles, cutTo])
+  }, [reduced, ready, visible, currentFile, slotFiles, visibleSlot, cutTo])
 
-  // Once a cut has settled, swap the outgoing scene in the hidden slot for the NEXT
-  // one, so it is already mounted and painted when its turn comes.
+  // Prefetch the NEXT shot's module as soon as it is known — before it is even
+  // staged into a slot. `loaderFor` returns the same per-file loader `LazyScene`
+  // uses, so calling it here just warms the chunk/module cache; it does not mount
+  // anything. This trims the "module still loading" slice of a late reveal — it
+  // does not by itself fix a reveal that is late because the main thread is busy
+  // (see 41-perspectives' SceneClock-driven iframe unload for that half).
+  useEffect(() => {
+    if (reduced || !ready || !nextFile) return
+    loaderFor(nextFile)?.()
+  }, [reduced, ready, nextFile])
+
+  // Swap the outgoing scene in the hidden slot for the NEXT one as soon as the
+  // current cut settles, so it is mounted and painted well before its own start
+  // time arrives on the master clock (Film passes nextFile ahead of the cut by
+  // design — see Film.tsx's schedule-driven nextFile).
   //
   // Loading only on-cut made every scene overrun its budget: the clock ran the full
   // `ms` from paint, then `advance()` fired, and the picture only moved once the
@@ -121,15 +169,17 @@ export function useSceneBuffer(args: SceneBufferArgs): SceneBuffer {
   // at the source instead of compensating for it in the clock.
   //
   // The staged scene mounts with running=false, so useSceneCanvas paints its static
-  // t=0 frame and never subscribes to the rAF — it cannot advance before it is seen.
-  // (Prefetching was dropped originally because it started scenes mid-loop; gating on
-  // `running` is what makes it safe now.) nextFile is null on the last beat, which
-  // blanks the slot exactly as before.
+  // frame at the clock's current shot-local offset (never t=0 once a SceneClock is
+  // in scope) and never subscribes to the rAF — it cannot advance before it is seen.
+  // nextFile is null on the last beat, which blanks the slot exactly as before.
   useEffect(() => {
     if (reduced || !ready) return
     const hidden = visibleSlot ^ 1
     if (slotFiles[hidden] === nextFile) return
-    const t = setTimeout(() => {
+    if (slotFiles[hidden] === currentFile) return
+    // Deferred to a 0ms timeout (not called synchronously in the effect body) so
+    // this commit finishes first — staging still lands in the very next tick.
+    const id = setTimeout(() => {
       setSlotFiles((prev) => {
         const h = visibleSlot ^ 1
         if (prev[h] === nextFile || prev[h] === currentFile) return prev
@@ -147,8 +197,8 @@ export function useSceneBuffer(args: SceneBufferArgs): SceneBuffer {
         n[h] = null
         return n
       })
-    }, 1100) // after the 720ms cross-fade has fully settled
-    return () => clearTimeout(t)
+    }, 0)
+    return () => clearTimeout(id)
   }, [visibleSlot, currentFile, nextFile, reduced, ready, slotFiles])
 
   const revealOnLoad = (i: number) => {

@@ -192,6 +192,16 @@ function tokHTML(toks: Token[]) {
   return h
 }
 
+// Per-frame editor/terminal markup builders (static class names; all text is
+// passed through esc()/tokHTML before interpolation). Module scope — pure.
+function rowHTML(li: number, inner: string, active: boolean) {
+  return `<div class="${cx(s.row, active && s.active)}"><span class="${s.gut}">${li + 1}</span><span class="${s.code}">${inner}</span></div>`
+}
+
+function commandLine(cmd: string, caret: boolean) {
+  return `<span class="${s.tpromptSym}">$</span> <span class="${s.tcmd}">${esc(cmd)}</span>${caret ? `<span class="${s.tcaret}"></span>` : ''}`
+}
+
 function partialToks(line: Token[], k: number) {
   const out: Token[] = []
   let rem = k
@@ -237,10 +247,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const tabRef = useRef<HTMLDivElement | null>(null)
   const centerRef = useRef<HTMLDivElement | null>(null)
   const uptimeRef = useRef<HTMLSpanElement | null>(null)
-
-  function rowHTML(li: number, inner: string, active: boolean) {
-    return `<div class="${cx(s.row, active && s.active)}"><span class="${s.gut}">${li + 1}</span><span class="${s.code}">${inner}</span></div>`
-  }
 
   function updateScroll() {
     const flow = codeflowRef.current
@@ -320,10 +326,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   function termUpdateLast(html: string) {
     const last = termbodyRef.current?.lastElementChild
     if (last) last.innerHTML = html
-  }
-
-  function commandLine(cmd: string, caret: boolean) {
-    return `<span class="${s.tpromptSym}">$</span> <span class="${s.tcmd}">${esc(cmd)}</span>${caret ? `<span class="${s.tcaret}"></span>` : ''}`
   }
 
   function setTyping() {

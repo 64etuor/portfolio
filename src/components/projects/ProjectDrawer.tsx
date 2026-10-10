@@ -89,6 +89,9 @@ export function ProjectDrawer({ project, onClose }: { project: ProjectContent | 
         role="dialog"
         aria-modal="true"
         aria-hidden={!open}
+        // Closed drawer stays mounted (for the slide transition): `inert` takes its
+        // buttons/links out of the tab order so focus can't land in hidden content.
+        inert={!open}
         style={accent}
       >
         <div className="pjd-bar">

@@ -64,10 +64,23 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     // Streaming metadata may arrive after hydration and reset the title. Keep
     // title ownership with the active locale for ordinary routes; standalone
     // scene shells intentionally manage their own dynamic titles.
+    // Next 15 streams metadata and may (re)write a <title> outside <head>, so watch
+    // the <title> elements themselves too — not just <head> (whole-document observation
+    // would fire on every scene DOM mutation).
     const titleObserver = new MutationObserver(() => {
       if (pageTitle && document.title !== pageTitle) document.title = pageTitle
+      watchTitles()
     })
+    const watched = new WeakSet<Element>()
+    const watchTitles = () => {
+      document.querySelectorAll('title').forEach((el) => {
+        if (watched.has(el)) return
+        watched.add(el)
+        titleObserver.observe(el, { childList: true, subtree: true, characterData: true })
+      })
+    }
     titleObserver.observe(document.head, { childList: true, subtree: true, characterData: true })
+    watchTitles()
 
     localStorage.setItem('pf-locale', locale)
     return () => {

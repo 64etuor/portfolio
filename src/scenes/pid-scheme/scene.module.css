@@ -24,12 +24,14 @@
   inset: 0;
   overflow: auto;
   background: #070910;
-  font-family: 'DM Mono', ui-monospace, 'SFMono-Regular', Menlo, Consolas, 'Courier New', monospace;
+  font-family: 'DM Mono', 'Pretendard Variable', monospace;
   color: var(--txt);
   word-break: keep-all;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   box-sizing: border-box;
+  /* 로드되지 않은 굵기를 브라우저가 가짜 볼드로 합성하지 않게(OS별 렌더 차이 제거) — 가장 가까운 실제 굵기로 그린다 */
+  font-synthesis-weight: none;
 }
 
 .wrap *,
@@ -82,6 +84,7 @@
   font-weight: 700;
   letter-spacing: 1px;
   pointer-events: none;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .rulerTop {
   top: 20px;
@@ -119,8 +122,9 @@
   margin: 0;
   font-size: 26px;
   font-weight: 800;
-  letter-spacing: 1px;
+  letter-spacing: 0.02em;
   color: var(--txt);
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .titleMain .sub {
   font-size: 13px;
@@ -128,6 +132,7 @@
   font-weight: 700;
   margin-top: 3px;
   letter-spacing: 0.5px;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .titleMeta {
   text-align: right;
@@ -168,6 +173,7 @@
   color: var(--accent);
   margin-top: 2px;
   font-variant-numeric: tabular-nums;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .ro .val.good {
   color: var(--accent3);
@@ -220,6 +226,7 @@
   letter-spacing: 1px;
   color: var(--txt-faint);
   font-weight: 700;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .toolCol {
   padding-top: 16px;
@@ -227,10 +234,11 @@
 .toolHead {
   font-size: 9.5px;
   color: var(--txt-dim);
-  letter-spacing: 1px;
+  letter-spacing: 0.02em;
   font-weight: 800;
   text-transform: uppercase;
   margin-bottom: 6px;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .toolRow {
   display: grid;
@@ -249,6 +257,7 @@
   color: var(--accent2);
   text-align: center;
   font-weight: 800;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .toolFill {
   border: 1px solid rgba(55, 232, 138, 0.45);
@@ -327,13 +336,14 @@
   font-size: 8.5px;
   color: var(--txt-dim);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.02em;
 }
 .tbCell .v {
   font-size: 12px;
   font-weight: 700;
   color: var(--txt);
   margin-top: 1px;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .tbCell.span {
   grid-column: 1 / -1;
@@ -368,7 +378,8 @@
   font-size: 11px;
   font-weight: 800;
   color: var(--accent2);
-  letter-spacing: 1px;
+  letter-spacing: 0.02em;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .panelHead h2 {
   margin: 5px 0 2px;
@@ -395,7 +406,7 @@
 .wrap :global(.sec h4) {
   margin: 0 0 6px;
   font-size: 10.5px;
-  letter-spacing: 1px;
+  letter-spacing: 0.02em;
   color: #4aa8ff;
   text-transform: uppercase;
   border-bottom: 1px dotted #1a2030;
@@ -418,6 +429,7 @@
   border-radius: 2px;
   font-weight: 700;
   color: #c8d4e8;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 
 .pclose {
@@ -436,6 +448,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 800;
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }
 .pclose:hover {
   background: var(--accent2);
@@ -449,5 +462,14 @@
   color: var(--txt-dim);
   text-align: center;
   margin: 6px 0 0;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.02em;
+}
+
+/* DM Mono 는 400/500 만 로드된다. 기본 굵게 렌더되는 태그(b/strong/h3/h4)는
+   같은 0.6em 폭의 JetBrains Mono 로 돌려 OS별 가짜 볼드를 피한다. */
+.wrap b,
+.wrap strong,
+.wrap h3,
+.wrap :global(.sec h4) {
+  font-family: 'JetBrains Mono', 'Pretendard Variable', monospace;
 }

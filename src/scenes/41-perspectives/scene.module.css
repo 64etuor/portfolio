@@ -7,8 +7,8 @@
   --warm-bright: #f3c184;
   --cold: #6ea8ff;
   --cold-bright: #cfe0ff;
-  --kr: 'Pretendard Variable', 'Pretendard', 'Pretendard Variable', -apple-system, sans-serif;
-  --mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --kr: 'Pretendard Variable', sans-serif;
+  --mono: 'JetBrains Mono', 'Pretendard Variable', monospace;
 
   color: var(--phos);
   font-family: var(--kr);
@@ -415,4 +415,13 @@
   .procs {
     display: none;
   }
+}
+
+/* 한글이 들어가는 요소는 자간 0.02em 이하 — EN 로케일(라틴 전용)은 위의 넓은 자간 유지 */
+.kicker:lang(ko),
+.vlabel:lang(ko),
+.ends:lang(ko),
+.ends small:lang(ko),
+.footer:lang(ko) {
+  letter-spacing: 0.02em;
 }

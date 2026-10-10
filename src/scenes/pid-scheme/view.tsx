@@ -538,9 +538,11 @@ export function PidSchemeView({
       {/* SVG global styles — inline so they're scoped to this scene's DOM */}
       <style>{`
         #scheme .train-band{fill:rgba(74,168,255,0.025);stroke:#1a2030;stroke-width:1;stroke-dasharray:4 3;}
-        #scheme .train-label{font-size:13px;font-weight:800;fill:#4aa8ff;letter-spacing:1px;font-family:'DM Mono',ui-monospace,monospace;}
-        #scheme .train-sub{font-size:9.5px;fill:#5a6a82;font-family:'DM Mono',ui-monospace,monospace;}
-        #scheme text{font-family:'DM Mono',ui-monospace,'SFMono-Regular',Menlo,Consolas,'Courier New',monospace;}
+        #scheme .train-label{font-size:13px;font-weight:800;fill:#4aa8ff;letter-spacing:0.02em;font-family:'JetBrains Mono', 'Pretendard Variable', monospace;}
+        #scheme .train-sub{font-size:9.5px;fill:#5a6a82;font-family:'DM Mono', 'Pretendard Variable', monospace;}
+        #scheme text{font-family:'DM Mono', 'Pretendard Variable', monospace;}
+        /* DM Mono 는 400/500 만 로드 — 굵은 SVG 텍스트는 JetBrains Mono(동일 0.6em 폭)로 렌더해 OS별 가짜 볼드를 피한다 */
+        #scheme text[style*='font-weight']{font-family:'JetBrains Mono', 'Pretendard Variable', monospace;}
         #scheme .pipe{fill:none;stroke:#3a4860;stroke-width:3;}
         #scheme .pipe-flow{fill:none;stroke:#36d9d9;stroke-width:2.4;stroke-dasharray:9 11;animation:pid-flow 1.4s linear infinite;}
         #scheme .pipe-elec{fill:none;stroke:#4aa8ff;stroke-width:1.6;stroke-dasharray:7 5;}
@@ -550,7 +552,7 @@ export function PidSchemeView({
         #scheme .sym{stroke:#3a4860;stroke-width:2.2;fill:#101419;}
         #scheme .sym-fill{fill:#13181f;stroke:#3a4860;stroke-width:2.2;}
         #scheme .lbl-sm{font-size:9px;fill:#5a6a82;}
-        #scheme .tag{font-size:10.5px;font-weight:800;fill:#c8d4e8;text-anchor:middle;}
+        #scheme .tag{font-size:10.5px;font-weight:800;fill:#c8d4e8;text-anchor:middle;font-family:'JetBrains Mono', 'Pretendard Variable', monospace;}
         #scheme .tagnum{font-size:9px;fill:#5a6a82;text-anchor:middle;}
         #scheme .bubble{fill:#101419;stroke:#3a4860;stroke-width:2;}
         #scheme .ctrl-loop-box{fill:rgba(240,180,41,.04);stroke:#f0b429;stroke-width:1;stroke-dasharray:5 3;}
@@ -559,14 +561,14 @@ export function PidSchemeView({
         #scheme .filled-box{fill:rgba(55,232,138,.05);stroke:#37e88a;stroke-width:1.6;}
         #scheme .clickable:hover .sym,#scheme .clickable:hover .sym-fill,#scheme .clickable:hover .bubble{stroke:#4aa8ff;stroke-width:2.8;}
         #scheme .clickable:hover .hit{fill:rgba(74,168,255,.06);}
-        .${s.panelHead} .ptag{font-size:11px;font-weight:800;color:#4aa8ff;letter-spacing:1px;}
+        .${s.panelHead} .ptag{font-size:11px;font-weight:800;font-family:'JetBrains Mono', 'Pretendard Variable', monospace;color:#4aa8ff;letter-spacing:0.02em;}
         .${s.panelHead} .ptype{font-size:11px;color:#5a6a82;}
         .${s.ro} .lab{font-size:9.5px;color:#5a6a82;letter-spacing:.3px;text-transform:uppercase;}
-        .${s.ro} .val{font-size:17px;font-weight:800;color:#ff5f57;margin-top:2px;font-variant-numeric:tabular-nums;}
+        .${s.ro} .val{font-size:17px;font-weight:800;font-family:'JetBrains Mono', 'Pretendard Variable', monospace;color:#ff5f57;margin-top:2px;font-variant-numeric:tabular-nums;}
         .${s.ro} .val.good{color:#37e88a;}
-        .${s.titleMain} .sub{font-size:13px;color:#4aa8ff;font-weight:700;margin-top:3px;letter-spacing:.5px;}
-        .${s.tbCell} .k{font-size:8.5px;color:#5a6a82;text-transform:uppercase;letter-spacing:.5px;}
-        .${s.tbCell} .v{font-size:12px;font-weight:700;color:#c8d4e8;margin-top:1px;}
+        .${s.titleMain} .sub{font-size:13px;color:#4aa8ff;font-weight:700;font-family:'JetBrains Mono', 'Pretendard Variable', monospace;margin-top:3px;letter-spacing:.5px;}
+        .${s.tbCell} .k{font-size:8.5px;color:#5a6a82;text-transform:uppercase;letter-spacing:0.02em;}
+        .${s.tbCell} .v{font-size:12px;font-weight:700;font-family:'JetBrains Mono', 'Pretendard Variable', monospace;color:#c8d4e8;margin-top:1px;}
       `}</style>
     </SceneHost>
   )

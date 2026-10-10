@@ -29,8 +29,8 @@
   --c-elen:#ffb454;        /* PLC 시퀀스 */
   --c-sol:#54d6ff;         /* 취출 로봇 */
   --c-mir:#c9a3ff;         /* JIG 연동 */
-  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic",monospace;
-  --sans:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
+  --mono:'JetBrains Mono', 'Pretendard Variable', monospace;
+  --sans:'Pretendard Variable', sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
@@ -1575,7 +1575,7 @@ function drawGrid(){
     ctx.fillRect(cx-26, CH-30, 52, 8);
     ctx.fillStyle = COMPANY[wp.co].color;
     ctx.globalAlpha = (i===S.running||i===S.selected)?1:.4;
-    ctx.font="700 9px ui-monospace,monospace";
+    ctx.font="700 9px 'JetBrains Mono', 'Pretendard Variable', monospace";
     ctx.textAlign="center";
     ctx.fillText("P"+wp.id, cx, CH-12);
     ctx.globalAlpha=1;

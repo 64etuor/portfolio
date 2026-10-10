@@ -1,6 +1,7 @@
 // pipeline-dag — render helpers (pure functions, no React)
 
 import type { NodeDef } from './data'
+import { canvasFont } from '../_host/fonts'
 
 export const NS = 'http://www.w3.org/2000/svg'
 
@@ -29,7 +30,8 @@ export function topoOrder(nodes: NodeDef[], edges: [string, string][]): string[]
   const adj: Record<string, string[]> = {}
   nodes.forEach(n => { indeg[n.id] = 0; adj[n.id] = [] })
   edges.forEach(([a, b]) => { if (adj[a] && indeg[b] != null) { adj[a].push(b); indeg[b]++ } })
-  const q = nodes.filter(n => indeg[n.id] === 0).map(n => n.id)
+  const q: string[] = []
+  for (const n of nodes) if (indeg[n.id] === 0) q.push(n.id)
   const order: string[] = []
   while (q.length) {
     const id = q.shift()!; order.push(id)
@@ -117,7 +119,7 @@ export function drawAIChart(
   const hx = pad + (W - 2 * pad) * (n - 1) / (AI_MAX - 1)
   const hy = pad + (H - 2 * pad) * (1 - aiData[n - 1])
   ctx.beginPath(); ctx.arc(hx, hy, 2.4, 0, 7); ctx.fillStyle = '#5ee3a1'; ctx.fill()
-  ctx.fillStyle = 'rgba(201,212,227,.5)'; ctx.font = '8px monospace'
+  ctx.fillStyle = 'rgba(201,212,227,.5)'; ctx.font = canvasFont(400, 8, 'mono')
   ctx.fillText('ai.pipelines · throughput', 6, 11)
   ctx.fillStyle = '#5ee3a1'
   ctx.fillText('AUTO', W - 34, 11)

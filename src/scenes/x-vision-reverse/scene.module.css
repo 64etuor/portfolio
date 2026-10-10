@@ -1,0 +1,256 @@
+.hud {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  color: #d7d7d7;
+  font-family: var(--font-mono, 'JetBrains Mono'), 'JetBrains Mono', 'Pretendard Variable', monospace;
+  overflow: hidden;
+  container-type: size;
+}
+
+.header {
+  position: absolute;
+  top: 28px;
+  left: 36px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8d8d8d;
+}
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4fe0c4;
+  box-shadow: 0 0 10px #4fe0c4;
+}
+
+.counter {
+  position: absolute;
+  top: 26px;
+  right: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+}
+.dim {
+  color: #8d8d8d;
+}
+.count {
+  font-size: 22px;
+  letter-spacing: 0.06em;
+  color: #4fe0c4;
+  font-variant-numeric: tabular-nums;
+}
+.ng {
+  color: #ff5a4f;
+  text-shadow: 0 0 12px rgba(255, 70, 60, 0.6);
+}
+
+.anchor {
+  position: absolute;
+  left: 0;
+  top: 0;
+  will-change: transform, opacity;
+}
+
+.ok {
+  position: absolute;
+  left: 14px;
+  bottom: 10px;
+  white-space: nowrap;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: #4fe0c4;
+  padding: 2px 6px;
+  border-left: 1px solid rgba(79, 224, 196, 0.8);
+  background: rgba(4, 18, 15, 0.55);
+}
+
+.rev {
+  position: absolute;
+  left: 26px;
+  bottom: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  white-space: nowrap;
+  padding: 8px 12px 8px 12px;
+  border: 1px solid rgba(255, 70, 60, 0.85);
+  background: rgba(30, 4, 4, 0.6);
+  box-shadow: 0 0 24px rgba(255, 60, 50, 0.25);
+}
+.rev::before {
+  content: '';
+  position: absolute;
+  left: -26px;
+  bottom: -22px;
+  width: 34px;
+  height: 1px;
+  background: rgba(255, 70, 60, 0.85);
+  transform-origin: 0 0;
+  transform: rotate(-40deg);
+}
+.revMain {
+  font-family: inherit;
+  font-size: 15px;
+  letter-spacing: 0.08em;
+  color: #ff6a60;
+  font-weight: 600;
+}
+.revSub {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #d7d7d7;
+  opacity: 0.8;
+}
+
+.mc {
+  position: absolute;
+  left: 0;
+  bottom: 6px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  white-space: nowrap;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(215, 215, 215, 0.35);
+}
+.mcNo {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: #8d8d8d;
+}
+.mcRole {
+  font-size: 13px;
+  letter-spacing: 0.04em;
+  color: #d7d7d7;
+}
+.mcHero {
+  border-bottom-color: #4fe0c4;
+}
+.mcHero .mcRole {
+  color: #4fe0c4;
+}
+.mcSpare .mcRole {
+  color: #8d8d8d;
+}
+
+.tag {
+  position: absolute;
+  left: 36px;
+  top: 56px;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: #d98a3d;
+}
+
+.lines {
+  position: absolute;
+  left: 36px;
+  bottom: 34px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.line {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  font-size: 17px;
+  letter-spacing: 0.02em;
+  font-family: 'Pretendard Variable', sans-serif;
+}
+.idx {
+  font-family: var(--font-mono, 'JetBrains Mono'), 'JetBrains Mono', 'Pretendard Variable', monospace;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  color: #8d8d8d;
+}
+.txt {
+  color: #d7d7d7;
+}
+.red .idx {
+  color: #ff5a4f;
+}
+.teal .idx {
+  color: #4fe0c4;
+}
+.amber .idx {
+  color: #d98a3d;
+}
+.line:last-child .txt {
+  font-size: 26px;
+  font-weight: 600;
+  color: #4fe0c4;
+  letter-spacing: 0.01em;
+}
+
+/* 한글이 섞인 라벨: 산세리프 + 좁은 자간(모노 자간이 한글에선 벌어짐) */
+.ko {
+  font-family: 'Pretendard Variable', sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: none;
+}
+
+/* 하단 좌측 HUD 가독성용 스크림 */
+.hud::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 760px;
+  height: 300px;
+  background: radial-gradient(ellipse at 0% 100%, rgba(2, 3, 4, 0.82) 0%, rgba(2, 3, 4, 0.5) 40%, transparent 72%);
+}
+
+/* 갤러리 카드(~512×288): 제목 + 핵심 지표(카운터 · 마지막 줄)만 남긴다 */
+@container (max-width: 699px) {
+  .header {
+    top: 12px;
+    left: 14px;
+    font-size: 11px;
+  }
+  .counter {
+    top: 10px;
+    right: 14px;
+  }
+  .dim,
+  .ng,
+  .tag,
+  .mc,
+  .ok,
+  .revSub,
+  .line:not(:last-child) {
+    display: none;
+  }
+  .count {
+    font-size: 16px;
+  }
+  .revMain {
+    font-size: 12px;
+  }
+  .lines {
+    left: 14px;
+    bottom: 14px;
+  }
+  .line:last-child .txt {
+    font-size: 18px;
+  }
+  .hud::before {
+    width: 360px;
+    height: 140px;
+  }
+}

@@ -13,7 +13,7 @@
     --phos-dim:#8d8d8d;
     --phos-deep:#3a3a3a;
     --gap:#5fb5c2;         /* 단 하나의 액센트 — 차가운 void(격차) */
-    --mono:'JetBrains Mono','SFMono-Regular',ui-monospace,'Cascadia Mono',Menlo,Consolas,'Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',monospace;
+    --mono:'JetBrains Mono', 'Pretendard Variable', monospace;
   }
   @font-face{
     font-family:'JetBrains Mono';font-display:swap;font-weight:400;
@@ -312,36 +312,36 @@ function frame(now){
     // 가운데 화살촉(격차 방향)
     const my=(exDy+rlDy)/2;
     g.beginPath(); g.moveTo(bx,my-5); g.lineTo(bx,my+5); g.stroke();
-    g.font = "600 13px 'Pretendard Variable', 'Pretendard', sans-serif";
+    g.font = "600 13px 'Pretendard Variable', sans-serif";
     g.fillStyle = rgba(GAPC, (0.5+0.4*gv)*dv);
     g.textAlign='left'; g.textBaseline='middle';
     g.fillText('격차', bx+11, my-8);
-    g.font = "700 9px "+ "'JetBrains Mono', monospace";
+    g.font = "700 9px "+ "'JetBrains Mono', 'Pretendard Variable', monospace";
     g.fillStyle = rgba(GAPC, 0.42*dv);
     g.fillText('GAP', bx+11, my+6);
   }
 
   // 기대 점 (phosphor)
   drawDot(exDx, exDy, PHOS, pulse, dv);
-  g.font = "600 17px 'Pretendard Variable', 'Pretendard', sans-serif";
+  g.font = "600 17px 'Pretendard Variable', sans-serif";
   g.textAlign='left'; g.textBaseline='middle';
   g.fillStyle = rgba(PHOS, 0.95*dv);
   g.fillText('기대', exDx+14, exDy-2);
-  g.font = "700 9px 'JetBrains Mono', monospace";
+  g.font = "700 9px 'JetBrains Mono', 'Pretendard Variable', monospace";
   g.fillStyle = rgba(DIM, 0.8*dv);
   g.fillText('EXPECTATION', exDx+14, exDy+13);
 
   // 성과 점 (gap accent)
   drawDot(rlDx, rlDy, GAPC, pulse, dv);
-  g.font = "700 17px 'Pretendard Variable', 'Pretendard', sans-serif";
+  g.font = "700 17px 'Pretendard Variable', sans-serif";
   g.fillStyle = rgba(GAPC, 0.98*dv);
   g.fillText('성과', rlDx+14, rlDy+ (rlDy>exDy?2:-2));
-  g.font = "700 9px 'JetBrains Mono', monospace";
+  g.font = "700 9px 'JetBrains Mono', 'Pretendard Variable', monospace";
   g.fillStyle = rgba(GAPC, 0.6*dv);
   g.fillText('REALITY', rlDx+14, rlDy+17);
 
   /* ---- 7) 하단 축 캡션 (추상 — 수치 없음) ---- */
-  g.font = "10px 'JetBrains Mono', monospace";
+  g.font = "10px 'JetBrains Mono', 'Pretendard Variable', monospace";
   g.fillStyle = rgba(DIM, 0.55*dv);
   g.textAlign='right'; g.textBaseline='alphabetic';
   g.fillText('투자 누적 · 시간  →', q.Rx, q.yBot + H*0.052);

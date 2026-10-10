@@ -1,6 +1,7 @@
 import type React from 'react'
 import { buildLayout, panEnv } from './draw'
 import type { LayoutState, ProcNode, Screen } from './types'
+import { setStyles } from '../legacy-style'
 
 export const labUrl = (file: string) => (file.startsWith('/') ? file : `/lab/${file}`)
 export const makeProcNodes = (count: number): ProcNode[] => Array.from({ length: count }, () => ({ root: null, scr: null, iframe: null }))
@@ -9,12 +10,9 @@ export function layoutSide(nodes: ProcNode[], side: -1 | 1, w: number, h: number
   const left = side < 0 ? w * 0.045 : w - w * 0.045 - pw
   nodes.forEach((p, i) => {
     if (!p.root || !p.scr || !p.iframe) return
-    p.root.style.left = `${left}px`
-    p.root.style.top = `${h * 0.115 + i * h * 0.158}px`
-    p.root.style.width = `${pw}px`
-    p.scr.style.width = `${pw}px`
-    p.scr.style.height = `${ph}px`
-    p.iframe.style.transform = `scale(${(pw / 1280).toFixed(4)})`
+    setStyles(p.root, { left: `${left}px`, top: `${h * 0.115 + i * h * 0.158}px`, width: `${pw}px` })
+    setStyles(p.scr, { width: `${pw}px`, height: `${ph}px` })
+    setStyles(p.iframe, { transform: `scale(${(pw / 1280).toFixed(4)})` })
   })
 }
 
@@ -38,6 +36,23 @@ function unloadSrc(p: ProcNode) {
   if (!p.root || !p.iframe || !p.root.dataset.loaded) return
   delete p.root.dataset.loaded
   p.iframe.src = 'about:blank'
+}
+
+/**
+ * Force every iframe on a side to `about:blank`, regardless of the pan-window gate.
+ *
+ * This scene's `running` prop only gates its OWN canvas rAF — each loaded iframe is
+ * a separate same-origin document with its own independent requestAnimationFrame
+ * loop, which keeps consuming the main thread even while this scene is still the
+ * film's visible slot. In the film, if the NEXT shot can't paint before this one's
+ * manifest end (observed: 30-collision staged but starved of main-thread time by
+ * these iframes, revealed ~9s late), that contention is self-reinforcing — the cut
+ * that would stop these iframes never arrives because these iframes are part of
+ * what's blocking it. Called once this scene detects (via SceneClock) that it has
+ * overrun its shot's budget, so the handoff gets a clear thread to finish on.
+ */
+export function unloadAll(nodes: ProcNode[]) {
+  for (const p of nodes) unloadSrc(p)
 }
 
 export function syncSide(nodes: ProcNode[], set: Screen[], cOf: (i: number) => number, gate: number, f: number) {

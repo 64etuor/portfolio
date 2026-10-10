@@ -28,8 +28,8 @@
     --phos-deep:#3a3a3a;
     --warm:#d98a3d; --warm-bright:#f3c184;   /* FIELD */
     --cold:#6ea8ff; --cold-bright:#cfe0ff;   /* DEV  */
-    --kr:"Pretendard Variable","Pretendard","Pretendard Variable",-apple-system,sans-serif;
-    --mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic",Consolas,monospace;
+    --kr:'Pretendard Variable', sans-serif;
+    --mono:'JetBrains Mono', 'Pretendard Variable', monospace;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   html,body{height:100%;}
@@ -234,11 +234,11 @@
      FIELD : 제조/공정 (좌측 캐스케이드, warm)
      DEV   : 시스템/개발 (우측 캐스케이드, cold) — 거울 반전           */
   const FIELD=[
-    {file:'sonar-waterfall.html', title:'초음파 용착',        tag:'ULTRASONIC'},
+    {file:'x-weld-doe.html', title:'초음파 용착',        tag:'ULTRASONIC'},
     {file:'weld-thermal.html',    title:'Nd:YAG 레이저 용접', tag:'Nd:YAG'},
-    {file:'oscilloscope.html',    title:'스팟 용접 검사',      tag:'SPOT'},
+    {file:'robot-pendant.html',    title:'스팟 용접 검사',      tag:'SPOT'},
     {file:'gcode-printer.html',   title:'적층제조',           tag:'AM'},
-    {file:'cmm-metrology.html',   title:'CMM 정밀 측정',       tag:'CMM'},
+    {file:'x-vision-reverse.html',   title:'CMM 정밀 측정',       tag:'CMM'},
   ];
   const DEV=[
     {file:'pid-scheme.html',      title:'시스템 토폴로지',     tag:'P&ID'},
@@ -345,8 +345,8 @@
         const a=lerp(0.09,0.86,sharp)*0.92;
         if(a<0.045) continue;                  // 사실상 안 보이는 토큰은 스킵
         const col=o.side==='F'?mix([150,150,150],WARMB,sharp):mix([86,98,112],COLD,sharp);
-        g.font=(o.side==='F'?'600 '+o.sz.toFixed(1)+"px 'Pretendard Variable', 'Pretendard',sans-serif"
-                            :'500 '+o.sz.toFixed(1)+"px 'JetBrains Mono',monospace");
+        g.font=(o.side==='F'?'600 '+o.sz.toFixed(1)+"px 'Pretendard Variable', sans-serif"
+                            :'500 '+o.sz.toFixed(1)+"px 'JetBrains Mono', 'Pretendard Variable', monospace");
         if(sharp>0.5&&!heavy){ g.shadowColor=rgba(col,0.5*sharp); g.shadowBlur=10*sharp; }
         else g.shadowBlur=0;
         g.fillStyle=rgba(col,a);
@@ -607,13 +607,13 @@
       if(!heavyBlur){ g.shadowColor=rgba(COLD,0.4*vm); g.shadowBlur=12*vm; }
       roundRect(m.x,m.y,m.w,m.h,6); g.stroke(); g.shadowBlur=0;
       g.fillStyle=rgba(COLDD,0.14*vm); roundRect(m.x,m.y,m.w,m.h,6); g.fill();
-      g.font="700 "+Math.max(10,Math.min(14,W*0.0084))+"px 'JetBrains Mono',monospace";
+      g.font="700 "+Math.max(10,Math.min(14,W*0.0084))+"px 'JetBrains Mono', 'Pretendard Variable', monospace";
       g.fillStyle=rgba(COLDB,0.85*vm); g.fillText(m.label, m.cx, m.cy);
     }
     // 흐르는 코드 컬럼
     g.textAlign='start'; g.textBaseline='alphabetic';
     const fs=Math.max(10,Math.min(15,W*0.0090));
-    g.font='500 '+fs+"px 'JetBrains Mono', monospace";
+    g.font='500 '+fs+"px 'JetBrains Mono', 'Pretendard Variable', monospace";
     for(const col of codeCols){
       const drift=(time*0.6)%(col.lh*2);
       for(let li=0;li<col.lines.length;li++){

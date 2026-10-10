@@ -167,7 +167,7 @@ export const profile: Profile = {
       period: '2024.10 ~ 2024.12 (약 3개월, 사업 종료로 중단)',
       role: '설비 공정능력 검증, 데이터 분석, 사이드 프로젝트 기획·리딩, MES SW 개발, DB 아키텍처 설계, 비전 검사 로직 검증',
       background:
-        '해외에 설치하고자 했던 신제품 생산 라인을 한국에 설치하는 것으로 계획 변경되어 한국 법인이 해외 법인의 프로젝트를 이관 받음. FAT 이후 단계를 진행하던 중, 자동화 설비 예산 30만불이 이미 초과된 상황에서 MES 외주 개발비가 예산에서 누락된 것을 확인 → MES 자체 개발을 기획.',
+        '해외에 설치하고자 했던 신제품(배터리 화재 방지용 글라스울 파우치) 자동화 생산 라인을 한국에 설치하는 것으로 계획 변경되어 한국 법인이 해외 법인의 프로젝트를 이관 받음. FAT 이후 단계를 진행하던 중, 자동화 설비 예산 30만불이 이미 초과된 상황에서 MES 외주 개발비가 예산에서 누락된 것을 확인 → MES 자체 개발을 기획.',
       work: [
         '구형 OCV/IR 검사 장비 데이터 연동: Python, MS Access DB',
         'Backend 개발: Python Django, Django REST Framework',
@@ -355,7 +355,7 @@ export const profile: Profile = {
         { metric: '초음파 용착 불량율', value: '15% → 0%대' },
         { metric: '재작업 공수비용 절감', value: '연 환산 절감(초당 임율 6.3원 기준)', krw: '연 3천2백만원' },
         { metric: '폐기 비용 절감', value: '연 환산 절감(단위 폐기 비용 7,688원)', krw: '연 3천6백만원' },
-        { metric: 'Neck 공정 C/T', value: '31% 단축 (16.72→12.76sec)' },
+        { metric: 'Neck 공정 C/T', value: '24% 단축 (16.72→12.76sec)' },
         { metric: 'Core-pack Function Test C/T', value: '49% 단축 (55→28sec)' },
         { metric: '소형 배터리팩 라인 생산성', value: '24% 향상', krw: '연 4,437만원' },
       ],
@@ -674,7 +674,7 @@ export const profile: Profile = {
   metrics: [
     { metric: '운영경비(OPEX)', value: '−85%', note: '데이터 기반 운영 개선' },
     { metric: '제품 ST', value: '−50%', note: '실 데이터 확보 기반 정규화' },
-    { metric: '공정 C/T', value: '31~49% 단축', note: 'Neck 31% / Core-pack Function Test 49%' },
+    { metric: '공정 C/T', value: '24~49% 단축', note: 'Neck 24% / Core-pack Function Test 49%' },
     { metric: '초음파 용착 불량율', value: '15% → 0%대', note: 'DOE 기반 조건 개선' },
     { metric: '생산성', value: '+24%', krw: '연 4,437만원', note: '소형 배터리팩 라인 LOB 개선' },
     { metric: '사무 공수', value: '−451분/일', krw: '연 약 5천만원', note: 'DB 자동화 전환' },

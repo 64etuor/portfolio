@@ -46,17 +46,23 @@ const PROJECT_DETAIL_SLUG: Record<string, string> = {
  * is emitted as raw string nodes (not wrapped in <span>) so it flows and wraps
  * exactly like normal prose — no extra inline boxes to break on.
  */
-function renderEmphasis(text: string): React.ReactNode {
+function Emphasis({ text }: { text: string }) {
   const parts = text.split(/(\*\*[^*]+\*\*)/g)
-  return parts.map((part, i) =>
-    part.startsWith('**') && part.endsWith('**') ? (
-      <strong key={i} className="rz-cl-em">
-        {part.slice(2, -2)}
-      </strong>
-    ) : (
-      part
-    ),
-  )
+  const nodes: React.ReactNode[] = []
+  let offset = 0 // character offset → stable key for a given source string
+  for (const part of parts) {
+    nodes.push(
+      part.startsWith('**') && part.endsWith('**') ? (
+        <strong key={offset} className="rz-cl-em">
+          {part.slice(2, -2)}
+        </strong>
+      ) : (
+        part
+      ),
+    )
+    offset += part.length
+  }
+  return <>{nodes}</>
 }
 
 function Section({ id, label, children }: { id: string; label: string; children: React.ReactNode }) {
@@ -148,8 +154,10 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
           <div className="rz-cover">
             <p className="rz-cl-to">{coverLetter.to}</p>
             <div className="rz-cl-body kr">
-              {coverLetter.paragraphs.map((para, i) => (
-                <p key={i}>{renderEmphasis(para)}</p>
+              {coverLetter.paragraphs.map((para) => (
+                <p key={para}>
+                  <Emphasis text={para} />
+                </p>
               ))}
             </div>
             <p className="rz-cl-signoff kr">
@@ -162,8 +170,8 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
         {/* ── experience ─────────────────────────────────────── */}
         <Section id="experience" label="EXPERIENCE">
           <ol className="rz-timeline">
-            {data.work.map((w, i) => (
-              <li className="rz-entry" key={i}>
+            {data.work.map((w) => (
+              <li className="rz-entry" key={`${w.name}|${w.position}|${w.startDate}`}>
                 <div className="rz-entry-head">
                   <div>
                     <h3 className="rz-entry-title kr">{w.name}</h3>
@@ -174,8 +182,8 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
                 {w.summary && <p className="rz-entry-sum kr">{w.summary}</p>}
                 {w.highlights && (
                   <ul className="rz-bullets kr">
-                    {w.highlights.map((h, j) => (
-                      <li key={j}>{h}</li>
+                    {w.highlights.map((h) => (
+                      <li key={h}>{h}</li>
                     ))}
                   </ul>
                 )}
@@ -193,10 +201,10 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
             </Link>
           </p>
           <div className="rz-projects">
-            {data.projects.map((p, i) => {
+            {data.projects.map((p) => {
               const slug = PROJECT_DETAIL_SLUG[p.name]
               return (
-                <article className="rz-card" key={i}>
+                <article className="rz-card" key={p.name}>
                   <div className="rz-card-head">
                     {slug ? (
                       <ProjectDetailLink slug={slug} className="rz-card-title rz-card-title-link kr">
@@ -211,8 +219,8 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
                   {p.description && <p className="rz-card-desc kr">{p.description}</p>}
                   {p.highlights && (
                     <ul className="rz-bullets rz-bullets-sm kr">
-                      {p.highlights.map((h, j) => (
-                        <li key={j}>{h}</li>
+                      {p.highlights.map((h) => (
+                        <li key={h}>{h}</li>
                       ))}
                     </ul>
                   )}
@@ -254,8 +262,8 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
         <div className="rz-two-col">
           <Section id="education" label="EDUCATION">
             <ul className="rz-list">
-              {data.education.map((e, i) => (
-                <li className="rz-list-row" key={i}>
+              {data.education.map((e) => (
+                <li className="rz-list-row" key={`${e.institution}|${e.area}|${e.startDate}`}>
                   <div>
                     <p className="rz-list-title kr">{e.institution}</p>
                     <p className="rz-list-sub kr">
@@ -272,8 +280,8 @@ export function ResumeDoc({ data }: { data: ResumeData }) {
           {data.certificates && data.certificates.length > 0 && (
             <Section id="training" label="TRAINING & CERTS">
               <ul className="rz-list">
-                {data.certificates.map((c, i) => (
-                  <li className="rz-list-row" key={i}>
+                {data.certificates.map((c) => (
+                  <li className="rz-list-row" key={`${c.name}|${c.date}`}>
                     <div>
                       <p className="rz-list-title kr">{c.name}</p>
                       <p className="rz-list-sub kr">

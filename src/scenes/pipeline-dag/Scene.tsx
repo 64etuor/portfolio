@@ -22,6 +22,37 @@ import { PipelineDagView } from './view'
    Draw helpers → draw.ts  |  Types → types.ts  |  JSX shell → view.tsx
    ═══════════════════════════════════════════════════════════════════ */
 
+const PILL_STATUS: Record<string, [string, string]> = {
+  success: ['success', 'SUCCESS'], running: ['running', 'RUNNING'],
+  queued: ['queued', 'QUEUED'], idle: ['idle', 'IDLE'],
+}
+
+/** Repaint a node card's status pill (DOM-only; skips when unchanged). */
+function updatePill(n: NodeDef) {
+  if (n.metric) return
+  const pill = n.el?.querySelector('.pill')
+  if (!pill) return
+  const [c, t] = PILL_STATUS[n.status ?? 'idle'] ?? PILL_STATUS.idle
+  const nextClass = `pill ${c}`
+  if (pill.className === nextClass) return
+  pill.className = nextClass
+  const dot = document.createElement('span')
+  dot.className = 'd'
+  pill.replaceChildren(dot, t)
+}
+
+const KIND_LABEL: Record<string, string> = {
+  source: 'SOURCE', decision: 'DECISION', okr: 'EXECUTION', metric: 'METRIC', sink: 'SINK', ai: 'AI.AUTO',
+}
+
+/** Builds a `<span style="color:…">text</span>` log fragment as DOM (no HTML parsing). */
+function colorSpan(color: string, text: string) {
+  const el = document.createElement('span')
+  el.style.color = color
+  el.textContent = text
+  return el
+}
+
 export default function Scene({ running = true, onReady }: SceneProps) {
   // ── DOM refs ──────────────────────────────────────────────────────
   const stageRef      = useRef<HTMLDivElement | null>(null)
@@ -131,19 +162,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
   // ── Run sweep ─────────────────────────────────────────────────────
 
-  function updatePill(n: NodeDef) {
-    if (n.metric) return
-    const pill = n.el?.querySelector('.pill')
-    if (!pill) return
-    const map: Record<string, [string, string]> = {
-      success: ['success','SUCCESS'], running: ['running','RUNNING'],
-      queued: ['queued','QUEUED'], idle: ['idle','IDLE'],
-    }
-    const [c, t] = map[n.status ?? 'idle'] ?? map.idle
-    pill.className = `pill ${c}`
-    pill.innerHTML = `<span class="d"></span>${t}`
-  }
-
   function tickRunSweep(dt: number) {
     const sw = sweepRef.current
     if (!sw) return
@@ -245,11 +263,12 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     const msg = tpl.msgs[Math.floor(Math.random() * tpl.msgs.length)]
     const line = document.createElement('div')
     line.style.cssText = 'opacity:0;transition:opacity .4s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'
-    const tsSpan = `<span style="color:#3a4a5c">${padTs()}</span> `
     const pipeCol = tpl.cls === 'ok' ? '#5ee3a1' : '#f0b429'
-    const pipeSpan = `<span style="color:${pipeCol}">${tpl.pipe}</span> `
-    const msgSpan = `<span style="color:#6b7787">${msg}</span>`
-    line.innerHTML = tsSpan + pipeSpan + msgSpan
+    line.append(
+      colorSpan('#3a4a5c', padTs()), ' ',
+      colorSpan(pipeCol, tpl.pipe), ' ',
+      colorSpan('#6b7787', msg),
+    )
     logEl.appendChild(line)
     requestAnimationFrame(() => { line.style.opacity = '1' })
     const children = logEl.children
@@ -358,13 +377,10 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     selIdRef.current = id; n.el?.classList.add('sel')
     if (piconRef.current) piconRef.current.textContent = n.icon
     if (pnameRef.current) pnameRef.current.textContent = n.name
-    const kindLabel: Record<string, string> = {
-      source:'SOURCE', decision:'DECISION', okr:'EXECUTION', metric:'METRIC', sink:'SINK', ai:'AI.AUTO',
-    }
     if (pmetaRef.current) {
       pmetaRef.current.innerHTML =
         `<span>${statusPill(n.status ?? 'success')}</span>` +
-        `<span style="color:#414c5c">${kindLabel[n.kind] ?? ''} · ${TYPE_LABEL[n.type] ?? 'TASK'}</span>` +
+        `<span style="color:#414c5c">${KIND_LABEL[n.kind] ?? ''} · ${TYPE_LABEL[n.type] ?? 'TASK'}</span>` +
         `<span style="color:#414c5c">&#9201; ${n.dur}</span>`
     }
     let html = `<div class="sec"><h4>description</h4><div class="desc">${n.desc}</div></div>`
@@ -383,8 +399,11 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         n.tags.map(t => `<span class="tag ${n.kind === 'okr' ? 'hl' : ''}">${t}</span>`).join('') +
         '</div></div>'
     }
-    const up = EDGES.filter(e => e[1] === id).map(e => nb[e[0]]?.name).filter(Boolean)
-    const down = EDGES.filter(e => e[0] === id).map(e => nb[e[1]]?.name).filter(Boolean)
+    const up: string[] = [], down: string[] = []
+    for (const [from, to] of EDGES) {
+      if (to === id) { const name = nb[from]?.name; if (name) up.push(name) }
+      if (from === id) { const name = nb[to]?.name; if (name) down.push(name) }
+    }
     html += '<div class="sec"><h4>dependencies</h4>'
     html += `<div class="kv"><span class="k">upstream &#8593;</span><span class="v">${up.length ? up.join(', ') : '&#8212; (root source)'}</span></div>`
     html += `<div class="kv"><span class="k">downstream &#8595;</span><span class="v">${down.length ? down.join(', ') : '&#8212; (terminal sink)'}</span></div>`
@@ -459,7 +478,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       el.dataset.id = n.id; el.dataset.kind = n.kind
       n.status = n.status ?? 'success'
       el.dataset.status = n.status
-      el.style.left = n.x + 'px'; el.style.top = n.y + 'px'; el.style.width = n.w + 'px'
+      el.style.cssText = `left:${n.x}px;top:${n.y}px;width:${n.w}px`
       if (n.metric) {
         el.innerHTML =
           `<div class="top"><div class="ico">${n.icon}</div>` +

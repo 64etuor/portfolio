@@ -7,7 +7,7 @@
   --phos-dim: var(--scene-phos-dim);
   --phos-deep: var(--scene-phos-deep);
   --accent: #6fb6ff;
-  --mono: 'JetBrains Mono', 'SFMono-Regular', ui-monospace, Menlo, Consolas, monospace;
+  --mono: 'JetBrains Mono', 'Pretendard Variable', monospace;
   --s: min(1vw, 1.778vh);
 
   position: absolute;
@@ -195,4 +195,10 @@
   .grain {
     animation: none;
   }
+}
+
+/* 한글이 들어가는 요소는 자간 0.02em 이하 — EN 로케일(라틴 전용)은 위의 넓은 자간 유지 */
+.eyebrow:lang(ko),
+.rate:lang(ko) {
+  letter-spacing: 0.02em;
 }

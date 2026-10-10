@@ -28,8 +28,8 @@
   --c-sol:#5588e8;   /* 솔라엣지 */
   --c-mir:#9470e0;   /* 스타트업 */
   --c-bridge:#8fa0b4;/* 역량 보강 */
-  --mono:"SF Mono",ui-monospace,"JetBrains Mono","Roboto Mono",Menlo,Consolas,"Pretendard Variable","Apple SD Gothic Neo","Malgun Gothic",monospace;
-  --sans:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo",-apple-system,system-ui,sans-serif;
+  --mono:'JetBrains Mono', 'Pretendard Variable', monospace;
+  --sans:'Pretendard Variable', sans-serif;
   --today-glow:rgba(74,128,240,.6);
   --crit-glow:rgba(240,85,85,.5);
 }
@@ -62,7 +62,7 @@ body{
   border-bottom:1px solid rgba(232,234,240,.1);
 }
 .site-bar .brand{
-  font-family:'Playfair Display',Georgia,'Pretendard Variable','Apple SD Gothic Neo','Malgun Gothic',serif;font-size:clamp(15px,1.5vw,19px);font-weight:600;
+  font-family:'Playfair Display', 'Noto Serif KR', 'Pretendard Variable', serif;font-size:clamp(15px,1.5vw,19px);font-weight:600;
   letter-spacing:.01em;color:#e8eaf0;text-decoration:none;transition:opacity .16s;
 }
 .site-bar .brand:hover{opacity:.72;}
@@ -601,7 +601,7 @@ const PROJECTS = [
     problem:'초음파 용착 불량(15%)으로 사출 케이스가 대량 폐기되고, Neck 공정 병목과 LOB 불균형이 라인 전체 생산성을 끌어내리고 있었음.',
     built:'DOE로 용착 조건을 최적화하고 커팅·검사 Jig를 직접 기구설계·제작해 C/T 49% 단축, LOB 재배치로 생산성 24%를 개선하며 연간 폐기·재작업 6,800만원을 절감함.',
     rewind:'elentec',
-    desc:'초음파 용착 불량으로 폐기되던 사출 케이스 낭비 개선에서 출발해 다양한 과제로 확장. 초음파 용착 조건 DOE로 불량률 15%→0%대, 커팅 Jig로 Neck 공정 C/T 31%↓, 검사 Jig 개조로 Core-pack Function Test C/T 49%↓, 소형 배터리팩 라인 LOB 개선으로 생산성 24%↑.',
+    desc:'초음파 용착 불량으로 폐기되던 사출 케이스 낭비 개선에서 출발해 다양한 과제로 확장. 초음파 용착 조건 DOE로 불량률 15%→0%대, 커팅 Jig로 Neck 공정 C/T 24%↓, 검사 Jig 개조로 Core-pack Function Test C/T 49%↓, 소형 배터리팩 라인 LOB 개선으로 생산성 24%↑.',
     metrics:[
       {k:'용착 불량', v:'15→0%', cls:'g', c:'DOE 조건 최적화'},
       {k:'C/T(Core)', v:'−49%', cls:'g', c:'검사 Jig 개조 55→28s'},
@@ -1185,10 +1185,10 @@ const detail=document.getElementById('detail');
 const REWIND_ROUTES={
   eunseong:'/s/instrument-rack',
   elentec:'/s/weld-thermal',
-  solaredge:'/s/mes-console',
-  bridge:'/s/digital-twin',
+  solaredge:'/s/mes-line',
+  bridge:'/s/smart-factory',
   startup:'/s/pid-scheme',
-  epilogue:'/s/radar-sonar'
+  epilogue:'/s/work-radar'
 };
 const REPLAY_STEPS=[
   {id:'dSecProblem', ms:2000},

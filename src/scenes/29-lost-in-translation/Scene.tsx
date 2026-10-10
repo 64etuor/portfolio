@@ -7,6 +7,7 @@ import { useSceneReady } from '../_host/useSceneReady'
 import { lerp, smooth01 } from '../_host/math'
 import type { SceneProps } from '../_host/types'
 import s from './scene.module.css'
+import { setStyles } from '../legacy-style'
 
 /* ════════════════════════════════════════════════════════════════
    SCENE 04 · 소통 — LOST IN TRANSLATION  (29-lost-in-translation.html 이식)
@@ -229,10 +230,12 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       const blur = destab * near * 2.6
       const dy = Math.sin(time / 420 + i * 1.7) * destab * near * 5
       const dim = 1 - destab * near * 0.45
-      el.style.opacity = (t < T_POSE ? intro : srcMaster).toFixed(3)
-      el.style.filter = `blur(${blur.toFixed(2)}px)`
-      el.style.transform = `translateY(${dy.toFixed(2)}px)`
-      el.style.color = `rgba(215,215,215,${dim.toFixed(3)})`
+      setStyles(el, {
+        opacity: (t < T_POSE ? intro : srcMaster).toFixed(3),
+        filter: `blur(${blur.toFixed(2)}px)`,
+        transform: `translateY(${dy.toFixed(2)}px)`,
+        color: `rgba(215,215,215,${dim.toFixed(3)})`,
+      })
     })
 
     /* GLOSS words */
@@ -246,8 +249,10 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       el.innerHTML = renderGloss(i, mode, shimmer, time)
       const drift = DRIFT[i] * U * 1.5 * (smooth(pTr) * (1 - smooth(pPeel)))
       const dy = Math.sin(time / 520 + i * 2.1) * 1.6 * (1 - pPeel)
-      el.style.transform = `translate(${drift.toFixed(2)}px,${dy.toFixed(2)}px)`
-      el.style.opacity = (glsMaster * lerp(0.5, 0.92, near)).toFixed(3)
+      setStyles(el, {
+        transform: `translate(${drift.toFixed(2)}px,${dy.toFixed(2)}px)`,
+        opacity: (glsMaster * lerp(0.5, 0.92, near)).toFixed(3),
+      })
     })
 
     /* translation HEAD + AXIS */
@@ -255,11 +260,10 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     if (axisRef.current)
       axisRef.current.style.opacity = (smooth(pTr * 3) * (1 - smooth(pPeel)) * 0.9).toFixed(3)
     if (headRef.current) {
-      headRef.current.style.opacity = (headVis * 0.9).toFixed(3)
       const L = 22 * U
       const R = fr.w - 6 * U
       const x = lerp(L, R, pTr)
-      headRef.current.style.left = x.toFixed(1) + 'px'
+      setStyles(headRef.current, { opacity: (headVis * 0.9).toFixed(3), left: x.toFixed(1) + 'px' })
     }
 
     /* LAYER PEEL */
@@ -269,16 +273,20 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         let peeled = smooth(trig)
         peeled *= 1 - smooth(pRel)
         const x = -peeled * 40
-        el.style.transform = `translateX(${x.toFixed(1)}px)`
-        el.style.opacity = lerp(0.85, 0, peeled).toFixed(3)
-        el.style.color = `rgba(141,141,141,${(1 - peeled).toFixed(3)})`
+        setStyles(el, {
+          transform: `translateX(${x.toFixed(1)}px)`,
+          opacity: lerp(0.85, 0, peeled).toFixed(3),
+          color: `rgba(141,141,141,${(1 - peeled).toFixed(3)})`,
+        })
       } else {
         const lit = smooth(pPeel) * (1 - smooth(pRel * 0.8))
         const pulse = 0.5 + 0.5 * Math.sin(time / 700)
         const glow = lit * (0.55 + 0.45 * pulse)
-        el.style.color = `rgba(205,163,95,${lerp(0.45, 1, lit).toFixed(3)})`
-        el.style.textShadow = `0 0 ${(glow * 12).toFixed(1)}px rgba(205,163,95,${(glow * 0.5).toFixed(2)})`
-        el.style.transform = 'translateX(0)'
+        setStyles(el, {
+          color: `rgba(205,163,95,${lerp(0.45, 1, lit).toFixed(3)})`,
+          textShadow: `0 0 ${(glow * 12).toFixed(1)}px rgba(205,163,95,${(glow * 0.5).toFixed(2)})`,
+          transform: 'translateX(0)',
+        })
       }
     })
     if (dividerRef.current)
@@ -290,9 +298,11 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       const op = inP * (1 - smooth(pRel))
       const blur = (1 - inP) * 4.0 * (1 - pRel)
       const dy = lerp(10, 0, inP)
-      el.style.opacity = op.toFixed(3)
-      el.style.filter = `blur(${(blur * (1 - pRes)).toFixed(2)}px)`
-      el.style.transform = `translateY(${(dy * (1 - pRes)).toFixed(2)}px)`
+      setStyles(el, {
+        opacity: op.toFixed(3),
+        filter: `blur(${(blur * (1 - pRes)).toFixed(2)}px)`,
+        transform: `translateY(${(dy * (1 - pRes)).toFixed(2)}px)`,
+      })
       const hl = el.querySelector<HTMLElement>(`.${s.hl}`)
       if (hl) {
         const pulse = 0.5 + 0.5 * Math.sin(time / 620)
@@ -309,8 +319,10 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     align = clamp(align, 0.06, 1)
     const jit = pTr > 0 && pPeel < 1 ? Math.sin(time / 90) * 0.012 * (1 - pPeel) : 0
     if (fillRef.current) {
-      fillRef.current.style.width = ((align + jit) * 100).toFixed(1) + '%'
-      fillRef.current.style.opacity = (0.4 + 0.6 * align).toFixed(2)
+      setStyles(fillRef.current, {
+        width: ((align + jit) * 100).toFixed(1) + '%',
+        opacity: (0.4 + 0.6 * align).toFixed(2),
+      })
     }
 
     /* film flicker */

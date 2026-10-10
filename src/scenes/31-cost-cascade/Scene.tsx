@@ -26,6 +26,12 @@ const TARGETS_F = [
 
 /* ---- timeline (ms) ---- */
 const PH = { idle: 1700, charge: 620, rupture: 2650, hold: 2250, heal: 1550 }
+/* Overlay anchors — constant fractional coords, so they are applied once via the
+   JSX style prop instead of being rewritten every frame. */
+const ORIGIN_TAG_POS = { left: ORIGIN_F.x * 100 + '%', top: ORIGIN_F.y * 100 - 7.5 + '%' }
+const LABEL_POS = TARGETS_F.map((t) => ({ left: t.x * 100 + '%', top: t.y * 100 + '%' }))
+const TARGET_ARRIVE = TARGETS_F.map((t) => ({ arrive: t.arrive }))
+
 const TOTAL = PH.idle + PH.charge + PH.rupture + PH.hold + PH.heal
 
 /* ---- easing ---- */
@@ -107,11 +113,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const headlineRef = useRef<HTMLHeadingElement | null>(null)
   const sublineRef = useRef<HTMLParagraphElement | null>(null)
   const origintagRef = useRef<HTMLDivElement | null>(null)
-  const labelRefs = [
-    useRef<HTMLDivElement | null>(null),
-    useRef<HTMLDivElement | null>(null),
-    useRef<HTMLDivElement | null>(null),
-  ]
+  const labelsRef = useRef<(HTMLDivElement | null)[]>([null, null, null])
 
   useSceneReady(onReady)
 
@@ -294,16 +296,6 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     const { ph, p } = st
 
     // position fixed elements by fractional coords (matches resize() in original)
-    if (origintagRef.current) {
-      origintagRef.current.style.left = (ORIGIN_F.x * 100) + '%'
-      origintagRef.current.style.top = (ORIGIN_F.y * 100 - 7.5) + '%'
-    }
-    labelRefs.forEach((ref, i) => {
-      if (ref.current) {
-        ref.current.style.left = (TARGETS_F[i].x * 100) + '%'
-        ref.current.style.top = (TARGETS_F[i].y * 100) + '%'
-      }
-    })
     void W; void H // suppress unused
 
     // origin caption — idle/charge only
@@ -324,12 +316,11 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     }
 
     // terminal labels — slam when their trunk reaches target
-    const targets = TARGETS_F.map(t => ({ arrive: t.arrive }))
     if (ph === 'rupture' || ph === 'hold') {
-      targets.forEach((tg, i) => {
+      TARGET_ARRIVE.forEach((tg, i) => {
         if (!sc.arrived[i] && p >= tg.arrive) {
           sc.arrived[i] = true
-          const el = labelRefs[i].current
+          const el = labelsRef.current[i]
           if (el) {
             el.classList.remove(s['out'])
             void el.offsetWidth // reflow → restart slam
@@ -341,19 +332,19 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
     // heal — retract everything
     if (ph === 'heal' && sc.prevPhase !== 'heal') {
-      labelRefs.forEach(ref => {
-        if (ref.current) { ref.current.classList.remove(s['in']); ref.current.classList.add(s['out']) }
+      labelsRef.current.forEach(el => {
+        if (el) { el.classList.remove(s['in']); el.classList.add(s['out']) }
       })
     }
     // wrap reset (idle after heal)
     if (ph === 'idle' && sc.prevPhase === 'heal') {
-      labelRefs.forEach(ref => {
-        if (ref.current) { ref.current.classList.remove(s['in'], s['out']) }
+      labelsRef.current.forEach(el => {
+        if (el) { el.classList.remove(s['in'], s['out']) }
       })
       sc.arrived = [false, false, false]
     }
     sc.prevPhase = ph
-  }, [labelRefs])
+  }, [])
 
   const ref = useSceneCanvas((g: CanvasRenderingContext2D, fr: Frame) => {
     const W = fr.w, H = fr.h
@@ -509,23 +500,23 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         커뮤니케이션 오류는 곧 <em>비용</em>이 됩니다.
       </h1>
 
-      <div ref={origintagRef} className={`${s.ov} ${s.origintag} ${s.kr}`}>
+      <div ref={origintagRef} className={`${s.ov} ${s.origintag} ${s.kr}`} style={ORIGIN_TAG_POS}>
         <span className={s.origintagT}>ORIGIN</span>
         결함점 · 커뮤니케이션 오류<span className={s.blink}> ▮</span>
       </div>
 
       {/* three terminal labels */}
-      <div ref={labelRefs[0]} className={`${s.clabel} ${s.kr}`}>
+      <div ref={(el) => { labelsRef.current[0] = el }} className={`${s.clabel} ${s.kr}`} style={LABEL_POS[0]}>
         <span className={s.clabelBig}>일정 지연</span>
         <span className={s.clabelTag}>Schedule&nbsp;Slip</span>
         <span className={s.ticks}><i /><i /><i /><i /></span>
       </div>
-      <div ref={labelRefs[1]} className={`${s.clabel} ${s.kr}`}>
+      <div ref={(el) => { labelsRef.current[1] = el }} className={`${s.clabel} ${s.kr}`} style={LABEL_POS[1]}>
         <span className={s.clabelBig}>기능 미스매치</span>
         <span className={s.clabelTag}>Spec&nbsp;Mismatch</span>
         <span className={s.ticks}><i /><i /><i /><i /></span>
       </div>
-      <div ref={labelRefs[2]} className={`${s.clabel} ${s.kr}`}>
+      <div ref={(el) => { labelsRef.current[2] = el }} className={`${s.clabel} ${s.kr}`} style={LABEL_POS[2]}>
         <span className={s.clabelBig}>현장 불만족</span>
         <span className={s.clabelTag}>Site&nbsp;Dissatisfaction</span>
         <span className={s.ticks}><i /><i /><i /><i /></span>

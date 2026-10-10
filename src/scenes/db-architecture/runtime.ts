@@ -24,9 +24,9 @@ import {
   flowEdgeSegment,
   flowDotSvg,
   drawSmStr,
-  drawRecStr,
-  escHtml,
+  mountRecTree,
 } from './draw'
+import { h, type Child } from '../_host/richText'
 import { KEYWORDS, TYPES, CDC_MAX_LINES, ERD_AUTO_INTERVAL, PACKET_SEG_MS } from './constants'
 import type { Packet, RuntimeGate } from './types'
 
@@ -488,20 +488,24 @@ export function setupRuntime(rootEl: HTMLElement, gate: RuntimeGate): () => void
   }
   const modelTableNames = Object.values(MODELS).flatMap((m) => m.tables.map((t) => t.name))
   const tableRe = new RegExp('\\b(' + modelTableNames.join('|') + ')\\b', 'g')
+  /** Message → nodes: `<val>…</val>` markers become styled spans, known table names are highlighted (text only, never parsed as HTML). */
+  function cdcMsgNodes(msg: string): Child[] {
+    const withTables = (text: string): Child[] =>
+      text.split(tableRe).map((part, i) => (i % 2 ? h('span', s.tbl, part) : part))
+    return msg
+      .split(/<val>(.*?)<\/val>/)
+      .flatMap((part, i) => (i % 2 ? [h('span', s.val, withTables(part))] : withTables(part)))
+  }
   function appendCdcLine(type: string, _tbl: string, msg: string) {
     const body = cdcLogBody
     if (!body) return
-    const ts = cdcNow()
-    const line = document.createElement('div')
-    line.className = s.cdcLine
-    const tagCls = cdcTagClass(type)
-    const tagLbl = cdcTagLabel(type)
-    // Escape first, then re-introduce only the <val> markers as styled spans.
-    const msgHtml = escHtml(msg)
-      .replace(/&lt;val&gt;(.*?)&lt;\/val&gt;/g, '<span class="' + s.val + '">$1</span>')
-      .replace(tableRe, '<span class="' + s.tbl + '">$1</span>')
-    line.innerHTML =
-      '<span class="' + s.cdcTs + '">' + ts + '</span><span class="' + cls('cdcTag') + ' ' + tagCls + '">' + tagLbl + '</span><span class="' + s.cdcMsg + '">' + msgHtml + '</span>'
+    const line = h(
+      'div',
+      s.cdcLine,
+      h('span', s.cdcTs, cdcNow()),
+      h('span', cls('cdcTag') + ' ' + cdcTagClass(type), cdcTagLabel(type)),
+      h('span', s.cdcMsg, cdcMsgNodes(msg))
+    )
     body.appendChild(line)
     const lines = body.querySelectorAll('.' + s.cdcLine)
     if (lines.length > CDC_MAX_LINES) {
@@ -831,10 +835,10 @@ export function setupRuntime(rootEl: HTMLElement, gate: RuntimeGate): () => void
     (r, i) => '<span class="' + s.ln + '">' + (i + 1) + '</span>' + hi(r[1])
   ).join('\n')
 
-  const recSvg = $id('recSvg')!
+  const updateRecTree = mountRecTree($id('recSvg')!)
   let recShown = 0
   function drawRec() {
-    recSvg.innerHTML = drawRecStr(recShown)
+    updateRecTree(recShown)
     $id('recDepth')!.textContent = String(recShown)
   }
   let recTimer: ReturnType<typeof setInterval> | null = null,

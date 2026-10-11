@@ -8,22 +8,8 @@ import { ProjectDrawer } from '@/components/projects/ProjectDrawer'
 import s from './scene.module.css'
 import { NS, eio, fmtYM, rowPct, span, sparkSVG } from './draw'
 import { GanttView } from './view'
-import {
-  COLORS,
-  COMPANIES,
-  DERIVED,
-  KPIS,
-  MILES,
-  PROJECTS,
-  REWIND_ROUTES,
-  ROWS,
-  SKILLS,
-  T0,
-  T1,
-  TODAY,
-  type Kpi,
-  type Row,
-} from './data'
+import { COLORS, REWIND_ROUTES, T0, T1, TODAY, type Kpi, type Row } from './data'
+import { GANTT_UI, ganttData } from './data-en'
 
 /* ════════════════════════════════════════════════════════════════
    SCENE · 커리어 타임라인 & 프로젝트 임팩트 보드 (gantt-cpm.html 이식)
@@ -32,7 +18,7 @@ import {
    삭제됨: resize/DPR/rAF boot/fonts.ready. running false → 멱등(빌드 1회).
    ════════════════════════════════════════════════════════════════ */
 
-export default function Scene({ running = true, onReady }: SceneProps) {
+export default function Scene({ running = true, onReady, locale = 'ko' }: SceneProps) {
   void running // 이 씬은 캔버스 tick 이 없는 정적 인터랙티브 보드 — DOM 빌드는 멱등 1회.
   const rootRef = useRef<HTMLDivElement | null>(null)
   const boardWrapRef = useRef<HTMLElement | null>(null)
@@ -59,6 +45,10 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     const cpToggle = cpToggleRef.current
     const dimToggle = dimToggleRef.current
     if (!root || !svg || !boardWrap || !detail || !tip || !cpToggle || !dimToggle) return
+    // Locale-specific projection of the career canon; the whole board rebuilds
+    // when the visitor switches language (effect depends on `locale`).
+    const { COMPANIES, PROJECTS, ROWS, MILES, KPIS, DERIVED, SKILLS } = ganttData(locale)
+    const L = GANTT_UI[locale]
 
     let cpOn = true,
       dimOn = false
@@ -97,13 +87,13 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         <div class="${s.m}">${top.k}: ${top.v}${second ? ' · ' + second.k + ': ' + second.v : ''}</div>
         <div class="${s.row}">${
         t.crit
-          ? '크리티컬 패스'
+          ? L.critical
           : t.kind === 'study'
-            ? '역량 보강 (부트캠프)'
+            ? L.study
             : t.slack > 0
-              ? '병렬 (Float ' + t.slack + 'mo)'
-              : '자기주도 프로젝트'
-      } · 클릭하여 상세</div>`
+              ? L.float(t.slack)
+              : L.selfLed
+      } · ${L.clickForDetail}</div>`
       tip.classList.add(s.show)
       positionTip(e)
     }
@@ -205,21 +195,21 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       dBar.style.background = t.kind === 'study' ? COLORS.self : t.color
       dCo.textContent = t.co
       dTi.textContent = t.role
-      dPd.textContent = `${fmtYM(t.start)} – ${t.ongoing ? '현재' : fmtYM(t.end)} · 진척 ${t.pct}%`
+      dPd.textContent = `${fmtYM(t.start)} – ${t.ongoing ? L.present : fmtYM(t.end)} · ${L.progress(t.pct)}`
 
       dCrit.style.cssText = ''
       if (t.crit) {
         dCrit.className = s.detailCrit
-        dCrit.textContent = '● CRITICAL PATH · 이 경력은 커리어 핵심 의존 체인 위에 있습니다 (Slack 0)'
+        dCrit.textContent = L.critDetail
       } else if (t.kind === 'study') {
         dCrit.className = `${s.detailCrit} ${s.off}`
-        dCrit.textContent = '◇ 역량 보강 · 부트캠프 학습 과정'
+        dCrit.textContent = L.studyDetail
       } else if (t.award) {
         dCrit.className = s.detailCrit
-        dCrit.textContent = `★ ${t.award} · 자기주도 프로젝트`
+        dCrit.textContent = L.awardDetail(t.award)
       } else {
         dCrit.className = `${s.detailCrit} ${s.off}`
-        dCrit.textContent = t.slack > 0 ? `○ 병렬 프로젝트 · 여유(Float) ${t.slack}개월` : '○ 자기주도 프로젝트 · 회사 성과의 본선 기여'
+        dCrit.textContent = t.slack > 0 ? L.floatDetail(t.slack) : L.selfDetail
       }
 
       dProblem.textContent = t.problem || t.desc
@@ -472,10 +462,10 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         fill.dataset.target = String(fw)
         if (!isP) {
           const pl = el('text', { x: bx + 8, y: cy + 3.6, fill: '#fff', 'font-size': 9.5, 'font-weight': 800, 'font-family': 'var(--mono)', 'pointer-events': 'none' }, g)
-          pl.textContent = t.ongoing ? `${pct}% · 진행중` : `${pct}%`
+          pl.textContent = t.ongoing ? L.ongoingBar(pct) : `${pct}%`
         }
 
-        const endLabel = t.ongoing ? '현재' : fmtYM(t.end)
+        const endLabel = t.ongoing ? L.present : fmtYM(t.end)
         const periodStr = `${fmtYM(t.start)}–${endLabel}`
         if (!isP) {
           const pdl = el('text', { x: bx2 - 7, y: cy + 3, fill: '#fff', 'font-size': 8.5, 'font-weight': 700, 'font-family': 'var(--mono)', 'text-anchor': 'end', 'fill-opacity': 0.9, 'letter-spacing': '.01em', 'pointer-events': 'none' }, g)
@@ -487,7 +477,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
             sd.setMonth(sd.getMonth() + t.slack)
             tailX = x(sd > T1 ? T1 : sd)
           }
-          const ptxt = t.ongoing ? `${pct}%·진행` : periodStr
+          const ptxt = t.ongoing ? L.ongoingShort(pct) : periodStr
           const approxW = ptxt.length * 4.7
           const edge = W - padR - 2
           let px = tailX + 6,
@@ -754,13 +744,16 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       ro.disconnect()
       if (barRAF) cancelAnimationFrame(barRAF)
       clearVerificationReplay()
+      detail!.classList.remove(s.show)
+      hideTip()
       cleanups.forEach((fn) => fn())
     }
-  }, [])
+  }, [locale])
 
   return (
     <>
       <GanttView
+        locale={locale}
         rootRef={rootRef}
         boardWrapRef={boardWrapRef}
         svgRef={svgRef}

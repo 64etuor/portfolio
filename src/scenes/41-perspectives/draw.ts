@@ -353,16 +353,17 @@ export function applyHero(
   }
 }
 
-export function setLabel(el: HTMLSpanElement | null, p: number, col: RGB, state: { lab: string; labA: number }) {
+export function setLabel(el: HTMLSpanElement | null, p: number, col: RGB, state: { lab: string; labA: number; side?: boolean }, locale: 'ko' | 'en' = 'ko') {
   if (!el) return
   const dist = Math.abs(p - 0.5) * 2
   const focus = ease(clamp((dist - 0.18) / 0.82, 0, 1))
-  const txt = p < 0.5 ? '실무자 관점 · FIELD EXPERT' : '개발자 관점 · DEVELOPER'
-  if (txt !== state.lab && focus < 0.22) {
+  const txt = locale === 'en' ? (p < 0.5 ? 'Field-expert perspective' : 'Developer perspective') : p < 0.5 ? '실무자 관점 · FIELD EXPERT' : '개발자 관점 · DEVELOPER'
+  // A language switch on the same side swaps the label at once; a side change
+  // waits until the label is blurred (focus < 0.22) as before.
+  const sameSide = state.side === (p < 0.5)
+  if ((txt !== state.lab && (focus < 0.22 || sameSide)) || state.lab === '') {
     state.lab = txt
-    el.textContent = txt
-  } else if (state.lab === '') {
-    state.lab = txt
+    state.side = p < 0.5
     el.textContent = txt
   }
   const a = 0.32 + 0.68 * focus

@@ -26,6 +26,18 @@ const A = [
   { t: '수' },
   { t: '있습니다.' },
 ]
+// English copy (word slots keep the same count as Q so the layout timing holds).
+const Q_EN = ['Why is', 'building', 'systems', 'always', 'so hard?']
+const A_EN: { t: string; hl?: string }[] = [
+  { t: 'It may' },
+  { t: 'not be' },
+  { t: 'a technology' },
+  { t: 'problem,' },
+  { t: 'but a' },
+  { t: 'communication', hl: 'communication' },
+  { t: 'problem.' },
+]
+
 const LAYERS = [
   { id: 'L04', kr: '배포', en: 'DEPLOY' },
   { id: 'L03', kr: '구현', en: 'BUILD' },
@@ -95,7 +107,7 @@ function renderGloss(i: number, mode: number, shimmer: number, time: number): st
   return str
 }
 
-export default function Scene({ running = true, onReady }: SceneProps) {
+export default function Scene({ running = true, onReady, locale = 'ko' }: SceneProps) {
   /* overlay element refs */
   const axisRef = useRef<HTMLDivElement | null>(null)
   const headRef = useRef<HTMLDivElement | null>(null)
@@ -129,12 +141,18 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     const lyrWrap = layersContainerRef.current
     if (!srcEl || !glsEl || !ansEl || !lyrWrap) return
 
+    // Rebuilt on a locale switch: clear the previous language's nodes first.
+    srcEl.innerHTML = ''
+    glsEl.innerHTML = ''
+    ansEl.innerHTML = ''
+    lyrWrap.innerHTML = ''
     srcWRef.current = []
     glsWRef.current = []
     ansWRef.current = []
     lyrElsRef.current = []
+    const en = locale === 'en'
 
-    Q.forEach((w) => {
+    ;(en ? Q_EN : Q).forEach((w) => {
       const el = document.createElement('span')
       el.className = `${s.srcWord} ${s.kr}`
       el.textContent = w
@@ -149,7 +167,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       glsWRef.current.push(el)
     })
 
-    A.forEach((a) => {
+    ;(en ? A_EN : A).forEach((a) => {
       const el = document.createElement('span')
       el.className = `${s.ansWord} ${s.kr}`
       if (a.hl) {
@@ -178,12 +196,12 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       d.className = s.lyr + (L === BASE ? ' ' + s.lyrBase : '')
       d.innerHTML =
         `<span class="${s.lyrId}">${L.id}</span>` +
-        `<span class="${s.lyrKr} ${s.kr}">${L.kr}</span>` +
-        `<span class="${s.lyrEn}">${L.en}</span>`
+        // EN shows the English term once (the KO layout pairs it with the Korean word).
+        (en ? `<span class="${s.lyrEn}">${L.en}</span>` : `<span class="${s.lyrKr} ${s.kr}">${L.kr}</span><span class="${s.lyrEn}">${L.en}</span>`)
       lyrWrap.appendChild(d)
       lyrElsRef.current.push(d as HTMLDivElement)
     })
-  }, [])
+  }, [locale])
 
   /* sizing unit sync */
   useEffect(() => {
@@ -213,10 +231,11 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     /* phase label */
     const phaseIdx = t < T_POSE ? 0 : t < T_TRANS ? 1 : t < T_PEEL ? 2 : 3
     const phaseEl = phaseRef.current
-    if (phaseEl && phaseEl.dataset['k'] !== '' + phaseIdx) {
-      phaseEl.dataset['k'] = '' + phaseIdx
+    const phaseKey = locale + phaseIdx
+    if (phaseEl && phaseEl.dataset['k'] !== phaseKey) {
+      phaseEl.dataset['k'] = phaseKey
       const p = PHASE_TXT[phaseIdx]
-      phaseEl.textContent = p[1] + ' / ' + p[0]
+      phaseEl.textContent = locale === 'en' ? p[0] : p[1] + ' / ' + p[0]
     }
 
     /* SOURCE words */
@@ -350,10 +369,10 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         </div>
 
         <div className={`${s.eyebrow} ${s.kr}`}>
-          <b>SCENE 04</b> · 소통 — LOST IN TRANSLATION
+          <b>SCENE 04</b> · {locale === 'en' ? 'COMMUNICATION' : '소통'} — LOST IN TRANSLATION
         </div>
         <div className={`${s.cap} ${s.capTr}`}>
-          STATUS · <span ref={phaseRef} className={`${s.phase} ${s.kr}`}>질문 / QUESTION</span>
+          STATUS · <span ref={phaseRef} className={`${s.phase} ${s.kr}`}>{locale === 'en' ? 'QUESTION' : '질문 / QUESTION'}</span>
         </div>
 
         <div ref={axisRef} className={s.axis} />
@@ -369,7 +388,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
         <div className={s.gauge}>
           <div className={`${s.gaugeLab} ${s.kr}`}>
-            신호 정합 · <b>SIGNAL ALIGN</b>
+            {locale === 'en' ? null : '신호 정합 · '}<b>SIGNAL ALIGN</b>
           </div>
           <div className={s.bar}>
             <div ref={fillRef} className={s.fill} />

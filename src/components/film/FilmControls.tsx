@@ -42,7 +42,7 @@ function toggleSound() {
  * cues and the drone bed are played by useFilmSoundCues (cue sheet: soundCues.ts).
  */
 export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: FilmControlsProps) {
-  const { t } = useLocale()
+  const { t, locale, setLocale } = useLocale()
   const sound = useSyncExternalStore(sfx.subscribe, sfx.getState, serverState)
 
   const act = beat?.act ?? -1
@@ -119,6 +119,24 @@ export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: 
         >
           <SpeakerIcon state={sound} />
         </button>
+        {/* Language (KO/EN): the site header is hidden on /film, so the film carries its
+            own switch. Toggling mid-film is safe — timing comes from the locale-independent
+            master clock; scenes only redraw their text. */}
+        <div role="group" aria-label={t(SITE.locale.label)} style={{ display: 'flex', gap: 4, marginLeft: 6 }}>
+          {(['ko', 'en'] as const).map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setLocale(option)}
+              aria-pressed={locale === option}
+              aria-label={`${option.toUpperCase()} — ${option === 'ko' ? t(SITE.locale.korean) : t(SITE.locale.english)}`}
+              className="film-ctrl"
+              style={{ fontFamily: 'var(--font-mono)', fontSize: 11, letterSpacing: '0.06em', opacity: locale === option ? 1 : 0.55 }}
+            >
+              {option.toUpperCase()}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Return home immediately (top-right) */}

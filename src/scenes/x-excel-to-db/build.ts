@@ -34,6 +34,9 @@ const FONT_KR = FONT_SANS
 const FONT_MONO = "'IBM Plex Mono', 'Pretendard Variable', monospace"
 
 const SHEET_SUFFIXES = ['_v3_최종.xlsx', '_0412.xlsx', '_rev2.xlsx', '(사본).xlsx'] as const
+// English sheet names for the EN locale (same slots as SHEET_TABS / SHEET_SUFFIXES).
+const SHEET_TABS_EN = ['Output', 'Labor', 'Defects', 'KPI', 'BOM', 'ST', 'Work orders', 'OPEX'] as const
+const SHEET_SUFFIXES_EN = ['_v3_final.xlsx', '_0412.xlsx', '_rev2.xlsx', '(copy).xlsx'] as const
 const ERR_CELLS = ['#REF!', '#N/A', '#VALUE!'] as const
 
 /** 아틀라스에 구울 모든 글자의 Pretendard 조각 + IBM Plex Mono 500 을 미리 로드. */
@@ -64,9 +67,9 @@ function roundRect(g: CanvasRenderingContext2D, x: number, y: number, w: number,
  * 종이 스프레드시트 한 장 — 둥근 모서리 카드, 엑셀 그린 헤더 밴드, 옅은 격자, 절제된 숫자.
  * 밝기는 셰이더가 조명과 함께 조절한다(여기선 '종이 알베도'만).
  */
-function drawSheet(g: CanvasRenderingContext2D, ox: number, oy: number, idx: number) {
+function drawSheet(g: CanvasRenderingContext2D, ox: number, oy: number, idx: number, en: boolean) {
   const rnd = mulberry32(9100 + idx * 77)
-  const tab = SHEET_TABS[idx]
+  const tab = (en ? SHEET_TABS_EN : SHEET_TABS)[idx]
   const M = 6 // 밉맵 번짐 방지 여백
   const W = TW - M * 2
   const H = TH - M * 2
@@ -89,7 +92,7 @@ function drawSheet(g: CanvasRenderingContext2D, ox: number, oy: number, idx: num
   g.fillText(tab, 20, HB / 2 + 1)
   g.font = `500 16px ${FONT_MONO}`
   g.fillStyle = 'rgba(225,240,232,0.72)'
-  const suffix = SHEET_SUFFIXES[idx % 4]
+  const suffix = (en ? SHEET_SUFFIXES_EN : SHEET_SUFFIXES)[idx % 4]
   const tw = g.measureText(suffix).width
   g.fillText(suffix, W - tw - 18, HB / 2 + 1)
   // 그리드
@@ -162,13 +165,18 @@ function drawSheet(g: CanvasRenderingContext2D, ox: number, oy: number, idx: num
   g.restore()
 }
 
-export function makeAtlas(THREE: Three) {
+/** Paints the 8 sheet cards into the atlas canvas in the given language. */
+export function paintAtlas(cv: HTMLCanvasElement, en: boolean) {
+  const g = cv.getContext('2d')!
+  g.clearRect(0, 0, cv.width, cv.height)
+  for (let i = 0; i < 8; i++) drawSheet(g, (i % 4) * TW, Math.floor(i / 4) * TH, i, en)
+}
+
+export function makeAtlas(THREE: Three, en = false) {
   const cv = document.createElement('canvas')
   cv.width = TW * 4
   cv.height = TH * 2
-  const g = cv.getContext('2d')!
-  g.clearRect(0, 0, cv.width, cv.height)
-  for (let i = 0; i < 8; i++) drawSheet(g, (i % 4) * TW, Math.floor(i / 4) * TH, i)
+  paintAtlas(cv, en)
   const tex = new THREE.CanvasTexture(cv)
   tex.colorSpace = THREE.SRGBColorSpace
   tex.anisotropy = 4

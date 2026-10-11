@@ -9,6 +9,7 @@ import { drawRuntime } from './draw'
 import { initRuntime, wireEvents } from './runtime'
 import type { Runtime } from './types'
 import { useFitDevice } from './useFitDevice'
+import './en'
 import { DeviceView } from './view'
 
 export default function Scene({ running = true, onReady }: SceneProps) {

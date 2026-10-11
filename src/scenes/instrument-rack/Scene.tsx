@@ -5,6 +5,7 @@ import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'
 import type { SceneProps } from '../_host/types'
 import { createRuntime, type InstrumentRackRuntime } from './runtime'
+import './en'
 import { SceneView, type SceneViewRefs } from './view'
 
 export default function Scene({ running = true, onReady }: SceneProps) {

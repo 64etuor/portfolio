@@ -11,6 +11,7 @@ import { createEngine, ensureSize, bootstrap, arcUpdate, simulate, updateHUD, up
 import type { DomRefs } from './types'
 import { WeldThermalView } from './view'
 import s from './scene.module.css'
+import './en'
 
 export default function Scene({ running = true, onReady }: SceneProps) {
   const engineRef = useRef(createEngine())

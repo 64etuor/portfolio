@@ -13,6 +13,7 @@ import {
   loadAddons,
   loadFonts,
   makeAtlas,
+  paintAtlas,
   makeDash,
   makeDb,
   makeDial,
@@ -59,7 +60,10 @@ export async function setupScene(ctx: ThreeContext, hudRoot: () => HTMLElement |
   const fat: InstanceType<typeof A.LineMaterial>[] = []
 
   const dot = makeDot(THREE)
-  const atlas = makeAtlas(THREE)
+  // Sheet names are baked into the atlas; repaint it when the page language changes.
+  const pageEn = () => document.documentElement.lang === 'en'
+  let atlasEn = pageEn()
+  const atlas = makeAtlas(THREE, atlasEn)
   const sheets = makeSheets(THREE, atlas)
   const db = makeDb(THREE, A, fat, dot)
   const dash = makeDash(THREE, A, fat, dot)
@@ -375,6 +379,11 @@ export async function setupScene(ctx: ThreeContext, hudRoot: () => HTMLElement |
       scene.environment = null
     },
     update(t) {
+      if (pageEn() !== atlasEn) {
+        atlasEn = pageEn()
+        paintAtlas(atlas.image as HTMLCanvasElement, atlasEn)
+        atlas.needsUpdate = true
+      }
       updateCamera(t)
       updateSheets(t)
       updateDb(t)

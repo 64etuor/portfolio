@@ -6,7 +6,7 @@ export const SRC = [
   'const WINDOW = 32;',
   'const SIGMA = 3.0;',
   '',
-  '// 이동 표준편차 기반 실시간 이상치 감지 훅',
+  '// Real-time anomaly guard using a rolling standard deviation',
   'export function useAnomalyGuard(channel: string) {',
   '  const [anomalies, setAnomalies] = useState<Anomaly[]>([]);',
   '  const buffer = useRef<number[]>([]);',

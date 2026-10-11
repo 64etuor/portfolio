@@ -8,6 +8,7 @@ import { cx } from '../_host/dom-util'
 import type { Frame, SceneProps } from '../_host/types'
 import { SRC, TERM, type TerminalEvent } from './data'
 import s from './scene.module.css'
+import './en'
 
 // 39 · IDE / Source Editor — deterministic live-coding loop.
 

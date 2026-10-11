@@ -17,6 +17,7 @@ import {
   renderRank,
   treePositions,
 } from './draw'
+import type { Locale } from '@/i18n/content'
 import type { SceneState } from './types'
 import type { SceneCtx } from './types'
 import { HUD_TREE, MAX_LIVE_ENTRIES } from './constants'
@@ -137,11 +138,11 @@ export function createPanZoom(root: HTMLDivElement, shell: HTMLElement, state: S
   return { onMouseDown, onMouseMove, onMouseUp, onWheel }
 }
 
-export function createRuntime(root: HTMLDivElement): () => void {
+export function createRuntime(root: HTMLDivElement, locale: Locale = 'ko'): () => void {
   const $ = <T extends Element = HTMLElement>(sel: string) => root.querySelector(sel) as T | null
   const $svg = $<SVGSVGElement>('#dagSvg')!
   const shell = $('#canvasShell')!
-  const ctx: SceneCtx = { root, $, $svg }
+  const ctx: SceneCtx = { root, locale, $, $svg }
 
   const state: SceneState = {
     viewMode: 'tree',

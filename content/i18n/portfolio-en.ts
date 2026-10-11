@@ -104,6 +104,57 @@ export const EN_PROJECTS: Record<string, EnglishProject> = {
   },
 }
 
+/**
+ * English captions for project screenshots, keyed by image path. Screenshots
+ * show the original (Korean) interfaces; the caption explains them in English.
+ */
+const EN_GALLERY_CAPTIONS: Record<string, string> = {
+  "/projects/dv-data/batch_2024-12-09-08-29-05-1.png": "AppSheet work screen — module production entry",
+  "/projects/dv-data/batch_2024-12-09-08-40-47.png": "AppSheet work screen — BPU registration",
+  "/projects/dv-data/batch_2024-12-08-23-42-23-1.png": "Google Sheets data and query view",
+  "/projects/dv-data/batch_2024-12-08-23-39-34.png": "Google Sheets live dashboard",
+  "/projects/dv-data/batch_2024-12-09-08-37-33.png": "QR-code production history lookup",
+  "/projects/mes-console/Pasted-image-20241202155547.png": "Production entry — barcode-scan input for manual lines",
+  "/projects/mes-console/Pasted-image-20241202155608.png": "Production entry — detail form",
+  "/projects/mes-console/Pasted-image-20241202155628.png": "Product lookup — full S/N history via the Django ORM",
+  "/projects/mes-console/Pasted-image-20241202160214.png": "S/N validation entry form",
+  "/projects/mes-console/Pasted-image-20241202160230.png": "S/N inspection results",
+  "/projects/mes-console/Pasted-image-20241202160723.png": "Django REST Framework backend structure",
+  "/projects/process-data/Pasted-image-20241202161931.png": "Solution — landing page",
+  "/projects/process-data/Pasted-image-20241205182519.png": "Solution — mini dashboard (in-app production summary)",
+  "/projects/process-data/Pasted-image-20241205180919.png": "Solution — work history entry",
+  "/projects/process-data/Pasted-image-20241205180948.png": "Solution — work-order lookup",
+  "/projects/process-data/Pasted-image-20241205180904.png": "Solution — defect entry",
+  "/projects/process-data/Pasted-image-20241205181022.png": "Solution — process history lookup",
+  "/projects/process-data/Pasted-image-20241205181107.png": "Defect photo upload — stored at about 400 KB while staying legible, linked to Power BI via RPA",
+  "/projects/process-data/Pasted-image-20241205181008.png": "Solution — submission check (a commit refreshes the Power BI dataset and sends a Teams alert via RPA)",
+  "/projects/process-data/Pasted-image-20241205181302.png": "Power BI — overall production status and metrics",
+  "/projects/process-data/Pasted-image-20241205181430.png": "Power BI — per-line production status and detail metrics (ST, UPPH)",
+  "/projects/process-data/Pasted-image-20241205181555.png": "Power BI — per-line output and defects by process",
+  "/projects/process-data/Pasted-image-20241205181909.png": "Power BI — output by detailed process step",
+  "/projects/process-data/Pasted-image-20241205181957.png": "Power BI — OEE and downtime, with labor loss converted to cost",
+  "/projects/process-data/Pasted-image-20241205181756.png": "Power BI — defect status, with labor loss converted to cost",
+  "/projects/process-data/Pasted-image-20241205181820.png": "Power BI — defect details",
+  "/projects/process-data/Pasted-image-20241205182140.png": "Power BI — output detail and progress by work order",
+  "/projects/process-data/Pasted-image-20241205181627.png": "Power BI — KPIs",
+  "/projects/process-data/Pasted-image-20241205181718.png": "Power BI — labor-hour analysis",
+  "/projects/process-data/Pasted-image-20241205182230.png": "Power BI — HR pages",
+  "/projects/process-data/Pasted-image-20241205182304.png": "Power BI — attendance",
+  "/projects/process-data/Pasted-image-20241205182339.png": "Power BI — OPEX cost analysis",
+  "/projects/traceability/Pasted-image-20241202163306.png": "App home — output entry by process",
+  "/projects/traceability/Pasted-image-20241202163355.png": "Operator self-inspection and checklist",
+  "/projects/traceability/Pasted-image-20241202163454.png": "Process history lookup",
+  "/projects/traceability/Pasted-image-20241202163518.png": "Instant Teams chat alert when an issue occurs",
+  "/projects/work-radar/work-radar-01-capture-board-2026-06-15.png": "Capture Board — the first control surface: an unsorted inbox on the left, an Eisenhower matrix in the centre, and a Today and routines rail on the right. The Agent Bar keeps Codex, Hermes, and cmux sessions in view.",
+  "/projects/work-radar/work-radar-03-today-timeline-2026-06-15.png": "Today Timeline — drag items from the unscheduled tray onto the timeline to claim real time in the day. Signals, calendar, and routines share one time axis, and a Work Debt chip surfaces operating debt.",
+  "/projects/work-radar/Pasted-image-20260615141933.png": "Weekly Review — throughput, PR activity, scheduled time, Life Wheel, and routine completion over a weekly window. Capture and Today data feed back into self-review metrics.",
+  "/projects/work-radar/Pasted-image-20260615141953.png": "PR Radar — open PRs split into CI Blocked, Needs Review, Ready, Stale, and Merged Cleanup buckets with a readiness mix. Review, CI triage, and escalation go to the Jobs proposal rail instead of changing GitHub directly.",
+  "/projects/work-radar/Pasted-image-20260615142021.png": "Worktree Diff — a branch-hygiene cockpit condensing dirty, staged, and branch diffs across repos and worktrees. AI review is read-only: it flags risky changes, dead code, and missing tests rather than editing.",
+  "/projects/work-radar/work-radar-08-jobs-agent-2026-06-15.png": "Jobs (Agent) — an execution audit surface where every Codex job carries a timeout, max turns, cost cap, and kill switch. Proposal jobs are edited and accepted by a person in the ProposalPanel, leaving a run, failure, and acceptance history.",
+  "/projects/work-radar/work-radar-09-skills-registry-2026-06-15.png": "Skills Registry — search, tag, install, back up, and audit in-app prompts and external Claude, Codex, and Hermes skills. AI operating assets need inventory, divergence checks, backups, and audits just like code.",
+  "/projects/work-radar/work-radar-10-control-room-2026-06-15.png": "Control Room — Boule Governance posture, ticker, readiness, and flow graph. The ghost SPEC · PLAN · TASK · SESSION · HANDOFF pipeline turns into a FlowSchematic once work appears, keeping emergent state under human control.",
+}
+
 export function projectForLocale(project: ProjectContent, locale: Locale): ProjectContent {
   if (locale === 'ko') return project
   const english = EN_PROJECTS[project.slug]
@@ -116,10 +167,10 @@ export function projectForLocale(project: ProjectContent, locale: Locale): Proje
     metrics: english.metrics,
     stack: english.stack,
     sections: english.sections,
-    // Captions, diagrams, and scene interfaces are authored as Korean visual
-    // artifacts. Do not mix that source language into the English document.
-    gallery: undefined,
-    diagram: undefined,
+    // Screenshots stay (they document the real interfaces); captions and alt
+    // text come from the English caption table. The workflow diagram is
+    // authored in English already.
+    gallery: project.gallery?.map((item) => ({ src: item.src, caption: EN_GALLERY_CAPTIONS[item.src] })),
   }
 }
 

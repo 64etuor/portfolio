@@ -6,6 +6,7 @@ import { useSceneReady } from '../_host/useSceneReady'
 import type { Frame, SceneProps } from '../_host/types'
 import { METRICS, SKILLS } from './data'
 import { createGcodeRuntime, createInitialState } from './runtime'
+import './en'
 import { GcodePrinterView } from './view'
 import type { DefectAnim, Deposit, SimState } from './types'
 

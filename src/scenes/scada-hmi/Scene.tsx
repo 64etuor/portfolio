@@ -11,11 +11,12 @@ import { makeTrendRuntime, renderAlarms } from './draw'
 import { handleAck, tick } from './runtime'
 import type { DomRefs } from './runtime'
 import s from './scene.module.css'
+import './en'
 import type { AckPhase, MimicState, ProcessState, TrendRuntime } from './types'
 import type { AlarmEvent } from './data'
 import { HmiView } from './view'
 
-export default function Scene({ running = true, onReady }: SceneProps) {
+export default function Scene({ locale = 'ko', running = true, onReady }: SceneProps) {
   const [activeTab, setActiveTab] = useState<TabId>('overview')
   const [ackPhase, setAckPhase] = useState<AckPhase>('active')
   const ackPhaseRef = useRef<AckPhase>('active')
@@ -83,6 +84,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     <SceneHost className={s.root} bg="#0c1014">
       <canvas ref={canvasRef} className={s.c} />
       <HmiView
+        english={locale === 'en'}
         activeTab={activeTab}
         ackPhase={ackPhase}
         onTabChange={setActiveTab}

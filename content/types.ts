@@ -40,11 +40,6 @@ interface WritingItem {
   quote: string
   year?: string
 }
-interface PhilosophyLens {
-  name: string
-  idea: string
-  bridge: string // 엔지니어링 적용
-}
 interface Metric {
   metric: string
   value: string
@@ -89,7 +84,6 @@ export interface Profile {
   education: EducationItem[]
   training?: TrainingItem[]
   writing: WritingItem[]
-  philosophy: PhilosophyLens[]
   metrics: Metric[]
 }
 

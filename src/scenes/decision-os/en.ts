@@ -29,7 +29,7 @@ registerSceneText({
   '영역. 전문가 판단 + 모범사례(good practice) 적용.': 'zone. Expert judgement + good practice.',
   '영역. 전문가 판단 + 모범사례 적용.': 'zone. Expert judgement + good practice.',
   '합의 낮음 · 확실성 낮음 →': 'Low agreement · low certainty →',
-  '창발(emergent)': 'emergent',
+  '실험 탐색(emergent)': 'emergent',
   '영역. 안전-실패 실험으로 패턴을 유도(probe).': 'zone. Probe for patterns with safe-to-fail experiments.',
   '합의·확실성 모두 붕괴 →': 'Agreement and certainty both collapsed →',
   '혼돈(act-first)': 'chaotic (act-first)',
@@ -176,11 +176,11 @@ registerSceneText({
   '비가역 × 복잡 →': 'Irreversible × complex →',
   '결정을 가역화(Type-2 변환)': 'make the decision reversible (convert to Type-2)',
   '하거나 보류.': ' or defer it.',
-  '복잡계에서 비가역 결정은 위험하다. 작게 쪼개 가역으로 만들고 probe로 패턴이 보일 때까지 defer.':
-    'Irreversible decisions are dangerous in complex systems. Split them small, make them reversible, and defer until probes reveal a pattern.',
+  '복잡 영역에서 비가역 결정은 위험하다. 작게 쪼개 가역으로 만들고 probe로 패턴이 보일 때까지 defer.':
+    'Irreversible decisions are dangerous in the complex domain. Split them small, make them reversible, and defer until probes reveal a pattern.',
   '가역 × 복잡 →': 'Reversible × complex →',
   'safe-to-fail probe 우선': 'safe-to-fail probes first',
-  ', 결론은 창발에 맡긴다.': ' — let the conclusion emerge.',
+  ', 결론은 실험 결과로 낸다.': ' — let the experiments decide.',
   '여러 작은 실험을 병렬 가동하고 신호가 강해지는 분기를 증폭한다.': 'Run several small experiments in parallel and amplify the branches whose signal grows.',
   '혼돈 →': 'Chaotic →',
   'OODA의 Act를 먼저': "run OODA's Act first",

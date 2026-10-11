@@ -2,6 +2,9 @@
 
 너는 자기완결 HTML 씬 1개를 React 컴포넌트로 "실용적 포팅" 한다. **이 문서 + 레퍼런스 구현을 그대로 따라라.**
 
+> 적용 범위: `public/lab` 원본이 있는 2D 캔버스 씬. three.js 씬(`src/scenes/x-*`)은 HTML 원본 없이 React 로 직접 작성되며
+> `src/scenes/_host/three/` 하네스를 쓴다. 현재 씬 목록은 `src/scenes/catalog.ts` 참고.
+
 ## 입력 / 산출
 - 입력: `public/lab/<FILE>.html` (배정받은 파일)
 - 산출: `src/scenes/<SLUG>/` 디렉토리에 아래만 생성 (SLUG = 파일명에서 `.html` 제거, 번호 접두 유지: 예 `29-lost-in-translation`, `robot-pendant`)

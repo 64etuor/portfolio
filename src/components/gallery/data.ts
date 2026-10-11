@@ -1,4 +1,4 @@
-// 갤러리 정본 데이터 — public/lab/scenes.html + skills*.html 에서 한국어 카피 그대로 옮김.
+// 갤러리 정본 데이터 — /scenes(필름 서사) + /skills(영역별 실작업) 카드. KO/EN 병기.
 // file = 씬 basename(catalog key 와 동일).
 
 import { SCENE_CATALOG } from '@/scenes/catalog'
@@ -41,8 +41,8 @@ export const SCENES_GALLERY: GalleryCard[] = [
   card('30-collision', 'SCENE 06 · 충돌 — LEXICAL COLLISION', 'SCENE 06 · Collision — LEXICAL COLLISION', 'Scene 06', 'Scene 06', '언어가 정면충돌, 요구사항이 찢긴다 (클라이맥스).', 'Languages collide head-on and requirements tear apart (the climax).'),
   card('31-cost-cascade', 'SCENE 07 · 비용 — COST CASCADE', 'SCENE 07 · Cost — COST CASCADE', 'Scene 07', 'Scene 07', '한 점의 어긋남이 세 갈래의 비용으로 이어진다.', 'One misalignment cascades into costs on three fronts.'),
   card('32-the-connector', 'SCENE 08 · 연결 — THE CONNECTOR', 'SCENE 08 · Connection — THE CONNECTOR', 'Scene 08', 'Scene 08', '분열을 잇는 단 하나의 연결 — 현장과 기술을 잇는 사람.', 'One connection that bridges the divide — the person joining fieldwork and technology.'),
-  card('36-bridge-experts', 'SCENE 09 · 해결 — THE BRIDGE', 'SCENE 09 · Solution — THE BRIDGE', 'Scene 09', 'Scene 09', '제조↔디지털을 한 사람이 양방향으로 잇는 양손잡이 전문가.', 'A cross-functional expert connecting manufacturing and digital work in both directions.'),
-  card('37-cross-domain', 'SCENE 10 · 핵심 — CROSS-DOMAIN', 'SCENE 10 · Core — CROSS-DOMAIN', 'Scene 10', 'Scene 10', '경계를 넘는 지식의 교집합이 경쟁력으로 점화.', 'The intersection of knowledge across boundaries ignites competitive advantage.'),
+  card('36-bridge-experts', 'SCENE 09 · 해결 — THE BRIDGE', 'SCENE 09 · Solution — THE BRIDGE', 'Scene 09', 'Scene 09', '제조↔디지털을 한 사람이 양방향으로 잇는 양손잡이 전문가. 필름에선 Work Radar·KIP 작업 장면이 근거로 이어진다.', 'A cross-functional expert connecting manufacturing and digital work in both directions. In the film, Work Radar and KIP follow as evidence.'),
+  card('37-cross-domain', 'SCENE 10 · 핵심 — CROSS-DOMAIN', 'SCENE 10 · Core — CROSS-DOMAIN', 'Scene 10', 'Scene 10', '경계를 넘는 지식의 교집합이 경쟁력으로 점화. 필름에선 스마트 팩토리·엑셀→DB·MES 작업 장면이 이어진다.', 'The intersection of knowledge across boundaries ignites competitive advantage. In the film, the smart factory, Excel → DB, and MES scenes follow.'),
   card('38-ending-catchphrase', '엔딩 · 미래를 만드는 사람', 'Ending · The People Who Make the Future', 'Ending', 'Ending', 'THE MAKERS — "미래를 만드는 사람." 캐치프레이즈.', 'THE MAKERS — “The people who make the future.”'),
 ]
 
@@ -69,7 +69,7 @@ export const SKILL_AREAS: SkillArea[] = [
       card('weld-thermal', 'Nd:YAG 레이저 용접기', 'Nd:YAG Laser Welder', '용접', 'Welding', '1064nm 펄스 — 레이저가 경로를 그리며 키홀/심/패턴 용접.', '1064 nm pulses — a laser traces paths for keyhole, seam, and pattern welding.'),
       card('robot-pendant', '티칭 펜던트 · 스팟용접', 'Teaching Pendant · Spot Welding', '로보틱스', 'Robotics', 'PROG[SPOT_WLD] 교시 — 로봇 스팟 용접 티칭 펜던트.', 'PROG[SPOT_WLD] teaching — a pendant for robot spot-welding programming.'),
       card('gcode-printer', '적층제조 치공구 빌드', 'Additive-manufacturing Jig Build', '적층제조', 'Additive manufacturing', 'Jig 직접 제작 — FDM 빌드 + 슬라이싱 파라미터.', 'Direct jig manufacturing — FDM build and slicing parameters.'),
-      card('x-vision-reverse', '비전 검사 · 셀 역삽 검출', 'Vision Inspection · Reversed Cells', '검사', 'Inspection', '배터리 모듈 셀 극성 역삽을 비전으로 검출. 유휴 비전 장비 4대를 재활용해 약 400만원 절감, 필드 불량 0건.', 'Vision check for reversed cell polarity in battery modules. Four idle vision machines reused (≈ ₩4M saved); zero field defects.'),
+      card('x-vision-reverse', '비전 검사 · 셀 역삽 검출', 'Vision Inspection · Reversed Cells', '검사', 'Inspection', '배터리 모듈 셀 극성 역삽을 비전으로 검출. 이랜텍에선 유휴 비전 장비 4대를 재활용해 약 400만원 절감.', 'Vision check for reversed cell polarity in battery modules. At Elentec, four idle vision machines were reused (≈ ₩4M saved).'),
       card('x-smart-factory', '스마트 팩토리 도입', 'Smart Factory Adoption', '스마트팩토리', 'Smart factory', '은성(2021.08–2022.01) — 과제 신청·PM·요구사항 수립. Ecount ERP·바코드·태블릿 생산현황으로 수기 기록을 대체.', 'Eunsung (2021.08–2022.01) — applied for the program, ran it as PM, wrote the requirements. Ecount ERP, barcodes, and tablet status boards replaced paper logs.'),
       card('x-lob-balance', 'LOB 라인 밸런싱', 'LOB Line Balancing', '라인', 'Line', '병목 두 공정을 Jig로 단축(Neck C/T 16.72→12.76초, Function Test 55→28초). 라인 생산성 24% 향상.', 'Jigs cut the two bottlenecks (Neck C/T 16.72 → 12.76 s, function test 55 → 28 s). Line productivity +24%.'),
     ],
@@ -81,7 +81,7 @@ export const SKILL_AREAS: SkillArea[] = [
     cards: [
       card('pid-scheme', 'P&ID 시스템 토폴로지', 'P&ID System Topology', '아키텍처', 'Architecture', 'ISA-5.1 — 소프트웨어 아키텍처를 P&ID 도면으로.', 'ISA-5.1 — software architecture represented as a P&ID drawing.'),
       card('db-architecture', 'DB 모델링 / 데이터 아키텍처', 'DB Modeling / Data Architecture', '데이터·DB', 'Data · DB', '엑셀 파편화 → 정규화 관계형 DB(26테이블 ERD).', 'Fragmented spreadsheets → normalized relational DB (26-table ERD).'),
-      card('x-mes-line', '신제품 라인 MES 자체 개발', 'New Line MES, Built In-house', 'MES', 'MES', '설비 예산에서 빠진 MES 외주비를 자체 개발로 대체 — PostgreSQL·Django·React, OCV/IR·비전 설비 연동. 3개월.', 'Built the MES in-house when outsourcing was missing from the equipment budget — PostgreSQL, Django, React, wired to OCV/IR and vision stations. Three months.'),
+      card('x-mes-line', '신제품 라인 MES 자체 개발', 'New Line MES, Built In-house', 'MES', 'MES', '배터리 화재 방지용 글라스울 파우치 자동화 라인. 설비 예산에서 빠진 MES 외주비를 자체 개발로 대체 — PostgreSQL·Django·React, OPC UA 설비·비전 데이터 연동. 3개월 만에 프로토타입.', 'An automated line for glass-wool pouches (battery fire prevention). MES outsourcing was missing from the equipment budget, so I built it in-house — PostgreSQL, Django, React, wired to OPC UA equipment and vision data. Prototype in three months.'),
       card('x-excel-to-db', '엑셀 → DB 전환', 'Excel → Database', '데이터', 'Data', '담당자별 엑셀 8종을 DB로 통합하고 Power BI 대시보드로 자동 갱신. 사무 공수 하루 451분 감축.', 'Eight per-owner Excel files moved into one database with an auto-refreshing Power BI dashboard. Office work cut by 451 minutes a day.'),
       card('x-sn-trace', '공정 추적성 · S/N 관리', 'Process Traceability · S/N', '추적성', 'Traceability', '원자재 LOT → 조립 → 출하 S/N 계보 추적. 미등록 제품은 상위 공정 투입 차단. 2024 Core Value Award.', 'Genealogy from raw-material LOT through assembly to shipped S/N; unregistered units are blocked from later stations. 2024 Core Value Award.'),
       card('ide-coding', 'IDE 코딩 화면', 'IDE Coding Screen', '개발', 'Development', '라이브 타이핑 + 터미널 테스트(pnpm test → 6 passed) — 개발자의 코드 에디터.', 'Live typing + terminal tests (pnpm test → 6 passed) — a developer’s code editor.'),
@@ -90,10 +90,10 @@ export const SKILL_AREAS: SkillArea[] = [
   {
     key: 'infra',
     label: copy('인프라', 'Infrastructure'),
-    blurb: copy('시스템 · 관제 — 작업 관제와 에이전트 거버넌스.', 'Systems and control — work operations control and agent governance.'),
+    blurb: copy('시스템 · 운영 — 업무 신호 정리와 에이전트 거버넌스.', 'Systems and operations — sorting work signals and governing agents.'),
     cards: [
       card('x-work-radar-rails', 'Work Radar · 두 레일', 'Work Radar · Two Rails', '개인 프로젝트', 'Personal project', '일정·PR·백로그 신호는 자동 수집, 승격은 사람이 결정. 자동화(Codex job)는 샌드박스 제안 레일에서만 실행.', 'Calendar, PR, and backlog signals are collected automatically; a person decides what gets promoted. Automation (Codex jobs) runs only in a sandboxed proposal rail.'),
-      card('agent-governance', 'AI 에이전트 거버넌스', 'AI Agent Governance', '거버넌스', 'Governance', 'Boule Control Room — 에이전트 자율성·권한·감사 관제.', 'Boule Control Room — control over agent autonomy, authority, and auditability.'),
+      card('agent-governance', 'AI 에이전트 거버넌스', 'AI Agent Governance', '거버넌스', 'Governance', 'Boule Control Room — 에이전트 자율성·권한·감사 통제.', 'Boule Control Room — control over agent autonomy, authority, and auditability.'),
     ],
   },
   {
@@ -130,8 +130,8 @@ export const AREA_META: Record<SkillAreaKey, { heading: LocalizedString; sub: Lo
     labelLine: copy('P&ID · DB · MES · 엑셀→DB · S/N · IDE', 'P&ID · DB · MES · Excel→DB · S/N · IDE'),
   },
   infra: {
-    heading: copy('인프라 · 시스템 · 관제', 'Infrastructure · Systems · Operations Control'),
-    sub: copy('관제·거버넌스 — 시스템을 운영·통제하는 레이어.', 'Operations control and governance — the layer that runs and governs systems.'),
+    heading: copy('인프라 · 시스템 · 운영', 'Infrastructure · Systems · Operations'),
+    sub: copy('운영·거버넌스 — 시스템을 운영·통제하는 레이어.', 'Operations and governance — the layer that runs and governs systems.'),
     labelLine: copy('Work Radar · 거버넌스', 'Work Radar · Governance'),
   },
   pkm: {

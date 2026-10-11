@@ -1,8 +1,8 @@
 # portfolio — 박양하 · Yangha Park
 
-데이터 분석·제조 DX→AX 를 주제로 한 **인터랙티브 포트폴리오**. Next.js 15 통합 셸 위에
-32개의 자체 캔버스 "씬"을 엮어, 자동재생 **필름**(DX→AX 내러티브)·갤러리·단독 씬 라우트로
-구성한다.
+제조 현장 → 데이터 → AI를 주제로 한 **인터랙티브 포트폴리오**. Next.js 15 통합 셸 위에
+33개 씬(2D 캔버스 24 + three.js 9)을 엮어 자동재생 **필름**(DX→AX 내러티브)·갤러리·
+단독 씬 라우트·프로젝트 상세·이력서로 구성한다. 전 페이지 KO/EN 전환을 지원한다.
 
 **Live: https://yanghapark.com**
 
@@ -12,83 +12,94 @@
 |------|------|
 | 프레임워크 | Next.js 15 (App Router) · React 19 (React Compiler) |
 | 스타일 | Tailwind CSS v4 (`@tailwindcss/postcss`) |
-| 씬 | HTML5 Canvas (2D) · 공유 rAF 스케줄러 |
+| 씬 | HTML5 Canvas 2D · three.js(`x-*` 씬) · 공유 rAF 스케줄러 |
+| 사운드 | Web Audio 효과음 엔진(`src/lib/sfx`) + 필름 큐 시트(`soundCues.ts`) |
 | 3D 히어로 | Spline (`@splinetool/react-spline`, 랜딩에서 지연 로드) |
-| 폰트 | Fontsource 셀프호스팅 (Pretendard · JetBrains Mono 외 9종 — `src/app/fonts.ts`) |
-| 계측 | Vercel Analytics · Speed Insights |
-| 배포 | Vercel → `yanghapark.com` |
+| 폰트 | Fontsource 셀프호스팅 (`src/app/fonts.ts`) |
+| 계측 · 배포 | Vercel Analytics · Speed Insights · Vercel → `yanghapark.com` |
 
 ## 실행
 
 ```bash
-npm install        # 의존성 설치
-npm run dev        # 개발 서버 (http://localhost:3000)
-npm run build      # 타입체크 + 프로덕션 빌드
-npm run start      # 빌드 결과 서빙
-npm run lint       # next lint
-npm run gen:resume # content/ → public/resume.json 생성
-npm run audit:react# react-doctor (React 안티패턴)
-npm run audit:lh   # Lighthouse (실행 중인 :3000 대상)
+npm install          # 의존성 설치
+npm run dev          # 개발 서버 (http://localhost:3000)
+npm run build        # 타입체크 + 프로덕션 빌드
+npm run lint         # eslint (빌드 비차단)
+npm run test:e2e     # Playwright (smoke · i18n · film-cut · visual)
+npm run gen:resume   # content/ → public/resume.json 생성
 ```
 
 ## 라우트
 
 | 경로 | 내용 |
 |------|------|
-| `/` | 랜딩 — Spline 3D 로봇 히어로 + 내비 |
-| `/film` | 자동재생 필름 (DX→AX 12-비트 내러티브) |
-| `/scenes` | 씬 갤러리 (호버 시 재생) |
-| `/skills`, `/skills/[area]` | 스킬 갤러리 |
-| `/s/[scene]` | 단독 씬 (전체화면) |
-| `/c/[comp]` | 씬 조합(composition) |
-| `/resume` | 이력서 (content SSOT 렌더) |
+| `/` | 랜딩 — Spline 3D 히어로 + 내비 |
+| `/film` | 자동재생 필름 — 부팅 + SCENE 01–10 + 엔딩, 사운드 · KO/EN 토글 |
+| `/scenes` | 필름 서사 갤러리 (12장, 뷰포트 진입 시 재생) |
+| `/skills`, `/skills/[area]` | 영역별 실작업 갤러리 (pm · process · dev · infra · pkm) |
+| `/s/[scene]` | 단독 씬 (전체화면) — 은퇴 씬 슬러그는 `next.config.ts` 에서 리다이렉트 |
+| `/c/[comp]` | 씬 조합 — overview · project-career · skill · manufacturing-data · knowledge |
+| `/projects`, `/projects/[slug]` | 프로젝트 상세 (12건) |
+| `/resume` | 이력서 (`public/resume.json` 렌더, EN 은 `portfolio-en.ts`) |
+
+## 씬
+
+- **필름 비트(12)**: `05-bios-boot` → `42-era-shift` · `33-ax-era` · `28-gap-reality` ·
+  `29-lost-in-translation` · `41-perspectives` · `30-collision` · `31-cost-cascade` ·
+  `32-the-connector` · `36-bridge-experts` · `37-cross-domain` → `38-ending-catchphrase`.
+  SCENE 09 뒤에 `work-radar`·`kip-evidence`, SCENE 10 뒤에 `smart-factory`·`excel-to-db`·`mes-line` 삽입.
+- **three.js 프로젝트 씬(9, `src/scenes/x-*`, `public/lab` 원본 없음)**: smart-factory · mes-line ·
+  excel-to-db · vision-inspection · sn-trace · weld-doe · line-balance · kip-evidence · work-radar.
+- **2D 데모 씬(12)**: gantt-cpm · instrument-rack · scada-hmi · pipeline-dag · weld-thermal ·
+  robot-pendant · pid-scheme · db-architecture · ide-coding · agent-governance · decision-os ·
+  gcode-printer(parked).
+- 은퇴(→ 대체): radar-sonar→work-radar · graphrag→kip-evidence · mes-console→mes-line ·
+  digital-twin→smart-factory · sonar-waterfall→weld-doe · cmm-metrology·oscilloscope→vision-inspection ·
+  ai-latent→sn-trace.
 
 ## SSOT (단일 출처)
 
 | 출처 | 역할 |
 |------|------|
-| `content/profile.ts` · `overrides.ts` | 인물·경력·프로젝트·스킬 정본 (이력서/렌더의 base) |
-| `content/resume.ts` | `toResumeData(PROFILE)` 투영 → `gen:resume` 가 `public/resume.json` 생성 |
-| `content/site.ts` | 랜딩 카피·도메인·타이틀 |
-| `src/scenes/catalog.ts` | 씬 카탈로그 — registry/loaders/gallery/acts/`/s` params 가 여기서 파생, `SceneKey` 리터럴 타입 |
-| `src/app/fonts.ts` | 폰트 로딩 매니페스트 (한 곳에서 관리) |
+| `content/profile.ts` · `overrides.ts` | 인물·경력·이력서 프로젝트·스킬 정본 |
+| `content/projects/*.ts` | `/projects` 상세 정본 (기간·지표의 가장 구체적인 출처) |
+| `content/i18n/portfolio-en.ts` · `scene-en.ts` | 프로젝트·이력서·씬 메타 EN 투영 |
+| `content/resume.ts` | `toResumeData(PROFILE)` → `gen:resume` 가 `public/resume.json` 생성 |
+| `content/site.ts` | 공용 UI 카피(KO/EN)·내비·도메인 |
+| `src/scenes/catalog.ts` | 씬 카탈로그 — registry/loaders/gallery/`/s` params 파생, `SceneKey` 리터럴 타입 |
+| `src/components/film/acts.ts` | 필름 비트·씬별 지속시간(ms) — 마스터 시계(`useFilmClock`)가 컷·효과음 동기 |
 
 ## 구조
 
 ```
 src/
-  app/                 App Router (layout·라우트·globals/cinematic/resume CSS)
-    fonts.ts           폰트 로딩 SSOT
+  app/                 App Router (라우트 · sitemap/robots · CSS)
   components/
-    landing/           랜딩(Spline 지연 로드 + 내비)
-    film/              필름 엔진 — Film.tsx + 훅(useFilmClock·useSceneBuffer·useIrisOutro)
-                       + 컴포넌트(SceneSlot·FilmControls·FilmTransition) + acts.ts(비트)
-    gallery/           갤러리(GalleryGrid·GalleryPageShell)
-    resume/            이력서 렌더
+    film/              필름 엔진 — Film.tsx + useFilmClock(마스터 시계) · useSceneBuffer ·
+                       useFilmSoundCues · acts.ts · soundCues.ts
+    gallery/           /scenes · /skills 카드 데이터(data.ts) + 그리드
+    projects/ resume/  프로젝트 상세 · 이력서 렌더
+    LocaleProvider     KO/EN 상태 (씬 텍스트는 _host/localize.tsx + 씬별 en.ts)
+  lib/sfx/             효과음 엔진
   scenes/
     catalog.ts         씬 SSOT · loaders.ts · registry.ts
-    _host/             씬 런타임 — useSceneCanvas(freeze-resume rAF) · SceneHost(overlay)
-                       · SceneFrame · LazyScene · 공유 유틸(color·math·random·dom-util·palette)
-    _styles/tokens.css 공유 phosphor 토큰
-    <name>/            32개 씬 (Scene.tsx + scene.module.css), public/lab HTML 이식
-content/               콘텐츠 SSOT (profile·resume·site·overrides)
-public/lab/            원본 자기완결형 HTML 시안 (씬의 출처)
-scripts/gen-resume.ts  content → public/resume.json
+    _host/             씬 런타임 — useSceneCanvas · SceneHost · localize · three/ 공용 유틸
+    <name>/            씬별 Scene.tsx (+ data.ts · en.ts · scene.module.css)
+  compositions/        /c 조합 정의
+content/               콘텐츠 SSOT (profile · projects · i18n · site · resume)
+public/lab/            2D 씬의 원본 자기완결형 HTML (헤더 "단독 보기"로 열림)
+scripts/               gen-resume · ingest-projects · gen-image-dims
 ```
 
 ## 이력서 워크플로우
 
-1. `content/profile.ts`(+`overrides.ts`) 만 수정한다.
-2. `npm run gen:resume` 로 `public/resume.json` 생성.
-3. `/resume` 가 자동 반영된다.
+1. `content/profile.ts`(+`overrides.ts`)와 해당 `content/projects/*.ts`, EN 은 `content/i18n/portfolio-en.ts` 를 함께 수정한다.
+2. `npm run gen:resume` 로 `public/resume.json` 재생성.
+3. `/resume` 에 자동 반영된다.
 
 ## 메모
 
-- **필름**: `acts.ts` 가 비트(막)·씬별 지속시간(ms)의 SSOT. 씬은 차례가 될 때 코드스플릿 로드,
-  더블버퍼 크로스페이드로 컷. 일시정지/이전/SKIP 컨트롤은 씬 캔버스까지 freeze-resume 한다.
-- **씬 CSS**: 32개 씬 CSS 모듈이 루트 레이아웃 청크로 묶여 전 라우트에 로드된다(Next 15 한계 —
-  라우트그룹/`:global()` 키프레임 공유 미지원으로 환경상 분리 불가). 색상은 `--scene-phos*` 토큰 공유.
-- **성능**: 랜딩 Spline 런타임(~568KB)은 `next/dynamic(ssr:false)` + `requestIdleCallback` 로
-  크리티컬 패스 밖으로 지연 로드(홈 Lighthouse 54→92).
-- **배포**: `main` push 시 Vercel 프로덕션 자동 배포(`yanghapark.com`). 프리뷰는 Deployment
-  Protection 으로 보호됨.
+- **필름**: 마스터 시계가 비트 전환·씬 프리롤·효과음 큐를 한 시간축으로 구동. 씬은 차례가 오기 전
+  코드스플릿 로드 후 더블버퍼 크로스페이드로 컷. 일시정지/이전/SKIP·사운드(M)·언어 토글 제공.
+- **씬 CSS**: 씬 CSS 모듈이 루트 레이아웃 청크로 묶여 전 라우트에 로드된다(Next 15 한계).
+- **배포**: `main` push 시 Vercel 프로덕션 자동 배포. 프리뷰는 Deployment Protection 으로 보호.

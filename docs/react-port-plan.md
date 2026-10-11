@@ -2,6 +2,10 @@
 
 _원안 2026-06-19 · **개정 2026-06-20**(리네이밍 커밋 `7bfa205` 이후 정합화) · 브랜치 `feat/portfolio-film`_
 
+> **현황(2026-10)**: 포팅은 완료된 과거 계획이다. 이후 레거시 씬 8개(radar-sonar · graphrag · mes-console · digital-twin ·
+> sonar-waterfall · cmm-metrology · oscilloscope · ai-latent)는 은퇴하고 three.js 씬 9개(`src/scenes/x-*`)로 대체됐다.
+> 현재 씬 목록의 정본은 `src/scenes/catalog.ts`, 요약은 `README.md` 의 "씬" 절을 본다. 아래 §7 인벤토리는 당시 기준이다.
+
 `public/lab/*.html` 자기완결 씬(인라인 CSS + 바닐라 JS 캔버스 rAF + DOM 빌드 UI)들이 **iframe으로 임베드**(Film 더블버퍼, 갤러리 lazy)돼 있다. 이를 React 컴포넌트로 풀포팅하고 iframe 제거·공유 rAF·컬링·코드스플릿·테마 통일로 성능을 개선한다.
 
 > **rev.2 변경점**: ① 파일 네이밍이 탈번호화됨(데모=슬러그 `robot-pendant.html`, 메시지 씬만 번호 `28-*`; 번호는 `registry.ts`의 `id`로 분리). ② `registry.ts`·`SceneFrame.tsx`는 **이미 존재**(메타데이터/iframe 임시본) → 신규가 아니라 **확장/대체**. ③ 라이브러리 스택 확정. ④ 결정사항(§8) 락. ⑤ codex+claude 반반 팬아웃 프로토콜 추가.
@@ -104,7 +108,7 @@ return <SceneHost><canvas ref={ref} className={s.c} /> /* + 정적 오버레이 
 
 ---
 
-## 7. 씬 인벤토리 (포팅 대상 = 32, gallery 셸 제외)
+## 7. 씬 인벤토리 (포팅 대상 = 32, gallery 셸 제외 — 2026-06 당시 기준, 은퇴 씬 포함)
 **메시지 씬(12, 번호 유지):** 05-bios-boot · 28-gap-reality · 29-lost-in-translation · 30-collision · 31-cost-cascade · 32-the-connector · 33-ax-era · 36-bridge-experts · 37-cross-domain · 38-ending-catchphrase · 41-perspectives · 42-era-shift
 **데모 씬(20, 슬러그):** agent-governance · ai-latent · cmm-metrology · db-architecture · decision-os · digital-twin · gantt-cpm · gcode-printer(parked) · graphrag · ide-coding(registry 미등록—확인) · instrument-rack · mes-console · oscilloscope · pid-scheme · pipeline-dag · radar-sonar · robot-pendant · scada-hmi · sonar-waterfall · weld-thermal
 **헤비(집중 리뷰):** db-architecture(2206) · robot-pendant(1968) · gantt-cpm(1403) · scada-hmi(1331) · agent-governance · decision-os · mes-console · oscilloscope

@@ -11,7 +11,7 @@
 // 플래그
 //   registry  : registry.SCENES 로 노출 + 조합(compositions) 후보.
 //   filmBeat  : 필름 내러티브 비트(film/acts.ts).
-//   gallery   : 갤러리 카드로 노출(scenes.html / skills-*.html).
+//   gallery   : 갤러리 카드로 노출(/scenes · /skills).
 //   route 는 별도 플래그 없이 "catalog 의 모든 씬은 /s 단독 라우트를 가진다"로 통일
 //   (로더가 존재하므로 전부 단독 뷰 가능 — 이로써 필름 비트 카드의 404 가 해소된다).
 

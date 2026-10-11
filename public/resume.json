@@ -101,17 +101,17 @@
       "url": "https://github.com/64etuor"
     },
     {
-      "name": "Work Radar — Local-first AI 워크플로우 콕핏",
-      "description": "개인 개발자의 업무는 캘린더, GitHub PR, Notion 백로그, 로컬 worktree, Codex/Hermes agent 세션, 루틴이 서로 다른 속도로 동시에 들어온다. 실제 병목은 자동화 부족이 아니라 “지금 무엇을 봐야 하는지”를 잃는 데 있다. 이 문제를 task manager가 아니라 운영면의 문제로 보고, 신호 수집·시간 배치·agent 실행·governance·회고를 하나의 반복 가능한 데스크톱 콕핏으로 묶기 위해 기획.",
+      "name": "Work Radar — Local-first AI 워크플로우 데스크톱 앱",
+      "description": "개인 개발자의 업무는 캘린더, GitHub PR, Notion 백로그, 로컬 worktree, Codex/Hermes agent 세션, 루틴이 서로 다른 속도로 동시에 들어온다. 실제 병목은 자동화 부족이 아니라 “지금 무엇을 봐야 하는지”를 잃는 데 있다. 이 문제를 task manager가 아니라 판단 흐름의 문제로 보고, 신호 수집·시간 배치·agent 실행·governance·회고를 하나의 반복 가능한 데스크톱 앱으로 묶기 위해 기획.",
       "highlights": [
         "결정 레일 분리: 신호 수집은 자동, 백로그·안건·일정으로의 승격은 전량 수동. 자동화(Codex)는 제안·실행 레일에만 붙이고 결정 레일에서 배제 — 샌드박스는 read_only/workspace_write 둘뿐(danger_full 미제공)",
-        "Capture Board: 미분류 inbox, Eisenhower matrix, Today rail, 루틴, Agent Bar, 뉴스 티커를 한 화면에 결합한 관제면 구현",
+        "Capture Board: 미분류 inbox, Eisenhower matrix, Today rail, 루틴, Agent Bar, 뉴스 티커를 한 화면에 결합한 수집 화면 구현",
         "Today Timeline: 미배치 tray, 연속 날짜 timeline, drag 배치, 완료 이력, Work Debt chip을 하나의 시간 좌표계로 합성",
-        "Control Room: Boule Governance(자동 개발 구현 시스템)를 readiness gate, bounded ticker, attention latch, lineage graph로 관측 가능한 복잡계로 노출",
+        "Control Room: Boule Governance(자동 개발 구현 시스템)를 readiness gate, bounded ticker, attention latch, lineage graph로 노출해 사람이 상태를 읽고 개입할 수 있게 구현",
         "Google Calendar 동기화: OAuth(Auth Code + PKCE + loopback), 로컬 mirror와 pending write 큐, bounded SyncEngine retry로 외부 캘린더와 양방향 동기화",
         "Work Radar MCP 게이트웨이: 외부 agent의 write tool을 기본 proposal-only로 두고, Hermes ACP permission card를 통과한 경우만 직접 실행하는 human-gate 설계",
         "PR Radar / Worktree Diff: 여러 repo·worktree의 PR을 readiness bucket으로 분리하고, 코드 리뷰·CI triage·escalation을 read-only Jobs 제안 레일로 연결",
-        "운영 surface 통합: capture·schedule·jobs·governance·review를 단일 콕핏으로 통합",
+        "운영 surface 통합: capture·schedule·jobs·governance·review를 단일 데스크톱 앱으로 통합",
         "agent 실행 통제: timeout·max turns·cost cap·kill·accept/reject 로그로 bounded 실행",
         "외부 변경 안전성: GitHub·Notion·Calendar·MCP write를 모두 human gate + Rust boundary로 통제",
         "범위 판단: 앱 내 코드 실행 레일(구 Phase 10)은 외부 에이전트와 중복·고위험으로 판단해 구현분을 폐기"
@@ -174,14 +174,15 @@
       "name": "신제품 생산 라인 셋업 프로젝트 (자동화 설비 MES 자체 개발)",
       "description": "해외에 설치하고자 했던 신제품(배터리 화재 방지용 글라스울 파우치) 자동화 생산 라인을 한국에 설치하는 것으로 계획 변경되어 한국 법인이 해외 법인의 프로젝트를 이관 받음. FAT 이후 단계를 진행하던 중, 자동화 설비 예산 30만불이 이미 초과된 상황에서 MES 외주 개발비가 예산에서 누락된 것을 확인 → MES 자체 개발을 기획.",
       "highlights": [
-        "구형 OCV/IR 검사 장비 데이터 연동: Python, MS Access DB",
+        "구형 검사 장비 데이터 연동: Python, MS Access DB",
         "Backend 개발: Python Django, Django REST Framework",
         "Frontend 개발: React, TypeScript, Electron을 활용한 UI/UX 디자인",
         "ETL 개발: OPC UA 설비 데이터 수집, TCP/IP 비전 데이터 수집",
         "Database 아키텍처 설계: PostgreSQL",
         "데이터 파이프라인·시각화: Python Dash를 이용한 실시간 공정 현황 대시보드 구현",
         "MES 외주비 절감: 외주 개발비 누락분을 자체 개발로 대체",
-        "설비 예산 대응: 자동화 설비 예산 30만불 초과 상황에서 MES 내재화"
+        "설비 예산 대응: 자동화 설비 예산 30만불 초과 상황에서 MES 내재화",
+        "무선 응답 Latency: Wi-Fi 환경 바코드 스캔 등록 150ms 이내"
       ],
       "keywords": [
         "Python",
@@ -203,7 +204,7 @@
     },
     {
       "name": "개발품 DV 데이터 전산 관리 프로젝트",
-      "description": "한정된 기간 동안 진행되는 DV(Design Validation) 단계에서 고품질의 데이터를 더 많이 확보하고, 여러 현장에서 동시 진행되는 DV 현황을 실시간으로 파악하기 위해 프로젝트 기획.",
+      "description": "한정된 기간 동안 진행되는 DV(Design Verification) 단계에서 고품질의 데이터를 더 많이 확보하고, 여러 현장에서 동시 진행되는 DV 현황을 실시간으로 파악하기 위해 프로젝트 기획.",
       "highlights": [
         "앱 개발: Google AppSheet 생산실적·불량내역 등록 앱 개발(프로토타입)",
         "공정 데이터 분석 SW 개발: Python Matplotlib 활용 공정 데이터 분석(CPK 등)",
@@ -446,12 +447,6 @@
   ],
   "education": [
     {
-      "institution": "한국외국어대학교 서울캠퍼스",
-      "area": "이탈리아어",
-      "studyType": "중퇴",
-      "startDate": "2005.03 ~ 2006.03"
-    },
-    {
       "institution": "Kirana College (호주)",
       "area": "Social Media Marketing",
       "studyType": "졸업",
@@ -462,6 +457,12 @@
       "area": "Business Administration",
       "studyType": "졸업",
       "startDate": "2017.02 ~ 2018.02"
+    },
+    {
+      "institution": "한국외국어대학교 서울캠퍼스",
+      "area": "이탈리아어",
+      "studyType": "중퇴",
+      "startDate": "2005.03 ~ 2006.03"
     },
     {
       "institution": "대입 검정고시",

@@ -26,7 +26,7 @@ const COPY = {
     heroUnit: '건 · 5社 · 6년',
     heroSub: (
       <>
-        제조 현장(은성·이랜텍·솔라엣지)에서 SW·AI까지 — 비전검사·라인혁신·물류 SCM·데이터/추적성·<b>MES 자체개발</b>·CRM 플랫폼·AI 콕핏. 수상 2회(MOC Best·Core Value).
+        제조 현장(은성·이랜텍·솔라엣지)에서 SW·AI까지 — 비전검사·라인혁신·물류 SCM·데이터/추적성·<b>MES 자체개발</b>·CRM 플랫폼·AI 업무 앱. 수상 2회(MOC Best·Core Value).
       </>
     ),
     heroEst: '집계: 회사 5社 위 자기주도 프로젝트 16건 · 2020.08–현재',
@@ -65,7 +65,7 @@ const COPY = {
     heroUnit: ' projects · 5 orgs · 6 yrs',
     heroSub: (
       <>
-        From the factory floor (Eunsung, Elentec, SolarEdge) to software and AI — vision inspection, line innovation, logistics SCM, data and traceability, an <b>in-house MES</b>, a CRM platform, and an AI cockpit. Two awards (MOC Best, Core Value).
+        From the factory floor (Eunsung, Elentec, SolarEdge) to software and AI — vision inspection, line innovation, logistics SCM, data and traceability, an <b>in-house MES</b>, a CRM platform, and an AI work app. Two awards (MOC Best, Core Value).
       </>
     ),
     heroEst: 'Count: 16 self-initiated projects across 5 organizations · 2020.08–present',

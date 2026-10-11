@@ -5,9 +5,9 @@ registerSceneText({
   // Panel captions (also the iframe titles)
   '초음파 용착': 'Ultrasonic Welding',
   'Nd:YAG 레이저 용접': 'Nd:YAG Laser Welding',
-  '스팟 용접 검사': 'Spot-weld Inspection',
+  '스팟 용접 티칭': 'Spot-weld Teaching',
   '적층제조': 'Additive Manufacturing',
-  'CMM 정밀 측정': 'CMM Precision Measurement',
+  '비전 검사': 'Vision Inspection',
   '시스템 토폴로지': 'System Topology',
   'DB 모델링': 'DB Modelling',
   'IDE 코딩': 'IDE Coding',

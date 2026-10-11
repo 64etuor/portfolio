@@ -127,10 +127,25 @@ async function precompile(THREE: typeof THREE_NS, ctx: ThreeContext, alive: () =
   const waits: Promise<unknown>[] = []
   // 확장이 없으면 compileAsync 는 경고만 찍고 동기 compile 과 같다 — 그땐 compile 로(링크 대기는 첫 사용 시).
   const parallel = renderer.extensions.has('KHR_parallel_shader_compile')
+  // three 의 compileAsync 는 폴링 중 재질이 해제되면(필름 컷으로 씬이 정리될 때) currentProgram 이
+  // 사라져 내부 setTimeout 에서 'isReady' TypeError 를 던진다. compile(병렬 확장에선 링크가 드라이버에서
+  // 비동기로 진행) 후 우리가 직접, 해제된 재질은 건너뛰고 씬이 죽으면 멈추는 폴링으로 대체한다.
   const compile = (sc: THREE_NS.Object3D, cam: THREE_NS.Camera): Promise<unknown> => {
-    if (parallel) return renderer.compileAsync(sc, cam)
-    renderer.compile(sc, cam)
-    return Promise.resolve()
+    const mats = renderer.compile(sc, cam) as unknown as Set<THREE_NS.Material> | undefined
+    if (!parallel || !mats || mats.size === 0) return Promise.resolve()
+    const pending = new Set(mats)
+    return new Promise<void>((resolve) => {
+      const check = () => {
+        if (!alive()) return resolve()
+        for (const m of pending) {
+          const prog = (renderer.properties.get(m) as { currentProgram?: { isReady?: () => boolean } }).currentProgram
+          if (!prog || typeof prog.isReady !== 'function' || prog.isReady()) pending.delete(m)
+        }
+        if (pending.size === 0) resolve()
+        else setTimeout(check, 10)
+      }
+      check()
+    })
   }
   renderer.setRenderTarget(composer ? composer.readBuffer : null)
   waits.push(compile(scene, camera))

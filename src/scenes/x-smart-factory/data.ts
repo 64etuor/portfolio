@@ -35,7 +35,7 @@ export const T = {
 export const LIFT = 5.0
 
 export const HUD = {
-  kicker: { ko: 'SMART FACTORY · DIGITAL TWIN', en: 'SMART FACTORY · DIGITAL TWIN' },
+  kicker: { ko: 'SMART FACTORY · ERP · BARCODE', en: 'SMART FACTORY · ERP · BARCODE' },
   title: { ko: '스마트 팩토리 도입', en: 'Smart factory adoption' },
   program: { ko: '중소기업진흥청 대기업상생 프로그램 · 은성', en: 'SME agency × large-company program · Eunsung' },
   period: { ko: '2021.08 – 2022.01 · 약 6개월', en: '2021.08 – 2022.01 · ~6 months' },

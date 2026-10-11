@@ -40,7 +40,7 @@ export const MANIFEST: ManifestEntry[] = [
     source: PORTFOLIO, sliceNumber: '7' },
   { slug: 'smart-factory', ganttId: 'p-smartfac', title: '중기청 상생 스마트팩토리 도입', company: '은성', companyKey: 'eun', period: '2021.08–2022.01', order: 8, enabled: true,
     source: PORTFOLIO, sliceNumber: '8' },
-  { slug: 'work-radar', ganttId: 'p-radar', title: 'Work Radar — Local-first AI 워크플로우 콕핏', company: '개인 프로젝트', companyKey: 'startup', period: '2026.06', order: 9, enabled: true,
+  { slug: 'work-radar', ganttId: 'p-radar', title: 'Work Radar — Local-first AI 워크플로우 데스크톱 앱', company: '개인 프로젝트', companyKey: 'startup', period: '2026.05–', order: 9, enabled: true,
     source: '300_Projects/2606 Work Radar/Work Radar 프로젝트 포트폴리오.md' },
   { slug: 'notion-os', ganttId: 'p-notion', title: 'Notion OS — 조직 운영 시스템', company: '스타트업', companyKey: 'startup', period: '2025.10–', order: 10, enabled: true,
     source: '300_Projects/2510 Notion System/2510 Notion OS.md' },

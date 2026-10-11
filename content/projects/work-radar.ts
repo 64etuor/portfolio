@@ -6,14 +6,14 @@ export const work_radar: ProjectContent = {
   order: 9,
   enabled: true,
   hero: {
-    title: 'Work Radar — Local-first AI 워크플로우 콕핏',
+    title: 'Work Radar — Local-first AI 워크플로우 데스크톱 앱',
     company: '개인 프로젝트',
     companyKey: 'startup',
     period: '2026.05–',
-    role: 'Work Radar — Local-first AI 워크플로우 콕핏',
+    role: 'Work Radar — Local-first AI 워크플로우 데스크톱 앱',
   },
   summary:
-    '흩어진 업무 신호(Notion 백로그·안건, GitHub PR, 일정, agent 세션, braindump)를 먼저 아이젠하워 매트릭스로 모으고, 사람이 직접 판단해 백로그·안건·일정·실행 작업으로 수동 승격하는 local-first 데스크톱 관제 앱. 핵심 원칙은 "자동으로 업무를 만들어주는 앱이 아니라, 판단해야 할 것들을 매트릭스에 모아 수동으로 정리하게 해주는 앱" — 자동화(Codex)는 결정 레일에 절대 들어가지 않고 제안·실행 레일에만 붙는다. Phase 0–20을 dogfooding하며 머지했다.',
+    '흩어진 업무 신호(Notion 백로그·안건, GitHub PR, 일정, agent 세션, braindump)를 먼저 아이젠하워 매트릭스로 모으고, 사람이 직접 판단해 백로그·안건·일정·실행 작업으로 수동 승격하는 local-first 데스크톱 앱. 핵심 원칙은 "자동으로 업무를 만들어주는 앱이 아니라, 판단해야 할 것들을 매트릭스에 모아 수동으로 정리하게 해주는 앱" — 자동화(Codex)는 결정 레일에 절대 들어가지 않고 제안·실행 레일에만 붙는다. Phase 0–20을 dogfooding하며 머지했다.',
   metrics: [
     { label: '개발 규모', value: '1,432 커밋', note: 'Phase 0–20 전량 dev 머지 · 상시 dogfooding' },
     { label: '자동화 경계', value: '결정 레일 제외', note: 'Codex는 제안·실행 레일에만' },
@@ -43,15 +43,15 @@ export const work_radar: ProjectContent = {
   sections: [
     {
       heading: '개요',
-      body: 'Work Radar는 개인 업무, 코드 리뷰, 로컬 worktree, 캘린더, 루틴, AI agent 세션을 한 화면 체계로 묶는 **local-first 데스크톱 운영 콕핏**이다. 일반적인 todo app처럼 "할 일 목록"을 정리하는 데서 멈추지 않고, 들어온 신호를 분류하고, 오늘의 시간 위에 배치하고, agent 실행을 추적하고, 주간 회고로 다시 접는 전체 루프를 제품으로 만든다.\n\n각 화면은 신호 수집·시간 배치·agent 실행·governance·회고 중 하나의 책임을 맡고, 전체 흐름은 다시 다음 작업 사이클로 되돌아온다. 아키텍처는 *Rust side-effect boundary*와 *React operating UI*가 분리되어, 많은 integration을 다루면서도 사용자의 명시적 판단 게이트를 유지한다.',
+      body: 'Work Radar는 개인 업무, 코드 리뷰, 로컬 worktree, 캘린더, 루틴, AI agent 세션을 한 화면 체계로 묶는 **local-first 데스크톱 앱**이다. 일반적인 todo app처럼 "할 일 목록"을 정리하는 데서 멈추지 않고, 들어온 신호를 분류하고, 오늘의 시간 위에 배치하고, agent 실행을 추적하고, 주간 회고로 다시 접는 전체 루프를 제품으로 만든다.\n\n각 화면은 신호 수집·시간 배치·agent 실행·governance·회고 중 하나의 책임을 맡고, 전체 흐름은 다시 다음 작업 사이클로 되돌아온다. 아키텍처는 *Rust side-effect boundary*와 *React operating UI*가 분리되어, 많은 integration을 다루면서도 사용자의 명시적 판단 게이트를 유지한다.',
     },
     {
       heading: '문제 정의',
-      body: '현대적인 개인 개발자의 업무는 한 도구로 들어오지 않는다. 캘린더 일정, GitHub PR, Notion 백로그, 로컬 worktree, Hermes 패널, Codex job, 루틴, 브레인덤프가 서로 다른 속도로 동시에 들어온다. 실제 병목은 자동화 부족보다 **"지금 무엇을 봐야 하는지"를 잃는 데** 있다.\n\nWork Radar는 이 문제를 task manager가 아니라 *운영면의 문제*로 본다. 모든 일을 하나의 list로 평탄화하는 대신, 각 신호가 어떤 레일에 있어야 하는지 드러낸다.\n\n- `Capture Board`는 들어온 신호를 Eisenhower matrix로 받는다\n- `Today`는 신호가 오늘의 시간을 점유하게 만든다\n- `PR Radar`·`Worktree Diff`는 코드 상태를 운영 위험으로 분리해 보여준다\n- `Jobs`는 agent 실행을 bounded log로 남긴다\n- `Control Room`은 자동 개발 시스템이 지금 실행 가능한지, 어디서 사람이 개입해야 하는지를 보여준다',
+      body: '현대적인 개인 개발자의 업무는 한 도구로 들어오지 않는다. 캘린더 일정, GitHub PR, Notion 백로그, 로컬 worktree, Hermes 패널, Codex job, 루틴, 브레인덤프가 서로 다른 속도로 동시에 들어온다. 실제 병목은 자동화 부족보다 **"지금 무엇을 봐야 하는지"를 잃는 데** 있다.\n\nWork Radar는 이 문제를 task manager가 아니라 *판단 흐름의 문제*로 본다. 모든 일을 하나의 list로 평탄화하는 대신, 각 신호가 어떤 레일에 있어야 하는지 드러낸다.\n\n- `Capture Board`는 들어온 신호를 Eisenhower matrix로 받는다\n- `Today`는 신호가 오늘의 시간을 점유하게 만든다\n- `PR Radar`·`Worktree Diff`는 코드 상태를 운영 위험으로 분리해 보여준다\n- `Jobs`는 agent 실행을 bounded log로 남긴다\n- `Control Room`은 자동 개발 시스템이 지금 실행 가능한지, 어디서 사람이 개입해야 하는지를 보여준다',
     },
     {
       heading: 'Control Room · Boule Governance',
-      body: 'Control Room은 Work Radar의 핵심이다. **Boule Governance**, 즉 자동 개발 구현 시스템을 단일 job queue가 아니라 *운영 가능한 복잡계*로 다룬다. 자동 개발은 `spec` → `plan` → `task` → `session` → `handoff`가 서로 연결되며 진행되는 event-sourced workflow이고, 여러 agent session과 worktree, human gate가 동시에 존재하면 상태는 쉽게 창발한다. Control Room은 그 창발 상태를 숨기지 않고 **posture·readiness·vitals·flow graph**로 접어낸다.\n\n설계의 핵심은 *ticker와 autonomy를 분리*한 것이다. ticker는 app/operator가 제공하는 bounded heartbeat clock이고, autonomy level은 heartbeat가 돌 때 무엇을 허용할지 정하는 permission envelope이다. 따라서 `tick_enabled=true`와 `autonomyLevel=manual`은 모순이 아니라 "Clock on, autonomy manual — 사람 게이트 대기 중" 상태다.\n\n안전 경계도 명확하다. snapshot은 read-only이고 repo path는 renderer 입력이 아니라 DB에서 resolve된다. ticker는 무한 daemon이 아니라 app-bound runner로, per-repo no-overlap lock과 timeout을 가진다. `halted_decision`·`needs_human`·`stalled`는 fail-closed로 attention latch를 켜고, 원인이 남아 있으면 다음 tick에서 다시 걸린다.',
+      body: 'Control Room은 Work Radar의 핵심이다. **Boule Governance**, 즉 자동 개발 구현 시스템을 단일 job queue가 아니라 *여러 상태가 동시에 얽힌 흐름*으로 다룬다. 자동 개발은 `spec` → `plan` → `task` → `session` → `handoff`가 서로 연결되며 진행되는 event-sourced workflow이고, 여러 agent session과 worktree, human gate가 동시에 존재하면 상태가 예상 밖으로 얽히기 쉽다. Control Room은 그 상태를 숨기지 않고 **posture·readiness·vitals·flow graph**로 접어낸다.\n\n설계의 핵심은 *ticker와 autonomy를 분리*한 것이다. ticker는 app/operator가 제공하는 bounded heartbeat clock이고, autonomy level은 heartbeat가 돌 때 무엇을 허용할지 정하는 permission envelope이다. 따라서 `tick_enabled=true`와 `autonomyLevel=manual`은 모순이 아니라 "Clock on, autonomy manual — 사람 게이트 대기 중" 상태다.\n\n안전 경계도 명확하다. snapshot은 read-only이고 repo path는 renderer 입력이 아니라 DB에서 resolve된다. ticker는 무한 daemon이 아니라 app-bound runner로, per-repo no-overlap lock과 timeout을 가진다. `halted_decision`·`needs_human`·`stalled`는 fail-closed로 attention latch를 켜고, 원인이 남아 있으면 다음 tick에서 다시 걸린다.',
     },
     {
       heading: '자동화 경계 — Calendar · MCP · Hermes',
@@ -65,7 +65,7 @@ export const work_radar: ProjectContent = {
     {
       heading: '핵심 메시지',
       body:
-        'Work Radar의 철학은 **자동화의 양을 늘리는 것이 아니라, 판단이 필요한 것들을 사람이 다룰 수 있는 한 곳에 모으는 것**이다. Capture Board는 흩어진 신호를 아이젠하워 매트릭스로 받고, Today는 그것이 실제 시간을 점유하게 만들며, PR Radar와 Worktree Diff는 코드 운영 위험을 분리해 읽게 한다. Jobs와 Control Room은 agent 실행의 현재성과 감사 trail을 남긴다.\n\n그래서 이 앱은 AI가 일을 대신 해주는 도구가 아니라, **AI가 만들어낸 상태까지 포함해 사람이 운영하는 cockpit**에 가깝다. 자동화를 어디까지 허용할지가 아니라 어디에는 절대 넣지 않을지를 먼저 정한 것이 이 제품의 설계 기준이다.',
+        'Work Radar의 철학은 **자동화의 양을 늘리는 것이 아니라, 판단이 필요한 것들을 사람이 다룰 수 있는 한 곳에 모으는 것**이다. Capture Board는 흩어진 신호를 아이젠하워 매트릭스로 받고, Today는 그것이 실제 시간을 점유하게 만들며, PR Radar와 Worktree Diff는 코드 운영 위험을 분리해 읽게 한다. Jobs와 Control Room은 agent 실행의 현재성과 감사 trail을 남긴다.\n\n그래서 이 앱은 AI가 일을 대신 해주는 도구가 아니라, **AI가 만들어낸 상태까지 포함해 사람이 판단하고 운영하는 작업 화면**에 가깝다. 자동화를 어디까지 허용할지가 아니라 어디에는 절대 넣지 않을지를 먼저 정한 것이 이 제품의 설계 기준이다.',
     },
   ],
   diagram: {
@@ -89,7 +89,7 @@ export const work_radar: ProjectContent = {
     {
       src: '/projects/work-radar/work-radar-01-capture-board-2026-06-15.png',
       caption:
-        'Capture Board — 좌측 미분류 inbox, 중앙 Eisenhower matrix, 우측 Today·루틴 rail을 결합한 첫 관제면. 상단 Agent Bar가 Codex·Hermes·cmux 세션을 상주 노출한다.',
+        'Capture Board — 좌측 미분류 inbox, 중앙 Eisenhower matrix, 우측 Today·루틴 rail을 결합한 첫 화면. 상단 Agent Bar가 Codex·Hermes·cmux 세션을 상주 노출한다.',
     },
     {
       src: '/projects/work-radar/work-radar-03-today-timeline-2026-06-15.png',
@@ -109,7 +109,7 @@ export const work_radar: ProjectContent = {
     {
       src: '/projects/work-radar/Pasted-image-20260615142021.png',
       caption:
-        'Worktree Diff — 여러 repo·worktree의 dirty·staged·branch diff를 압축한 branch hygiene cockpit. AI review는 "수정"이 아니라 위험 변경·dead code·누락 테스트를 짚는 read-only 리뷰로 고정된다.',
+        'Worktree Diff — 여러 repo·worktree의 dirty·staged·branch diff를 압축한 branch hygiene 화면. AI review는 "수정"이 아니라 위험 변경·dead code·누락 테스트를 짚는 read-only 리뷰로 고정된다.',
     },
     {
       src: '/projects/work-radar/work-radar-08-jobs-agent-2026-06-15.png',
@@ -124,7 +124,7 @@ export const work_radar: ProjectContent = {
     {
       src: '/projects/work-radar/work-radar-10-control-room-2026-06-15.png',
       caption:
-        'Control Room — Boule Governance의 posture·ticker·readiness·flow graph. SPEC·PLAN·TASK·SESSION·HANDOFF ghost pipeline이 work가 생기면 FlowSchematic으로 바뀌며 창발 상태를 사람이 통제하게 만든다.',
+        'Control Room — Boule Governance의 posture·ticker·readiness·flow graph. SPEC·PLAN·TASK·SESSION·HANDOFF ghost pipeline이 work가 생기면 FlowSchematic으로 바뀌며 얽힌 상태를 사람이 읽고 통제하게 만든다.',
     },
   ],
 }

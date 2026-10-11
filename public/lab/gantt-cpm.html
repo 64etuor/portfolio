@@ -378,7 +378,7 @@ footer .r a:hover{color:var(--crit)}
         <div class="hero">
           <div class="lbl">자기주도로 기획·리딩한 프로젝트</div>
           <div class="big"><span class="num" id="heroNum">0</span><span class="unit">건 · 5社 · 6년</span></div>
-          <div class="sub">제조 현장(은성·이랜텍·솔라엣지)에서 SW·AI까지 — 비전검사·라인혁신·물류 SCM·데이터/추적성·<b>MES 자체개발</b>·CRM 플랫폼·AI 콕핏. 수상 2회(MOC Best·Core Value).</div>
+          <div class="sub">제조 현장(은성·이랜텍·솔라엣지)에서 SW·AI까지 — 비전검사·라인혁신·물류 SCM·데이터/추적성·<b>MES 자체개발</b>·CRM 플랫폼·AI 업무 앱. 수상 2회(MOC Best·Core Value).</div>
           <span class="est">집계: 회사 5社 위 자기주도 프로젝트 16건 · 2020.08–현재</span>
         </div>
       </div>
@@ -663,7 +663,7 @@ const PROJECTS = [
     problem:'한정된 DV 기간 내 다현장 데이터를 실시간으로 취합할 방법이 없어 고품질 데이터 확보와 현황 파악이 어려웠음.',
     built:'Google AppSheet 실적·불량 등록 앱, Python Matplotlib CPK 공정분석, Sheets 실시간 대시보드, Apps Script QR 이력추적 시스템을 직접 기획·구축함.',
     rewind:'solaredge',
-    desc:'한정된 DV(Design Validation) 기간에 고품질 데이터를 더 많이 확보하고 다현장 DV 현황을 실시간 파악하기 위해 기획. Google AppSheet 실적·불량 등록 앱, Python Matplotlib 공정분석(CPK), Sheets 실시간 대시보드, Apps Script QR 이력추적(EU 배터리 패스포트 대응 시험)을 구축.',
+    desc:'한정된 DV(Design Verification) 기간에 고품질 데이터를 더 많이 확보하고 다현장 DV 현황을 실시간 파악하기 위해 기획. Google AppSheet 실적·불량 등록 앱, Python Matplotlib 공정분석(CPK), Sheets 실시간 대시보드, Apps Script QR 이력추적(EU 배터리 패스포트 대응 시험)을 구축.',
     metrics:[
       {k:'DV 데이터', v:'확보량↑', cls:'g', c:'한정 기간 내 고품질'},
       {k:'현황', v:'실시간', cls:'', c:'다현장 DV 가시화'},
@@ -709,7 +709,7 @@ const PROJECTS = [
 
   // ── 스타트업 (뷰티 통합 솔루션 — 각 영역 직접 구축) ──
   { id:'p-notion', slug:'notion-os', tier:1, parent:'mir', co:'스타트업 · 조직 OS', color:COLORS.mir, role:'Notion OS — 조직 운영 시스템',
-    start:ym(2025,9), end:ym(2026,8), pct:60, crit:false, deps:[], slack:0, ongoing:true,
+    start:ym(2025,10), end:ym(2026,8), pct:60, crit:false, deps:[], slack:0, ongoing:true,
     problem:'문서·의사결정·목표·개발 실행·운영 지식이 분산되어 있어 조직 운영의 단일 정보 소스(SSOT)가 없었고 빠른 실행에 마찰이 있었음.',
     built:'Notion 중심의 조직 운영 OS를 혼자 기획·설계·구축해 SSOT 거버넌스·백로그·PRD·Decision OS·OKR·Runbook·GitHub 연계 등 7개 하위 시스템을 현재까지 운영·고도화 중.',
     rewind:'startup', scene:'pipeline-dag',
@@ -780,12 +780,12 @@ const PROJECTS = [
       {k:'구성', v:'로드밸런싱·레지스트리', cls:'', c:'시크릿·검색엔진'}
     ],
     stack:['AWS ECS Fargate','ALB','ECR','Terraform','SSM','Sentry','CloudWatch','Firebase'] },
-  { id:'p-radar', slug:'work-radar', tier:1, parent:'mir', co:'개인 프로젝트', color:COLORS.self, role:'Work Radar — Local-first AI 워크플로우 콕핏',
-    start:ym(2026,1), end:ym(2026,8), pct:55, crit:false, deps:[], slack:0, ongoing:true,
+  { id:'p-radar', slug:'work-radar', tier:1, parent:'mir', co:'개인 프로젝트', color:COLORS.self, role:'Work Radar — Local-first AI 워크플로우 데스크톱 앱',
+    start:ym(2026,5), end:ym(2026,8), pct:55, crit:false, deps:[], slack:0, ongoing:true,
     problem:'캘린더·PR·백로그·worktree·agent 세션이 각기 다른 앱에 흩어져 “지금 무엇을 해야 하는지”를 파악하는 데 운영 비용이 크게 들었음.',
-    built:'Tauri·Rust로 Capture/Timeline/Control Room 등 11 서피스 local-first AI 콕핏을 직접 설계·구현하고 Google Calendar 양방향 동기화, MCP human-gate, bounded agent 실행(timeout·cost cap·kill)을 탑재함.',
+    built:'Tauri·Rust로 Capture/Timeline/Control Room 등 11개 화면의 local-first 데스크톱 앱을 직접 설계·구현하고 Google Calendar 양방향 동기화, MCP human-gate, bounded agent 실행(timeout·cost cap·kill)을 탑재함.',
     rewind:'epilogue',
-    desc:'캘린더·PR·백로그·worktree·agent 세션을 한 데스크톱 콕핏으로 묶어 “지금 무엇을 볼지”를 운영면 문제로 푼 local-first AI 콕핏. Capture/Timeline/Control Room 등 11 서피스, Google Calendar 양방향 동기화, MCP 게이트웨이 human-gate, agent bounded 실행(timeout·cost cap·kill)을 Tauri·Rust로 구현.',
+    desc:'캘린더·PR·백로그·worktree·agent 세션을 한 데스크톱 앱으로 묶어 “지금 무엇을 볼지”를 사람이 판단하게 만든 local-first 앱. Capture/Timeline/Control Room 등 11 서피스, Google Calendar 양방향 동기화, MCP 게이트웨이 human-gate, agent bounded 실행(timeout·cost cap·kill)을 Tauri·Rust로 구현.',
     metrics:[
       {k:'서피스', v:'11종 통합', cls:'', c:'capture·schedule·jobs·governance'},
       {k:'실행통제', v:'bounded', cls:'g', c:'timeout·cost cap·kill'},

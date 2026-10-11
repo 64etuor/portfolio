@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
-import { sfx, type DroneTone, type PlayOpts, type SfxName } from '@/lib/sfx'
-import { FILM_SCHEDULE, firstShotOfAct } from './schedule'
-import { ACT_DRONE, CUT_GUARD_S, MAX_CUES_PER_SHOT, SOUND_CUES, type Cue } from './soundCues'
+import { filmMusic, quantizeToGrid, sfx, type FilmClockSource, type PlayOpts, type SfxName } from '@/lib/sfx'
+import { FILM_SCHEDULE } from './schedule'
+import { CUT_GUARD_S, MAX_CUES_PER_SHOT, QUANTIZE, SOUND_CUES, type Cue } from './soundCues'
 
 /**
  * Cues older than this (ms) when the clock reaches them are dropped, never played late.
@@ -38,8 +38,12 @@ const FLAT: FlatCue[] = (() => {
         if (process.env.NODE_ENV === 'development') console.warn(`[soundCues] ${shot.file}: cue at ${c.at}s dropped`)
         continue
       }
+      const authored = shot.start + c.at * 1000
+      // Percussive accents snap to the score's 16th grid when that moves them ≤ 60 ms
+      // (lead-ins like riser/whoosh keep their authored timing — their peak is the sync point).
+      const abs = QUANTIZE.has(c.sfx) ? quantizeToGrid(authored / 1000) * 1000 : authored
       out.push({
-        abs: shot.start + c.at * 1000,
+        abs,
         shotIdx,
         file: shot.file,
         at: c.at,
@@ -64,17 +68,6 @@ function firstAfter(t: number): number {
   return lo
 }
 
-/** Drone tone wanted at film time `filmT` within shot `shotIdx` (null = silent). */
-function droneAt(shotIdx: number, filmT: number): DroneTone | null {
-  const shot = FILM_SCHEDULE[shotIdx]
-  const d = ACT_DRONE[shot.actId]
-  if (!d) return null
-  const actT = (filmT - FILM_SCHEDULE[firstShotOfAct(shot.actIdx)].start) / 1000
-  if (d.from !== undefined && actT < d.from) return null
-  if (d.until !== undefined && actT >= d.until) return null
-  return d.tone
-}
-
 interface SfxLogEntry {
   name: SfxName
   filmT: number
@@ -91,13 +84,14 @@ type DevWindow = Window & {
 
 interface Args {
   filmT: number
-  shotIdx: number
   paused: boolean
   ended: boolean
+  /** the master clock's render-free view — drives the score (music.ts) */
+  clock: FilmClockSource
 }
 
 /**
- * useFilmSoundCues — plays the cue sheet (soundCues.ts) off the film's master clock.
+ * useFilmSoundCues — plays the cue sheet (soundCues.ts) and the score off the film's master clock.
  *
  * Runs once per clock tick (the clock already re-renders Film every frame); the
  * evaluation walks a pre-sorted cue array with a cursor, so a tick allocates nothing.
@@ -106,12 +100,12 @@ interface Args {
  *   - rewind (filmT goes backwards): the cursor re-arms from the new position;
  *   - any jump forward (tab throttling, seek): cues more than LATE_WINDOW_MS behind
  *     are skipped, so there is never a catch-up burst;
- *   - drone tone follows ACT_DRONE (engine crossfades), off at film end and unmount.
+ *   - the score (FILM_SCORE file) is attached for the lifetime of the film and follows the
+ *     clock on its own poll (play / pause / seek / end); detached on unmount.
  */
-export function useFilmSoundCues({ filmT, shotIdx, paused, ended }: Args): void {
+export function useFilmSoundCues({ filmT, paused, ended, clock }: Args): void {
   const prevRef = useRef(-1)
   const cursorRef = useRef(0)
-  const droneRef = useRef<DroneTone | 'off' | null>(null)
 
   useEffect(() => {
     if (process.env.NODE_ENV !== 'development') return
@@ -120,37 +114,26 @@ export function useFilmSoundCues({ filmT, shotIdx, paused, ended }: Args): void 
     w.__sfxVoices = []
     w.__sfxDropped = []
     sfx.onPlay = (name) => w.__sfxVoices?.push({ name, wall: performance.now() })
+    let off: (() => void) | undefined
+    let alive = true
+    void import('@/lib/sfx/devtap').then((m) => {
+      if (alive) off = m.installScoreDevTools(sfx, filmMusic, clock)
+    })
     return () => {
+      alive = false
       sfx.onPlay = null
+      off?.()
     }
-  }, [])
+  }, [clock])
 
-  useEffect(
-    () => () => {
-      sfx.drone(false)
-      droneRef.current = null
-    },
-    [],
-  )
+  // ── score ──
+  useEffect(() => {
+    filmMusic.attach(clock)
+    return () => filmMusic.detach()
+  }, [clock])
 
   useEffect(() => {
-    if (ended) {
-      if (droneRef.current !== 'off') {
-        droneRef.current = 'off'
-        sfx.drone(false)
-      }
-      return
-    }
-    if (paused) return
-
-    // ── drone ──
-    const tone = droneAt(shotIdx, filmT)
-    const key = tone ?? 'off'
-    if (droneRef.current !== key) {
-      droneRef.current = key
-      if (tone) sfx.drone(true, tone)
-      else sfx.drone(false)
-    }
+    if (ended || paused) return
 
     // ── cues ──
     const prev = prevRef.current
@@ -191,5 +174,5 @@ export function useFilmSoundCues({ filmT, shotIdx, paused, ended }: Args): void 
       }
     }
     cursorRef.current = c
-  }, [filmT, shotIdx, paused, ended])
+  }, [filmT, paused, ended])
 }

@@ -721,7 +721,7 @@ const CTX = {
   },
   complex:{
     label:"COMPLEX", pin:"COMPLEX",
-    stacey:"합의 낮음 · 확실성 낮음 → <b>창발(emergent)</b> 영역. 안전-실패 실험으로 패턴을 유도(probe).",
+    stacey:"합의 낮음 · 확실성 낮음 → <b>실험 탐색(emergent)</b> 영역. 안전-실패 실험으로 패턴을 유도(probe).",
     domains:[
       {n:"probe", d:"탐침(실험)", act:true},{n:"sense", d:"감지"},
       {n:"respond", d:"대응"},{n:"emergent", d:"emergent practice"}
@@ -729,8 +729,8 @@ const CTX = {
     stack:["Cynefin","Stacey","Type1/2","OODA","Pre-mortem","RAPID"],
     hot:"OODA",
     reco:(n)=> n.type==="type1"
-      ? {t:`비가역 × 복잡 → <b>결정을 가역화(Type-2 변환)</b>하거나 보류.`, s:"복잡계에서 비가역 결정은 위험하다. 작게 쪼개 가역으로 만들고 probe로 패턴이 보일 때까지 defer."}
-      : {t:`가역 × 복잡 → <b>safe-to-fail probe 우선</b>, 결론은 창발에 맡긴다.`, s:"여러 작은 실험을 병렬 가동하고 신호가 강해지는 분기를 증폭한다."}
+      ? {t:`비가역 × 복잡 → <b>결정을 가역화(Type-2 변환)</b>하거나 보류.`, s:"복잡 영역에서 비가역 결정은 위험하다. 작게 쪼개 가역으로 만들고 probe로 패턴이 보일 때까지 defer."}
+      : {t:`가역 × 복잡 → <b>safe-to-fail probe 우선</b>, 결론은 실험 결과로 낸다.`, s:"여러 작은 실험을 병렬 가동하고 신호가 강해지는 분기를 증폭한다."}
   },
   chaotic:{
     label:"CHAOTIC", pin:"CHAOTIC",

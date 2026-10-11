@@ -21,7 +21,7 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
     bloom: { strength: 0.85, radius: 0.6, threshold: 0.62 },
   })
   return (
-    <SceneHost bg={COLORS.bg} film={false} label={locale === 'en' ? 'Smart factory digital twin' : '스마트 팩토리 디지털 트윈'}>
+    <SceneHost bg={COLORS.bg} film={false} label={locale === 'en' ? 'Smart factory adoption' : '스마트 팩토리 도입'}>
       <div ref={ref} style={{ position: 'absolute', inset: 0 }} />
       <Hud locale={locale} />
     </SceneHost>

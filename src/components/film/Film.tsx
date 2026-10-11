@@ -79,10 +79,10 @@ export function Film() {
   const irisRef = useIrisOutro(ended)
 
   // Master clock — the only source of truth for "what shot should be on screen".
-  const { shotIdx, filmT, rewindToShot } = useFilmClock({ paused, reduced, ended, ready, onFilmEnd })
+  const { shotIdx, filmT, rewindToShot, source: clockSource } = useFilmClock({ paused, reduced, ended, ready, onFilmEnd })
 
-  // Scene-synced sound cues + drone bed, driven by the same master clock (soundCues.ts).
-  useFilmSoundCues({ filmT, shotIdx, paused, ended })
+  // Scene-synced sound cues + the background score, driven by the same master clock.
+  useFilmSoundCues({ filmT, paused, ended, clock: clockSource })
 
   const currentShot = FILM_SCHEDULE[shotIdx]
   const nextShot = FILM_SCHEDULE[shotIdx + 1] ?? null

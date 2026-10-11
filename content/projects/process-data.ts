@@ -40,7 +40,6 @@ export const process_data: ProjectContent = {
     { src: '/projects/process-data/Pasted-image-20241205180948.png', caption: '솔루션 — 워크 오더 조회' },
     { src: '/projects/process-data/Pasted-image-20241205180904.png', caption: '솔루션 — 불량 내역 입력' },
     { src: '/projects/process-data/Pasted-image-20241205181022.png', caption: '솔루션 — 공정 이력 조회' },
-    { src: '/projects/process-data/Pasted-image-20241205181107.png', caption: '불량 사진 등록 — 불량 식별이 가능한 화질을 400KB 내외로 저장, RPA로 Power BI 대시보드에 연동' },
     { src: '/projects/process-data/Pasted-image-20241205181008.png', caption: '솔루션 — 데이터 제출 확인 (Commit 시 Power BI dataset 자동 갱신 + Teams 알림 RPA)' },
     { src: '/projects/process-data/Pasted-image-20241205181302.png', caption: 'Power BI — 종합 생산 현황 및 지표' },
     { src: '/projects/process-data/Pasted-image-20241205181430.png', caption: 'Power BI — 개별 라인 생산 현황 및 세부 지표 (ST, UPPH)' },

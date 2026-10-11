@@ -445,7 +445,7 @@ export const PROJECTS: Row[] = [
       'Google AppSheet 실적·불량 등록 앱, Python Matplotlib CPK 공정분석, Sheets 실시간 대시보드, Apps Script QR 이력추적 시스템을 직접 기획·구축함.',
     rewind: 'solaredge',
     desc:
-      '한정된 DV(Design Validation) 기간에 고품질 데이터를 더 많이 확보하고 다현장 DV 현황을 실시간 파악하기 위해 기획. Google AppSheet 실적·불량 등록 앱, Python Matplotlib 공정분석(CPK), Sheets 실시간 대시보드, Apps Script QR 이력추적(EU 배터리 패스포트 대응 시험)을 구축.',
+      '한정된 DV(Design Verification) 기간에 고품질 데이터를 더 많이 확보하고 다현장 DV 현황을 실시간 파악하기 위해 기획. Google AppSheet 실적·불량 등록 앱, Python Matplotlib 공정분석(CPK), Sheets 실시간 대시보드, Apps Script QR 이력추적(EU 배터리 패스포트 대응 시험)을 구축.',
     metrics: [
       { k: 'DV 데이터', v: '확보량↑', cls: 'g', c: '한정 기간 내 고품질' },
       { k: '현황', v: '실시간', cls: '', c: '다현장 DV 가시화' },
@@ -545,7 +545,7 @@ export const PROJECTS: Row[] = [
     co: '스타트업 · 조직 OS',
     color: COLORS.mir,
     role: 'Notion OS — 조직 운영 시스템',
-    start: ym(2025, 9),
+    start: ym(2025, 10),
     end: ym(2026, 8),
     pct: 60,
     crit: false,
@@ -713,8 +713,8 @@ export const PROJECTS: Row[] = [
     parent: 'mir',
     co: '개인 프로젝트',
     color: COLORS.self,
-    role: 'Work Radar — Local-first AI 워크플로우 콕핏',
-    start: ym(2026, 1),
+    role: 'Work Radar — Local-first AI 워크플로우 데스크톱 앱',
+    start: ym(2026, 5),
     end: ym(2026, 8),
     pct: 55,
     crit: false,
@@ -724,10 +724,10 @@ export const PROJECTS: Row[] = [
     problem:
       '캘린더·PR·백로그·worktree·agent 세션이 각기 다른 앱에 흩어져 “지금 무엇을 해야 하는지”를 파악하는 데 운영 비용이 크게 들었음.',
     built:
-      'Tauri·Rust로 Capture/Timeline/Control Room 등 11 서피스 local-first AI 콕핏을 직접 설계·구현하고 Google Calendar 양방향 동기화, MCP human-gate, bounded agent 실행(timeout·cost cap·kill)을 탑재함.',
+      'Tauri·Rust로 Capture/Timeline/Control Room 등 11개 화면의 local-first 데스크톱 앱을 직접 설계·구현하고 Google Calendar 양방향 동기화, MCP human-gate, bounded agent 실행(timeout·cost cap·kill)을 탑재함.',
     rewind: 'epilogue',
     desc:
-      '캘린더·PR·백로그·worktree·agent 세션을 한 데스크톱 콕핏으로 묶어 “지금 무엇을 볼지”를 운영면 문제로 푼 local-first AI 콕핏. Capture/Timeline/Control Room 등 11 서피스, Google Calendar 양방향 동기화, MCP 게이트웨이 human-gate, agent bounded 실행(timeout·cost cap·kill)을 Tauri·Rust로 구현.',
+      '캘린더·PR·백로그·worktree·agent 세션을 한 데스크톱 앱으로 묶어 “지금 무엇을 볼지”를 사람이 판단하게 만든 local-first 앱. Capture/Timeline/Control Room 등 11 서피스, Google Calendar 양방향 동기화, MCP 게이트웨이 human-gate, agent bounded 실행(timeout·cost cap·kill)을 Tauri·Rust로 구현.',
     metrics: [
       { k: '서피스', v: '11종 통합', cls: '', c: 'capture·schedule·jobs·governance' },
       { k: '실행통제', v: 'bounded', cls: 'g', c: 'timeout·cost cap·kill' },

@@ -7,7 +7,7 @@ import { pageMetadata } from '../seo'
 export const metadata = pageMetadata({
   title: SITE.pages.scenes.ko,
   description:
-    'DX→AX manifesto film — boot, SCENE 01–10, and ending. Explore interactive portfolio scenes in narrative order.',
+    'DX→AX manifesto film — boot, SCENE 01–10, and ending, with work scenes from real projects. Explore the interactive scenes in narrative order.',
   path: '/scenes',
 })
 

@@ -157,7 +157,18 @@
   // preload drifted the clock with many/large images (the 8.2s timeline desynced).
   // Warm the browser cache in the background; a missing file just shows a dark frame.
   FRAMES = PHOTOS.map((url, i)=>({url, i}));
-  PHOTOS.forEach(url=>{ const im = new Image(); im.src = url; });
+  const warmed = new Set();
+  function warmPhotos(from, count){
+    for(let i=0;i<count;i++){
+      const url = PHOTOS[(from+i) % PHOTOS.length];
+      if(!url || warmed.has(url)) continue;
+      warmed.add(url);
+      const im = new Image();
+      im.decoding = 'async';
+      im.src = url;
+    }
+  }
+  warmPhotos(0, 6);
   // boot() is called at the very end — after the schedule state (let N/durs/cum) below initializes.
 
   function setFrame(img, ph, phn, idx){
@@ -204,7 +215,7 @@
     const f = (time % CYCLE)/CYCLE;
 
     let ci=0; for(let k=0;k<N;k++){ if(f>=cum[k]) ci=k; }
-    if(ci!==lastCut && f<ACCEL_END){ lastCut=ci; showCut(ci); }
+    if(ci!==lastCut && f<ACCEL_END){ lastCut=ci; showCut(ci); warmPhotos(ci+1, 4); }
 
     // headline detonates as the cuts slow (~0.60→0.86), holds, fades at the loop seam
     const hv = clamp(0,1,(f-0.60)/0.10);

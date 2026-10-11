@@ -37,6 +37,7 @@ export function ProjectsIndexContent() {
                   width={IMAGE_DIMS[thumbnail][0]}
                   height={IMAGE_DIMS[thumbnail][1]}
                   sizes="(max-width: 600px) 100vw, 440px"
+                  quality={70}
                   // The first two thumbnails sit above the fold on mobile (one column) and
                   // either can be the LCP element — fetch them eagerly at high priority
                   // instead of lazy-loading after layout. The rest stay lazy.

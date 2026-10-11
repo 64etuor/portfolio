@@ -7,7 +7,13 @@ const nextConfig: NextConfig = {
   distDir: process.env.NEXT_DIST_DIR || '.next',
   poweredByHeader: false,
   // Project screenshots go through next/image — serve AVIF first, WebP fallback.
-  images: { formats: ['image/avif', 'image/webp'], minimumCacheTTL: 31536000 },
+  images: {
+    formats: ['image/avif', 'image/webp'],
+    minimumCacheTTL: 31536000,
+    qualities: [70, 75],
+    // 3840 is unused by these layouts and only adds optimizer variants.
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048],
+  },
   // Spline runtime ships ESM-only exports (no `require`/`default` condition);
   // transpiling lets Next resolve it cleanly from the client component.
   transpilePackages: ['@splinetool/react-spline', '@splinetool/runtime'],
@@ -22,7 +28,10 @@ const nextConfig: NextConfig = {
   // build 가 느려지는 비용이 있음. (Next 16 승격 시 experimental → 최상위로 이동)
   // (experimental.inlineCss was measured and rejected: it also embeds the CSS in
   // every RSC prefetch payload — 4KB → 26KB each — and mobile FCP got worse.)
-  experimental: { reactCompiler: true },
+  experimental: {
+    reactCompiler: true,
+    optimizePackageImports: ['usehooks-ts'],
+  },
   // The film clock drives an imperative rAF loop; StrictMode's dev-only double
   // invocation spins up a second loop and races the scene timeline (prod, which
   // never double-invokes, is unaffected). Disable so dev matches prod timing.
@@ -101,6 +110,8 @@ const nextConfig: NextConfig = {
     return [
       { source: '/fonts/:path*', headers: [assetCache] },
       { source: '/brand/:path*', headers: [assetCache] },
+      { source: '/lab/assets/:path*', headers: [assetCache] },
+      { source: '/spline/:path*', headers: [assetCache] },
       // two segments = public/projects/<slug>/<file> screenshots; /projects/<slug> pages have one.
       { source: '/projects/:slug/:file', headers: [assetCache] },
       { source: '/:file(favicon.ico|favicon.svg|icons.svg|apple-touch-icon.png|icon-192.png|icon-512.png|site.webmanifest)', headers: [assetCache] },

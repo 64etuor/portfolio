@@ -29,7 +29,11 @@ export function useIrisOutro(ended: boolean): React.RefObject<HTMLDivElement | n
         el.style.boxShadow = `0 0 ${(26 * glow).toFixed(1)}px ${(7 * glow).toFixed(1)}px rgba(255,255,255,${(glow * 0.9).toFixed(2)}), 0 0 0 100vmax #000`
       }
       if (k < 1) raf = requestAnimationFrame(tick)
-      else router.push('/')
+      else {
+        // Same document: the landing veil reads this and fades in as the iris lands.
+        document.documentElement.dataset.fromFilm = '1'
+        router.push('/')
+      }
     }
     raf = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(raf)

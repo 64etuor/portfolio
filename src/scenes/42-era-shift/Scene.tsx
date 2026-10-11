@@ -72,6 +72,23 @@ const CUM = DURS.map((dur) => {
 
 const assetUrl = (url: string) => (url.startsWith('/') ? url : `/lab/${url}`)
 
+// The montage used to fetch every photo on mount (the largest originals were
+// multi-megabyte). Warm a short window and pull the next frames as cuts advance.
+const PRELOAD_AHEAD = 4
+const warmed = new Set<string>()
+function warmPhotos(from: number, count = PRELOAD_AHEAD) {
+  for (let i = 0; i < count; i++) {
+    const photo = PHOTOS[(from + i) % PHOTOS.length]
+    if (!photo) continue
+    const url = assetUrl(photo)
+    if (warmed.has(url)) continue
+    warmed.add(url)
+    const im = new Image()
+    im.decoding = 'async'
+    im.src = url
+  }
+}
+
 function setFrame(img: HTMLDivElement, ph: HTMLDivElement, phn: HTMLSpanElement, idx: number) {
   const frame = FRAMES[idx % FRAMES.length]
   if ('url' in frame) {
@@ -98,10 +115,7 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
   const front = useRef(0)
 
   useEffect(() => {
-    PHOTOS.forEach((url) => {
-      const im = new Image()
-      im.src = assetUrl(url)
-    })
+    warmPhotos(0, 6)
   }, [])
 
   useSceneReady(onReady)
@@ -148,6 +162,7 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
     if (ci !== lastCut.current && f < ACCEL_END) {
       lastCut.current = ci
       showCut(ci)
+      warmPhotos(ci + 1)
       flashStart.current = fr.t // 컷마다 셔터 플래시 재점화
     }
 

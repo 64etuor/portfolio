@@ -3,8 +3,12 @@ import { sfx, type DroneTone, type PlayOpts, type SfxName } from '@/lib/sfx'
 import { FILM_SCHEDULE, firstShotOfAct } from './schedule'
 import { ACT_DRONE, CUT_GUARD_S, MAX_CUES_PER_SHOT, SOUND_CUES, type Cue } from './soundCues'
 
-/** Cues older than this (ms) when the clock reaches them are dropped, never played late. */
-const LATE_WINDOW_MS = 120
+/**
+ * Cues older than this (ms) when the clock reaches them are dropped, never played late.
+ * Wide enough to survive a real frame stall (300–700ms measured on GPU) so key accents
+ * still land; seeks/tab throttling jump much further and are still skipped (no burst).
+ */
+const LATE_WINDOW_MS = 600
 /** Schedule cues this far ahead (ms) on the audio clock to absorb rAF/effect latency. */
 const LOOKAHEAD_MS = 30
 

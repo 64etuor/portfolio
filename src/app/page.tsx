@@ -26,6 +26,9 @@ export default function Home() {
     <>
       <link rel="preconnect" href="https://prod.spline.design" crossOrigin="" />
       <link rel="preconnect" href="https://unpkg.com" crossOrigin="" />
+      <link rel="preload" href="/fonts/lab/playfair-display-latin-600-normal.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+      <link rel="preload" href="/fonts/lab/playfair-display-latin-500-italic.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
+      <link rel="preload" href="/fonts/lab/jetbrains-mono-latin-500-normal.woff2" as="font" type="font/woff2" crossOrigin="anonymous" />
       <Landing />
     </>
   )

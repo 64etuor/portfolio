@@ -259,6 +259,8 @@
   overflow: hidden;
   background: rgba(255, 255, 255, 0.014);
   transition: border-color 0.18s, transform 0.18s;
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
 }
 .pj-card:hover { border-color: color-mix(in oklab, var(--pj-acc) 45%, var(--pj-line)); transform: translateY(-2px); }
 .pj-card-thumb { aspect-ratio: 16 / 10; background: #000; object-fit: cover; width: 100%; height: auto; border-bottom: 1px solid var(--pj-line); }

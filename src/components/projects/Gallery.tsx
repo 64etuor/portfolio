@@ -21,6 +21,7 @@ export function Gallery({ items }: { items: GalleryItem[] }) {
               width={width}
               height={height}
               sizes="(max-width: 960px) 100vw, 880px"
+              quality={70}
             />
             {g.caption ? <figcaption className="pj-cap">{g.caption}</figcaption> : null}
           </figure>

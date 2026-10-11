@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 import { ErrorBoundary } from 'react-error-boundary'
@@ -19,6 +19,9 @@ const Spline = dynamic(() => import('./SplineClient'), { ssr: false })
 // Runtime scene (.splinecode) — replaces the old cross-origin iframe embed, so we
 // can drive the camera on navigation.
 const SPLINE_SCENE = 'https://prod.spline.design/7zWwWxRuaxqIZXDE/scene.splinecode'
+// modelling process.wasm, copied from @splinetool/modelling-wasm@1.12.97.
+// ui.wasm is still hardcoded to unpkg inside the runtime, so that origin stays.
+const SPLINE_WASM = '/spline'
 
 // Thin line icons that match the film's technical HUD aesthetic.
 const ICON: Record<string, ReactNode> = {
@@ -66,6 +69,10 @@ const ICON: Record<string, ReactNode> = {
 type NavItem = { href: string; label: string; icon: ReactNode; primary?: boolean; external?: boolean; mail?: boolean }
 
 const TX_MS = 720
+// Film → home keeps the long assemble so it still reads as one shot after the iris.
+// A direct visit paints the name within a few hundred ms (that canvas is the LCP).
+const FILM_DELAYS = [2400, 2500, 3500, 4100] as const
+const DIRECT_DELAYS = [80, 160, 280, 400] as const
 
 const SR_ONLY: React.CSSProperties = {
   position: 'absolute',
@@ -99,27 +106,50 @@ export function Landing() {
   const splineRef = useRef<Application | null>(null)
   const navigatingRef = useRef(false)
   const [leaving, setLeaving] = useState(false)
-  // Reveal from black on mount — continues the film's iris-out collapse so the handoff
-  // from /film reads as one continuous shot (also a gentle intro on direct loads).
-  const [entering, setEntering] = useState(true)
-  useEffect(() => {
-    const r = requestAnimationFrame(() => setEntering(false))
-    return () => cancelAnimationFrame(r)
+  // html[data-from-film] is set by the film outro before router.push (same document).
+  // Direct loads never set it, so the veil stays opacity 0 and cannot cover LCP.
+  const [cinematic, setCinematic] = useState(false)
+  const [reduced, setReduced] = useState(false)
+  useLayoutEffect(() => {
+    setReduced(window.matchMedia('(prefers-reduced-motion: reduce)').matches)
+    if (document.documentElement.dataset.fromFilm === '1') setCinematic(true)
   }, [])
+  useEffect(() => {
+    if (!cinematic) return
+    const t = window.setTimeout(() => {
+      delete document.documentElement.dataset.fromFilm
+    }, 900)
+    return () => window.clearTimeout(t)
+  }, [cinematic])
+  const delays = reduced ? ([0, 0, 0, 0] as const) : cinematic ? FILM_DELAYS : DIRECT_DELAYS
 
-  // Defer mounting the heavy Spline 3D runtime until the browser is idle (or a
-  // 1.5s cap), so the landing paints + becomes interactive on the lightweight
-  // content first. The robot then loads off the critical path.
+  // The Spline runtime is ~570KB and costs ~3s of main-thread eval plus WASM
+  // compile. Mounting it at 1.5s put that long task on top of first input.
+  // A pointer or key starts it immediately (the visitor is here). Otherwise it
+  // still appears on its own, just after the page has gone quiet. saveData
+  // skips it — the CRT backdrop, copy, and nav are the page without the robot.
   const [showSpline, setShowSpline] = useState(false)
   useEffect(() => {
-    type RIC = (cb: () => void, opts?: { timeout: number }) => number
-    const ric = (window as unknown as { requestIdleCallback?: RIC }).requestIdleCallback
-    if (ric) {
-      const id = ric(() => setShowSpline(true), { timeout: 1500 })
-      return () => (window as unknown as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(id)
+    const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection
+    if (conn?.saveData) return
+    let done = false
+    let idleId = 0
+    const start = () => {
+      if (done) return
+      done = true
+      const ric = (window as unknown as { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback
+      if (ric) idleId = ric(() => setShowSpline(true), { timeout: 800 })
+      else setShowSpline(true)
     }
-    const t = window.setTimeout(() => setShowSpline(true), 300)
-    return () => clearTimeout(t)
+    window.addEventListener('pointerdown', start)
+    window.addEventListener('keydown', start)
+    const t = window.setTimeout(start, 5000)
+    return () => {
+      window.removeEventListener('pointerdown', start)
+      window.removeEventListener('keydown', start)
+      window.clearTimeout(t)
+      ;(window as unknown as { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback?.(idleId)
+    }
   }, [])
 
   // The robot arrives on its own schedule (measured: ~4s desktop, ~16s on 4G, often
@@ -195,6 +225,7 @@ export function Landing() {
         <ErrorBoundary fallback={null}>
           <Spline
             scene={SPLINE_SCENE}
+            wasmPath={SPLINE_WASM}
             onLoad={onLoad}
             className={`lp-spline${robotIn ? ' lp-spline--in' : ''}`}
           />
@@ -231,7 +262,7 @@ export function Landing() {
           color="#8d8d8d"
           width={280}
           height={18}
-          delay={2400}
+          delay={delays[0]}
           style={{ margin: '0 0 12px' }}
         />
         {/* film ends on "미래를 만드는 사람" → lands here: "It's me." 우아한 이탤릭 세리프,
@@ -246,7 +277,7 @@ export function Landing() {
           color="#cfe9e3"
           width={300}
           height={48}
-          delay={2500}
+          delay={delays[1]}
           style={{ margin: '0 0 4px' }}
         />
         <PretextText
@@ -258,7 +289,7 @@ export function Landing() {
           color="#f1f4f8"
           width={540}
           height={86}
-          delay={3500}
+          delay={delays[2]}
           style={{ margin: '0 0 10px', maxWidth: '92vw' }}
         />
         <PretextText
@@ -270,7 +301,7 @@ export function Landing() {
           color="rgba(150, 168, 180, 0.82)"
           width={470}
           height={40}
-          delay={4100}
+          delay={delays[3]}
           style={{ margin: '0 0 28px', maxWidth: '92vw' }}
         />
         <nav className="lp-actions" aria-label={t(SITE.landing.navigation)}>
@@ -298,19 +329,8 @@ export function Landing() {
         <div className="lp-tx-fade" />
       </div>
 
-      {/* Reveal-from-black on entry (film iris-out → landing continuity) */}
-      <div
-        aria-hidden
-        style={{
-          position: 'fixed',
-          inset: 0,
-          background: '#000',
-          zIndex: 80,
-          pointerEvents: 'none',
-          opacity: entering ? 1 : 0,
-          transition: 'opacity 760ms ease',
-        }}
-      />
+      {/* Film iris-out continues into this veil. Direct loads leave it invisible. */}
+      <div className="lp-enter" aria-hidden />
     </main>
   )
 }

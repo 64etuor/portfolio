@@ -19,7 +19,7 @@ interface FilmControlsProps {
   onRewind: () => void
   onTogglePause: () => void
   onSkip: () => void
-  /** Optional: enables picture-cut / ending SFX (scene cues + drone: useFilmSoundCues). */
+  /** Optional: enables picture-cut / ending SFX (scene cues + score: useFilmSoundCues). */
   beat?: FilmBeat
 }
 
@@ -39,7 +39,7 @@ function toggleSound() {
 /**
  * FilmControls — rewind + play/pause + sound (bottom-right) and immediate return home (top-right).
  * Also owns the sound toggle, audio pause and the picture-cut / iris-out sounds; scene-synced
- * cues and the drone bed are played by useFilmSoundCues (cue sheet: soundCues.ts).
+ * cues and the score are played by useFilmSoundCues (cue sheet: soundCues.ts).
  */
 export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: FilmControlsProps) {
   const { t, locale, setLocale } = useLocale()
@@ -56,7 +56,6 @@ export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: 
   useEffect(() => {
     sfx.prime()
     return () => {
-      sfx.drone(false)
       sfx.stopAll()
       sfx.setPaused(false)
     }
@@ -78,23 +77,24 @@ export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: 
     sfx.setPaused(paused)
   }, [paused])
 
-  // Picture cuts: a thump on every cut, plus a whoosh when the act changes.
+  // Picture cuts: a soft whoosh + thump when the act changes, a lighter thump inside an act.
+  // (Kept under the score — the music carries the flow; the cut only marks the edit.)
   useEffect(() => {
     if (cut === 0) return
     const actChanged = lastCutAct.current !== act
     lastCutAct.current = act
     if (actChanged) {
-      sfx.play('whoosh')
-      sfx.play('cut', { delay: 0.05 })
+      sfx.play('whoosh', { gain: 0.55 })
+      sfx.play('cut', { gain: 0.5, delay: 0.05 })
     } else {
-      sfx.play('cut', { gain: 0.65, pitch: 1.15 })
+      sfx.play('cut', { gain: 0.4, pitch: 1.15 })
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fire per cut only
   }, [cut])
 
-  // Ending: the iris-out lands with a soft impact (the bed fades in useFilmSoundCues).
+  // Ending: the iris-out lands with a soft impact while the score fades (music.ts).
   useEffect(() => {
-    if (ended) sfx.play('impact', { gain: 0.7 })
+    if (ended) sfx.play('impact', { gain: 0.5 })
   }, [ended])
 
   const soundLabel = sound === 'on' ? t(SITE.film.soundMute) : sound === 'off' ? t(SITE.film.soundUnmute) : t(SITE.film.soundEnable)

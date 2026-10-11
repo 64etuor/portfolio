@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import type { FilmClockSource } from '@/lib/sfx'
 import { FILM_SCHEDULE, FILM_TOTAL_MS, shotIndexAt } from './schedule'
 
 interface FilmClockArgs {
@@ -20,6 +21,11 @@ interface FilmClock {
   progress: number
   /** Jump the clock directly to a shot's start (rewind). */
   rewindToShot: (idx: number) => void
+  /**
+   * Stable, render-free view of the same clock for the audio scheduler (music.ts):
+   * reads the refs directly, so it is exact between React renders and never re-renders.
+   */
+  source: FilmClockSource
 }
 
 /**
@@ -47,6 +53,17 @@ export function useFilmClock(args: FilmClockArgs): FilmClock {
   // ms of film-time banked before this run segment (pause carry / rewind offset).
   const carriedRef = useRef(0)
   const endedFiredRef = useRef(false)
+  // true while the rAF loop is advancing the clock (not paused / ended / waiting).
+  const runningRef = useRef(false)
+  const endedRef = useRef(false)
+
+  const [source] = useState<FilmClockSource>(() => ({
+    nowMs: () => {
+      const t = runningRef.current ? carriedRef.current + (performance.now() - startRef.current) : carriedRef.current
+      return Math.max(0, Math.min(FILM_TOTAL_MS, t))
+    },
+    state: () => (endedRef.current ? 'ended' : runningRef.current ? 'playing' : 'paused'),
+  }))
 
   const rewindToShot = useCallback((idx: number) => {
     const clamped = Math.max(0, Math.min(idx, FILM_SCHEDULE.length - 1))
@@ -59,15 +76,22 @@ export function useFilmClock(args: FilmClockArgs): FilmClock {
   }, [])
 
   useEffect(() => {
-    if (reduced || ended || !ready) return
+    endedRef.current = ended
+    if (reduced || ended || !ready) {
+      if (ended) carriedRef.current = FILM_TOTAL_MS
+      runningRef.current = false
+      return
+    }
 
     if (paused) {
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
       carriedRef.current += performance.now() - startRef.current
+      runningRef.current = false
       return
     }
 
     startRef.current = performance.now()
+    runningRef.current = true
     let alive = true
     const tick = () => {
       if (!alive) return
@@ -89,6 +113,7 @@ export function useFilmClock(args: FilmClockArgs): FilmClock {
     rafRef.current = requestAnimationFrame(tick)
     return () => {
       alive = false
+      runningRef.current = false
       if (rafRef.current) cancelAnimationFrame(rafRef.current)
     }
     // re-running this effect on every filmT tick would reset startRef mid-flight;
@@ -99,5 +124,5 @@ export function useFilmClock(args: FilmClockArgs): FilmClock {
   const shotT = Math.max(0, Math.min(filmT - shot.start, shot.duration))
   const progress = shot.duration > 0 ? shotT / shot.duration : 0
 
-  return { shotIdx, filmT, shotT, progress, rewindToShot }
+  return { shotIdx, filmT, shotT, progress, rewindToShot, source }
 }

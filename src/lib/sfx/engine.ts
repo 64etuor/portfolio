@@ -4,11 +4,12 @@
  * Graph:
  *   voice → voiceBus ─┬──────────────→ pauseGain → master → limiter → destination
  *                     └→ reverb(send) ─┘     ↑
- *   drone ────────────────────────────────────┘
+ *   film score (<audio> → MediaElementSource) → musicBus (ducked under heavy SFX) ┘
  *
  * Level budget (linear, pre-master; MASTER = 0.7):
  *   - each one-shot voice sums to ≤ 0.34 → ≤ 0.24 at output (≈ −12.4 dBFS)
- *   - drone sums to ≤ 0.04 → ≤ 0.028 at output (≈ −31 dBFS)
+ *   - the score file is mastered to ≈ −18.5 dBFS RMS (peak −2.5) and enters at MUSIC_LEVEL,
+ *     so it sits ≈ −22 dBFS RMS at the output, under the SFX accents (see music.ts);
  *   - a DynamicsCompressor ceiling (−10 dBFS, 20:1, makeup gain trimmed) guards stacked voices.
  *
  * SSR-safe: nothing touches `window` until a method is called on the client.
@@ -34,9 +35,6 @@ export type SfxName =
   | 'crack'
   | 'chime'
 
-/** bed = neutral · tense = minor/beating · bright = major · resolve = open fifth/octave (ending) */
-export type DroneTone = 'bed' | 'tense' | 'bright' | 'resolve'
-
 /** 'off' = muted by the user · 'on' = audible · 'blocked' = wants sound, waiting for a gesture */
 export type SfxState = 'off' | 'on' | 'blocked'
 
@@ -59,33 +57,18 @@ const STORAGE_KEY = 'pf.sfx.enabled'
 const MIN_GAP: Partial<Record<SfxName, number>> = { type: 0.025, tick: 0.03, count: 0.03 }
 const DEFAULT_GAP = 0.045
 const SILENT = 0.0001
-/** Drone crossfade time constant (s) — old and new chords share it so their sum stays ≈ 1. */
-const DRONE_XFADE_TC = 0.9
 /**
- * Sidechain-style drone duck for heavy one-shots: [depth (linear), hold (s), release τ (s)].
- * Keeps transients readable over the bed without audible pumping.
+ * Sidechain-style music duck under the SFX that carry the story: [depth (linear), hold (s), release τ (s)].
+ * 0.56–0.71 = −5…−3 dB — enough for the accent to read, short enough not to pump.
  */
 const DUCK: Partial<Record<SfxName, readonly [number, number, number]>> = {
-  cut: [0.55, 0.08, 0.25],
-  whoosh: [0.6, 0.25, 0.3],
-  impact: [0.35, 0.35, 0.5],
-  crack: [0.5, 0.15, 0.35],
-  glitch: [0.6, 0.12, 0.25],
-}
-
-interface DroneNodes {
-  level: GainNode
-  oscs: OscillatorNode[]
-  noise: AudioBufferSourceNode
-  lfo: OscillatorNode
-  tone: DroneTone
-}
-
-const DRONE_TONES: Record<DroneTone, { f: number; ratios: [number, number] }> = {
-  bed: { f: 55, ratios: [1.5, 2] }, // A1 + fifth + octave — neutral
-  tense: { f: 51.91, ratios: [1.189, 2.01] }, // G#1 + minor third, slightly beating octave
-  bright: { f: 65.41, ratios: [1.5, 2.5] }, // C2 + fifth + major tenth
-  resolve: { f: 65.41, ratios: [1.5, 2] }, // C2 + fifth + octave — open, settled
+  cut: [0.71, 0.08, 0.25],
+  whoosh: [0.71, 0.25, 0.3],
+  impact: [0.56, 0.35, 0.5],
+  crack: [0.6, 0.15, 0.35],
+  glitch: [0.71, 0.1, 0.25],
+  seal: [0.63, 0.15, 0.35],
+  chime: [0.71, 0.2, 0.4],
 }
 
 type Ctor = typeof AudioContext
@@ -96,16 +79,15 @@ class SfxEngine {
   private pauseGain!: GainNode
   private voiceBus!: GainNode
   private reverbIn!: GainNode
-  private droneBus!: GainNode
+  private musicBus!: GainNode
+  private output!: GainNode
   private noiseBuf!: AudioBuffer
-  private drn: DroneNodes | null = null
   private voices: [start: number, end: number][] = []
   private lastPlayed = new Map<SfxName, number>()
   private pref: boolean | null = null
   private unlockArmed = false
   private suspendTimer: ReturnType<typeof setTimeout> | null = null
   private listeners = new Set<() => void>()
-  private droneWanted: { on: boolean; tone: DroneTone } = { on: false, tone: 'bed' }
   /** dev/QA hook: called for every voice actually started (after voice cap / rate limit) */
   onPlay: ((name: SfxName, when: number) => void) | null = null
 
@@ -196,7 +178,7 @@ class SfxEngine {
     this.pauseGain.gain.setTargetAtTime(paused ? 0 : 1, this.ctx.currentTime, paused ? 0.06 : 0.15)
   }
 
-  /** Cut every pending/ringing one-shot (e.g. leaving the film). Drone untouched. */
+  /** Cut every pending/ringing one-shot (e.g. leaving the film). Music untouched (see music.ts). */
   stopAll(): void {
     const ctx = this.ctx
     if (!ctx) return
@@ -232,7 +214,6 @@ class SfxEngine {
     if (!ctx || ctx.state !== 'running' || !this.enabled) return this.emit()
     this.master.gain.cancelScheduledValues(ctx.currentTime)
     this.master.gain.setTargetAtTime(MASTER, ctx.currentTime, 0.15)
-    if (this.droneWanted.on && !this.drn) this.drone(true, this.droneWanted.tone)
     this.emit()
   }
 
@@ -267,6 +248,7 @@ class SfxEngine {
     const trim = ctx.createGain()
     trim.gain.value = Math.pow(10, (0.6 * LIMIT_DB * (1 - 1 / 20)) / 20)
     limiter.connect(trim).connect(ctx.destination)
+    this.output = trim
 
     this.master = ctx.createGain()
     this.master.gain.value = 0 // faded in by afterRunning()
@@ -286,8 +268,8 @@ class SfxEngine {
     this.voiceBus = ctx.createGain()
     this.voiceBus.connect(this.pauseGain)
 
-    this.droneBus = ctx.createGain()
-    this.droneBus.connect(this.pauseGain)
+    this.musicBus = ctx.createGain()
+    this.musicBus.connect(this.pauseGain)
 
     // One shared 2 s white-noise buffer; voices read it from random offsets.
     const len = ctx.sampleRate * 2
@@ -346,13 +328,13 @@ class SfxEngine {
   }
 
   /**
-   * Dip the drone bed at audio time `t` to `depth`, hold, then recover with τ = `release`.
+   * Dip the music bus at audio time `t` to `depth`, hold, then recover with τ = `release`.
    * Events already running (an earlier duck's release) are kept, so overlapping ducks
    * glide from the current value instead of jumping.
    */
   duck(t: number, depth = 0.5, hold = 0.12, release = 0.3): void {
     if (!this.ctx) return
-    const g = this.droneBus.gain
+    const g = this.musicBus.gain
     g.cancelScheduledValues(t)
     g.setTargetAtTime(depth, t, 0.015)
     g.setTargetAtTime(1, t + hold, release)
@@ -368,94 +350,16 @@ class SfxEngine {
     return true
   }
 
-  // ── drone bed ─────────────────────────────────────────────────────────────
+  // ── music bus (film score) ───────────────────────────────────────────────
 
-  drone(on: boolean, tone: DroneTone = 'bed'): void {
-    this.droneWanted.on = on
-    this.droneWanted.tone = tone
-    const ctx = this.ctx
-    if (!ctx || ctx.state !== 'running') return
-    const now = ctx.currentTime
-
-    if (!on) {
-      if (this.drn) this.releaseDrone(this.drn, now, 0.5)
-      this.drn = null
-      return
-    }
-    if (this.drn) {
-      if (this.drn.tone === tone) return
-      // Equal-τ crossfade to the new chord (no pitch glide — reads as a change of
-      // harmony, not a siren). Old + new levels sum to ≈ 1, so the bed never
-      // exceeds its −30 dBFS budget mid-fade.
-      this.releaseDrone(this.drn, now, DRONE_XFADE_TC)
-      this.drn = this.buildDrone(ctx, tone, now, DRONE_XFADE_TC)
-      return
-    }
-    this.drn = this.buildDrone(ctx, tone, now, 1.2) // ~4 s swell from silence
+  /** Live context + the bus the score feeds (null until the context exists). */
+  musicTarget(): { ctx: AudioContext; bus: AudioNode } | null {
+    return this.ctx ? { ctx: this.ctx, bus: this.musicBus } : null
   }
 
-  private releaseDrone(d: DroneNodes, now: number, tau: number) {
-    d.level.gain.cancelScheduledValues(now)
-    d.level.gain.setTargetAtTime(0, now, tau)
-    const end = now + tau * 6
-    d.oscs.forEach((o) => o.stop(end))
-    d.noise.stop(end)
-    d.lfo.stop(end)
-    d.lfo.onended = () => d.level.disconnect()
-  }
-
-  private buildDrone(ctx: AudioContext, tone: DroneTone, now: number, fadeIn: number): DroneNodes {
-    const spec = DRONE_TONES[tone]
-    const level = ctx.createGain()
-    level.gain.value = 0
-    level.connect(this.droneBus)
-
-    const lp = ctx.createBiquadFilter()
-    lp.type = 'lowpass'
-    lp.frequency.value = 240
-    lp.Q.value = 0.7
-    lp.connect(level)
-
-    // slow "breathing" of the filter
-    const lfo = ctx.createOscillator()
-    lfo.frequency.value = 0.07
-    const lfoDepth = ctx.createGain()
-    lfoDepth.gain.value = 90
-    lfo.connect(lfoDepth).connect(lp.frequency)
-
-    const mk = (type: OscillatorType, f: number, amp: number, detune = 0) => {
-      const o = ctx.createOscillator()
-      o.type = type
-      o.frequency.value = f
-      o.detune.value = detune
-      const g = ctx.createGain()
-      g.gain.value = amp
-      o.connect(g).connect(lp)
-      return o
-    }
-    // Σ amplitudes ≈ 0.012 + 0.008 + 0.006 + noise(≈0.004 after LP) ≈ 0.03 (< 0.04 budget)
-    const oscs = [
-      mk('sine', spec.f, 0.012),
-      mk('sine', spec.f * spec.ratios[0], 0.008, 3),
-      mk('triangle', spec.f * spec.ratios[1], 0.006, -4),
-    ]
-
-    const noise = ctx.createBufferSource()
-    noise.buffer = this.noiseBuf
-    noise.loop = true
-    const nlp = ctx.createBiquadFilter()
-    nlp.type = 'lowpass'
-    nlp.frequency.value = 160
-    const ng = ctx.createGain()
-    ng.gain.value = 0.012
-    noise.connect(nlp).connect(ng).connect(lp)
-
-    const t0 = now + 0.02
-    oscs.forEach((o) => o.start(t0))
-    noise.start(t0, Math.random() * 1.5)
-    lfo.start(t0)
-    level.gain.setTargetAtTime(1, t0, fadeIn)
-    return { level, oscs, noise, lfo, tone }
+  /** Dev/QA only: taps on the final (post-limiter) output and on the music bus. */
+  devTaps(): { ctx: AudioContext; output: AudioNode; music: AudioNode } | null {
+    return this.ctx ? { ctx: this.ctx, output: this.output, music: this.musicBus } : null
   }
 }
 

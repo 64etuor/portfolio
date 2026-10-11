@@ -10,6 +10,7 @@ import { FilmTransition, txVariantFor } from './FilmTransition'
 import { useFilmClock } from './useFilmClock'
 import { useSceneBuffer } from './useSceneBuffer'
 import { useIrisOutro } from './useIrisOutro'
+import { useFilmSoundCues } from './useFilmSoundCues'
 import type { SceneClock } from '@/scenes/_host/sceneClock'
 import { SITE } from '@content/site'
 import { useLocale } from '../LocaleProvider'
@@ -79,6 +80,9 @@ export function Film() {
 
   // Master clock — the only source of truth for "what shot should be on screen".
   const { shotIdx, filmT, rewindToShot } = useFilmClock({ paused, reduced, ended, ready, onFilmEnd })
+
+  // Scene-synced sound cues + drone bed, driven by the same master clock (soundCues.ts).
+  useFilmSoundCues({ filmT, shotIdx, paused, ended })
 
   const currentShot = FILM_SCHEDULE[shotIdx]
   const nextShot = FILM_SCHEDULE[shotIdx + 1] ?? null

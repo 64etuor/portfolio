@@ -3,8 +3,7 @@
 import { useEffect, useRef, useSyncExternalStore } from 'react'
 import { SITE } from '@content/site'
 import { useLocale } from '../LocaleProvider'
-import { ACTS } from './acts'
-import { sfx, playSequence, BOOT_SEQUENCE, type DroneTone, type SfxState } from '@/lib/sfx'
+import { sfx, type SfxState } from '@/lib/sfx'
 
 /** Where the film is — drives the sound design. */
 export interface FilmBeat {
@@ -20,13 +19,9 @@ interface FilmControlsProps {
   onRewind: () => void
   onTogglePause: () => void
   onSkip: () => void
-  /** Optional: enables scene-synced SFX (cuts, boot, ending). */
+  /** Optional: enables picture-cut / ending SFX (scene cues + drone: useFilmSoundCues). */
   beat?: FilmBeat
 }
-
-const TENSE = new Set(['s2-reality', 's3-problem', 's4-perspectives', 's6-collision', 's7-cost'])
-const BRIGHT = new Set(['s8-insight', 's9-bridge', 's10-crossdomain', 'ending'])
-const toneFor = (id: string | undefined): DroneTone => (id && TENSE.has(id) ? 'tense' : id && BRIGHT.has(id) ? 'bright' : 'bed')
 
 const serverState = (): SfxState => 'off'
 
@@ -43,7 +38,8 @@ function toggleSound() {
 
 /**
  * FilmControls — rewind + play/pause + sound (bottom-right) and immediate return home (top-right).
- * Also hosts the film's phase-1 sound design (src/lib/sfx), since it is mounted for the film's lifetime.
+ * Also owns the sound toggle, audio pause and the picture-cut / iris-out sounds; scene-synced
+ * cues and the drone bed are played by useFilmSoundCues (cue sheet: soundCues.ts).
  */
 export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: FilmControlsProps) {
   const { t } = useLocale()
@@ -52,16 +48,12 @@ export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: 
   const act = beat?.act ?? -1
   const cut = beat?.cut ?? 0
   const ended = beat?.ended ?? false
-  const actId = act >= 0 ? ACTS[act]?.id : undefined
 
-  const mountedAt = useRef(0)
   const lastCutAct = useRef(act)
-  const bootPlayed = useRef(false)
 
   // Prime on mount (sticky activation from the landing click usually allows it);
   // silence everything on unmount (skip home / navigation).
   useEffect(() => {
-    mountedAt.current = performance.now()
     sfx.prime()
     return () => {
       sfx.drone(false)
@@ -86,21 +78,6 @@ export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: 
     sfx.setPaused(paused)
   }, [paused])
 
-  // Drone bed while the film plays; tone follows the narrative.
-  const droneOn = sound === 'on' && !paused && !ended
-  const tone = toneFor(actId)
-  useEffect(() => {
-    sfx.drone(droneOn, tone)
-  }, [droneOn, tone])
-
-  // Opening boot beat (no picture cut precedes it): play once audio is live, but only
-  // if that happens early enough to still line up with the scene.
-  useEffect(() => {
-    if (sound !== 'on' || bootPlayed.current || cut !== 0 || actId !== 's0-boot') return
-    bootPlayed.current = true
-    if (performance.now() - mountedAt.current < 1500) playSequence(sfx.play.bind(sfx), BOOT_SEQUENCE)
-  }, [sound, cut, actId])
-
   // Picture cuts: a thump on every cut, plus a whoosh when the act changes.
   useEffect(() => {
     if (cut === 0) return
@@ -112,14 +89,12 @@ export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: 
     } else {
       sfx.play('cut', { gain: 0.65, pitch: 1.15 })
     }
-    if (actChanged && actId === 's0-boot') playSequence(sfx.play.bind(sfx), BOOT_SEQUENCE, 0.1)
-    if (actChanged && actId === 'ending') sfx.play('confirm', { delay: 0.9 })
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fire per cut only
   }, [cut])
 
-  // Ending: iris-out lands with an impact; the bed fades via droneOn.
+  // Ending: the iris-out lands with a soft impact (the bed fades in useFilmSoundCues).
   useEffect(() => {
-    if (ended) sfx.play('impact')
+    if (ended) sfx.play('impact', { gain: 0.7 })
   }, [ended])
 
   const soundLabel = sound === 'on' ? t(SITE.film.soundMute) : sound === 'off' ? t(SITE.film.soundUnmute) : t(SITE.film.soundEnable)

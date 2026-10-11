@@ -63,11 +63,13 @@ export function LazyScene({
 
   return (
     <ErrorBoundary fallback={errorFallback}>
-      <Suspense fallback={loadingFallback}>
-        <SceneLocalizedRoot locale={locale}>
+      {/* The localized root sits outside Suspense so its observer keeps watching one
+          stable node while lazy scene chunks suspend, resolve, and swap. */}
+      <SceneLocalizedRoot locale={locale}>
+        <Suspense fallback={loadingFallback}>
           <Comp locale={locale} running={running} onReady={onReady} />
-        </SceneLocalizedRoot>
-      </Suspense>
+        </Suspense>
+      </SceneLocalizedRoot>
     </ErrorBoundary>
   )
 }

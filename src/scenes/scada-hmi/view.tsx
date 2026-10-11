@@ -19,6 +19,8 @@ import {
 import type { AckPhase } from './types'
 
 export interface HmiViewProps {
+  /** EN copy for short labels whose generic Korean word is translated differently by other scenes. */
+  english?: boolean
   activeTab: TabId
   ackPhase: AckPhase
   onTabChange: (id: TabId) => void
@@ -53,6 +55,7 @@ export interface HmiViewProps {
 }
 
 export function HmiView({
+  english = false,
   activeTab,
   ackPhase,
   onTabChange,
@@ -354,7 +357,7 @@ export function HmiView({
                           </text>
                           <circle cx="165" cy="30" r="6" fill="#21d07a" className="led" />
                           <text x="179" y="34" fill="#c4d2dd">
-                            제조
+                            {english ? 'Mfg.' : '제조'}
                           </text>
                           <circle cx="30" cy="58" r="6" fill="#39d6ff" className="led" />
                           <text x="44" y="62" fill="#c4d2dd">
@@ -415,7 +418,7 @@ export function HmiView({
                         <span className="v">창고물류 개선 TF (2023.03 ~ 2023.05)</span>
                       </div>
                       <div className="inv-stat">
-                        <span className="k">구성</span>
+                        <span className="k">{english ? 'Team' : '구성'}</span>
                         <span className="v">TF 5명 · 제조·영업·구매·생산관리 협업</span>
                       </div>
                       <div className="inv-stat">
@@ -423,7 +426,7 @@ export function HmiView({
                         <span className="v">제조·영업 간 재고 이관 프로세스가 전산화되어 있지 않아 재고 정확도가 낮고 과잉·부족 재고가 반복되었음.</span>
                       </div>
                       <div className="inv-stat">
-                        <span className="k">성과</span>
+                        <span className="k">{english ? 'Result' : '성과'}</span>
                         <span className="v">
                           재고 정확도 개선·과잉/부족 반복 해소 <span className="micro-kpi" title="정본 유지 보조 KPI">재고회전율 +17%</span>
                         </span>
@@ -493,7 +496,7 @@ export function HmiView({
                           <div className="pv" style={{ color: item.c }}>
                             {item.pv}
                           </div>
-                          <div className="un">{item.un}</div>
+                          <div className="un">{english && item.un === '구성' ? 'team' : item.un}</div>
                         </div>
                       </div>
                     ))}

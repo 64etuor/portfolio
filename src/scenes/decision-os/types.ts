@@ -2,12 +2,15 @@
 // extracted draw/runtime modules. These describe the effect-local state object
 // and the DOM-query context that builder functions are threaded with.
 
+import type { Locale } from '@/i18n/content'
+
 /** Scoped element-query helper bound to the ref container. */
 export type QuerySel = <T extends Element = HTMLElement>(sel: string) => T | null
 
 /** DOM context for builder functions: the root container, scoped query, and SVG. */
 export interface SceneCtx {
   root: HTMLDivElement
+  locale: Locale
   $: QuerySel
   $svg: SVGSVGElement
 }

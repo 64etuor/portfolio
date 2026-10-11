@@ -12,7 +12,7 @@ import type { Locale } from '@/i18n/content'
  * updates (status readouts, SVG labels, and animated captions) follow the
  * selected interface language without duplicating every scene implementation.
  */
-const EN: Record<string, string> = {
+const BASE_EN: Record<string, string> = {
   // Film narrative
   'SCENE 01 · 시대 — THE ACCELERATION': 'SCENE 01 · ERA — THE ACCELERATION',
   '시대는 빠르게 변하고 있습니다': 'The world is changing fast.',
@@ -98,6 +98,8 @@ const EN: Record<string, string> = {
   '현업 · 제조': 'Field · manufacturing',
   '개발 · 시스템': 'Development · systems',
   'SCENE 07 · 비용 — COST CASCADE': 'SCENE 07 · COST — COST CASCADE',
+  ' · 비용 — COST CASCADE': ' · COST — COST CASCADE',
+  ' · 충돌 — LEXICAL COLLISION': ' · COLLISION — LEXICAL COLLISION',
   '커뮤니케이션 오류는 곧 ': 'Communication errors quickly become ',
   '비용': 'cost',
   '이 됩니다.': '.',
@@ -217,6 +219,32 @@ const EN: Record<string, string> = {
   '아키텍처': 'Architecture',
 }
 
+/**
+ * The live dictionary. Starts with the shared film/composition copy above;
+ * each scene module registers its own projection (`registerSceneText`) when its
+ * chunk loads, so per-scene copy is code-split with the scene that uses it.
+ */
+const EN: Record<string, string> = { ...BASE_EN }
+let sortedSources: string[] | null = null
+const memo = new Map<string, string>()
+let dictionaryVersion = 0
+const dictionaryListeners = new Set<() => void>()
+
+/** Adds English projections for a scene's Korean source copy. Idempotent. */
+export function registerSceneText(entries: Record<string, string>) {
+  let changed = false
+  for (const [source, translation] of Object.entries(entries)) {
+    if (EN[source] === translation) continue
+    EN[source] = translation
+    changed = true
+  }
+  if (!changed) return
+  sortedSources = null
+  memo.clear()
+  dictionaryVersion++
+  dictionaryListeners.forEach((listener) => listener())
+}
+
 const originals = new WeakMap<Text, string>()
 const rendered = new WeakMap<Text, string>()
 const attributes = new WeakMap<Element, Map<string, string>>()
@@ -226,20 +254,59 @@ const attributes = new WeakMap<Element, Map<string, string>>()
 // most of those strings (numbers, already-English HUD labels, glyphs) contain no
 // Korean at all, so this is a cheap bailout before the expensive dictionary scan.
 const HAS_HANGUL = /[ㄱ-ㆎ가-힣]/
+const isHangul = (ch: string | undefined) => !!ch && HAS_HANGUL.test(ch)
+
+function sources(): string[] {
+  // Single-syllable entries (particles such as '를', '수') are exact-match only:
+  // as substrings they would rewrite unrelated words.
+  if (!sortedSources) sortedSources = Object.keys(EN).filter((key) => key.trim().length > 1 && HAS_HANGUL.test(key)).sort((a, b) => b.length - a.length)
+  return sortedSources
+}
+
+/**
+ * Replaces `source` only where it stands as its own word: a Hangul edge of the
+ * source must not touch another Hangul syllable. This keeps a short term such
+ * as '수' (may) from corrupting '치수', while still translating terms embedded
+ * in mixed copy like '반복률 PRF 12 Hz' or 'MES 공정 데이터'.
+ */
+function replaceWord(text: string, source: string, translation: string): string {
+  const checkStart = isHangul(source[0])
+  const checkEnd = isHangul(source[source.length - 1])
+  let out = ''
+  let from = 0
+  for (let at = text.indexOf(source); at !== -1; at = text.indexOf(source, at + source.length)) {
+    if ((checkStart && isHangul(text[at - 1])) || (checkEnd && isHangul(text[at + source.length]))) continue
+    out += text.slice(from, at) + translation
+    from = at + source.length
+  }
+  return from === 0 ? text : out + text.slice(from)
+}
 
 /** Translates only known Korean source copy. Original English always passes through unchanged. */
 export function localizeSceneText(value: string, locale: Locale): string {
   if (locale !== 'en' || !value) return value
-  if (EN[value]) return EN[value]
+  const exact = EN[value]
+  if (exact !== undefined) return exact
   if (!HAS_HANGUL.test(value)) return value
+  const cached = memo.get(value)
+  if (cached !== undefined) return cached
 
   // Animated scene copy is frequently assembled from several adjacent text
-  // nodes. Long phrases win first, then the compact terminology above handles
-  // labels drawn by imperative scene runtimes.
-  let result = value
-  for (const [source, translation] of Object.entries(EN)) {
-    if (source.length > 0 && result.includes(source)) result = result.replaceAll(source, translation)
+  // nodes, and HUD labels embed numbers. Try the trimmed string first, then
+  // replace known phrases longest-first at word boundaries.
+  const trimmed = value.trim()
+  let result: string
+  if (trimmed !== value && EN[trimmed] !== undefined) {
+    result = value.replace(trimmed, EN[trimmed])
+  } else {
+    result = value
+    for (const source of sources()) {
+      if (!HAS_HANGUL.test(result)) break
+      if (result.includes(source)) result = replaceWord(result, source, EN[source])
+    }
   }
+  if (memo.size > 5000) memo.clear()
+  memo.set(value, result)
   return result
 }
 
@@ -247,7 +314,8 @@ function localizeTextNode(node: Text, locale: Locale) {
   const previousRendered = rendered.get(node)
   if (locale === 'ko') {
     const original = originals.get(node)
-    if (original !== undefined && node.data === previousRendered) node.data = original
+    // Same guard as attributes: writing an identical value still fires the observer.
+    if (original !== undefined && node.data === previousRendered && node.data !== original) node.data = original
     return
   }
 
@@ -260,16 +328,20 @@ function localizeTextNode(node: Text, locale: Locale) {
   if (translated !== node.data) node.data = translated
 }
 
+const LOCALIZED_ATTRIBUTES = ['aria-label', 'title', 'placeholder', 'alt'] as const
+
 function localizeAttributes(root: Element, locale: Locale) {
-  const nodes = [root, ...Array.from(root.querySelectorAll('[aria-label], [title], [placeholder]'))]
+  const nodes = [root, ...Array.from(root.querySelectorAll('[aria-label], [title], [placeholder], [alt]'))]
   for (const node of nodes) {
-    for (const name of ['aria-label', 'title', 'placeholder']) {
+    for (const name of LOCALIZED_ATTRIBUTES) {
       const value = node.getAttribute(name)
       if (value === null) continue
       const values = attributes.get(node) ?? new Map<string, string>()
       const original = values.get(name)
       if (locale === 'ko') {
-        if (original !== undefined && value === localizeSceneText(original, 'en')) node.setAttribute(name, original)
+        // Guard value !== original: setAttribute with an unchanged value still queues a
+        // mutation record, which would re-trigger the observer forever.
+        if (original !== undefined && value !== original && value === localizeSceneText(original, 'en')) node.setAttribute(name, original)
         continue
       }
       const source = original !== undefined && value === localizeSceneText(original, 'en') ? original : value
@@ -281,8 +353,9 @@ function localizeAttributes(root: Element, locale: Locale) {
   }
 }
 
-function localizeTree(root: HTMLElement, locale: Locale) {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT)
+function localizeTree(root: Element, locale: Locale) {
+  const doc = root.ownerDocument
+  const walker = doc.createTreeWalker(root, NodeFilter.SHOW_TEXT)
   const nodes: Text[] = []
   for (let node = walker.nextNode(); node; node = walker.nextNode()) nodes.push(node as Text)
   for (const node of nodes) {
@@ -291,11 +364,72 @@ function localizeTree(root: HTMLElement, locale: Locale) {
     localizeTextNode(node, locale)
   }
   localizeAttributes(root, locale)
+  root.querySelectorAll('iframe').forEach((frame) => localizeFrame(frame))
+}
+
+/* ---------- same-origin iframes (e.g. /lab/*.html panels inside a scene) ---------- */
+
+let activeLocale: Locale = 'ko'
+// Keyed by prototype, not window: an iframe's WindowProxy survives navigation
+// (about:blank → /lab page) while each new document gets a fresh prototype.
+const patchedPrototypes = new WeakSet<object>()
+const frameObservers = new WeakMap<Document, MutationObserver>()
+const watchedFrames = new WeakSet<HTMLIFrameElement>()
+
+function patchCanvas(win: Window & typeof globalThis) {
+  const proto = win.CanvasRenderingContext2D?.prototype
+  if (!proto || patchedPrototypes.has(proto)) return
+  patchedPrototypes.add(proto)
+  const fillText = proto.fillText
+  const strokeText = proto.strokeText
+  proto.fillText = function (text: string, x: number, y: number, maxWidth?: number) {
+    return maxWidth === undefined ? fillText.call(this, localizeSceneText(String(text), activeLocale), x, y) : fillText.call(this, localizeSceneText(String(text), activeLocale), x, y, maxWidth)
+  }
+  proto.strokeText = function (text: string, x: number, y: number, maxWidth?: number) {
+    return maxWidth === undefined ? strokeText.call(this, localizeSceneText(String(text), activeLocale), x, y) : strokeText.call(this, localizeSceneText(String(text), activeLocale), x, y, maxWidth)
+  }
+}
+
+function localizeFrameDocument(frame: HTMLIFrameElement) {
+  let doc: Document | null = null
+  try {
+    doc = frame.contentDocument
+  } catch {
+    return // cross-origin
+  }
+  if (!doc?.body || doc.location.href === 'about:blank') return
+  // A full app page (e.g. a redirected /s/<slug> route) runs its own
+  // LocaleProvider, which follows the 'storage' event — don't double-translate it.
+  if (doc.querySelector('script[src*="/_next/"]')) return
+  const win = frame.contentWindow as (Window & typeof globalThis) | null
+  if (win) patchCanvas(win)
+  // Already observed and nothing left to translate (or restore) — skip the walk.
+  if (frameObservers.has(doc) && doc.documentElement.lang === activeLocale && (activeLocale === 'ko' || !HAS_HANGUL.test(doc.body.textContent ?? ''))) return
+  doc.documentElement.lang = activeLocale
+  localizeTree(doc.body, activeLocale)
+  if (!frameObservers.has(doc)) {
+    const target = doc
+    const observer = new MutationObserver(() => localizeTree(target.body, activeLocale))
+    observer.observe(doc.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: [...LOCALIZED_ATTRIBUTES] })
+    frameObservers.set(doc, observer)
+  }
+}
+
+function localizeFrame(frame: HTMLIFrameElement) {
+  if (!watchedFrames.has(frame)) {
+    watchedFrames.add(frame)
+    frame.addEventListener('load', () => localizeFrameDocument(frame))
+  }
+  localizeFrameDocument(frame)
 }
 
 /**
  * Applies the scene projection after React and imperative runtimes write to the
  * DOM. `display: contents` preserves every scene's layout contract.
+ *
+ * Mount this OUTSIDE the scene's Suspense boundary so the observed root is
+ * stable while lazy scene chunks resolve and swap. A low-frequency sweep backs
+ * up the MutationObserver: it only walks the tree when Korean text is present.
  */
 export function SceneLocalizedRoot({ locale, children }: { locale: Locale; children: ReactNode }) {
   const rootRef = useRef<HTMLDivElement | null>(null)
@@ -303,10 +437,28 @@ export function SceneLocalizedRoot({ locale, children }: { locale: Locale; child
   useEffect(() => {
     const root = rootRef.current
     if (!root) return
+    activeLocale = locale
     localizeTree(root, locale)
     const observer = new MutationObserver(() => localizeTree(root, locale))
-    observer.observe(root, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['aria-label', 'title', 'placeholder'] })
-    return () => observer.disconnect()
+    observer.observe(root, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: [...LOCALIZED_ATTRIBUTES] })
+    // Newly registered scene dictionaries (lazy chunks) re-run the projection.
+    const onDictionary = () => localizeTree(root, locale)
+    dictionaryListeners.add(onDictionary)
+    let seenVersion = dictionaryVersion
+    const sweep = window.setInterval(() => {
+      if (locale !== 'en') return
+      if (seenVersion !== dictionaryVersion || HAS_HANGUL.test(root.textContent ?? '')) {
+        seenVersion = dictionaryVersion
+        localizeTree(root, locale)
+      } else {
+        root.querySelectorAll('iframe').forEach((frame) => localizeFrame(frame))
+      }
+    }, 1000)
+    return () => {
+      observer.disconnect()
+      dictionaryListeners.delete(onDictionary)
+      window.clearInterval(sweep)
+    }
   }, [locale])
 
   return <div ref={rootRef} style={{ display: 'contents' }}>{children}</div>

@@ -9,6 +9,7 @@ import { useEscapeClose, usePidRuntime } from './runtime'
 import type { PanelState, PidRuntimeRefs } from './types'
 import { PidSchemeView } from './view'
 import s from './scene.module.css'
+import './en'
 
 const INITIAL_PANEL: PanelState = {
   open: false,

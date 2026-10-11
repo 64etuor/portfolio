@@ -4,6 +4,8 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { usePathname } from 'next/navigation'
 import { DEFAULT_LOCALE, type Locale, type LocalizedString, resolveCopy } from '@/i18n/content'
 import { SITE } from '@content/site'
+import { sceneForLocale } from '@content/i18n/scene-en'
+import { catalogEntry } from '@/scenes/catalog'
 
 interface LocaleContextValue {
   locale: Locale
@@ -18,7 +20,10 @@ function titleForPath(pathname: string, locale: Locale): string | undefined {
   if (pathname === '/resume') return resolveCopy(SITE.pages.resume, locale)
   if (pathname === '/projects' || pathname.startsWith('/projects/')) return resolveCopy(SITE.pages.projects, locale)
   if (pathname === '/film') return resolveCopy(SITE.film.title, locale)
-  if (pathname.startsWith('/s/')) return undefined
+  if (pathname.startsWith('/s/')) {
+    const scene = catalogEntry(decodeURIComponent(pathname.slice(3)))
+    return scene ? `${sceneForLocale(scene, locale).title} · Scene` : undefined
+  }
   return resolveCopy(SITE.metadata.title, locale)
 }
 
@@ -39,6 +44,17 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       setReady(true)
     }, 0)
     return () => window.clearTimeout(restoreId)
+  }, [])
+
+  useEffect(() => {
+    // Follow a choice made in another document of this origin — other tabs, and
+    // app pages embedded as iframes inside scenes — without a reload.
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== 'pf-locale') return
+      if (event.newValue === 'ko' || event.newValue === 'en') setLocale(event.newValue)
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
   }, [])
 
   const selectLocale = useCallback((nextLocale: Locale) => {
@@ -62,8 +78,7 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     // the visitor's explicit language choice remains authoritative.
     const frame = requestAnimationFrame(syncDocument)
     // Streaming metadata may arrive after hydration and reset the title. Keep
-    // title ownership with the active locale for ordinary routes; standalone
-    // scene shells intentionally manage their own dynamic titles.
+    // title ownership with the active locale for every route (scene pages too).
     // Next 15 streams metadata and may (re)write a <title> outside <head>, so watch
     // the <title> elements themselves too — not just <head> (whole-document observation
     // would fire on every scene DOM mutation).

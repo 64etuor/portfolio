@@ -18,6 +18,7 @@ import {
 import { drawGraph, drawHeartbeat, drawLintGauge, drawPipe } from './draw'
 import { View } from './view'
 import s from './scene.module.css'
+import './en'
 
 export default function Scene({ running = true, onReady }: SceneProps) {
   const ctxRef = useRef<SceneCtx | null>(null)

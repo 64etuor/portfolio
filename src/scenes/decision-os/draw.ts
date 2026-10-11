@@ -16,6 +16,8 @@ import {
 } from './data'
 import { SVGNS, NODE_W, NODE_H, GAP_Y, COL_X } from './constants'
 import type { SceneCtx, SceneState } from './types'
+import type { Locale } from '@/i18n/content'
+import { localizeSceneText } from '../_host/localize'
 
 /* ── Color palette per node state ── */
 export function gColor(n: NodeT): { stroke: string; txt: string; fill: string } {
@@ -84,7 +86,19 @@ export const LIVE_TEMPLATES: (() => LiveEntry)[] = [
 ]
 
 /* ── Title word-wrap helper ── */
-export function wrapTitle(title: string): { line1: string; line2: string } {
+export function wrapTitle(title: string, locale: Locale = 'ko'): { line1: string; line2: string } {
+  if (locale === 'en') {
+    // English: wrap on word boundaries (~24 chars per line at the node width).
+    const max = 24
+    const words = localizeSceneText(title, 'en').split(' ')
+    let line1 = ''
+    let i = 0
+    while (i < words.length && (line1 ? line1.length + 1 + words[i].length : words[i].length) <= max) line1 += (line1 ? ' ' : '') + words[i++]
+    if (!line1 && words.length) line1 = words[i++]
+    let line2 = words.slice(i).join(' ')
+    if (line2.length > max) line2 = line2.slice(0, max - 1) + '…'
+    return { line1, line2 }
+  }
   const line1 = title.length > 20 ? title.slice(0, 20) : title
   const line2 = title.length > 20 ? title.slice(20, 40) + (title.length > 40 ? '…' : '') : ''
   return { line1, line2 }
@@ -201,7 +215,7 @@ export function renderDAG(ctx: SceneCtx, state: SceneState, onSelect: (id: strin
     g.appendChild(idt)
 
     // title (wrapped to 2 lines)
-    const { line1, line2 } = wrapTitle(n.title)
+    const { line1, line2 } = wrapTitle(n.title, ctx.locale)
     const t1 = document.createElementNS(SVGNS, 'text')
     t1.setAttribute('x', '13')
     t1.setAttribute('y', '35')
@@ -334,7 +348,7 @@ export function renderRank(ctx: SceneCtx, selId: string, ranking: { rows: RankRo
       const cap = r.cap.capped ? `↓${r.cap.from.toFixed(1)}` : '—'
       return `<div class="rrow ${r.n.id === selId ? 'sel' : ''}" data-id="${r.n.id}">
           <span class="pos">${r.rank}</span>
-          <span class="nm">${r.n.id} · ${r.n.title.slice(0, 16)}${r.n.title.length > 16 ? '…' : ''}</span>
+          <span class="nm">${r.n.id} · ${ctx.locale === 'en' ? localizeSceneText(r.n.title, 'en') : r.n.title.slice(0, 16) + (r.n.title.length > 16 ? '…' : '')}</span>
           <span class="gate ${gateCls}">${gateTxt}</span>
           <span class="sc">${scv}</span>
           <span class="cap">${cap}</span>

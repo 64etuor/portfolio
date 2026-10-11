@@ -20,11 +20,17 @@ import s from './scene.module.css'
 const LOOP = 12.0 // seconds, seamless loop
 
 // ---------- message text ----------
-const LINE1 = '서로 다른 언어를 사용하는 순간,'
-const LINE2 = '요구사항은 왜곡되고 프로젝트는 멀어집니다.'
+// The hero line is laid out and shattered glyph by glyph, so it cannot go
+// through the shared text dictionary — each locale supplies its own copy.
+const LINES = {
+  ko: { l1: '서로 다른 언어를 사용하는 순간,', l2: '요구사항은 왜곡되고 프로젝트는 멀어집니다.' },
+  en: { l1: 'The moment we speak different languages,', l2: 'requirements distort and the project drifts apart.' },
+} as const
 
 // ---------- token armies ----------
 const KO = ['공정', '불량률', '금형', '양산', '치수', '납기', '현장', '설비', '타발', '검사', '로트', '수율']
+// The field army in English (same order/count as KO).
+const FIELD_EN = ['process', 'defect rate', 'tooling', 'ramp-up', 'dimension', 'lead time', 'shop floor', 'equipment', 'stamping', 'inspection', 'lot', 'yield']
 const EN = ['deploy', 'schema', 'async', 'refactor', 'commit', 'build', 'endpoint', 'latency', 'cache', 'rollback', 'queue', 'nullable']
 
 // ---------- color helpers ----------
@@ -142,7 +148,7 @@ for (let i = 0; i < 90; i++) {
   })
 }
 
-export default function Scene({ running = true, onReady }: SceneProps) {
+export default function Scene({ running = true, onReady, locale = 'ko' }: SceneProps) {
   // HUD DOM refs (mutated inside draw — no re-render)
   const phaseNameRef = useRef<HTMLSpanElement | null>(null)
   const dot0Ref = useRef<HTMLSpanElement | null>(null)
@@ -160,6 +166,8 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const tokensRef = useRef<Token[]>([])
   const heroFontRef = useRef(64)
   const line1FontRef = useRef(26)
+  // Locale the glyph/army layout was built for — a switch rebuilds it next frame.
+  const layoutLocaleRef = useRef<string | null>(null)
 
   useSceneReady(onReady)
 
@@ -177,8 +185,10 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
     // ---- lazy layout on first frame or when size changes ----
     // We re-layout whenever glyphs array is empty or heroFont doesn't match
-    const needsLayout = glyphsRef.current.length === 0
+    const { l1: LINE1, l2: LINE2 } = LINES[locale]
+    const needsLayout = glyphsRef.current.length === 0 || layoutLocaleRef.current !== locale
     if (needsLayout) {
+      layoutLocaleRef.current = locale
       // layoutHero
       const glyphs: Glyph[] = []
       const targetW = W * 0.80
@@ -243,7 +253,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           })
         })
       }
-      build(KO, -1)
+      build(locale === 'en' ? FIELD_EN : KO, -1)
       build(EN, +1)
       tokensRef.current = tokens
     }

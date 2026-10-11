@@ -29,8 +29,13 @@ export type SfxName =
   | 'pulse'
   | 'count'
   | 'impact'
+  | 'riser'
+  | 'glitch'
+  | 'crack'
+  | 'chime'
 
-export type DroneTone = 'bed' | 'tense' | 'bright'
+/** bed = neutral · tense = minor/beating · bright = major · resolve = open fifth/octave (ending) */
+export type DroneTone = 'bed' | 'tense' | 'bright' | 'resolve'
 
 /** 'off' = muted by the user · 'on' = audible · 'blocked' = wants sound, waiting for a gesture */
 export type SfxState = 'off' | 'on' | 'blocked'
@@ -54,6 +59,19 @@ const STORAGE_KEY = 'pf.sfx.enabled'
 const MIN_GAP: Partial<Record<SfxName, number>> = { type: 0.025, tick: 0.03, count: 0.03 }
 const DEFAULT_GAP = 0.045
 const SILENT = 0.0001
+/** Drone crossfade time constant (s) — old and new chords share it so their sum stays ≈ 1. */
+const DRONE_XFADE_TC = 0.9
+/**
+ * Sidechain-style drone duck for heavy one-shots: [depth (linear), hold (s), release τ (s)].
+ * Keeps transients readable over the bed without audible pumping.
+ */
+const DUCK: Partial<Record<SfxName, readonly [number, number, number]>> = {
+  cut: [0.55, 0.08, 0.25],
+  whoosh: [0.6, 0.25, 0.3],
+  impact: [0.35, 0.35, 0.5],
+  crack: [0.5, 0.15, 0.35],
+  glitch: [0.6, 0.12, 0.25],
+}
 
 interface DroneNodes {
   level: GainNode
@@ -67,6 +85,7 @@ const DRONE_TONES: Record<DroneTone, { f: number; ratios: [number, number] }> = 
   bed: { f: 55, ratios: [1.5, 2] }, // A1 + fifth + octave — neutral
   tense: { f: 51.91, ratios: [1.189, 2.01] }, // G#1 + minor third, slightly beating octave
   bright: { f: 65.41, ratios: [1.5, 2.5] }, // C2 + fifth + major tenth
+  resolve: { f: 65.41, ratios: [1.5, 2] }, // C2 + fifth + octave — open, settled
 }
 
 type Ctor = typeof AudioContext
@@ -87,6 +106,8 @@ class SfxEngine {
   private suspendTimer: ReturnType<typeof setTimeout> | null = null
   private listeners = new Set<() => void>()
   private droneWanted: { on: boolean; tone: DroneTone } = { on: false, tone: 'bed' }
+  /** dev/QA hook: called for every voice actually started (after voice cap / rate limit) */
+  onPlay: ((name: SfxName, when: number) => void) | null = null
 
   // ── preference / state ────────────────────────────────────────────────────
 
@@ -319,6 +340,22 @@ class SfxEngine {
     const v = new Voice(ctx, this.noiseBuf, this.voiceBus, this.reverbIn, Math.min(1, Math.max(0, opts.gain ?? 1)), opts.pan ?? 0)
     RECIPES[name](v, t, p)
     this.voices.push([t, v.finish()])
+    const duck = DUCK[name]
+    if (duck) this.duck(t, duck[0], duck[1], duck[2])
+    this.onPlay?.(name, t)
+  }
+
+  /**
+   * Dip the drone bed at audio time `t` to `depth`, hold, then recover with τ = `release`.
+   * Events already running (an earlier duck's release) are kept, so overlapping ducks
+   * glide from the current value instead of jumping.
+   */
+  duck(t: number, depth = 0.5, hold = 0.12, release = 0.3): void {
+    if (!this.ctx) return
+    const g = this.droneBus.gain
+    g.cancelScheduledValues(t)
+    g.setTargetAtTime(depth, t, 0.015)
+    g.setTargetAtTime(1, t + hold, release)
   }
 
   /**
@@ -334,35 +371,41 @@ class SfxEngine {
   // ── drone bed ─────────────────────────────────────────────────────────────
 
   drone(on: boolean, tone: DroneTone = 'bed'): void {
-    this.droneWanted = { on, tone }
+    this.droneWanted.on = on
+    this.droneWanted.tone = tone
     const ctx = this.ctx
     if (!ctx || ctx.state !== 'running') return
     const now = ctx.currentTime
 
     if (!on) {
-      const d = this.drn
-      if (!d) return
+      if (this.drn) this.releaseDrone(this.drn, now, 0.5)
       this.drn = null
-      d.level.gain.cancelScheduledValues(now)
-      d.level.gain.setTargetAtTime(0, now, 0.5)
-      const end = now + 3
-      d.oscs.forEach((o) => o.stop(end))
-      d.noise.stop(end)
-      d.lfo.stop(end)
-      d.lfo.onended = () => d.level.disconnect()
       return
     }
-
-    const spec = DRONE_TONES[tone]
     if (this.drn) {
       if (this.drn.tone === tone) return
-      // glide to the new chord
-      const freqs = [spec.f, spec.f * spec.ratios[0], spec.f * spec.ratios[1]]
-      this.drn.oscs.forEach((o, i) => o.frequency.setTargetAtTime(freqs[i], now, 1.2))
-      this.drn.tone = tone
+      // Equal-τ crossfade to the new chord (no pitch glide — reads as a change of
+      // harmony, not a siren). Old + new levels sum to ≈ 1, so the bed never
+      // exceeds its −30 dBFS budget mid-fade.
+      this.releaseDrone(this.drn, now, DRONE_XFADE_TC)
+      this.drn = this.buildDrone(ctx, tone, now, DRONE_XFADE_TC)
       return
     }
+    this.drn = this.buildDrone(ctx, tone, now, 1.2) // ~4 s swell from silence
+  }
 
+  private releaseDrone(d: DroneNodes, now: number, tau: number) {
+    d.level.gain.cancelScheduledValues(now)
+    d.level.gain.setTargetAtTime(0, now, tau)
+    const end = now + tau * 6
+    d.oscs.forEach((o) => o.stop(end))
+    d.noise.stop(end)
+    d.lfo.stop(end)
+    d.lfo.onended = () => d.level.disconnect()
+  }
+
+  private buildDrone(ctx: AudioContext, tone: DroneTone, now: number, fadeIn: number): DroneNodes {
+    const spec = DRONE_TONES[tone]
     const level = ctx.createGain()
     level.gain.value = 0
     level.connect(this.droneBus)
@@ -411,9 +454,8 @@ class SfxEngine {
     oscs.forEach((o) => o.start(t0))
     noise.start(t0, Math.random() * 1.5)
     lfo.start(t0)
-    level.gain.setTargetAtTime(1, t0, 1.2) // ~4 s swell
-
-    this.drn = { level, oscs, noise, lfo, tone }
+    level.gain.setTargetAtTime(1, t0, fadeIn)
+    return { level, oscs, noise, lfo, tone }
   }
 }
 
@@ -486,6 +528,8 @@ class Voice {
     d: number
     detune?: number
     lowpass?: number
+    /** bit-crush: quantise the waveform to a few levels (lo-fi digital grit) */
+    crush?: boolean
   }) {
     const osc = this.ctx.createOscillator()
     osc.type = o.type ?? 'sine'
@@ -493,13 +537,19 @@ class Voice {
     osc.frequency.setValueAtTime(o.f0, o.t)
     if (o.f1 !== undefined) osc.frequency.exponentialRampToValueAtTime(o.f1, o.t + (o.glide ?? o.a + o.d))
     const g = this.env(o.t, o.peak, o.a, o.d)
+    let src: AudioNode = osc
+    if (o.crush) {
+      const ws = this.ctx.createWaveShaper()
+      ws.curve = crushCurve()
+      src = src.connect(ws)
+    }
     if (o.lowpass) {
       const f = this.ctx.createBiquadFilter()
       f.type = 'lowpass'
       f.frequency.value = o.lowpass
-      osc.connect(f).connect(g)
+      src.connect(f).connect(g)
     } else {
-      osc.connect(g)
+      src.connect(g)
     }
     this.track(osc, o.t, o.t + o.a + o.d + 0.02)
     return this
@@ -559,6 +609,17 @@ class Voice {
     }
     return this.end
   }
+}
+
+/** 5-level staircase transfer curve, built once and shared by every crushed voice. */
+let CRUSH: Float32Array<ArrayBuffer> | null = null
+function crushCurve(): Float32Array<ArrayBuffer> {
+  if (CRUSH) return CRUSH
+  const n = 1024
+  const c = new Float32Array(n)
+  for (let i = 0; i < n; i++) c[i] = Math.round(((i / (n - 1)) * 2 - 1) * 2) / 2
+  CRUSH = c
+  return c
 }
 
 // ── recipes ─────────────────────────────────────────────────────────────────
@@ -658,6 +719,36 @@ const RECIPES: Record<SfxName, Recipe> = {
     v.reverb(0.45)
       .tone({ t, f0: 90 * p, f1: 32 * p, glide: 0.6, peak: 0.24, a: 0.005, d: 1.3 })
       .noise({ t, filter: 'lowpass', f0: 2200, f1: 180, peak: 0.09, a: 0.004, d: 0.6 })
+  },
+  // Riser: band-passed noise swelling 350 Hz→3.2 kHz over 0.55 s + a faint rising sine.
+  // Cue it 0.55 s BEFORE the reveal it leads into (its peak lands at t + 0.55).
+  riser: (v, t, p) => {
+    v.reverb(0.3)
+      .noise({ t, filter: 'bandpass', f0: 350 * p, fMid: 3200 * p, f1: 2400 * p, q: 1.4, peak: 0.11, a: 0.55, d: 0.14 })
+      .tone({ t, f0: 220 * p, f1: 440 * p, glide: 0.55, peak: 0.025, a: 0.5, d: 0.12, lowpass: 1200 })
+  },
+  // Glitch: three bit-crushed square blips jumping pitch + a hard digital click.
+  glitch: (v, t, p) => {
+    v.reverb(0.08)
+      .noise({ t, filter: 'highpass', f0: 2500, peak: 0.08, a: 0.001, d: 0.02 })
+      .tone({ t, type: 'square', f0: 740 * p, peak: 0.05, a: 0.001, d: 0.03, lowpass: 3800, crush: true })
+      .tone({ t: t + 0.035, type: 'square', f0: 1480 * p, f1: 370 * p, glide: 0.03, peak: 0.045, a: 0.001, d: 0.035, lowpass: 3800, crush: true })
+      .tone({ t: t + 0.08, type: 'square', f0: 220 * p, peak: 0.05, a: 0.001, d: 0.05, lowpass: 2200, crush: true })
+  },
+  // Crack: sharp high transient + a darkening band-passed noise tail + a short low knock.
+  crack: (v, t, p) => {
+    v.reverb(0.25)
+      .noise({ t, filter: 'highpass', f0: 3000 * p, peak: 0.13, a: 0.001, d: 0.03 })
+      .noise({ t: t + 0.004, filter: 'bandpass', f0: 2600 * p, f1: 500 * p, q: 1.1, peak: 0.06, a: 0.003, d: 0.38 })
+      .tone({ t, f0: 150 * p, f1: 60 * p, glide: 0.12, peak: 0.1, a: 0.002, d: 0.2 })
+  },
+  // Chime: soft bell (C6 + octave/twelfth partials + a low C5 body), long room tail.
+  chime: (v, t, p) => {
+    v.reverb(0.5)
+      .tone({ t, f0: 1046.5 * p, peak: 0.05, a: 0.005, d: 1.7 })
+      .tone({ t, f0: 1046.5 * 2.0 * p, peak: 0.016, a: 0.004, d: 0.9, detune: 4 })
+      .tone({ t, f0: 1046.5 * 3.01 * p, peak: 0.007, a: 0.003, d: 0.45 })
+      .tone({ t, f0: 523.25 * p, peak: 0.02, a: 0.01, d: 1.2 })
   },
 }
 

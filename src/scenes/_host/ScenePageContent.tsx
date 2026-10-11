@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect } from 'react'
 import { SITE } from '@content/site'
 import { sceneForLocale } from '@content/i18n/scene-en'
 import { useLocale } from '@/components/LocaleProvider'
@@ -14,17 +13,7 @@ export function ScenePageContent({ scene }: { scene: SceneEntry }) {
   const headingId = 'scene-title'
   const heading = localized.domain ? `${localized.title} — ${localized.domain}` : localized.title
 
-  useEffect(() => {
-    const pageTitle = `${localized.title} · Scene`
-    const syncTitle = () => {
-      if (document.title !== pageTitle) document.title = pageTitle
-    }
-    syncTitle()
-    const observer = new MutationObserver(syncTitle)
-    observer.observe(document.head, { childList: true, subtree: true, characterData: true })
-    return () => observer.disconnect()
-  }, [localized.title])
-
+  // document.title is owned by LocaleProvider (titleForPath covers /s/<slug>).
   return (
     <section
       aria-labelledby={headingId}

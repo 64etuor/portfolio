@@ -23,6 +23,7 @@ export function createRuntime(refs: RuntimeRefs): InstrumentRackRuntime {
   const walkingRef = { current: true }
   const activeLedgerRef = { current: -1 }
   const reducedRef = { current: false }
+  const written = new WeakMap<Element, string>()
 
   const showInterro = (i: number) => {
     const item = LEDGER[i]
@@ -31,11 +32,18 @@ export function createRuntime(refs: RuntimeRefs): InstrumentRackRuntime {
       refs.rowRefs.current.forEach((el, j) => el?.classList.toggle(s.active, j === i))
       activeLedgerRef.current = i
     }
-    if (refs.qRef.current && refs.qRef.current.textContent !== item.q) refs.qRef.current.textContent = item.q
-    if (refs.aRef.current && refs.aRef.current.innerHTML !== item.a) refs.aRef.current.innerHTML = item.a
-    if (refs.levRef.current && refs.levRef.current.textContent !== item.lever) refs.levRef.current.textContent = item.lever
-    const idx = `항목 ${String(i + 1).padStart(2, '0')} / ${String(LEDGER.length).padStart(2, '0')}`
-    if (refs.idxRef.current && refs.idxRef.current.textContent !== idx) refs.idxRef.current.textContent = idx
+    // Compare against the last value written (not the live DOM text): the EN
+    // locale layer rewrites these nodes, and re-writing Korean every frame churns.
+    const write = (el: Element | null, value: string, html = false) => {
+      if (!el || written.get(el) === value) return
+      written.set(el, value)
+      if (html) el.innerHTML = value
+      else el.textContent = value
+    }
+    write(refs.qRef.current, item.q)
+    write(refs.aRef.current, item.a, true)
+    write(refs.levRef.current, item.lever)
+    write(refs.idxRef.current, `항목 ${String(i + 1).padStart(2, '0')} / ${String(LEDGER.length).padStart(2, '0')}`)
   }
 
   const selectLedger = (i: number) => {

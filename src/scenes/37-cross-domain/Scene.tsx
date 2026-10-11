@@ -36,6 +36,8 @@ const smooth = smooth01
 /* ---- domain vocabularies (generic — no names/numbers) ---- */
 const TERMS_MFG = ['공정', '설비', '양산', '수율', '금형', '품질', '계측', '현장']
 const TERMS_IT = ['데이터', '모델', '파이프라인', '배포', '추론', '스키마', '센서', '학습']
+const TERMS_MFG_EN = ['process', 'equipment', 'ramp-up', 'yield', 'tooling', 'quality', 'metrology', 'shop floor']
+const TERMS_IT_EN = ['data', 'model', 'pipeline', 'deploy', 'inference', 'schema', 'sensor', 'training']
 
 interface FieldDot {
   a: number
@@ -61,7 +63,7 @@ interface Particle {
 }
 
 /* ---- build field/term/particle arrays (seeded once, stable) ---- */
-function build(): {
+function build(termsMfg: string[], termsIt: string[]): {
   mfgField: FieldDot[]
   itField: FieldDot[]
   mfgTerms: OrbitTerm[]
@@ -88,11 +90,11 @@ function build(): {
   const pick = 5
   for (let i = 0; i < pick; i++) {
     const base = Math.PI + (i / (pick - 1) - 0.5) * 1.24
-    mfgTerms.push({ txt: TERMS_MFG[i], base, ph: rng() * Math.PI * 2, rad: 0.8 + rng() * 0.06 })
+    mfgTerms.push({ txt: termsMfg[i], base, ph: rng() * Math.PI * 2, rad: 0.8 + rng() * 0.06 })
   }
   for (let i = 0; i < pick; i++) {
     const base = 0 + (i / (pick - 1) - 0.5) * 1.24
-    itTerms.push({ txt: TERMS_IT[i], base, ph: rng() * Math.PI * 2, rad: 0.8 + rng() * 0.06 })
+    itTerms.push({ txt: termsIt[i], base, ph: rng() * Math.PI * 2, rad: 0.8 + rng() * 0.06 })
   }
 
   const particles: Particle[] = []
@@ -106,7 +108,7 @@ function build(): {
     let label: string | null = null
     if (carrier) {
       label =
-        dir > 0 ? TERMS_MFG[(i * 3) % TERMS_MFG.length] : TERMS_IT[(i * 3) % TERMS_IT.length]
+        dir > 0 ? termsMfg[(i * 3) % termsMfg.length] : termsIt[(i * 3) % termsIt.length]
     }
     particles.push({ dir, lane, speed, phase, carrier, label, sz: 1.3 + rng() * 1.5 })
   }
@@ -115,7 +117,11 @@ function build(): {
 }
 
 /* stable scene data — built once at module level (seeded PRNG → deterministic) */
-const SCENE_DATA = build()
+// Same seed per locale → identical geometry; only the drawn vocabulary differs.
+const SCENE_DATA = {
+  ko: build(TERMS_MFG, TERMS_IT),
+  en: build(TERMS_MFG_EN, TERMS_IT_EN),
+}
 
 /* ════════ TIMELINE ════════ */
 const CYCLE = 15.0 // seconds, seamless period
@@ -127,7 +133,8 @@ function conv(f: number): number {
   return 1 - smooth((f - 0.84) / 0.16)
 }
 
-export default function Scene({ running = true, onReady }: SceneProps) {
+export default function Scene({ running = true, onReady, locale = 'ko' }: SceneProps) {
+  const en = locale === 'en'
   const l1Ref = useRef<HTMLHeadingElement | null>(null)
   const l2Ref = useRef<HTMLHeadingElement | null>(null)
 
@@ -141,7 +148,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       const f = (t % CYCLE) / CYCLE
       const cv01 = conv(f)
 
-      const { mfgField, itField, mfgTerms, itTerms, particles } = SCENE_DATA
+      const { mfgField, itField, mfgTerms, itTerms, particles } = SCENE_DATA[locale]
 
       const MIN = Math.min(W, H)
       const CX = W / 2
@@ -410,7 +417,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         g.fillStyle = rgba(mix(PHOS, WARM, 0.4), 0.92)
         g.shadowColor = rgba(WARM, 0.35)
         g.shadowBlur = 12
-        g.fillText('제조', lx, CY - bigpx * 0.18)
+        g.fillText(en ? 'Factory' : '제조', lx, CY - bigpx * 0.18)
         g.fillStyle = rgba(mix(PHOS, COOL, 0.4), 0.92)
         g.shadowColor = rgba(COOL, 0.35)
         g.shadowBlur = 12
@@ -431,11 +438,11 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           g.fillStyle = rgba(GOLDH, (0.5 + 0.45 * goldPulse) * a)
           g.shadowColor = rgba(GOLD, 0.8)
           g.shadowBlur = 16 * a
-          g.fillText('교집합', CX, yTag)
+          g.fillText(en ? 'Intersection' : '교집합', CX, yTag)
           g.shadowBlur = 0
           g.font = "700 " + tagpx + "px 'JetBrains Mono', 'Pretendard Variable', monospace"
           g.fillStyle = rgba(GOLD, 0.6 * a)
-          g.fillText('INTERSECTION', CX, yTag + tagpx * 1.9)
+          if (!en) g.fillText('INTERSECTION', CX, yTag + tagpx * 1.9)
         }
       }
 
@@ -472,21 +479,37 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       {/* corner chrome */}
       <div className={`${s.frame} ${s.frameTr}`} />
       <div className={`${s.frame} ${s.frameBl}`}>
-        제조&nbsp;<b>⟡</b>&nbsp;IT
+        {en ? 'MANUFACTURING' : '제조'}&nbsp;<b>⟡</b>&nbsp;IT
       </div>
       <div className={`${s.frame} ${s.frameBr}`}>∞&nbsp;SEAMLESS&nbsp;LOOP</div>
 
       {/* eyebrow */}
       <div className={`${s.eyebrow} ${s.kr}`}>
-        <b>SCENE 10</b> · 핵심 — CROSS-DOMAIN
+        <b>SCENE 10</b> · {en ? 'CORE' : '핵심'} — CROSS-DOMAIN
       </div>
 
       {/* hero typography — 인라인 opacity:0 로 CSS 모듈 로드 전 FOUC 플래시 방지(draw 가 매 프레임 덮어씀) */}
       <h1 ref={l1Ref} className={`${s.l1} ${s.kr}`} style={{ opacity: 0 }}>
-        크로스 도메인 지식이 <em>경쟁력</em>이 되는 시대.
+        {en ? (
+          <>
+            An era when cross-domain knowledge becomes a <em>competitive edge</em>.
+          </>
+        ) : (
+          <>
+            크로스 도메인 지식이 <em>경쟁력</em>이 되는 시대.
+          </>
+        )}
       </h1>
       <h2 ref={l2Ref} className={`${s.l2} ${s.kr}`} style={{ opacity: 0 }}>
-        제조와 IT의 <em>경계</em>를 이해하는 사람이 <em>변화</em>를 만듭니다.
+        {en ? (
+          <>
+            People who understand the <em>boundary</em> between manufacturing and IT drive <em>change</em>.
+          </>
+        ) : (
+          <>
+            제조와 IT의 <em>경계</em>를 이해하는 사람이 <em>변화</em>를 만듭니다.
+          </>
+        )}
       </h2>
 
       <div className={s.shell} />

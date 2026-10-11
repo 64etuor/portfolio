@@ -5,6 +5,7 @@ import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
+import './en'
 import {
   NODES, EDGES, SCHEMAS, LOG_TEMPLATES, METRIC_DEFS,
   doLayout, worldBounds, type NodeDef,

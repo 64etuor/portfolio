@@ -12,8 +12,19 @@ import { applyHero, devC, drawGears, drawSeam, drawSystem, drawTokens, fieldC, f
 import { makeProcNodes, syncLayout, syncSide, unloadAll } from './runtime'
 import type { BucketItem, LayoutState, ProcNode } from './types'
 import { PerspectivesView } from './view'
+import './en'
+// The side panels iframe the static /lab pages of these scenes; their English
+// projections are registered here so the same-origin iframe localizer can use them.
+import '../weld-thermal/en'
+import '../robot-pendant/en'
+import '../gcode-printer/en'
+import '../pid-scheme/en'
+import '../db-architecture/en'
+import '../ide-coding/en'
+import '../agent-governance/en'
+import '../decision-os/en'
 
-export default function Scene({ running = true, onReady }: SceneProps) {
+export default function Scene({ running = true, onReady, locale = 'ko' }: SceneProps) {
   const fieldHeroRef = useRef<HTMLDivElement | null>(null)
   const devHeroRef = useRef<HTMLDivElement | null>(null)
   const fieldDimRefs = useRef<Array<HTMLSpanElement | null>>([])
@@ -84,11 +95,12 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       puck.style.background = rgba(mix(WARMB, COLDB, sf), 1)
       puck.style.boxShadow = `0 0 14px ${rgba(pc, 0.7)}`
     }
-    setLabel(vlabelRef.current, p, pc, labelStateRef.current)
+    setLabel(vlabelRef.current, p, pc, labelStateRef.current, locale)
   }, { running })
 
   return (
     <PerspectivesView
+      locale={locale}
       canvasRef={ref}
       fieldHeroRef={fieldHeroRef}
       devHeroRef={devHeroRef}

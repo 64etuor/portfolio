@@ -6,6 +6,7 @@ import { useSceneReady } from '../_host/useSceneReady'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
+import './en'
 import { SceneShell } from './view'
 import { createRuntimeGate, setupRuntime, syncRuntimeGate } from './runtime'
 

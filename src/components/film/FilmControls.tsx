@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useSyncExternalStore } from 'react'
+import { useEffect, useSyncExternalStore } from 'react'
 import { SITE } from '@content/site'
 import { useLocale } from '../LocaleProvider'
 import { sfx, type SfxState } from '@/lib/sfx'
@@ -19,7 +19,7 @@ interface FilmControlsProps {
   onRewind: () => void
   onTogglePause: () => void
   onSkip: () => void
-  /** Optional: enables picture-cut / ending SFX (scene cues + score: useFilmSoundCues). */
+  /** Optional: enables the iris-out SFX (picture cuts, scene cues + score: useFilmSoundCues). */
   beat?: FilmBeat
 }
 
@@ -38,18 +38,14 @@ function toggleSound() {
 
 /**
  * FilmControls — rewind + play/pause + sound (bottom-right) and immediate return home (top-right).
- * Also owns the sound toggle, audio pause and the picture-cut / iris-out sounds; scene-synced
- * cues and the score are played by useFilmSoundCues (cue sheet: soundCues.ts).
+ * Also owns the sound toggle, audio pause and the iris-out sound; picture-cut sounds, scene-synced
+ * cues and the score are played by useFilmSoundCues off the master clock (cue sheet: soundCues.ts).
  */
 export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: FilmControlsProps) {
   const { t, locale, setLocale } = useLocale()
   const sound = useSyncExternalStore(sfx.subscribe, sfx.getState, serverState)
 
-  const act = beat?.act ?? -1
-  const cut = beat?.cut ?? 0
   const ended = beat?.ended ?? false
-
-  const lastCutAct = useRef(act)
 
   // Prime on mount (sticky activation from the landing click usually allows it);
   // silence everything on unmount (skip home / navigation).
@@ -77,24 +73,9 @@ export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: 
     sfx.setPaused(paused)
   }, [paused])
 
-  // Picture cuts: a soft whoosh + thump when the act changes, a lighter thump inside an act.
-  // (Kept under the score — the music carries the flow; the cut only marks the edit.)
-  useEffect(() => {
-    if (cut === 0) return
-    const actChanged = lastCutAct.current !== act
-    lastCutAct.current = act
-    if (actChanged) {
-      sfx.play('whoosh', { gain: 0.55 })
-      sfx.play('cut', { gain: 0.5, delay: 0.05 })
-    } else {
-      sfx.play('cut', { gain: 0.4, pitch: 1.15 })
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- fire per cut only
-  }, [cut])
-
   // Ending: the iris-out lands with a soft impact while the score fades (music.ts).
   useEffect(() => {
-    if (ended) sfx.play('impact', { gain: 0.5 })
+    if (ended) sfx.play('impact', { gain: 0.42 })
   }, [ended])
 
   const soundLabel = sound === 'on' ? t(SITE.film.soundMute) : sound === 'off' ? t(SITE.film.soundUnmute) : t(SITE.film.soundEnable)

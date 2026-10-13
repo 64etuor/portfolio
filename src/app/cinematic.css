@@ -487,3 +487,81 @@ html[data-from-film='1'] .lp-enter {
 @media (prefers-reduced-motion: reduce) {
   @keyframes film-materialize { from { opacity: 0; } to { opacity: 1; } }
 }
+
+/* ===== Film: boot-screen sound intro (FilmControls SoundIntro) ===== */
+.film-sound-intro {
+  position: absolute;
+  left: 50%;
+  top: 62%;
+  z-index: 60;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  transform: translate(-50%, -50%);
+  animation: film-sound-intro-in 700ms cubic-bezier(.2,.7,.2,1) both;
+}
+.film-sound-intro__btn {
+  position: relative;
+  width: 84px;
+  height: 84px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 50%;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  transform-origin: center;
+  will-change: transform, opacity;
+  transition: background 160ms ease, border-color 160ms ease;
+}
+.film-sound-intro__btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.55);
+}
+.film-sound-intro__btn::after {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  animation: film-sound-intro-ring 2.4s cubic-bezier(.2,.6,.3,1) infinite;
+  pointer-events: none;
+}
+.film-sound-intro__btn[data-state='off'] { opacity: 0.7; }
+.film-sound-intro__label {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-sm);
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.62);
+  white-space: nowrap;
+  transition: opacity 220ms ease, transform 220ms ease;
+}
+.film-sound-intro.is-flying .film-sound-intro__label { opacity: 0; transform: translateY(6px); }
+.film-sound-intro.is-flying .film-sound-intro__btn::after { animation: none; opacity: 0; }
+
+/* Docked sound button waits invisibly, then lands with a small settle once the intro arrives. */
+.film-ctrl--await { opacity: 0; pointer-events: none; }
+.film-ctrl--land { animation: film-ctrl-land 420ms cubic-bezier(.2,.8,.2,1.2) both; }
+
+@keyframes film-sound-intro-in {
+  from { opacity: 0; transform: translate(-50%, -46%) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+@keyframes film-sound-intro-ring {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+@keyframes film-ctrl-land {
+  0% { opacity: 0.4; transform: scale(0.85); }
+  60% { opacity: 1; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .film-sound-intro, .film-ctrl--land { animation: none; }
+  .film-sound-intro__btn::after { animation: none; }
+}

@@ -1,8 +1,9 @@
 'use client'
 
-import { useEffect, useSyncExternalStore } from 'react'
+import { useEffect, useLayoutEffect, useRef, useSyncExternalStore, type RefObject } from 'react'
 import { SITE } from '@content/site'
 import { useLocale } from '../LocaleProvider'
+import { copy } from '@/i18n/content'
 import { sfx, type SfxState } from '@/lib/sfx'
 
 /** Where the film is — drives the sound design. */
@@ -21,6 +22,8 @@ interface FilmControlsProps {
   onSkip: () => void
   /** Optional: enables the iris-out SFX (picture cuts, scene cues + score: useFilmSoundCues). */
   beat?: FilmBeat
+  /** Film master-clock time (ms) — drives the boot-screen sound intro (centre → dock). */
+  filmT?: number
 }
 
 const serverState = (): SfxState => 'off'
@@ -41,11 +44,13 @@ function toggleSound() {
  * Also owns the sound toggle, audio pause and the iris-out sound; picture-cut sounds, scene-synced
  * cues and the score are played by useFilmSoundCues off the master clock (cue sheet: soundCues.ts).
  */
-export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: FilmControlsProps) {
+export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat, filmT = Infinity }: FilmControlsProps) {
   const { t, locale, setLocale } = useLocale()
   const sound = useSyncExternalStore(sfx.subscribe, sfx.getState, serverState)
 
   const ended = beat?.ended ?? false
+  const soundBtnRef = useRef<HTMLButtonElement | null>(null)
+  const introDone = filmT >= INTRO_HOLD_MS + INTRO_FLY_MS
 
   // Prime on mount (sticky activation from the landing click usually allows it);
   // silence everything on unmount (skip home / navigation).
@@ -95,8 +100,9 @@ export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: 
           aria-label={soundLabel}
           title={soundLabel}
           aria-pressed={sound === 'on'}
-          className="film-ctrl"
-          style={sound === 'blocked' ? { opacity: 0.6 } : undefined}
+          ref={soundBtnRef}
+          className={introDone ? 'film-ctrl film-ctrl--land' : 'film-ctrl film-ctrl--await'}
+          style={sound === 'blocked' && introDone ? { opacity: 0.6 } : undefined}
         >
           <SpeakerIcon state={sound} />
         </button>
@@ -120,6 +126,12 @@ export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: 
         </div>
       </div>
 
+      {/* Boot-screen sound intro: a large, centred sound control that — shortly before the
+          boot shot ends — shrinks and glides into the bottom-right sound button. */}
+      {!introDone && (
+        <SoundIntro filmT={filmT} sound={sound} targetRef={soundBtnRef} onToggle={toggleSound} />
+      )}
+
       {/* Return home immediately (top-right) */}
       <button
         onClick={onSkip}
@@ -132,9 +144,9 @@ export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: 
   )
 }
 
-function SpeakerIcon({ state }: { state: SfxState }) {
+function SpeakerIcon({ state, size = 15 }: { state: SfxState; size?: number }) {
   return (
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       <path d="M2.5 6h2.2L8 3.3v9.4L4.7 10H2.5z" fill="currentColor" stroke="none" />
       {state === 'on' ? (
         <>
@@ -145,5 +157,76 @@ function SpeakerIcon({ state }: { state: SfxState }) {
         <path d="M10.6 6.2l3.4 3.6M14 6.2l-3.4 3.6" />
       )}
     </svg>
+  )
+}
+
+/** Boot-screen sound intro timing (film ms): centred until HOLD, then glides to the dock. */
+const INTRO_HOLD_MS = 4500
+const INTRO_FLY_MS = 820
+
+const INTRO_COPY = {
+  on: copy('사운드 켜짐 · 눌러서 끄기 (M)', 'Sound on · click to mute (M)'),
+  off: copy('사운드 꺼짐 · 눌러서 켜기 (M)', 'Sound off · click to unmute (M)'),
+  blocked: copy('눌러서 사운드 켜기', 'Click to enable sound'),
+} as const
+
+/**
+ * Large centred sound control shown over the (quiet) boot shot. At INTRO_HOLD_MS it measures the
+ * docked sound button and glides there (FLIP: translate + scale, ease-in-out), fading as it lands,
+ * after which the real button pops in (`film-ctrl--land`). Clicking it toggles sound like the dock.
+ */
+function SoundIntro({
+  filmT,
+  sound,
+  targetRef,
+  onToggle,
+}: {
+  filmT: number
+  sound: SfxState
+  targetRef: RefObject<HTMLButtonElement | null>
+  onToggle: () => void
+}) {
+  const { t } = useLocale()
+  const btnRef = useRef<HTMLButtonElement | null>(null)
+  const flying = filmT >= INTRO_HOLD_MS
+
+  useLayoutEffect(() => {
+    const el = btnRef.current
+    const target = targetRef.current
+    if (!el) return
+    if (!flying || !target) {
+      el.style.transition = ''
+      el.style.transform = ''
+      el.style.opacity = ''
+      return
+    }
+    const r = el.getBoundingClientRect()
+    const tr = target.getBoundingClientRect()
+    const dx = tr.left + tr.width / 2 - (r.left + r.width / 2)
+    const dy = tr.top + tr.height / 2 - (r.top + r.height / 2)
+    const scale = tr.width / r.width
+    el.style.transition = `transform ${INTRO_FLY_MS}ms cubic-bezier(.65,0,.25,1), opacity 200ms ease ${INTRO_FLY_MS - 200}ms`
+    el.style.transform = `translate(${dx.toFixed(1)}px, ${dy.toFixed(1)}px) scale(${scale.toFixed(3)})`
+    el.style.opacity = '0'
+  }, [flying, targetRef])
+
+  const label = t(INTRO_COPY[sound])
+  return (
+    <div className={flying ? 'film-sound-intro is-flying' : 'film-sound-intro'}>
+      <button
+        ref={btnRef}
+        type="button"
+        onClick={onToggle}
+        aria-label={label}
+        aria-pressed={sound === 'on'}
+        className="film-sound-intro__btn"
+        data-state={sound}
+      >
+        <SpeakerIcon state={sound} size={30} />
+      </button>
+      <p className="film-sound-intro__label" aria-hidden>
+        {label}
+      </p>
+    </div>
   )
 }

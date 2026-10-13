@@ -67,7 +67,7 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
   // Era stream — 33 photo cuts at 6.56·(1−0.93^k)/(1−0.93^33): the first 14 tick like a shutter,
   // the accelerating rest becomes one data texture; headline resolves 4.92–5.74; last cut 6.51.
   '42-era-shift.html': [
-    { at: [0.505, 0.975, 1.412, 1.819, 2.197, 2.548, 2.875, 3.179, 3.462, 3.725, 3.969, 4.197, 4.408], sfx: 'tick', gain: 0.12, step: 1.012 },
+    { at: [0.505, 0.975, 1.412, 1.819, 2.197, 2.548, 2.875, 3.179, 3.462, 3.725, 3.969, 4.197, 4.408], sfx: 'tick', gain: 0.12 },
     { at: 4.6, sfx: 'data', gain: 0.28 },
     { at: 5.3, sfx: 'riser', gain: 0.24 },
     { at: 5.33, sfx: 'chime2', gain: 0.24 },
@@ -77,14 +77,14 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
   // AX ignites (visible 3.23, peak 4.05); status 5.10/9.30; lines 5.40, 6.90; data rise 7.13,
   // light pulses 8.67, network drawn 8.97.
   '33-ax-era.html': [
-    { at: [0.53, 1.1], sfx: 'pop', gain: 0.16, step: 1.122 },
+    { at: [0.53, 1.1], sfx: 'pop', gain: 0.16 },
     { at: 2.25, sfx: 'scan', gain: 0.2 },
     { at: 3.23, sfx: 'pulse', gain: 0.32 },
     { at: 3.3, sfx: 'whoosh', gain: 0.2, pitch: 1.1 },
     { at: 4.05, sfx: 'chime', gain: 0.28 },
     { at: [5.1, 5.4, 6.9, 9.3], sfx: 'tick', gain: 0.17 },
     { at: 7.13, sfx: 'data', gain: 0.18 },
-    { at: 8.67, sfx: 'pop', gain: 0.16, repeat: [3, 0.12], step: 1.122 },
+    { at: 8.67, sfx: 'pop', gain: 0.16, repeat: [3, 0.12] },
     { at: 8.97, sfx: 'chime2', gain: 0.18 },
   ],
   // Gap — gap opens 1.30; caliper + GAP label 1.859; headline 2 rises (50 % 4.94); widest 8.06.
@@ -98,21 +98,21 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
   // 3+(i+.5) (words 1–4 at 4.5/5.5/6.5/7.5); 8.00 hard stop / DECODING; layers peel 8.00+0.81k;
   // gold base layer from 8.0 (KO gold word 8.945); 12.50 COMMUNICATION.
   '29-lost-in-translation.html': [
-    { at: [0.3, 0.6, 0.9, 1.2], sfx: 'pop', gain: 0.14, step: 1.06 },
+    { at: [0.3, 0.6, 0.9, 1.2], sfx: 'pop', gain: 0.14 },
     { at: 3.0, sfx: 'scan', gain: 0.18 },
-    { at: [4.5, 5.5, 6.5, 7.5], sfx: 'glitch', gain: 0.2, step: 0.94 },
+    { at: [4.5, 5.5, 6.5, 7.5], sfx: 'glitch', gain: 0.2 },
     { at: 8.0, sfx: 'tick', gain: 0.3, pitch: 0.8 },
-    { at: [8.77, 9.58, 10.39, 11.2], sfx: 'swish', gain: 0.12, step: 1.06 },
+    { at: [8.77, 9.58, 10.39, 11.2], sfx: 'swish', gain: 0.12 },
     { at: 8.95, sfx: 'chime', gain: 0.3 },
     { at: 12.5, sfx: 'confirm', gain: 0.24 },
   ],
   // Perspectives — left panels fade in 2.068+1.144k, rack focus 8.36–11.0 (centre 9.68),
   // label refocus ≈ 10.07, right panels 11.308+1.144k.
   '41-perspectives.html': [
-    { at: [2.17, 3.31, 4.46, 5.6, 6.74], sfx: 'pop', gain: 0.18, step: 1.03 },
+    { at: [2.17, 3.31, 4.46, 5.6, 6.74], sfx: 'pop', gain: 0.18 },
     { at: 9.68, sfx: 'whoosh', gain: 0.28, pitch: 0.8 },
     { at: 10.07, sfx: 'lock', gain: 0.2 },
-    { at: [11.41, 12.55, 13.7, 14.84, 15.98], sfx: 'pop', gain: 0.18, pitch: 1.122, step: 1.03 },
+    { at: [11.41, 12.55, 13.7, 14.84, 15.98], sfx: 'pop', gain: 0.18, pitch: 1.122 },
   ],
   // Collision — 2.88 CHARGE (counter 000→100) → 4.80 IMPACT (flash, shake, glyphs shatter);
   // 5.64 SCATTER; 7.92 DRIFT APART.
@@ -141,7 +141,7 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
     { at: 2.6, sfx: 'tick', gain: 0.2 },
     { at: 5.48, sfx: 'riser', gain: 0.28 },
     { at: 5.48, sfx: 'chime', gain: 0.4 },
-    { at: [7.14, 7.9, 8.71, 9.52, 10.29], sfx: 'pop', gain: 0.15, step: 1.06 },
+    { at: [7.14, 7.9, 8.71, 9.52, 10.29], sfx: 'pop', gain: 0.15 },
     { at: 11.2, sfx: 'swish', gain: 0.12, pitch: 0.7 },
   ],
   // ∞ bridge — node pulse peak 1.65 (text is CSS, settled before the cut); chevrons meet 1.85;
@@ -160,32 +160,29 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
     { at: 0.8, sfx: 'scan', gain: 0.3 },
     { at: 1.07, sfx: 'data', gain: 0.2 },
     { at: 2.353, sfx: 'beep', gain: 0.22 },
-    { at: [2.64, 2.72, 2.81, 2.91, 3.04, 3.11], sfx: 'tick', gain: 0.14, step: 1.02 },
-    { at: [4.0, 4.6, 5.2], sfx: 'pop', gain: 0.3, step: 1.122 },
+    { at: [2.64, 2.72, 2.81, 2.91, 3.04, 3.11], sfx: 'tick', gain: 0.14 },
+    { at: [4.0, 4.6, 5.2], sfx: 'pop', gain: 0.3 },
     { at: [4.5, 4.85, 5.55], sfx: 'tick', gain: 0.15, pitch: 1.12 },
-    { at: [4.95, 5.1, 5.25, 5.4, 5.55, 5.72, 5.9, 6.1], sfx: 'count', gain: 0.32, step: 1.03 },
-    { at: 6.35, sfx: 'confirm', gain: 0.26 },
+    { at: 6.35, sfx: 'chime', gain: 0.2 },
   ],
   // Vision reverse — scan 0–2.8 (columns light 0.30 / 0.64 / 1.03 / 1.55); LOCK 2.80 (red, NG);
   // push-in 2.8–3.6; tower alarm 3.324+0.523k; 45/45 at 4.38; cell lifts → ejected 6.40.
   'x-vision-reverse.html': [
     { at: 0.27, sfx: 'scan', gain: 0.24 },
-    { at: [0.3, 0.64, 1.03, 1.55], sfx: 'tick', gain: 0.18, step: 1.03 },
+    { at: [0.3, 0.64, 1.03, 1.55], sfx: 'tick', gain: 0.18 },
     { at: 2.8, sfx: 'lock', gain: 0.36, pitch: 0.84 },
     { at: 2.82, sfx: 'thud', gain: 0.22 },
     { at: [3.324, 3.847, 4.371, 4.894], sfx: 'beep', gain: 0.12, pitch: 0.89 },
     { at: 3.2, sfx: 'swish', gain: 0.18 },
-    { at: 4.38, sfx: 'confirm', gain: 0.26 },
+    { at: 4.38, sfx: 'chime', gain: 0.2 },
     { at: 6.2, sfx: 'whoosh', gain: 0.22, pitch: 1.1 },
   ],
   // Weld DOE — 11 DOE runs pop at 0.9+0.135k (+0.26 s scale peak); horn lifts 1.3–2.4; surface
   // fits 2.5–4.5; counter 15 % → 1 % (4.75…5.77) → "0%대" 6.08 (payoff); window ring 6.25.
   'x-weld-doe.html': [
-    { at: [1.16, 1.295, 1.43, 1.565, 1.7, 1.835, 1.97, 2.105, 2.24, 2.375, 2.51], sfx: 'pop', gain: 0.15, step: 1.02 },
+    { at: [1.16, 1.295, 1.43, 1.565, 1.7, 1.835, 1.97, 2.105, 2.24, 2.375, 2.51], sfx: 'pop', gain: 0.15 },
     { at: 1.8, sfx: 'swish', gain: 0.15 },
     { at: 3.5, sfx: 'whoosh', gain: 0.18, pitch: 0.8 },
-    { at: [4.75, 4.96, 5.17, 5.3, 5.39, 5.46, 5.54, 5.62, 5.71, 5.77], sfx: 'count', gain: 0.34, step: 1.03 },
-    { at: 6.08, sfx: 'confirm', gain: 0.4 },
     { at: 6.08, sfx: 'thud', gain: 0.32 },
     { at: 6.25, sfx: 'chime', gain: 0.26 },
   ],
@@ -197,10 +194,9 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
     { at: 1.6, sfx: 'data', gain: 0.16 },
     { at: 3.25, sfx: 'thud', gain: 0.28, pitch: 1.1 },
     { at: 3.35, sfx: 'data', gain: 0.14, pitch: 1.06 },
-    { at: [2.85, 4.55], sfx: 'tick', gain: 0.2, step: 1.12 },
+    { at: [2.85, 4.55], sfx: 'tick', gain: 0.2 },
     { at: 5.0, sfx: 'whoosh', gain: 0.22, pitch: 0.85 },
-    { at: [5.41, 5.5, 5.63, 5.82, 5.91, 6.04, 6.12], sfx: 'count', gain: 0.34, step: 1.035 },
-    { at: 6.27, sfx: 'confirm', gain: 0.4 },
+    { at: 6.27, sfx: 'chime', gain: 0.2 },
     { at: 6.27, sfx: 'thud', gain: 0.32 },
   ],
   // Excel → DB — 360 sheets launch 1.5 (spiral), land 2.95–4.8 (densest 3.5–4.2); validation sweep
@@ -209,9 +205,8 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
     { at: 2.2, sfx: 'whoosh', gain: 0.26, pitch: 0.8 },
     { at: 3.3, sfx: 'data', gain: 0.22 },
     { at: 4.15, sfx: 'scan', gain: 0.2 },
-    { at: [5.0, 5.22, 5.44], sfx: 'pop', gain: 0.22, step: 1.122 },
-    { at: [5.6, 5.7, 5.8, 5.9, 6.0, 6.12, 6.25, 6.4, 6.58, 6.78], sfx: 'count', gain: 0.34, step: 1.03 },
-    { at: 6.85, sfx: 'confirm', gain: 0.4 },
+    { at: [5.0, 5.22, 5.44], sfx: 'pop', gain: 0.22 },
+    { at: 6.85, sfx: 'chime', gain: 0.2 },
     { at: 6.85, sfx: 'thud', gain: 0.32 },
   ],
   // S/N trace — defect pulse 0.35–1.0; fog 1.5–2.3, "?" box 1.7; trace-back hops 3.35 / 3.71 / 4.07 →
@@ -221,9 +216,9 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
     { at: 0.42, sfx: 'pulse', gain: 0.26 },
     { at: 1.9, sfx: 'whoosh', gain: 0.14, pitch: 0.6 },
     { at: 1.7, sfx: 'tick', gain: 0.15 },
-    { at: [3.35, 3.71, 4.07], sfx: 'pop', gain: 0.22, step: 1.122 },
+    { at: [3.35, 3.71, 4.07], sfx: 'pop', gain: 0.22 },
     { at: 4.43, sfx: 'lock', gain: 0.3 },
-    { at: [4.55, 4.97, 5.39, 5.81], sfx: 'pop', gain: 0.15, pitch: 1.26, step: 0.944 },
+    { at: [4.55, 4.97, 5.39, 5.81], sfx: 'pop', gain: 0.15, pitch: 1.26 },
     { at: 6.15, sfx: 'reject', gain: 0.36 },
     { at: 6.16, sfx: 'thud', gain: 0.28 },
     { at: 6.6, sfx: 'chime', gain: 0.3 },
@@ -231,11 +226,11 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
   // MES — "missing" flickers 0.25–1.85; stamp 1.85; power-on 1.95, stations light 2.05+0.15k;
   // stack chips 2.90…5.30; holograms unfold 4.5–5.4; headline 5.7.
   'x-mes-line.html': [
-    { at: [0.3, 1.2], sfx: 'glitch', gain: 0.12, step: 0.9 },
+    { at: [0.3, 1.2], sfx: 'glitch', gain: 0.12 },
     { at: 1.85, sfx: 'seal', gain: 0.42 },
     { at: 1.95, sfx: 'boot', gain: 0.26, pitch: 0.85 },
-    { at: [2.05, 2.2, 2.35, 2.5, 2.65, 2.8], sfx: 'tick', gain: 0.14, step: 1.03 },
-    { at: [2.9, 3.1, 3.25, 3.9, 4.4, 4.5, 4.9, 5.1, 5.2, 5.3], sfx: 'pop', gain: 0.1, step: 1.012 },
+    { at: [2.05, 2.2, 2.35, 2.5, 2.65, 2.8], sfx: 'tick', gain: 0.14 },
+    { at: [2.9, 3.1, 3.25, 3.9, 4.4, 4.5, 4.9, 5.1, 5.2, 5.3], sfx: 'pop', gain: 0.1 },
     { at: 4.95, sfx: 'whoosh', gain: 0.18, pitch: 1.1 },
     { at: 5.8, sfx: 'chime2', gain: 0.26 },
   ],
@@ -253,7 +248,7 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
   // Work Radar — token D lifts 0.9; rails light; jobs lift 1.5 / 2.0; log rows 3.10 / 4.60 / 5.00 /
   // 6.80; gate 1 opens 3.20–3.50; cost-cap kill 4.55 (flash peak 4.57); gate 2 opens 6.45–6.75.
   'x-work-radar-rails.html': [
-    { at: [0.9, 1.5, 2.0], sfx: 'pop', gain: 0.17, step: 0.944 },
+    { at: [0.9, 1.5, 2.0], sfx: 'pop', gain: 0.17 },
     { at: 1.2, sfx: 'swish', gain: 0.12 },
     { at: [3.1, 3.14, 3.18, 4.6, 4.64, 4.68, 5.0, 5.04, 5.08, 6.8, 6.84, 6.88], sfx: 'type', gain: 0.14 },
     { at: 3.35, sfx: 'lock', gain: 0.36 },
@@ -268,13 +263,12 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
   'x-kip-evidence.html': [
     { at: [0.291, 0.373, 0.536, 0.618, 0.782, 0.864, 1.027, 1.109], sfx: 'type', gain: 0.2 },
     { at: 2.0, sfx: 'whoosh', gain: 0.2, pitch: 1.1 },
-    { at: [3.1, 3.22, 3.34], sfx: 'pop', gain: 0.2, step: 1.122 },
+    { at: [3.1, 3.22, 3.34], sfx: 'pop', gain: 0.2 },
     { at: 3.4, sfx: 'data', gain: 0.16 },
     { at: 4.6, sfx: 'swish', gain: 0.14 },
-    { at: [4.65, 4.87, 5.09], sfx: 'tick', gain: 0.15, step: 1.06 },
-    { at: [5.9, 6.28, 6.66], sfx: 'lock', gain: 0.3, step: 1.122 },
-    { at: [5.85, 5.96, 6.07, 6.18, 6.3, 6.42, 6.55], sfx: 'count', gain: 0.26, step: 1.03 },
-    { at: 6.7, sfx: 'confirm', gain: 0.4 },
+    { at: [4.65, 4.87, 5.09], sfx: 'tick', gain: 0.15 },
+    { at: [5.9, 6.28, 6.66], sfx: 'lock', gain: 0.3 },
+    { at: 6.7, sfx: 'chime', gain: 0.2 },
   ],
   // Ending — line 1 reads ≈ 1.0–1.2 (0.50–1.90), status 3.20 / 6.00, line 2 reads ≈ 4.0–4.2
   // (3.40–5.00); warp opens 8.7–11.3 (half 10.0). The iris-out impact lives in FilmControls.

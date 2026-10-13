@@ -239,6 +239,7 @@ export function Film() {
         onTogglePause={() => setPaused((p) => !p)}
         onSkip={skipToHome}
         beat={beat}
+        filmT={filmT}
       />
 
       {/* Outro iris — at the end, the frame collapses into a point, then routes home */}

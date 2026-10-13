@@ -59,18 +59,15 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
   // Boot — Scene.tsx timer chain: CRT line 0.315, logo lines 0.28+0.06k, POST lines 0.67+0.185k,
   // memory counter 1.225→1.907 (32 steps, slowing), [OK] lines 2.107+0.185k, 100 % 3.402, READY 3.762.
   '05-bios-boot.html': [
-    { at: b(0.3), sfx: 'boot', gain: 0.55 },
-    { at: b(0.28), sfx: 'type', gain: 0.35, repeat: [5, 0.06] },
-    { at: b(0.67), sfx: 'tick', gain: 0.3, repeat: [3, 0.185] },
-    { at: [1.225, 1.3, 1.39, 1.49, 1.6, 1.72, 1.84].map(b), sfx: 'count', gain: 0.45, step: 1.035 },
-    { at: b(2.107), sfx: 'tick', gain: 0.28, repeat: [7, 0.185], step: 1.015 },
-    { at: b(3.402), sfx: 'beep', gain: 0.4 },
-    { at: b(3.762), sfx: 'confirm', gain: 0.45 },
+    // Boot stays near-silent (owner: the POST screen should be quiet): one low power-on hum
+    // and a soft confirm on READY — no typing / ticks / counter / beeps.
+    { at: b(0.3), sfx: 'boot', gain: 0.28 },
+    { at: b(3.762), sfx: 'confirm', gain: 0.22 },
   ],
   // Era stream — 33 photo cuts at 6.56·(1−0.93^k)/(1−0.93^33): the first 14 tick like a shutter,
   // the accelerating rest becomes one data texture; headline resolves 4.92–5.74; last cut 6.51.
   '42-era-shift.html': [
-    { at: [0.505, 0.975, 1.412, 1.819, 2.197, 2.548, 2.875, 3.179, 3.462, 3.725, 3.969, 4.197, 4.408], sfx: 'tick', gain: 0.22, step: 1.012 },
+    { at: [0.505, 0.975, 1.412, 1.819, 2.197, 2.548, 2.875, 3.179, 3.462, 3.725, 3.969, 4.197, 4.408], sfx: 'tick', gain: 0.12, step: 1.012 },
     { at: 4.6, sfx: 'data', gain: 0.28 },
     { at: 5.3, sfx: 'riser', gain: 0.24 },
     { at: 5.33, sfx: 'chime2', gain: 0.24 },

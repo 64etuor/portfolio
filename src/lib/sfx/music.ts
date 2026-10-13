@@ -36,6 +36,9 @@ export interface MusicHost {
 
 export type MusicEvent = 'play' | 'seek' | 'pause' | 'end' | 'rate' | 'error'
 
+/** Score is silent through the boot shot, then fades in (smoothstep) until OPEN_FULL_S. */
+const OPEN_SILENT_S = 6.2
+const OPEN_FULL_S = 13
 const TICK_MS = 50
 const DRIFT_TRIM_S = 0.12
 const DRIFT_OK_S = 0.03
@@ -144,6 +147,17 @@ export class FilmMusic {
     return fade
   }
 
+  /**
+   * Opening envelope (×level): silent through the boot shot, then a slow fade-in so the
+   * score never enters on top of the POST screen. 1 everywhere after the ramp.
+   */
+  private levelAt(film: number): number {
+    if (film <= OPEN_SILENT_S) return 0
+    if (film >= OPEN_FULL_S) return this.score.level
+    const x = (film - OPEN_SILENT_S) / (OPEN_FULL_S - OPEN_SILENT_S)
+    return this.score.level * x * x * (3 - 2 * x)
+  }
+
   private clearStop() {
     if (this.stopTimer) clearTimeout(this.stopTimer)
     this.stopTimer = null
@@ -172,6 +186,9 @@ export class FilmMusic {
       return
     }
     if (el.seeking) return
+    if (film < OPEN_FULL_S + 0.5 && performance.now() - this.alignedAt > 300) {
+      fade.gain.setTargetAtTime(this.levelAt(film), t.ctx.currentTime, 0.25)
+    }
 
     const drift = el.currentTime - film // + = music ahead of picture
     const abs = drift < 0 ? -drift : drift
@@ -251,7 +268,7 @@ export class FilmMusic {
         this.busy = false
         this.alignedAt = performance.now()
         fade.gain.cancelScheduledValues(ctx.currentTime)
-        fade.gain.setTargetAtTime(this.score.level, ctx.currentTime, FADE_IN_TAU)
+        fade.gain.setTargetAtTime(this.levelAt(this.clock.nowMs() / 1000), ctx.currentTime, FADE_IN_TAU)
         this.emit(why, d)
       }, ALIGN_SETTLE_MS)
     }

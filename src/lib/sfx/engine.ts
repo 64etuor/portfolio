@@ -1,16 +1,23 @@
 /**
- * Procedural SFX engine — Web Audio only (no files, no deps).
+ * Film SFX engine — Web Audio. Sample-based voices (one Pixabay sprite, decoded on /film
+ * mount) with procedural fallbacks for every sound, so a failed load only changes timbre.
  *
  * Graph:
  *   voice → voiceBus ─┬──────────────→ pauseGain → master → limiter → destination
  *                     └→ reverb(send) ─┘     ↑
- *   film score (<audio> → MediaElementSource) → musicBus (ducked under heavy SFX) ┘
+ *   film score (<audio> → MediaElementSource) → musicBus (ducked 2–3 dB under accents) ┘
  *
  * Level budget (linear, pre-master; MASTER = 0.7):
- *   - each one-shot voice sums to ≤ 0.34 → ≤ 0.24 at output (≈ −12.4 dBFS)
- *   - the score file is mastered to ≈ −18.5 dBFS RMS (peak −2.5) and enters at MUSIC_LEVEL,
- *     so it sits ≈ −22 dBFS RMS at the output, under the SFX accents (see music.ts);
- *   - a DynamicsCompressor ceiling (−10 dBFS, 20:1, makeup gain trimmed) guards stacked voices.
+ *   - samples are normalized to −1 dBFS in the sprite; a voice's level is SAMPLE[name].gain × opts.gain,
+ *     every base gain ≤ 0.4 → ≤ 0.25 at the output (≤ −12 dBFS per voice);
+ *   - procedural recipes sum to ≤ 0.34 → ≤ 0.24 at the output;
+ *   - the score file is mastered to ≈ −24…−21 dBFS RMS and enters at FILM_SCORE.level (music.ts);
+ *   - a DynamicsCompressor ceiling (−10 dBFS, 20:1, makeup gain trimmed) keeps the sum ≤ −6 dBFS.
+ *
+ * Timing: `play(name, { delay })` schedules the sound's HIT (its perceptual peak — a whoosh's
+ * crest, a riser's top) `delay` s from now; the voice starts `lead(name)` s earlier. Callers that
+ * want the hit on a picture event schedule at least LEAD_MAX[name] ahead (useFilmSoundCues).
+ * Voices whose hit is still ahead can be cancelled (pause / rewind) — see cancelPending().
  *
  * SSR-safe: nothing touches `window` until a method is called on the client.
  */
@@ -18,10 +25,12 @@
 export type SfxName =
   | 'cut'
   | 'whoosh'
+  | 'swish'
   | 'boot'
   | 'beep'
   | 'tick'
   | 'type'
+  | 'data'
   | 'scan'
   | 'lock'
   | 'reject'
@@ -29,11 +38,14 @@ export type SfxName =
   | 'confirm'
   | 'pulse'
   | 'count'
+  | 'pop'
   | 'impact'
+  | 'thud'
   | 'riser'
   | 'glitch'
   | 'crack'
   | 'chime'
+  | 'chime2'
 
 /** 'off' = muted by the user · 'on' = audible · 'blocked' = wants sound, waiting for a gesture */
 export type SfxState = 'off' | 'on' | 'blocked'
@@ -45,33 +57,92 @@ export interface PlayOpts {
   pitch?: number
   /** stereo position −1..1 */
   pan?: number
-  /** seconds from now (scheduled on the audio clock) */
+  /** seconds from now to the sound's HIT (scheduled on the audio clock) */
   delay?: number
 }
 
 const MASTER = 0.7
 /** limiter ceiling (dBFS, pre-makeup); voices sit ≥ 2 dB below it on their own */
 const LIMIT_DB = -10
-const MAX_VOICES = 12
+const MAX_VOICES = 14
 const STORAGE_KEY = 'pf.sfx.enabled'
-const MIN_GAP: Partial<Record<SfxName, number>> = { type: 0.025, tick: 0.03, count: 0.03 }
+const MIN_GAP: Partial<Record<SfxName, number>> = { type: 0.025, tick: 0.03, count: 0.03, pop: 0.03 }
 const DEFAULT_GAP = 0.045
 const SILENT = 0.0001
+/** a drawn frame reaches the screen ≈ one 60 Hz frame after its rAF (filmT) */
+const PICTURE_LAG_S = 0.016
+const SPRITE_URL = '/audio/sfx/film-sfx.mp3'
+const SPRITE_MAP_URL = '/audio/sfx/film-sfx.json'
+
 /**
- * Sidechain-style music duck under the SFX that carry the story: [depth (linear), hold (s), release τ (s)].
- * 0.56–0.71 = −5…−3 dB — enough for the accent to read, short enough not to pump.
+ * Music duck under the accents that carry the story: [depth (linear), hold (s), release τ (s)].
+ * 0.71–0.84 = −3…−1.5 dB — the bed stays a bed; it just makes room for the hit.
  */
 const DUCK: Partial<Record<SfxName, readonly [number, number, number]>> = {
-  cut: [0.71, 0.08, 0.25],
-  whoosh: [0.71, 0.25, 0.3],
-  impact: [0.56, 0.35, 0.5],
-  crack: [0.6, 0.15, 0.35],
-  glitch: [0.71, 0.1, 0.25],
-  seal: [0.63, 0.15, 0.35],
-  chime: [0.71, 0.2, 0.4],
+  impact: [0.71, 0.3, 0.45],
+  thud: [0.75, 0.2, 0.35],
+  crack: [0.75, 0.15, 0.3],
+  seal: [0.75, 0.15, 0.35],
+  whoosh: [0.79, 0.2, 0.3],
+  glitch: [0.79, 0.1, 0.25],
+  chime: [0.79, 0.2, 0.4],
+  riser: [0.84, 0.1, 0.3],
+  confirm: [0.84, 0.15, 0.3],
+}
+
+/**
+ * Sample voices: sprite key, base gain (≤ 0.4 → ≤ −12 dBFS out), reverb send, follows the
+ * score's key (`tonal`), and `layer` = also play the procedural recipe underneath.
+ * Names missing here (cut, boot, reject, pulse, crack, count→tick) stay procedural.
+ */
+interface SampleDef {
+  key: string
+  gain: number
+  send?: number
+  tonal?: boolean
+  layer?: number
+}
+const SAMPLE: Partial<Record<SfxName, SampleDef>> = {
+  tick: { key: 'tick', gain: 0.38, send: 0.06 },
+  count: { key: 'tick', gain: 0.34, send: 0.04 },
+  type: { key: 'type', gain: 0.36 },
+  beep: { key: 'beep', gain: 0.3, send: 0.12, tonal: true },
+  data: { key: 'data', gain: 0.3, send: 0.1, tonal: true },
+  scan: { key: 'scan', gain: 0.32, send: 0.15, tonal: true },
+  lock: { key: 'lock', gain: 0.32, send: 0.15, tonal: true },
+  confirm: { key: 'confirm', gain: 0.3, send: 0.25, tonal: true },
+  chime: { key: 'chime', gain: 0.36, send: 0.35, tonal: true },
+  chime2: { key: 'chime2', gain: 0.36, send: 0.3, tonal: true },
+  pop: { key: 'pop', gain: 0.38, send: 0.1, tonal: true },
+  whoosh: { key: 'whoosh', gain: 0.38, send: 0.2 },
+  swish: { key: 'swish', gain: 0.36, send: 0.12 },
+  impact: { key: 'impact', gain: 0.4, send: 0.3 },
+  thud: { key: 'thud', gain: 0.36, send: 0.15 },
+  seal: { key: 'thud', gain: 0.3, send: 0.2, layer: 0.7 },
+  glitch: { key: 'glitch', gain: 0.3, send: 0.05 },
+  riser: { key: 'riser', gain: 0.3, send: 0.2 },
+}
+
+/** Procedural hit offsets (s from voice start to the perceptual peak). */
+const SYNTH_LEAD: Partial<Record<SfxName, number>> = { whoosh: 0.32, swish: 0.16, riser: 0.55, thud: 0.004 }
+
+/** Upper bound of lead() per sound — schedule at least this far ahead to land the hit on time. */
+export const LEAD_MAX: Partial<Record<SfxName, number>> = { whoosh: 0.9, swish: 0.52, riser: 1.7, thud: 0.3, seal: 0.3, chime2: 0.15, glitch: 0.03 }
+
+interface SpriteSound {
+  start: number
+  dur: number
+  hit: number
 }
 
 type Ctor = typeof AudioContext
+
+interface Pending {
+  hit: number
+  end: number
+  out: GainNode
+  sources: AudioScheduledSourceNode[]
+}
 
 class SfxEngine {
   private ctx: AudioContext | null = null
@@ -82,14 +153,19 @@ class SfxEngine {
   private musicBus!: GainNode
   private output!: GainNode
   private noiseBuf!: AudioBuffer
-  private voices: [start: number, end: number][] = []
+  private voices: Pending[] = []
   private lastPlayed = new Map<SfxName, number>()
   private pref: boolean | null = null
   private unlockArmed = false
   private suspendTimer: ReturnType<typeof setTimeout> | null = null
   private listeners = new Set<() => void>()
-  /** dev/QA hook: called for every voice actually started (after voice cap / rate limit) */
-  onPlay: ((name: SfxName, when: number) => void) | null = null
+  private sprite: AudioBuffer | null = null
+  private spriteMap: Record<string, SpriteSound> | null = null
+  private spriteShift = 0
+  private spriteLoad: Promise<boolean> | null = null
+  private tune = 1
+  /** dev/QA hook: called for every voice actually started (hit time on the audio clock) */
+  onPlay: ((name: SfxName, hit: number, sampled: boolean) => void) | null = null
 
   // ── preference / state ────────────────────────────────────────────────────
 
@@ -113,6 +189,11 @@ class SfxEngine {
   /** AudioContext state (for tests/diagnostics). */
   get contextState(): AudioContextState | 'none' {
     return this.ctx ? this.ctx.state : 'none'
+  }
+
+  /** true once the sample sprite is decoded (false → procedural voices). */
+  get samplesReady(): boolean {
+    return !!this.sprite
   }
 
   subscribe = (fn: () => void): (() => void) => {
@@ -146,6 +227,39 @@ class SfxEngine {
     this.wake()
   }
 
+  /**
+   * Fetch + decode the SFX sprite (once). Called on /film mount only; decoding uses an
+   * OfflineAudioContext, so it needs no user gesture. Resolves false on failure (synth fallback).
+   */
+  loadSamples(url = SPRITE_URL, mapUrl = SPRITE_MAP_URL): Promise<boolean> {
+    if (typeof window === 'undefined') return Promise.resolve(false)
+    if (this.spriteLoad) return this.spriteLoad
+    const OAC = window.OfflineAudioContext ?? (window as unknown as { webkitOfflineAudioContext?: typeof OfflineAudioContext }).webkitOfflineAudioContext
+    if (!OAC) return (this.spriteLoad = Promise.resolve(false))
+    this.spriteLoad = Promise.all([fetch(url).then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(r.status))), fetch(mapUrl).then((r) => (r.ok ? r.json() : Promise.reject(r.status)))])
+      .then(async ([bin, map]: [ArrayBuffer, { firstOnset: number; sounds: Record<string, SpriteSound> }]) => {
+        const buf = await new OAC(1, 1, 44100).decodeAudioData(bin)
+        // Decoders differ in how much encoder delay they trim: locate the first sound and shift.
+        const d = buf.getChannelData(0)
+        let i = 0
+        while (i < d.length && Math.abs(d[i]) < 0.01) i++
+        this.spriteShift = i / buf.sampleRate - map.firstOnset
+        this.sprite = buf
+        this.spriteMap = map.sounds
+        return true
+      })
+      .catch(() => {
+        this.spriteLoad = null // allow a retry on the next mount
+        return false
+      })
+    return this.spriteLoad
+  }
+
+  /** Semitone offset applied to tonal sounds so they sit in the score's key. */
+  setTune(semitones: number): void {
+    this.tune = Math.pow(2, semitones / 12)
+  }
+
   setEnabled(on: boolean): void {
     if (typeof window === 'undefined') return
     this.pref = on
@@ -175,7 +289,31 @@ class SfxEngine {
   /** Film pause: fade everything (incl. reverb tails) out / back in. */
   setPaused(paused: boolean): void {
     if (!this.ctx) return
+    if (paused) this.cancelPending()
     this.pauseGain.gain.setTargetAtTime(paused ? 0 : 1, this.ctx.currentTime, paused ? 0.06 : 0.15)
+  }
+
+  /**
+   * Drop every voice whose hit is still ahead (its lead-in may already be sounding) — used on
+   * pause and rewind so nothing lands on the wrong picture. Ringing tails are left alone.
+   */
+  cancelPending(): void {
+    const ctx = this.ctx
+    if (!ctx) return
+    const now = ctx.currentTime
+    this.voices = this.voices.filter((v) => {
+      if (v.hit <= now + 0.005) return v.end > now
+      v.out.gain.cancelScheduledValues(now)
+      v.out.gain.setTargetAtTime(0, now, 0.02)
+      for (const s of v.sources) {
+        try {
+          s.stop(now + 0.12)
+        } catch {
+          /* not started yet / already stopped */
+        }
+      }
+      return false
+    })
   }
 
   /** Cut every pending/ringing one-shot (e.g. leaving the film). Music untouched (see music.ts). */
@@ -235,7 +373,17 @@ class SfxEngine {
     const AC: Ctor | undefined = window.AudioContext ?? (window as unknown as { webkitAudioContext?: Ctor }).webkitAudioContext
     if (!AC) return null
     const ctx = new AC({ latencyHint: 'interactive' })
-    this.ctx = ctx
+    this.attachContext(ctx)
+    ctx.onstatechange = () => {
+      if (ctx.state !== 'running' && this.enabled && !this.suspendTimer) this.armUnlock()
+      this.emit()
+    }
+    return ctx
+  }
+
+  /** Build the graph on `ctx` (also used by the offline preview render, .omc/score). */
+  attachContext(ctx: BaseAudioContext): void {
+    this.ctx = ctx as AudioContext
 
     const limiter = ctx.createDynamicsCompressor()
     limiter.threshold.value = LIMIT_DB
@@ -276,15 +424,14 @@ class SfxEngine {
     this.noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate)
     const d = this.noiseBuf.getChannelData(0)
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1
-
-    ctx.onstatechange = () => {
-      if (ctx.state !== 'running' && this.enabled && !this.suspendTimer) this.armUnlock()
-      this.emit()
-    }
-    return ctx
   }
 
-  private makeImpulse(ctx: AudioContext, seconds: number): AudioBuffer {
+  /** Offline preview only: master at its running level without a live context. */
+  forceRunning(): void {
+    if (this.ctx) this.master.gain.value = MASTER
+  }
+
+  private makeImpulse(ctx: BaseAudioContext, seconds: number): AudioBuffer {
     const len = Math.floor(ctx.sampleRate * seconds)
     const buf = ctx.createBuffer(2, len, ctx.sampleRate)
     for (let ch = 0; ch < 2; ch++) {
@@ -304,27 +451,60 @@ class SfxEngine {
 
   // ── one-shots ─────────────────────────────────────────────────────────────
 
-  play(name: SfxName, opts: PlayOpts = {}): void {
+  /**
+   * How much later than its context time a sound is heard, minus the ~1 frame a picture takes to
+   * reach the screen (s, 0…0.1). Subtract it from a delay to land the sound WITH the picture.
+   */
+  outputLag(): number {
+    const c = this.ctx as (AudioContext & { outputLatency?: number }) | null
+    if (!c || !('baseLatency' in c)) return 0
+    const l = (c.baseLatency || 0) + (c.outputLatency || 0)
+    return Math.max(0, Math.min(0.1, l - PICTURE_LAG_S))
+  }
+
+  /** Seconds from voice start to the hit for `name` with the current bank. */
+  lead(name: SfxName): number {
+    const s = SAMPLE[name]
+    const m = s && this.sprite && this.spriteMap?.[s.key]
+    return m ? m.hit : (SYNTH_LEAD[name] ?? 0)
+  }
+
+  /** `offline` = scheduling into an OfflineAudioContext before rendering (preview script). */
+  play(name: SfxName, opts: PlayOpts = {}, offline = false): void {
     const ctx = this.ctx
-    if (!ctx || ctx.state !== 'running' || !this.enabled) return
+    if (!ctx || (!offline && (ctx.state !== 'running' || !this.enabled))) return
     const now = ctx.currentTime
-    const t = now + 0.01 + Math.max(0, opts.delay ?? 0)
+    const hit = now + 0.01 + Math.max(0, opts.delay ?? 0)
 
-    // voice cap + per-name rate limit
-    // Cap voices sounding at the moment this one starts (scheduled ones included).
-    this.voices = this.voices.filter(([, e]) => e > now)
-    if (this.voices.filter(([s, e]) => s <= t && e > t).length >= MAX_VOICES) return
+    // voice cap + per-name rate limit (on hit times)
+    this.voices = this.voices.filter((v) => v.end > now)
+    if (this.voices.filter((v) => v.hit - 0.05 <= hit && v.end > hit).length >= MAX_VOICES) return
     const last = this.lastPlayed.get(name)
-    if (last !== undefined && Math.abs(t - last) < (MIN_GAP[name] ?? DEFAULT_GAP)) return
-    this.lastPlayed.set(name, t)
+    if (last !== undefined && Math.abs(hit - last) < (MIN_GAP[name] ?? DEFAULT_GAP)) return
+    this.lastPlayed.set(name, hit)
 
-    const p = opts.pitch ?? 1
-    const v = new Voice(ctx, this.noiseBuf, this.voiceBus, this.reverbIn, Math.min(1, Math.max(0, opts.gain ?? 1)), opts.pan ?? 0)
-    RECIPES[name](v, t, p)
-    this.voices.push([t, v.finish()])
+    const level = Math.min(1, Math.max(0, opts.gain ?? 1))
+    const s = SAMPLE[name]
+    const m = s && this.sprite && this.spriteMap?.[s.key]
+    let v: Voice
+    if (s && m && this.sprite) {
+      const rate = (opts.pitch ?? 1) * (s.tonal ? this.tune : 1)
+      v = new Voice(ctx, this.noiseBuf, this.voiceBus, this.reverbIn, level * s.gain, opts.pan ?? 0, now)
+      v.reverb(s.send ?? 0).sample(this.sprite, m.start + this.spriteShift, m.dur, m.hit, hit, rate)
+      if (s.layer) {
+        const lv = new Voice(ctx, this.noiseBuf, this.voiceBus, this.reverbIn, level * s.layer, opts.pan ?? 0, now)
+        RECIPES[name](lv, hit, opts.pitch ?? 1)
+        this.voices.push({ hit, end: lv.finish(), out: lv.outNode, sources: lv.sources })
+      }
+    } else {
+      const p = (opts.pitch ?? 1) * (TONAL_SYNTH.has(name) ? this.tune : 1)
+      v = new Voice(ctx, this.noiseBuf, this.voiceBus, this.reverbIn, level, opts.pan ?? 0, now)
+      RECIPES[name](v, Math.max(now + 0.005, hit - (SYNTH_LEAD[name] ?? 0)), p)
+    }
+    this.voices.push({ hit, end: v.finish(), out: v.outNode, sources: v.sources })
     const duck = DUCK[name]
-    if (duck) this.duck(t, duck[0], duck[1], duck[2])
-    this.onPlay?.(name, t)
+    if (duck) this.duck(hit, duck[0], duck[1], duck[2])
+    this.onPlay?.(name, hit, !!m)
   }
 
   /**
@@ -332,7 +512,7 @@ class SfxEngine {
    * Events already running (an earlier duck's release) are kept, so overlapping ducks
    * glide from the current value instead of jumping.
    */
-  duck(t: number, depth = 0.5, hold = 0.12, release = 0.3): void {
+  duck(t: number, depth = 0.8, hold = 0.12, release = 0.3): void {
     if (!this.ctx) return
     const g = this.musicBus.gain
     g.cancelScheduledValues(t)
@@ -357,9 +537,9 @@ class SfxEngine {
     return this.ctx ? { ctx: this.ctx, bus: this.musicBus } : null
   }
 
-  /** Dev/QA only: taps on the final (post-limiter) output and on the music bus. */
-  devTaps(): { ctx: AudioContext; output: AudioNode; music: AudioNode } | null {
-    return this.ctx ? { ctx: this.ctx, output: this.output, music: this.musicBus } : null
+  /** Dev/QA only: taps on the final (post-limiter) output, the music bus and the (dry) voice bus. */
+  devTaps(): { ctx: AudioContext; output: AudioNode; music: AudioNode; voices: AudioNode } | null {
+    return this.ctx ? { ctx: this.ctx, output: this.output, music: this.musicBus, voices: this.voiceBus } : null
   }
 }
 
@@ -370,14 +550,16 @@ class Voice {
   private send: GainNode
   private end = 0
   private last: AudioScheduledSourceNode | null = null
+  readonly sources: AudioScheduledSourceNode[] = []
 
   constructor(
-    private ctx: AudioContext,
+    private ctx: BaseAudioContext,
     private noiseBuf: AudioBuffer,
     bus: AudioNode,
     reverb: AudioNode,
     level: number,
     pan: number,
+    private now: number,
   ) {
     this.out = ctx.createGain()
     this.out.gain.value = level
@@ -395,8 +577,40 @@ class Voice {
     this.send.connect(reverb)
   }
 
+  get outNode(): GainNode {
+    return this.out
+  }
+
   reverb(amount: number) {
     this.send.gain.value = amount
+    return this
+  }
+
+  /**
+   * Play sprite slice [start, start+dur) so that its hit (offset `hitOff` s into the slice at
+   * rate 1) lands on audio time `hit`. A start in the past skips into the slice instead.
+   */
+  sample(buf: AudioBuffer, start: number, dur: number, hitOff: number, hit: number, rate: number) {
+    const src = this.ctx.createBufferSource()
+    src.buffer = buf
+    src.playbackRate.value = rate
+    let t = hit - hitOff / rate
+    let skip = 0
+    const earliest = this.now + 0.005
+    if (t < earliest) {
+      skip = (earliest - t) * rate
+      t = earliest
+    }
+    if (skip >= dur) return this
+    const g = this.ctx.createGain()
+    // 3 ms fades guard the slice edges (and a skipped-into start)
+    g.gain.setValueAtTime(0, t)
+    g.gain.linearRampToValueAtTime(1, t + 0.003)
+    const len = (dur - skip) / rate
+    g.gain.setValueAtTime(1, t + len - 0.004)
+    g.gain.linearRampToValueAtTime(0, t + len)
+    src.connect(g).connect(this.out)
+    this.track(src, t, t + len + 0.01, Math.max(0, start + skip), dur - skip)
     return this
   }
 
@@ -411,9 +625,11 @@ class Voice {
     return g
   }
 
-  private track(src: AudioScheduledSourceNode, start: number, stop: number) {
-    src.start(start)
+  private track(src: AudioScheduledSourceNode, start: number, stop: number, offset?: number, dur?: number) {
+    if (offset !== undefined && src instanceof AudioBufferSourceNode) src.start(start, offset, dur)
+    else src.start(start)
     src.stop(stop)
+    this.sources.push(src)
     if (stop >= this.end) {
       this.end = stop
       this.last = src
@@ -492,12 +708,7 @@ class Voice {
     }
     const g = this.env(o.t, o.peak, o.a, o.d, dest)
     src.connect(f).connect(g)
-    src.start(o.t, Math.random() * 1.2)
-    src.stop(o.t + dur + 0.02)
-    if (o.t + dur + 0.02 >= this.end) {
-      this.end = o.t + dur + 0.02
-      this.last = src
-    }
+    this.track(src, o.t, o.t + dur + 0.02, Math.random() * 1.2)
     return this
   }
 
@@ -510,6 +721,9 @@ class Voice {
         out.disconnect()
         send.disconnect()
       }
+    } else {
+      out.disconnect()
+      send.disconnect()
     }
     return this.end
   }
@@ -526,10 +740,12 @@ function crushCurve(): Float32Array<ArrayBuffer> {
   return c
 }
 
-// ── recipes ─────────────────────────────────────────────────────────────────
+// ── recipes (procedural fallbacks; also the only voice for cut/boot/reject/pulse/crack) ────
 // Peaks are pre-master amplitudes; each recipe's Σpeak ≤ 0.34 (→ ≤ −12 dBFS out).
 
 type Recipe = (v: Voice, t: number, p: number) => void
+
+const TONAL_SYNTH: ReadonlySet<SfxName> = new Set<SfxName>(['beep', 'lock', 'confirm', 'chime', 'chime2', 'pop'])
 
 const RECIPES: Record<SfxName, Recipe> = {
   // Soft low thump: sine dropping 120→42 Hz + a dull felt-like click.
@@ -540,19 +756,11 @@ const RECIPES: Record<SfxName, Recipe> = {
   },
   // Airy whoosh: band-passed noise sweeping 280→2200→500 Hz, panning L→R.
   whoosh: (v, t, p) => {
-    v.reverb(0.35).noise({
-      t,
-      filter: 'bandpass',
-      f0: 280 * p,
-      fMid: 2200 * p,
-      f1: 500 * p,
-      q: 0.9,
-      peak: 0.22,
-      a: 0.32,
-      d: 0.42,
-      panFrom: -0.5,
-      panTo: 0.5,
-    })
+    v.reverb(0.35).noise({ t, filter: 'bandpass', f0: 280 * p, fMid: 2200 * p, f1: 500 * p, q: 0.9, peak: 0.22, a: 0.32, d: 0.42, panFrom: -0.5, panTo: 0.5 })
+  },
+  // Short swish: a quicker, darker whoosh.
+  swish: (v, t, p) => {
+    v.reverb(0.2).noise({ t, filter: 'bandpass', f0: 400 * p, fMid: 1800 * p, f1: 600 * p, q: 1, peak: 0.18, a: 0.16, d: 0.24, panFrom: 0.3, panTo: -0.3 })
   },
   // Power-on: sub thump + a glassy two-partial rising chirp.
   boot: (v, t, p) => {
@@ -561,11 +769,11 @@ const RECIPES: Record<SfxName, Recipe> = {
       .tone({ t: t + 0.03, f0: 520 * p, f1: 1040 * p, glide: 0.09, peak: 0.07, a: 0.01, d: 0.22 })
       .tone({ t: t + 0.03, f0: 1560 * p, f1: 3120 * p, glide: 0.09, peak: 0.025, a: 0.01, d: 0.12 })
   },
-  // HUD beep: pure 1.32 kHz sine with a quiet octave, 90 ms.
+  // HUD beep: pure C6 sine with a quiet octave, 90 ms.
   beep: (v, t, p) => {
     v.reverb(0.15)
-      .tone({ t, f0: 1320 * p, peak: 0.08, a: 0.004, d: 0.09 })
-      .tone({ t, f0: 2640 * p, peak: 0.015, a: 0.004, d: 0.05 })
+      .tone({ t, f0: 1046.5 * p, peak: 0.08, a: 0.004, d: 0.09 })
+      .tone({ t, f0: 2093 * p, peak: 0.015, a: 0.004, d: 0.05 })
   },
   // Glassy tick: inharmonic sine pair (3.2 k / 5.1 k), 30 ms ping.
   tick: (v, t, p) => {
@@ -577,18 +785,23 @@ const RECIPES: Record<SfxName, Recipe> = {
   type: (v, t, p) => {
     v.noise({ t, filter: 'bandpass', f0: (3500 + Math.random() * 1500) * p, q: 2.5, peak: 0.15, a: 0.001, d: 0.012 })
   },
+  // Data rain: a short run of soft, randomly pitched blips (one textured event).
+  data: (v, t, p) => {
+    v.reverb(0.1)
+    for (let i = 0; i < 9; i++) v.tone({ t: t + i * 0.07, f0: (1300 + ((i * 7) % 5) * 260) * p, peak: 0.028, a: 0.002, d: 0.04, lowpass: 4000 })
+  },
   // Scanner sweep: soft triangle gliding 400→1800 Hz under a lowpass + hiss.
   scan: (v, t, p) => {
     v.reverb(0.2)
       .tone({ t, type: 'triangle', f0: 400 * p, f1: 1800 * p, glide: 0.5, peak: 0.05, a: 0.08, d: 0.45, lowpass: 2400 })
       .noise({ t, filter: 'highpass', f0: 3000, f1: 6000, peak: 0.025, a: 0.2, d: 0.3 })
   },
-  // Target lock: two quick rising sines (880→1320 Hz) on a tiny thump.
+  // Target lock: two quick rising sines (G5→C6) on a tiny thump.
   lock: (v, t, p) => {
     v.reverb(0.18)
-      .tone({ t, f0: 880 * p, peak: 0.07, a: 0.003, d: 0.07 })
-      .tone({ t: t + 0.07, f0: 1320 * p, peak: 0.08, a: 0.003, d: 0.14 })
-      .tone({ t, f0: 70 * p, f1: 45 * p, peak: 0.12, a: 0.004, d: 0.16 })
+      .tone({ t, f0: 784 * p, peak: 0.07, a: 0.003, d: 0.07 })
+      .tone({ t: t + 0.07, f0: 1046.5 * p, peak: 0.08, a: 0.003, d: 0.14 })
+      .tone({ t, f0: 70, f1: 45, peak: 0.12, a: 0.004, d: 0.16 })
   },
   // Soft denial: two descending low-passed triangles (330→247 Hz).
   reject: (v, t, p) => {
@@ -596,19 +809,17 @@ const RECIPES: Record<SfxName, Recipe> = {
       .tone({ t, type: 'triangle', f0: 330 * p, peak: 0.1, a: 0.006, d: 0.12, lowpass: 1200 })
       .tone({ t: t + 0.12, type: 'triangle', f0: 247 * p, peak: 0.1, a: 0.006, d: 0.22, lowpass: 1000 })
   },
-  // Seal/stamp: low thump + a long bell (1.76 k with inharmonic 2.76× partial).
+  // Seal/stamp: low thump + a long bell (C6 with an inharmonic 2.76× partial).
   seal: (v, t, p) => {
     v.reverb(0.3)
       .tone({ t, f0: 100 * p, f1: 40 * p, glide: 0.15, peak: 0.2, a: 0.004, d: 0.3 })
-      .tone({ t: t + 0.01, f0: 1760 * p, peak: 0.06, a: 0.003, d: 0.9 })
-      .tone({ t: t + 0.01, f0: 1760 * 2.76 * p, peak: 0.015, a: 0.002, d: 0.4 })
+      .tone({ t: t + 0.01, f0: 1046.5 * p, peak: 0.06, a: 0.003, d: 0.9 })
+      .tone({ t: t + 0.01, f0: 1046.5 * 2.76 * p, peak: 0.015, a: 0.002, d: 0.4 })
   },
-  // Confirm: gentle C-E-G-C sine arpeggio, 70 ms apart, bloomed in reverb.
+  // Confirm: gentle C–G–C sine arpeggio, 70 ms apart, bloomed in reverb.
   confirm: (v, t, p) => {
     v.reverb(0.4)
-    ;[523.25, 659.25, 783.99, 1046.5].forEach((f, i) =>
-      v.tone({ t: t + i * 0.07, f0: f * p, peak: 0.06, a: 0.006, d: 0.6 - i * 0.08 }),
-    )
+    ;[523.25, 783.99, 1046.5].forEach((f, i) => v.tone({ t: t + i * 0.07, f0: f * p, peak: 0.07, a: 0.006, d: 0.6 - i * 0.1 }))
   },
   // Heartbeat pulse: 58 Hz sine with a soft 25 ms attack.
   pulse: (v, t, p) => {
@@ -618,14 +829,23 @@ const RECIPES: Record<SfxName, Recipe> = {
   count: (v, t, p) => {
     v.tone({ t, type: 'square', f0: 1000 * p, peak: 0.05, a: 0.002, d: 0.035, lowpass: 2500 })
   },
+  // Pop: a round sine blip dropping an octave in 60 ms.
+  pop: (v, t, p) => {
+    v.reverb(0.1).tone({ t, f0: 1046.5 * p, f1: 523.25 * p, glide: 0.06, peak: 0.12, a: 0.003, d: 0.09 })
+  },
   // Impact: deep 90→32 Hz drop + low-passed noise body, long reverb bloom.
   impact: (v, t, p) => {
     v.reverb(0.45)
       .tone({ t, f0: 90 * p, f1: 32 * p, glide: 0.6, peak: 0.24, a: 0.005, d: 1.3 })
       .noise({ t, filter: 'lowpass', f0: 2200, f1: 180, peak: 0.09, a: 0.004, d: 0.6 })
   },
-  // Riser: band-passed noise swelling 350 Hz→3.2 kHz over 0.55 s + a faint rising sine.
-  // Cue it 0.55 s BEFORE the reveal it leads into (its peak lands at t + 0.55).
+  // Thud: short, soft low knock.
+  thud: (v, t, p) => {
+    v.reverb(0.15)
+      .tone({ t, f0: 80 * p, f1: 40 * p, glide: 0.18, peak: 0.24, a: 0.004, d: 0.4 })
+      .noise({ t, filter: 'lowpass', f0: 900, f1: 200, peak: 0.05, a: 0.003, d: 0.12 })
+  },
+  // Riser: band-passed noise swelling 350 Hz→3.2 kHz over 0.55 s + a faint rising sine (peak at +0.55).
   riser: (v, t, p) => {
     v.reverb(0.3)
       .noise({ t, filter: 'bandpass', f0: 350 * p, fMid: 3200 * p, f1: 2400 * p, q: 1.4, peak: 0.11, a: 0.55, d: 0.14 })
@@ -654,6 +874,8 @@ const RECIPES: Record<SfxName, Recipe> = {
       .tone({ t, f0: 1046.5 * 3.01 * p, peak: 0.007, a: 0.003, d: 0.45 })
       .tone({ t, f0: 523.25 * p, peak: 0.02, a: 0.01, d: 1.2 })
   },
+  // Chime 2: the same bell a fourth lower (G5).
+  chime2: (v, t, p) => RECIPES.chime(v, t, 0.749 * p),
 }
 
 export function createEngine() {

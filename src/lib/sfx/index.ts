@@ -2,8 +2,9 @@ import { createEngine, type SfxEngine } from './engine'
 import { FilmMusic } from './music'
 
 export type { SfxName, SfxState, PlayOpts } from './engine'
+export { LEAD_MAX } from './engine'
 export type { FilmClockSource, MusicEvent } from './music'
-export { FILM_SCORE, quantizeToGrid } from './score'
+export { FILM_SCORE } from './score'
 
 /**
  * Singleton procedural SFX engine. Import-safe on the server (no window access
@@ -12,7 +13,9 @@ export { FILM_SCORE, quantizeToGrid } from './score'
  *   sfx.prime()                 – create/resume the AudioContext (or wait for a gesture)
  *   sfx.setEnabled(bool)        – user mute preference (persisted, fades master — music included)
  *   sfx.enabled                 – current preference (default: on)
- *   sfx.play(name, opts?)       – one-shot (heavy ones duck the music bus)
+ *   sfx.loadSamples()           – fetch + decode the SFX sprite (/film mount only; synth fallback)
+ *   sfx.play(name, opts?)       – one-shot; opts.delay = s until its HIT (accents duck the music 2–3 dB)
+ *   sfx.cancelPending()         – drop hits still ahead (pause / rewind)
  *   sfx.cue(prevT, t, at, name) – fire once when a forward-running timeline crosses `at`
  */
 export const sfx: SfxEngine = createEngine()

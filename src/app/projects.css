@@ -117,6 +117,9 @@
 
 /* ── section + prose ── */
 .pj-section { margin-top: 42px; }
+.pj-links { display: flex; flex-wrap: wrap; gap: 10px 18px; margin: 0; padding: 0; list-style: none; }
+.pj-links a { color: var(--pj-acc); font-family: var(--font-mono); font-size: var(--fs-sm); text-decoration: none; }
+.pj-links a:hover { text-decoration: underline; }
 .pj-h2 {
   font-family: var(--font-mono);
   font-size: var(--fs-sm);

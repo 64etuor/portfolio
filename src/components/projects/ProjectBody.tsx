@@ -52,6 +52,24 @@ export function ProjectBody({ project }: { project: ProjectContent }) {
           <StackTags stack={localizedProject.stack} />
         </section>
       ) : null}
+
+      {localizedProject.links && localizedProject.links.length > 0 ? (
+        <section className="pj-section">
+          <h2 className="pj-h2">{t(SITE.project.links)}</h2>
+          <ul className="pj-links">
+            {localizedProject.links.map((link) => {
+              const external = /^https?:\/\//.test(link.href)
+              return (
+                <li key={link.href}>
+                  <a href={link.href} target={external ? '_blank' : undefined} rel={external ? 'noreferrer' : undefined}>
+                    {link.label} ↗
+                  </a>
+                </li>
+              )
+            })}
+          </ul>
+        </section>
+      ) : null}
     </>
   )
 }

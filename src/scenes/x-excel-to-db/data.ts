@@ -16,12 +16,6 @@ export const SLABS: Array<{ label: L10n; tiles: number[] }> = [
   { label: { ko: '워크오더 · OPEX', en: 'Work order · OPEX' }, tiles: [6, 7] },
 ]
 
-export const PANELS: L10n[] = [
-  { ko: '생산현황', en: 'Production' },
-  { ko: '불량현황', en: 'Defects' },
-  { ko: 'KPI', en: 'KPI' },
-]
-
 export const PHASES: Array<{ title: L10n; sub: L10n }> = [
   {
     title: { ko: '담당자별 엑셀 · 수기 문서', en: 'Excel files & paper logs, per owner' },

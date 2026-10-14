@@ -40,7 +40,7 @@ export interface Row {
   problem?: string
   built?: string
   rewind?: string // 회사·시대 단위 되감기 키(REWIND_ROUTES). 전용 씬이 없는 막대의 기본값.
-  scene?: string // 이 프로젝트만의 전용 씬 slug(예: 'pipeline-dag'). 있으면 rewind 보다 우선해 /s/<scene> 로 직행.
+  scene?: string // catalog slug. 있으면 /s/<scene> 직행. 회사 기본 씬이 이 막대와 다를 때만 둔다.
   slug?: string // → /projects/<slug> detail doc (only bars with an embedded doc)
   desc: string
   metrics: Metric[]
@@ -154,7 +154,6 @@ export const COMPANIES: Row[] = [
       '제조 현장 도메인 경험은 깊지만, 코드·모델로 문제를 직접 구현·배포하는 전문 데이터 엔지니어링·SW 개발 역량이 부족했음.',
     built:
       '메타코드 데이터분석 부트캠프(Python·SQL·ML)와 한화시스템 Beyond SW 부트캠프(React·FastAPI·DevOps)를 9개월간 병행 이수해 풀스택 실무 역량을 직접 보강함.',
-    rewind: 'bridge',
     desc:
       '제조 도메인 위에 전문적인 데이터 엔지니어링 역량·SW 개발 역량·AI 활용 역량을 보강하기 위해 학습한 구간. 메타코드 데이터분석 부트캠프(2024.11–2025.04, 솔라엣지 재직 중 시작)와 한화시스템 Beyond SW 부트캠프(2025.01–2025.07)를 각각 이수해 현장 문제를 코드와 모델로 푸는 풀스택 실무 역량을 다짐.',
     metrics: [
@@ -216,6 +215,7 @@ export const PROJECTS: Row[] = [
     built:
       '미적용 공정에 비전 검사 시스템을 직접 도입·설정해 외관·치수·역삽 자동 검출 체계를 구축하고 출하 불량을 0건 수준으로 끌어내림.',
     rewind: 'eunseong',
+    scene: 'vision-inspection',
     desc:
       '배터리팩 외관·치수 검사를 비전검사로 자동화. 사출 파트 인서트·너트 누락, 배터리 모듈 역삽 방지 등 미적용 공정에 비전 검사를 도입해 출하 불량을 0건 수준으로 끌어내림.',
     metrics: [
@@ -243,6 +243,7 @@ export const PROJECTS: Row[] = [
     built:
       '중기청 상생 스마트팩토리 지원사업을 직접 신청·수행해 Ecount ERP 도입, ERP 연계 바코드 관리 시스템, 모바일 태블릿 생산현황 시스템을 구축하고 데이터를 전산화함.',
     rewind: 'eunseong',
+    scene: 'smart-factory',
     desc:
       '중소기업진흥청 대기업상생 스마트팩토리 기초 솔루션 지원사업을 신청·수행. ERP(Ecount) 도입, ERP 연계 바코드 관리 시스템, 모바일 태블릿 생산현황 시스템으로 데이터를 전산화하고 업무 절차를 체계화.',
     metrics: [
@@ -270,7 +271,6 @@ export const PROJECTS: Row[] = [
       '현장에서 엑셀·자동화 도구를 직접 만들어 쓰고 있었지만 정식 개발 기초가 없어 구현 범위가 한계에 부딪혔음.',
     built:
       '스파르타코딩클럽 앱·웹 개발 종합 과정을 이수해 앱·웹 구현, DB 연동, 배포를 학습하고 코딩 역량의 정식 기초를 다짐.',
-    rewind: 'bridge',
     desc:
       '은성 재직 중이던 2022.01–2022.02에 이수한 앱/웹 개발 종합 과정. 앱·웹 구현, DB 연동, 배포를 학습하며 현장 엑셀·자동화 도구를 직접 만들던 흐름을 정식 개발 기초로 연결한 첫 코딩 학습.',
     metrics: [
@@ -300,6 +300,7 @@ export const PROJECTS: Row[] = [
     built:
       'DOE로 용착 조건을 최적화하고 커팅·검사 Jig를 직접 기구설계·제작해 C/T 49% 단축, LOB 재배치로 생산성 24%를 개선하며 연간 폐기·재작업 6,800만원을 절감함.',
     rewind: 'elentec',
+    scene: 'weld-doe',
     desc:
       '초음파 용착 불량으로 폐기되던 사출 케이스 낭비 개선에서 출발해 다양한 과제로 확장. 초음파 용착 조건 DOE로 불량률 15%→0%대, 커팅 Jig로 Neck 공정 C/T 24%↓, 검사 Jig 개조로 Core-pack Function Test C/T 49%↓, 소형 배터리팩 라인 LOB 개선으로 생산성 24%↑.',
     metrics: [
@@ -329,6 +330,7 @@ export const PROJECTS: Row[] = [
     built:
       '유휴 설비 4대의 재활용 방안을 직접 기획해 1대는 의료키트 반자동 조립 사급 장비로 전용하고 2대는 범용 비전 SW로 사출 인서트·너트 누락 및 역삽 방지 검사에 재투입함.',
     rewind: 'elentec',
+    scene: 'vision-inspection',
     desc:
       '폐기 예정 유휴 비전검사 설비 4대(개당 약 4천만원)의 재활용 방안 모색. 1대는 의료키트 반자동 조립 사급 장비로 전용해 비전검사 시스템 비용을 일부 절약하고, 2대는 범용 비전 SW로 사출 인서트·너트 누락 검사와 배터리 모듈 역삽 방지에 활용.',
     metrics: [
@@ -356,6 +358,7 @@ export const PROJECTS: Row[] = [
     built:
       '삼성전자 상생협력 아카데미 연계로 구매·영업·제조·생산관리 4직능 TF를 구성해 3개월간 프로젝트를 리딩하고, 면책 구역 지정과 재고 이관 전산 프로세스를 직접 개선해 재고회전율 17%를 높임.',
     rewind: 'elentec',
+    scene: 'scada-hmi',
     desc:
       '삼성전자 상생협력 아카데미 제조 리더 양성 과정 연계. 삼성전자 멘토링을 지원받아 구매·영업·제조·생산관리 TF를 구성, 3개월간 프로젝트를 리딩하며 면책 구역 지정과 제조-영업 재고 이관 전산 프로세스를 개선.',
     metrics: [
@@ -386,6 +389,7 @@ export const PROJECTS: Row[] = [
     built:
       'Excel VBA·SQL·Power BI로 DB 통합 파이프라인, On-prem Gateway 자동 업데이트, 통합 대시보드, 보고서 Script 자동생성을 직접 구축해 사무공수 일 451분(연 약 5천만원)과 제품 ST 50%를 절감함.',
     rewind: 'solaredge',
+    scene: 'excel-to-db',
     desc:
       '엑셀 개별 문서 관리를 데이터베이스 활용으로 전환해 업무를 자동화. 작업지시·생산계획·실적·불량을 DB로 저장하고 매뉴얼 입력 무결성 검증, On-premises Gateway 자동 업데이트, Power BI 통합 대시보드, 보고서 Script 자동생성을 구축. 사무공수 일 451분 감축(연 약 5천만원)·제품 ST 50% 감축.',
     metrics: [
@@ -416,6 +420,7 @@ export const PROJECTS: Row[] = [
     built:
       'Power Apps 모바일 실적등록·체크리스트, S/N 검증·혼입 방지 공정 품질 검증, Power BI 추적 대시보드, Power Automate 검사성적서 자동발행을 직접 설계·구축함.',
     rewind: 'solaredge',
+    scene: 'sn-trace',
     desc:
       '필드 원자재 불량이 발견됐으나 수기 S/N 관리로 리스크 범위를 측정할 수 없던 문제에서 출발. Power Apps 모바일 실적등록·체크리스트, S/N 검증·부품 혼입 방지 등 공정 품질 검증을 적용하고, Power BI 추적과 Power Automate 검사성적서 자동발행을 구축.',
     metrics: [
@@ -443,7 +448,6 @@ export const PROJECTS: Row[] = [
       '한정된 DV 기간 내 다현장 데이터를 실시간으로 취합할 방법이 없어 고품질 데이터 확보와 현황 파악이 어려웠음.',
     built:
       'Google AppSheet 실적·불량 등록 앱, Python Matplotlib CPK 공정분석, Sheets 실시간 대시보드, Apps Script QR 이력추적 시스템을 직접 기획·구축함.',
-    rewind: 'solaredge',
     desc:
       '한정된 DV(Design Verification) 기간에 고품질 데이터를 더 많이 확보하고 다현장 DV 현황을 실시간 파악하기 위해 기획. Google AppSheet 실적·불량 등록 앱, Python Matplotlib 공정분석(CPK), Sheets 실시간 대시보드, Apps Script QR 이력추적(EU 배터리 패스포트 대응 시험)을 구축.',
     metrics: [
@@ -472,6 +476,7 @@ export const PROJECTS: Row[] = [
     built:
       'Django REST 백엔드, React·Electron 프론트, OPC UA·TCP/IP ETL, PostgreSQL 아키텍처, Python Dash 실시간 대시보드까지 MES 풀스택을 직접 기획·설계·구현함(사업 종료로 중단).',
     rewind: 'solaredge',
+    scene: 'mes-line',
     desc:
       '해외 신제품 라인을 한국으로 이관 받아 셋업하던 중, 설비 예산 30만불 초과 상황에서 MES 외주 개발비 누락을 확인 → MES 자체 개발을 기획·리딩. Django REST 백엔드, React·Electron 프론트, OPC UA·TCP/IP ETL, PostgreSQL 아키텍처, Python Dash 실시간 대시보드까지 풀스택으로 구현(사업 종료로 중단).',
     metrics: [
@@ -500,7 +505,6 @@ export const PROJECTS: Row[] = [
     problem: '현장에서 공정 데이터를 다뤄왔지만 Python·SQL·ML을 활용한 정식 분석·모델링 역량이 부족했음.',
     built:
       '메타코드 데이터분석 부트캠프(2024.11–2025.04)를 이수해 Python·SQL·BI·머신러닝을 체계적으로 학습하고 데이터 분석·모델링 역량을 보강함.',
-    rewind: 'bridge',
     desc:
       '솔라엣지 재직 중이던 2024.11에 시작해 2025.04까지 이수한 데이터 분석 과정. Python·SQL·BI·머신러닝을 학습해 현장에서 다루던 공정 데이터를 정식 분석·모델링 역량으로 보강.',
     metrics: [
@@ -526,7 +530,6 @@ export const PROJECTS: Row[] = [
     problem: '데이터 분석 역량은 갖췄지만 현장 문제를 직접 코드로 구현·배포하는 풀스택 SW 개발 역량이 아직 부족했음.',
     built:
       '한화시스템 Beyond SW 부트캠프(2025.01–2025.07)를 이수해 Back/Front-end와 DevOps를 학습하고 풀스택 개발·배포 역량을 직접 보강함.',
-    rewind: 'bridge',
     desc:
       '2025.01–2025.07 이수한 SW 개발 과정. Back/Front-end와 DevOps를 학습해 현장 문제를 직접 코드로 구현·배포하는 풀스택 개발 역량을 보강.',
     metrics: [
@@ -585,7 +588,6 @@ export const PROJECTS: Row[] = [
       '뷰티 솔루션 제품군의 비즈니스 API·인증·영속성·비동기 워커를 처음부터 설계·구축해야 했고 운영 안전성과 마이그레이션 안정성이 모두 요구되었음.',
     built:
       'FastAPI·SQLAlchemy·Alembic으로 백엔드를 직접 설계·구축하고 RDS MySQL 데이터 모델링, 비동기 잡 프레임워크, 런타임 시크릿 관리까지 아키텍처 전반을 담당함.',
-    rewind: 'startup',
     desc:
       '비즈니스 API·영속성·인증·백그라운드 워커를 담당하는 백엔드를 FastAPI·SQLAlchemy·Alembic로 구축. RDS MySQL 데이터 모델링, 마이그레이션 안전성, 비동기 외부 API 잡 프레임워크, 런타임 시크릿을 설계.',
     metrics: [
@@ -613,7 +615,6 @@ export const PROJECTS: Row[] = [
       '매장 운영자가 매출·고객 데이터를 한눈에 관리할 도구가 없어 운영 의사결정이 느리고 오류가 발생하고 있었음.',
     built:
       'Vite·React·TypeScript로 CRM 워크플로우 UI를 직접 제작하고 매출·고객 통계 대시보드, trace-id 기반 에러 핸들링, 폴링 운영 신뢰성 설계와 사용자 매뉴얼까지 구축함.',
-    rewind: 'startup',
     desc:
       '매장 운영자가 매출·고객을 관리하는 CRM 워크플로우 UI를 Vite·React·TypeScript로 제작. 매출·고객 통계 대시보드, 에러 핸들링·trace-id 표면·폴링 등 운영 신뢰성 설계와 사용자 매뉴얼까지 포함.',
     metrics: [
@@ -642,7 +643,6 @@ export const PROJECTS: Row[] = [
       '매장 현장에서 동작해야 하는 키오스크 앱이 없었고, 디바이스·카메라·미디어 연동과 IPC 보안 경계를 모두 설계해야 했음.',
     built:
       'Electron·React·TypeScript로 키오스크 앱을 직접 제작하고 renderer/main/preload IPC 경계, 카메라·미디어 워크플로우, 디바이스 진단 연동을 설계·구현함.',
-    rewind: 'startup',
     desc:
       '매장 현장 키오스크 애플리케이션을 Electron·React·TypeScript로 제작. 디바이스·미디어 워크플로우, renderer/main/preload IPC 경계, 카메라·진단 연동을 설계.',
     metrics: [
@@ -669,7 +669,6 @@ export const PROJECTS: Row[] = [
       '뷰티 매장 환경에 맞는 키오스크 하드웨어가 시중에 없어 매장 운영 조건에 맞는 프로토타입을 직접 기획·제작해야 했음.',
     built:
       '키오스크 HW 프로토타입을 직접 기획·기구 설계하고 외주 제작을 관리하며 매장 설치 환경에서의 사용성·조건을 검토함.',
-    rewind: 'startup',
     desc:
       '뷰티 매장용 키오스크 하드웨어 프로토타입을 직접 기획·기구 설계. 외주 제작을 관리하고 매장 운영 환경에서의 사용성·설치 조건을 검토.',
     metrics: [
@@ -696,6 +695,7 @@ export const PROJECTS: Row[] = [
     built:
       'ECS Fargate Multi-AZ·Terraform IaC·ALB·ECR·SSM·Sentry·CloudWatch 전체 인프라와 관제 체계를 직접 설계·구축해 무중단 롤링 배포·자동 페일오버·예산 알람을 확보함.',
     rewind: 'startup',
+    scene: 'pid-scheme',
     desc:
       '백엔드 런타임을 단일 EC2에서 컨테이너 오케스트레이션(ECS Fargate·Multi-AZ)으로 이전해 무중단 롤링 배포·자동 페일오버·셀프힐을 확보. 로드밸런싱·컨테이너 레지스트리·런타임 시크릿·검색엔진 등 서비스 구성과 에러 추적·로그·메트릭·예산 알람 기반 관제까지 IaC(Terraform)로 전면 코드화 — 전부 직접 설계·구축.',
     metrics: [
@@ -726,6 +726,7 @@ export const PROJECTS: Row[] = [
     built:
       'Tauri·Rust로 Capture/Timeline/Control Room 등 11개 화면의 local-first 데스크톱 앱을 직접 설계·구현하고 Google Calendar 양방향 동기화, MCP human-gate, bounded agent 실행(timeout·cost cap·kill)을 탑재함.',
     rewind: 'epilogue',
+    scene: 'work-radar',
     desc:
       '캘린더·PR·백로그·worktree·agent 세션을 한 데스크톱 앱으로 묶어 “지금 무엇을 볼지”를 사람이 판단하게 만든 local-first 앱. Capture/Timeline/Control Room 등 11 서피스, Google Calendar 양방향 동기화, MCP 게이트웨이 human-gate, agent bounded 실행(timeout·cost cap·kill)을 Tauri·Rust로 구현.',
     metrics: [
@@ -755,6 +756,7 @@ export const PROJECTS: Row[] = [
     built:
       '색인·검색 서비스를 하나로 두고 CLI(버전 고정 JSON)·REST/OpenAPI·MCP 세 진입 경로가 동일 의미론을 공유하게 설계. 모든 응답에 원문 locator를 동반하고, hybrid PDF 백엔드로 파싱 19.2배·동기화 3.23배를 얻으면서 lexical Recall@10 1.0000을 유지함.',
     rewind: 'epilogue',
+    scene: 'kip-evidence',
     desc:
       '회사 문서를 모아 검색하되 답변의 근거가 된 원문 위치를 항상 함께 제시하는 agent-first 지식 패브릭. semantic search는 lexical 대비 이득을 평가로 입증하기 전까지 비활성으로 두는 등, 목표 문구와 구현 현황을 문서상 분리해 과대 표기를 구조적으로 막았다.',
     metrics: [
@@ -869,7 +871,13 @@ export const REWIND_ROUTES: Record<string, string> = {
   eunseong: '/s/instrument-rack',
   elentec: '/s/weld-thermal',
   solaredge: '/s/mes-line',
-  bridge: '/s/smart-factory',
   startup: '/s/pid-scheme',
   epilogue: '/s/work-radar',
+}
+
+/** 관련 장면 버튼의 실제 경로. 전용 씬이 없고 회사 키도 없으면 빈 문자열(버튼 숨김). */
+export function rewindPath(row: { scene?: string; rewind?: string }): string {
+  if (row.scene) return `/s/${row.scene}`
+  if (!row.rewind) return ''
+  return REWIND_ROUTES[row.rewind] ?? ''
 }

@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 import { SKILL_AREAS } from '@/components/gallery/data'
+import { COMPOSITIONS } from '@/compositions'
 import { SCENE_CATALOG } from '@/scenes/catalog'
 import { enabledProjects } from '@content/projects'
 
@@ -28,5 +29,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     lastModified,
   }))
 
-  return [...staticRoutes, ...projectRoutes, ...skillRoutes, ...sceneRoutes]
+  const compositionRoutes = COMPOSITIONS.map((c) => ({
+    url: `${BASE}/c/${c.slug}`,
+    lastModified,
+  }))
+
+  return [...staticRoutes, ...projectRoutes, ...skillRoutes, ...sceneRoutes, ...compositionRoutes]
 }

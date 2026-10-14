@@ -35,4 +35,8 @@ export const line_innovation: ProjectContent = {
       body: "- 재작업 공수 비용 **연 환산 3,200만원 절감** (초당 임율 6.3원 기준)\n- 폐기 비용 **연환산 3,600만원 절감** (단위 폐기 비용 7,688원 기준)\n- 소형팩 라인 생산성 향상에 따른 **연환산 4,437만원 절감**\n\n품질·속도·비용 세 축을 동시에 개선한 10개월 멀티트랙 혁신 프로젝트였습니다.",
     },
   ],
+  links: [
+    { label: '초음파 용착 DOE', href: '/s/weld-doe' },
+    { label: 'LOB 라인 밸런싱', href: '/s/line-balance' },
+  ],
 }

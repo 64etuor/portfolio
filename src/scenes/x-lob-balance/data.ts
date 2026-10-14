@@ -1,7 +1,9 @@
 // LOB 라인 밸런싱 — 사실/라벨/타임라인 상수.
 // 사실(출처: content/projects/line-innovation.ts, content/profile.ts):
 //  - 커팅 Jig 개발 → Neck 공정 C/T 16.72sec → 12.76sec (24% 단축)
-//  - 검사 Jig 개조 → Core-pack Function Test C/T 55sec → 28sec (49% 단축)
+//  - 검사 Jig 개조 → 포고핀으로 회로에 전류를 넣어 배터리 웨이크업 후 바로 기능검사.
+//    Core-pack 검사를 2라인으로 분할(라인 형상의 변화, 별도 실적 수치 아님).
+//    Core-pack Function Test C/T 55sec → 28sec (49% 단축)
 //  - 소형 배터리팩 라인 LOB 개선 → 생산성 24% 향상 (연 4,437만원)
 // 그 외 공정의 높이는 예시(illustrative)이며 초 단위 수치를 표시하지 않는다.
 
@@ -71,11 +73,11 @@ export const HUD = {
   ko: {
     kicker: '이랜텍 · 2022.11–2023.09',
     title: 'LOB 개선 · 소형 배터리팩 라인',
-    beats: ['병목 공정 C/T', 'Jig 개발 · C/T 단축', 'LOB 재편성'],
+    beats: ['병목 공정 C/T', 'Jig 도입 · 검사 2라인', 'LOB 재편성'],
     neck: 'Neck 공정',
     ft: 'Core-pack Function Test',
-    jigNeck: '커팅 Jig 개발',
-    jigFt: '검사 Jig 개조',
+    jigNeck: '커팅 Jig 도입',
+    jigFt: '포고핀 2라인 · 웨이크업',
     bottleneck: '병목 C/T',
     balanced: '라인 균형',
     heroLabel: '생산성',
@@ -85,11 +87,11 @@ export const HUD = {
   en: {
     kicker: 'Elentec · 2022.11–2023.09',
     title: 'LOB improvement · small battery-pack line',
-    beats: ['Bottleneck C/T', 'Jig development · C/T cut', 'LOB rebalancing'],
+    beats: ['Bottleneck C/T', 'Jigs in · test on 2 lines', 'LOB rebalancing'],
     neck: 'Neck process',
     ft: 'Core-pack Function Test',
-    jigNeck: 'Cutting jig (new)',
-    jigFt: 'Test jig (modified)',
+    jigNeck: 'Cutting jig introduced',
+    jigFt: 'Pogo wake-up · 2 lines',
     bottleneck: 'Bottleneck C/T',
     balanced: 'Line balanced',
     heroLabel: 'Productivity',

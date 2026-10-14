@@ -82,6 +82,7 @@ export const SITE = {
     workflow: copy('동작 흐름', 'How it works'),
     screens: copy('화면', 'Screens'),
     stack: copy('기술 스택', 'Technology stack'),
+    links: copy('링크', 'Links'),
     backToTimeline: copy('↩ 간트로', '↩ Back to timeline'),
     navigation: copy('프로젝트 탐색', 'Project navigation'),
     drawerBack: copy('← 뒤로', '← Back'),

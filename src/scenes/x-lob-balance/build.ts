@@ -594,6 +594,76 @@ export function buildConveyor(THREE: Three, kit: Kit, length: number) {
   return { group, railMat, beltTex: tex }
 }
 
+/**
+ * 본선에서 카메라 쪽(+z)으로 갈라지는 짧은 검사 레인.
+ * 로컬 원점은 벨트 중심. 길이 방향은 로컬 x, 월드 위치는 호출부가 잡는다.
+ */
+export const LANE_DZ = 1.45
+
+export function buildSpur(THREE: Three, kit: Kit, length: number) {
+  const RB = kit.RoundedBox
+  const group = new THREE.Group()
+  const half = length / 2
+  const BW = 0.5
+  const alu: THREE_NS.BufferGeometry[] = []
+  const add = (g: THREE_NS.BufferGeometry, x: number, y: number, z: number) => {
+    g.translate(x, y, z)
+    alu.push(bare(g))
+  }
+  for (const sz of [-1, 1]) {
+    add(new RB(length, 0.075, 0.045, 2, 0.012), 0, BELT_TOP - 0.02, sz * (BW / 2 + 0.03))
+    add(new RB(length, 0.02, 0.03, 1, 0.006), 0, BELT_TOP - 0.11, sz * (BW / 2 + 0.02))
+  }
+  for (const x of [-1.15, 0, 1.15]) {
+    if (Math.abs(x) > half - 0.12) continue
+    for (const sz of [-1, 1]) {
+      add(new THREE.CylinderGeometry(0.022, 0.022, BELT_TOP - 0.05, 10), x, (BELT_TOP - 0.05) / 2, sz * (BW / 2 + 0.02))
+      add(new THREE.CylinderGeometry(0.04, 0.045, 0.02, 12), x, 0.01, sz * (BW / 2 + 0.02))
+    }
+  }
+  for (const sx of [-1, 1]) {
+    const roll = new THREE.CylinderGeometry(0.05, 0.05, BW + 0.02, 18)
+    roll.rotateX(Math.PI / 2)
+    add(roll, sx * (half - 0.02), BELT_TOP - 0.05, 0)
+  }
+  const frame = new THREE.Mesh(kit.merge(alu)!, new THREE.MeshStandardMaterial({ color: 0x8a949b, metalness: 0.85, roughness: 0.32 }))
+  group.add(frame)
+
+  const c = document.createElement('canvas')
+  c.width = 32
+  c.height = 8
+  const g = c.getContext('2d')!
+  g.fillStyle = '#1b2125'
+  g.fillRect(0, 0, 32, 8)
+  g.fillStyle = '#0a0d0f'
+  g.fillRect(0, 0, 3, 8)
+  const tex = new THREE.CanvasTexture(c)
+  tex.wrapS = THREE.RepeatWrapping
+  tex.repeat.set(length / 0.11, 1)
+  const belt = new THREE.Mesh(
+    new THREE.BoxGeometry(length - 0.04, 0.02, BW),
+    new THREE.MeshStandardMaterial({ color: 0xffffff, map: tex, metalness: 0.2, roughness: 0.7 }),
+  )
+  belt.position.set(0, BELT_TOP - 0.01, 0)
+  group.add(belt)
+
+  const railMat = new THREE.MeshBasicMaterial({ color: hdr(THREE, COL.amber, 1.1), ...additive(THREE) })
+  const trims = new THREE.InstancedMesh(new THREE.BoxGeometry(length - 0.1, 0.006, 0.008), railMat, 2)
+  const m = new THREE.Matrix4()
+  for (const [k, sz] of [
+    [0, -1],
+    [1, 1],
+  ]) {
+    m.makeTranslation(0, BELT_TOP + 0.019, sz * (BW / 2 + 0.03))
+    trims.setMatrixAt(k, m)
+  }
+  group.add(trims)
+  group.traverse((obj) => {
+    obj.frustumCulled = false
+  })
+  return { group, railMat, beltTex: tex }
+}
+
 // ───────────────────────── products: small battery packs ─────────────────────────
 
 /** 소형 배터리팩: 수축튜브 바디 + 상단 라벨 + 보호회로(PCB) 엔드 + 니켈 탭 + 커넥터. 정점색 머지 1 draw. */

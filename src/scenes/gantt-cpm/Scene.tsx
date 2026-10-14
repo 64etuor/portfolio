@@ -8,7 +8,7 @@ import { ProjectDrawer } from '@/components/projects/ProjectDrawer'
 import s from './scene.module.css'
 import { NS, eio, fmtYM, rowPct, span, sparkSVG } from './draw'
 import { GanttView } from './view'
-import { COLORS, REWIND_ROUTES, T0, T1, TODAY, type Kpi, type Row } from './data'
+import { COLORS, rewindPath, T0, T1, TODAY, type Kpi, type Row } from './data'
 import { GANTT_UI, ganttData } from './data-en'
 
 /* ════════════════════════════════════════════════════════════════
@@ -137,9 +137,7 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
         }
       })
     }
-    function rewindToScene(key: string) {
-      // key 가 '/s/...' 절대경로면 전용 씬 직행, 아니면 회사·시대 되감기 맵을 조회.
-      const path = key.startsWith('/') ? key : REWIND_ROUTES[key]
+    function rewindToScene(path: string) {
       if (!path) return
       try {
         const targetWindow = window.top && window.top !== window ? window.top : window
@@ -231,8 +229,9 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
         dMetrics.appendChild(d)
       })
 
-      // 전용 씬(t.scene)이 있으면 /s/<scene> 직행, 없으면 회사·시대 되감기 키.
-      dRewind.dataset.rewind = t.scene ? `/s/${t.scene}` : t.rewind || ''
+      const path = rewindPath(t)
+      dRewind.dataset.rewind = path
+      dRewind.style.display = path ? '' : 'none'
       // 프로젝트 상세 문서 버튼 — slug 가 있는 막대에만 노출(primary CTA).
       if (t.slug) {
         dDoc.dataset.slug = t.slug

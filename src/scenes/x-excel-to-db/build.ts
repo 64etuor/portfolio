@@ -16,6 +16,7 @@ import {
   SLAB_Y0,
   SLABS,
 } from './data'
+import { reportText } from './report'
 
 // 색 — 선형 HDR 배수는 bloom 임계(≈0.55) 위로 올릴 것만 >1.
 export const COL = {
@@ -41,7 +42,7 @@ const ERR_CELLS = ['#REF!', '#N/A', '#VALUE!'] as const
 
 /** 아틀라스에 구울 모든 글자의 Pretendard 조각 + IBM Plex Mono 500 을 미리 로드. */
 export async function loadFonts() {
-  const text = [...SHEET_TABS, ...SHEET_SUFFIXES, ...ERR_CELLS, '0123456789.'].join(' ')
+  const text = [...SHEET_TABS, ...SHEET_SUFFIXES, ...ERR_CELLS, '0123456789.', reportText()].join(' ')
   const plex =
     typeof document !== 'undefined' && document.fonts
       ? document.fonts.load(`500 20px ${FONT_MONO}`, text).catch(() => undefined)
@@ -504,23 +505,6 @@ function pushRoundRectXZ(out: number[], w: number, d: number, r: number, y: numb
   }
 }
 
-/** 둥근 사각 ShapeGeometry(XY). */
-function roundRectGeo(THREE: Three, w: number, h: number, r: number) {
-  const sh = new THREE.Shape()
-  const x = -w / 2
-  const y = -h / 2
-  sh.moveTo(x + r, y)
-  sh.lineTo(x + w - r, y)
-  sh.quadraticCurveTo(x + w, y, x + w, y + r)
-  sh.lineTo(x + w, y + h - r)
-  sh.quadraticCurveTo(x + w, y + h, x + w - r, y + h)
-  sh.lineTo(x + r, y + h)
-  sh.quadraticCurveTo(x, y + h, x, y + h - r)
-  sh.lineTo(x, y + r)
-  sh.quadraticCurveTo(x, y, x + r, y)
-  return new THREE.ShapeGeometry(sh, 6)
-}
-
 /** 바닥 접지 — 부드러운 방사형 그라디언트 데칼(가산, 아주 옅게). */
 function makeFloorPool(THREE: Three, radius: number, color: number) {
   const cv = document.createElement('canvas')
@@ -716,261 +700,6 @@ export function makeDb(THREE: Three, A: Addons, fat: LineMaterialT[], dot: THREE
   return { group, slabMat, metalMat, edgeMat, keyMat, relMat, curves, pulses, pulseMat, pool }
 }
 
-// ─────────────────────────── 대시보드 ───────────────────────────
-/** 유리 패널 셰이더 — 둥근 사각 SDF, 세로 그라디언트, 옅은 격자, 헤어라인 림(위쪽이 더 밝다). */
-const PANEL_VS = /* glsl */ `
-varying vec2 vP;
-void main() {
-  vP = position.xy;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-}
-`
-const PANEL_FS = /* glsl */ `
-uniform vec2 uSize;
-uniform float uOpacity;
-uniform vec3 uEdge;
-varying vec2 vP;
-float rbox(vec2 p, vec2 b, float r) {
-  vec2 q = abs(p) - b + r;
-  return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
-}
-void main() {
-  vec2 hs = uSize * 0.5;
-  float d = rbox(vP, hs - 0.02, 0.07);
-  float aw = fwidth(d);
-  float inside = 1.0 - smoothstep(-aw, aw, d);
-  float rim = 1.0 - smoothstep(0.0, aw * 1.5, abs(d + aw));
-  float ty = vP.y / uSize.y + 0.5;
-  vec3 fill = mix(vec3(0.012, 0.03, 0.04), vec3(0.03, 0.075, 0.095), ty);
-  vec2 gq = (vP + hs) / 0.2;
-  vec2 gp = abs(fract(gq) - 0.5);
-  vec2 gw = fwidth(gq);
-  float grid = max(1.0 - smoothstep(0.0, gw.x * 1.2, 0.5 - gp.x), 1.0 - smoothstep(0.0, gw.y * 1.2, 0.5 - gp.y));
-  fill += vec3(0.05, 0.12, 0.14) * grid * 0.3 * inside;
-  float hl = 1.0 - smoothstep(0.0, fwidth(vP.y) * 1.2, abs(vP.y - (hs.y - 0.26)));
-  fill += uEdge * 0.16 * hl * step(abs(vP.x), hs.x - 0.1);
-  vec3 c = fill + uEdge * rim * (0.45 + 0.55 * ty);
-  float a = max(inside * 0.82, rim) * uOpacity;
-  if (a < 0.003) discard;
-  gl_FragColor = vec4(c, a);
-}
-`
-
-export interface Dash {
-  group: THREE_NS.Group
-  panels: THREE_NS.Group[]
-  panelMats: THREE_NS.ShaderMaterial[]
-  bezelMat: THREE_NS.MeshStandardMaterial
-  bars: THREE_NS.InstancedMesh
-  barBase: number[]
-  donut: THREE_NS.Mesh[]
-  donutSeg: number
-  lineGeo: { instanceCount: number }
-  lineMat: LineMaterialT
-  area: THREE_NS.Mesh
-  linePts: number
-  kpi: THREE_NS.InstancedMesh
-  uplink: THREE_NS.Points
-  uplinkMat: THREE_NS.PointsMaterial
-  contentMats: THREE_NS.Material[]
-}
-
-export const PANEL_W = 2.55
-export const PANEL_H = 1.55
-export const PANEL_X = [-2.8, 0, 2.8]
-export const DASH_Y = 3.75
-
-export function makeDash(THREE: Three, A: Addons, fat: LineMaterialT[], dot: THREE_NS.Texture): Dash {
-  const group = new THREE.Group()
-  group.position.set(0, DASH_Y, -0.4)
-  group.rotation.x = -0.12
-  const panels: THREE_NS.Group[] = []
-  const panelMats: THREE_NS.ShaderMaterial[] = []
-  const contentMats: THREE_NS.Material[] = []
-  const pGeo = new THREE.PlaneGeometry(PANEL_W, PANEL_H)
-  // 패널 뒤 얇은 금속 베젤(두께감)
-  const bezelGeo = new A.RoundedBox(PANEL_W - 0.02, PANEL_H - 0.02, 0.05, 3, 0.024)
-  const bezelMat = new THREE.MeshStandardMaterial({ color: 0x1b2328, metalness: 0.85, roughness: 0.35, transparent: true, opacity: 0 })
-  for (let k = 0; k < 3; k++) {
-    const p = new THREE.Group()
-    p.position.x = PANEL_X[k]
-    const pm = new THREE.ShaderMaterial({
-      vertexShader: PANEL_VS,
-      fragmentShader: PANEL_FS,
-      uniforms: {
-        uSize: { value: new THREE.Vector2(PANEL_W, PANEL_H) },
-        uOpacity: { value: 0 },
-        uEdge: { value: hdr(THREE, COL.blue, 1.15) },
-      },
-      transparent: true,
-      depthWrite: false,
-    })
-    panelMats.push(pm)
-    const bezel = new THREE.Mesh(bezelGeo, bezelMat)
-    bezel.position.z = -0.04
-    p.add(bezel)
-    const face = new THREE.Mesh(pGeo, pm)
-    face.renderOrder = 5 // 패널 유리 → 그 위에 콘텐츠(6)
-    p.add(face)
-    group.add(p)
-    panels.push(p)
-  }
-  // 생산현황: 막대 — 세로 그라디언트(바닥 어둡게 → 위 밝게)
-  const nb = 12
-  const barGeo = new THREE.PlaneGeometry(1, 1).translate(0, 0.5, 0)
-  {
-    const pa = barGeo.getAttribute('position')
-    const cols = new Float32Array(pa.count * 3)
-    const lo = new THREE.Color(COL.blue).multiplyScalar(0.22)
-    const hi = hdr(THREE, COL.blue, 1.3)
-    for (let i = 0; i < pa.count; i++) {
-      const c = pa.getY(i) > 0.5 ? hi : lo
-      cols.set([c.r, c.g, c.b], i * 3)
-    }
-    barGeo.setAttribute('color', new THREE.BufferAttribute(cols, 3))
-  }
-  const bars = new THREE.InstancedMesh(barGeo, new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, depthWrite: false }), nb)
-  contentMats.push(bars.material as THREE_NS.Material)
-  const barBase: number[] = []
-  const rb = mulberry32(451)
-  for (let i = 0; i < nb; i++) barBase.push(0.35 + rb() * 0.55)
-  bars.position.set(0, 0, 0.01)
-  bars.renderOrder = 6
-  bars.frustumCulled = false
-  panels[0].add(bars)
-
-  // 불량현황: 도넛 세그먼트(세그먼트 사이 얇은 틈)
-  const donutSeg = 64
-  const segs: Array<[number, number, number]> = [
-    [0.46, COL.amber, 1.3],
-    [0.24, COL.red, 1.0],
-    [0.18, COL.dim, 0.75],
-    [0.12, COL.blue, 1.2],
-  ]
-  const donut: THREE_NS.Mesh[] = []
-  let a0 = Math.PI / 2
-  for (const [f, c, k] of segs) {
-    const len = -f * Math.PI * 2 + 0.05
-    const g = new THREE.RingGeometry(0.38, 0.54, donutSeg, 1, a0 - 0.025, len)
-    const m = new THREE.MeshBasicMaterial({ color: hdr(THREE, c, k), transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide })
-    contentMats.push(m)
-    const mesh = new THREE.Mesh(g, m)
-    mesh.position.set(-0.45, -0.12, 0.01)
-    mesh.renderOrder = 6
-    panels[1].add(mesh)
-    donut.push(mesh)
-    a0 += -f * Math.PI * 2
-  }
-  // 불량 파레토 — 캡슐 바
-  const pareto = new THREE.InstancedMesh(
-    roundRectGeo(THREE, 1, 1, 0.5).translate(0.5, 0, 0),
-    new THREE.MeshBasicMaterial({ color: hdr(THREE, COL.amber, 0.85), transparent: true, opacity: 0, depthWrite: false }),
-    5,
-  )
-  contentMats.push(pareto.material as THREE_NS.Material)
-  const m4 = new THREE.Matrix4()
-  for (let i = 0; i < 5; i++) {
-    m4.makeScale(0.72 * (1 - i * 0.17), 0.075, 1)
-    m4.setPosition(0.32, 0.26 - i * 0.17, 0.01)
-    pareto.setMatrixAt(i, m4)
-  }
-  pareto.frustumCulled = false
-  pareto.renderOrder = 6
-  panels[1].add(pareto)
-
-  // KPI: 팻 라인 + 영역 채움 + 타일
-  const linePts = 40
-  const lp = new Float32Array(linePts * 3)
-  const rl = mulberry32(2023)
-  let v = 0.1
-  for (let i = 0; i < linePts; i++) {
-    v += (rl() - 0.42) * 0.12
-    v = Math.min(0.42, Math.max(-0.1, v))
-    lp[i * 3] = -1.05 + (i / (linePts - 1)) * 2.1
-    lp[i * 3 + 1] = -0.55 + (v + 0.12) * 0.85 + (i / linePts) * 0.22
-    lp[i * 3 + 2] = 0.012
-  }
-  const lg = new A.LineGeometry()
-  lg.setPositions(lp)
-  const lineMat = fatMat(THREE, A, fat, hdr(THREE, COL.teal, 1.9), 2.0)
-  const line = new A.Line2(lg, lineMat)
-  line.frustumCulled = false
-  line.renderOrder = 7
-  panels[2].add(line)
-  // 영역 채움: 라인 → 바닥, 가산 그라디언트
-  const base = -0.62
-  const ap = new Float32Array(linePts * 2 * 3)
-  const ac = new Float32Array(linePts * 2 * 3)
-  const top = new THREE.Color(COL.teal).multiplyScalar(0.3)
-  for (let i = 0; i < linePts; i++) {
-    ap.set([lp[i * 3], lp[i * 3 + 1], 0.011, lp[i * 3], base, 0.011], i * 6)
-    ac.set([top.r, top.g, top.b, 0, 0, 0], i * 6)
-  }
-  const idx: number[] = []
-  for (let i = 0; i < linePts - 1; i++) {
-    const a = i * 2
-    idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2)
-  }
-  const ag = new THREE.BufferGeometry()
-  ag.setAttribute('position', new THREE.BufferAttribute(ap, 3))
-  ag.setAttribute('color', new THREE.BufferAttribute(ac, 3))
-  ag.setIndex(idx)
-  const areaMat = new THREE.MeshBasicMaterial({ vertexColors: true, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide })
-  contentMats.push(areaMat)
-  const area = new THREE.Mesh(ag, areaMat)
-  area.frustumCulled = false
-  area.renderOrder = 6
-  panels[2].add(area)
-  const kpi = new THREE.InstancedMesh(
-    roundRectGeo(THREE, 0.62, 0.3, 0.05),
-    new THREE.MeshBasicMaterial({ color: hdr(THREE, COL.teal, 0.42), transparent: true, opacity: 0, depthWrite: false }),
-    3,
-  )
-  contentMats.push(kpi.material as THREE_NS.Material)
-  for (let i = 0; i < 3; i++) {
-    m4.makeTranslation(-0.75 + i * 0.75, 0.36, 0.01)
-    kpi.setMatrixAt(i, m4)
-  }
-  kpi.frustumCulled = false
-  kpi.renderOrder = 6
-  panels[2].add(kpi)
-
-  // 게이트웨이 업링크 입자(DB 상단 → 대시보드)
-  const nu = 64
-  const ug = new THREE.BufferGeometry()
-  ug.setAttribute('position', new THREE.BufferAttribute(new Float32Array(nu * 3), 3))
-  const uplinkMat = new THREE.PointsMaterial({
-    color: hdr(THREE, COL.blue, 2.4),
-    size: 0.11,
-    map: dot,
-    transparent: true,
-    opacity: 0,
-    depthWrite: false,
-    blending: THREE.AdditiveBlending,
-  })
-  const uplink = new THREE.Points(ug, uplinkMat)
-  uplink.frustumCulled = false
-
-  return {
-    group,
-    panels,
-    panelMats,
-    bezelMat,
-    bars,
-    barBase,
-    donut,
-    donutSeg,
-    lineGeo: lg as unknown as { instanceCount: number },
-    lineMat,
-    area,
-    linePts,
-    kpi,
-    uplink,
-    uplinkMat,
-    contentMats,
-  }
-}
-
 // ─────────────────────────── 451 다이얼(바닥 링) ───────────────────────────
 export interface Dial {
   group: THREE_NS.Group
@@ -1045,4 +774,79 @@ export function makeDust(THREE: Three, dot: THREE_NS.Texture) {
   const pts = new THREE.Points(g, m)
   pts.frustumCulled = false
   return pts
+}
+
+// ─────────────────────────── DB → 리포트 데이터 스트림 ───────────────────────────
+export const STREAM_N = 18 // 스트림당 입자
+export const STREAM_LUT = 48
+
+export interface StreamSpec {
+  p0: THREE_NS.Vector3
+  p1: THREE_NS.Vector3
+  p2: THREE_NS.Vector3
+  p3: THREE_NS.Vector3
+  color: number
+}
+export interface Streams {
+  /** 스트림별 호길이 균등 샘플 [x,y,z]×STREAM_LUT */
+  lut: Float32Array[]
+  base: THREE_NS.Color[]
+  lineMats: LineMaterialT[]
+  points: THREE_NS.Points
+  pos: THREE_NS.BufferAttribute
+  col: THREE_NS.BufferAttribute
+  heads: THREE_NS.Points
+  headPos: THREE_NS.BufferAttribute
+  headCol: THREE_NS.BufferAttribute
+  group: THREE_NS.Group
+}
+
+/** 슬랩 옆면에서 나와 휘어 올라가 특정 비주얼 앞면으로 흡수되는 3차 베지어 — 팻 라인 궤적 + 소프트 입자. */
+export function makeStreams(THREE: Three, A: Addons, fat: LineMaterialT[], dot: THREE_NS.Texture, specs: StreamSpec[]): Streams {
+  const group = new THREE.Group()
+  const lut: Float32Array[] = []
+  const base: THREE_NS.Color[] = []
+  const lineMats: LineMaterialT[] = []
+  for (const sp of specs) {
+    const cv = new THREE.CubicBezierCurve3(sp.p0, sp.p1, sp.p2, sp.p3)
+    const pts = cv.getSpacedPoints(STREAM_LUT - 1)
+    const arr = new Float32Array(STREAM_LUT * 3)
+    pts.forEach((p, i) => arr.set([p.x, p.y, p.z], i * 3))
+    lut.push(arr)
+    base.push(new THREE.Color(sp.color))
+    const lg = new A.LineGeometry()
+    lg.setPositions(arr)
+    const m = fatMat(THREE, A, fat, hdr(THREE, sp.color, 0.9), 1.3)
+    lineMats.push(m)
+    const line = new A.Line2(lg, m)
+    line.frustumCulled = false
+    line.renderOrder = 4
+    group.add(line)
+  }
+  const n = specs.length * STREAM_N
+  const g = new THREE.BufferGeometry()
+  const pos = new THREE.BufferAttribute(new Float32Array(n * 3), 3)
+  const col = new THREE.BufferAttribute(new Float32Array(n * 3), 3)
+  pos.setUsage(THREE.DynamicDrawUsage)
+  col.setUsage(THREE.DynamicDrawUsage)
+  g.setAttribute('position', pos)
+  g.setAttribute('color', col)
+  const mat = new THREE.PointsMaterial({ size: 0.15, map: dot, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending })
+  const points = new THREE.Points(g, mat)
+  points.frustumCulled = false
+  points.renderOrder = 7
+  group.add(points)
+  // 도착 지점 임팩트(비주얼 앞면의 작은 섬광) — 스트림당 1
+  const hg = new THREE.BufferGeometry()
+  const headPos = new THREE.BufferAttribute(new Float32Array(specs.length * 3), 3)
+  const headCol = new THREE.BufferAttribute(new Float32Array(specs.length * 3), 3)
+  specs.forEach((sp, i) => headPos.setXYZ(i, sp.p3.x, sp.p3.y, sp.p3.z))
+  headCol.setUsage(THREE.DynamicDrawUsage)
+  hg.setAttribute('position', headPos)
+  hg.setAttribute('color', headCol)
+  const heads = new THREE.Points(hg, new THREE.PointsMaterial({ size: 0.9, map: dot, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }))
+  heads.frustumCulled = false
+  heads.renderOrder = 7
+  group.add(heads)
+  return { lut, base, lineMats, points, pos, col, heads, headPos, headCol, group }
 }

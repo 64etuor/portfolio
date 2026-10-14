@@ -4,7 +4,7 @@ import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useThreeScene } from '../_host/three/useThreeScene'
 import type { SceneProps } from '../_host/types'
-import { HUD, PANELS, PHASES, SLABS, pick } from './data'
+import { HUD, PHASES, SLABS, pick } from './data'
 import { BG, setupScene } from './runtime'
 import s from './scene.module.css'
 
@@ -66,11 +66,6 @@ export default function Scene({ running = true, onReady, locale }: SceneProps) {
         {SLABS.map((sl, i) => (
           <div key={sl.label.en} data-k={`slab${i}`} className={s.slabLabel} style={{ opacity: 0 }}>
             <span>{pick(sl.label, en)}</span>
-          </div>
-        ))}
-        {PANELS.map((p, i) => (
-          <div key={p.en} data-k={`panel${i}`} className={s.panelLabel} style={{ opacity: 0 }}>
-            {pick(p, en)}
           </div>
         ))}
         <div data-k="gateway" className={s.gateway} style={{ opacity: 0 }}>

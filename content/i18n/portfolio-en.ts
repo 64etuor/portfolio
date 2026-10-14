@@ -154,6 +154,11 @@ const EN_GALLERY_CAPTIONS: Record<string, string> = {
   "/projects/work-radar/work-radar-10-control-room-2026-06-15.png": "Control Room — Boule Governance posture, ticker, readiness, and flow graph. The ghost SPEC · PLAN · TASK · SESSION · HANDOFF pipeline turns into a FlowSchematic once work appears, so a person can read and steer the tangled state.",
 }
 
+const EN_LINK_LABELS: Record<string, string> = {
+  '/s/weld-doe': 'Ultrasonic Welding DOE',
+  '/s/line-balance': 'LOB Line Balancing',
+}
+
 export function projectForLocale(project: ProjectContent, locale: Locale): ProjectContent {
   if (locale === 'ko') return project
   const english = EN_PROJECTS[project.slug]
@@ -166,6 +171,7 @@ export function projectForLocale(project: ProjectContent, locale: Locale): Proje
     metrics: english.metrics,
     stack: english.stack,
     sections: english.sections,
+    links: project.links?.map((link) => ({ ...link, label: EN_LINK_LABELS[link.href] ?? link.label })),
     // Screenshots stay (they document the real interfaces); captions and alt
     // text come from the English caption table. The workflow diagram is
     // authored in English already.

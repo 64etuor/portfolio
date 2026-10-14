@@ -83,7 +83,7 @@ export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: 
   return (
     <>
       {/* Controls (bottom-right): rewind + play/pause + sound */}
-      <div style={{ position: 'absolute', right: 20, bottom: 16, zIndex: 50, display: 'flex', gap: 8 }}>
+      <div style={{ position: 'absolute', right: 'max(16px, env(safe-area-inset-right))', bottom: 'max(16px, env(safe-area-inset-bottom))', zIndex: 50, display: 'flex', gap: 8 }}>
         <button onClick={onRewind} aria-label={t(SITE.film.previous)} className="film-ctrl">
           ←
         </button>
@@ -124,7 +124,7 @@ export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat }: 
       <button
         onClick={onSkip}
         className="film-skip"
-        style={{ position: 'absolute', top: '6.2vh', right: 20, zIndex: 50 }}
+        style={{ position: 'absolute', top: 'max(16px, env(safe-area-inset-top))', right: 'max(16px, env(safe-area-inset-right))', zIndex: 50 }}
       >
         {t(SITE.film.skip)}
       </button>

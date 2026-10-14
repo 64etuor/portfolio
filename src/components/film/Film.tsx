@@ -131,7 +131,7 @@ export function Film() {
   if (reduced) {
     const endFile = ACTS[ACTS.length - 1].scenes[0].file
     return (
-      <div role="region" aria-label={filmTitle} style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
+      <div role="region" aria-label={filmTitle} style={{ position: 'fixed', top: 0, left: 0, right: 0, height: '100dvh', background: '#000', overflow: 'hidden' }}>
         <h1 style={srOnly}>{filmTitle}</h1>
         <div style={{ position: 'absolute', inset: 0 }}>
           <SceneSlot file={endFile} running onReady={() => {}} />
@@ -149,7 +149,7 @@ export function Film() {
   const beat: FilmBeat = { act: currentShot.actIdx, scene: currentShot.sceneIdx, cut: cutId, ended }
 
   return (
-    <div role="region" aria-label={filmTitle} style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}>
+    <div role="region" aria-label={filmTitle} style={{ position: 'fixed', top: 0, left: 0, right: 0, height: '100dvh', background: '#000', overflow: 'hidden' }}>
       <h1 style={srOnly}>{filmTitle}</h1>
       {/* Buffered scene viewport — two stable slots that cross-fade. */}
       <div style={{ position: 'absolute', inset: 0 }}>

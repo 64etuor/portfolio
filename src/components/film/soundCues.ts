@@ -62,12 +62,12 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
     // Boot stays near-silent (owner: the POST screen should be quiet): one low power-on hum
     // and a soft confirm on READY — no typing / ticks / counter / beeps.
     { at: b(0.3), sfx: 'boot', gain: 0.28 },
-    { at: b(3.762), sfx: 'confirm', gain: 0.22 },
+    { at: b(3.762), sfx: 'beep', gain: 0.14, pitch: 0.55 },
   ],
   // Era stream — 33 photo cuts at 6.56·(1−0.93^k)/(1−0.93^33): the first 14 tick like a shutter,
   // the accelerating rest becomes one data texture; headline resolves 4.92–5.74; last cut 6.51.
   '42-era-shift.html': [
-    { at: [0.505, 0.975, 1.412, 1.819, 2.197, 2.548, 2.875, 3.179, 3.462, 3.725, 3.969, 4.197, 4.408], sfx: 'tick', gain: 0.12 },
+    { at: [0.505, 0.975, 1.412, 1.819, 2.197, 2.548, 2.875, 3.179, 3.462, 3.725, 3.969, 4.197, 4.408], sfx: 'tick', gain: 0.09, pitch: 0.62 },
     { at: 4.6, sfx: 'data', gain: 0.28 },
     { at: 5.3, sfx: 'riser', gain: 0.24 },
     { at: 5.33, sfx: 'chime2', gain: 0.24 },
@@ -110,8 +110,8 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
   // label refocus ≈ 10.07, right panels 11.308+1.144k.
   '41-perspectives.html': [
     { at: [2.17, 3.31, 4.46, 5.6, 6.74], sfx: 'pop', gain: 0.18 },
-    { at: 9.68, sfx: 'whoosh', gain: 0.28, pitch: 0.8 },
-    { at: 10.07, sfx: 'lock', gain: 0.2 },
+    { at: 9.68, sfx: 'whoosh', gain: 0.22, pitch: 0.8 },
+    { at: 10.07, sfx: 'tick', gain: 0.16 },
     { at: [11.41, 12.55, 13.7, 14.84, 15.98], sfx: 'pop', gain: 0.18, pitch: 1.122 },
   ],
   // Collision — 2.88 CHARGE (counter 000→100) → 4.80 IMPACT (flash, shake, glyphs shatter);
@@ -147,11 +147,9 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
   // ∞ bridge — node pulse peak 1.65 (text is CSS, settled before the cut); chevrons meet 1.85;
   // loop reset 6.60 (new ring pops, wave restarts).
   '36-bridge-experts.html': [
-    { at: 1.65, sfx: 'pulse', gain: 0.3 },
-    { at: 1.65, sfx: 'chime2', gain: 0.22 },
-    { at: 1.85, sfx: 'tick', gain: 0.16 },
-    { at: 6.6, sfx: 'pulse', gain: 0.34 },
-    { at: 6.62, sfx: 'pop', gain: 0.2 },
+    { at: 1.65, sfx: 'pop', gain: 0.16 },
+    { at: 1.85, sfx: 'tick', gain: 0.14 },
+    { at: 6.6, sfx: 'pulse', gain: 0.22 },
   ],
   // Smart factory — scan sweep 0.80–3.40; paper logs vanish 1.07–2.87; tablets 2.353;
   // barcode labels 2.64–3.15; panels pop 4.00 / 4.60 / 5.20; ERP modules 4.50 / 4.85 / 5.55;
@@ -162,8 +160,8 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
     { at: 2.353, sfx: 'beep', gain: 0.22 },
     { at: [2.64, 2.72, 2.81, 2.91, 3.04, 3.11], sfx: 'tick', gain: 0.14 },
     { at: [4.0, 4.6, 5.2], sfx: 'pop', gain: 0.3 },
-    { at: [4.5, 4.85, 5.55], sfx: 'tick', gain: 0.15, pitch: 1.12 },
-    { at: 6.35, sfx: 'chime', gain: 0.2 },
+    { at: [4.5, 4.85, 5.55], sfx: 'tick', gain: 0.12, pitch: 0.9 },
+    { at: 6.35, sfx: 'thud', gain: 0.22 },
   ],
   // Vision reverse — scan 0–2.8 (columns light 0.30 / 0.64 / 1.03 / 1.55); LOCK 2.80 (red, NG);
   // push-in 2.8–3.6; tower alarm 3.324+0.523k; 45/45 at 4.38; cell lifts → ejected 6.40.
@@ -174,30 +172,26 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
     { at: 2.82, sfx: 'thud', gain: 0.22 },
     { at: [3.324, 3.847, 4.371, 4.894], sfx: 'beep', gain: 0.12, pitch: 0.89 },
     { at: 3.2, sfx: 'swish', gain: 0.18 },
-    { at: 4.38, sfx: 'chime', gain: 0.2 },
-    { at: 6.2, sfx: 'whoosh', gain: 0.22, pitch: 1.1 },
+    { at: 4.38, sfx: 'tick', gain: 0.16, pitch: 0.7 },
+    { at: 6.4, sfx: 'whoosh', gain: 0.2, pitch: 0.9 },
   ],
   // Weld DOE — 11 DOE runs pop at 0.9+0.135k (+0.26 s scale peak); horn lifts 1.3–2.4; surface
   // fits 2.5–4.5; counter 15 % → 1 % (4.75…5.77) → "0%대" 6.08 (payoff); window ring 6.25.
   'x-weld-doe.html': [
-    { at: [1.16, 1.295, 1.43, 1.565, 1.7, 1.835, 1.97, 2.105, 2.24, 2.375, 2.51], sfx: 'pop', gain: 0.15 },
-    { at: 1.8, sfx: 'swish', gain: 0.15 },
-    { at: 3.5, sfx: 'whoosh', gain: 0.18, pitch: 0.8 },
-    { at: 6.08, sfx: 'thud', gain: 0.32 },
-    { at: 6.25, sfx: 'chime', gain: 0.26 },
+    { at: [1.16, 1.7, 2.24], sfx: 'tick', gain: 0.11, pitch: 0.75 },
+    { at: 1.8, sfx: 'swish', gain: 0.14 },
+    { at: 3.5, sfx: 'scan', gain: 0.16 },
+    { at: 6.08, sfx: 'thud', gain: 0.3 },
   ],
-  // Line balance — Neck jig drops 0.9→lands ≈1.5, C/T rolls 1.6–2.9; FT jig lands ≈3.25, C/T rolls
-  // 3.3–4.6; "24%" 2.85, "49%" 4.55; plane drops 4.7–5.5; +24 % counts 5.41…6.27 (payoff).
+  // Line balance — jig and 2nd lane track the C/T roll (Neck 1.6–2.9, FT 3.3–4.6).
+  // Seat thuds land with −24% / −49%. Plane 4.7–5.5; +24% counts 5.41…6.27.
   'x-lob-balance.html': [
-    { at: 1.3, sfx: 'swish', gain: 0.15 },
-    { at: 1.5, sfx: 'thud', gain: 0.3 },
-    { at: 1.6, sfx: 'data', gain: 0.16 },
-    { at: 3.25, sfx: 'thud', gain: 0.28, pitch: 1.1 },
-    { at: 3.35, sfx: 'data', gain: 0.14, pitch: 1.06 },
-    { at: [2.85, 4.55], sfx: 'tick', gain: 0.2 },
-    { at: 5.0, sfx: 'whoosh', gain: 0.22, pitch: 0.85 },
-    { at: 6.27, sfx: 'chime', gain: 0.2 },
-    { at: 6.27, sfx: 'thud', gain: 0.32 },
+    { at: 1.2, sfx: 'swish', gain: 0.16 },
+    { at: 2.8, sfx: 'thud', gain: 0.3 },
+    { at: 3.35, sfx: 'swish', gain: 0.12, pitch: 1.08 },
+    { at: 4.45, sfx: 'thud', gain: 0.28, pitch: 1.08 },
+    { at: 5.0, sfx: 'whoosh', gain: 0.18, pitch: 0.85 },
+    { at: 6.27, sfx: 'thud', gain: 0.26 },
   ],
   // Excel → DB — 360 sheets launch 1.5 (spiral), land 2.95–4.8 (densest 3.5–4.2); validation sweep
   // 4.15–5.26; panels unfold 5.0 / 5.22 / 5.44; dial 5.55 → 451 at 6.85 (−451 min/day payoff).
@@ -205,9 +199,8 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
     { at: 2.2, sfx: 'whoosh', gain: 0.26, pitch: 0.8 },
     { at: 3.3, sfx: 'data', gain: 0.22 },
     { at: 4.15, sfx: 'scan', gain: 0.2 },
-    { at: [5.0, 5.22, 5.44], sfx: 'pop', gain: 0.22 },
-    { at: 6.85, sfx: 'chime', gain: 0.2 },
-    { at: 6.85, sfx: 'thud', gain: 0.32 },
+    { at: [5.0, 5.22, 5.44], sfx: 'pop', gain: 0.16 },
+    { at: 6.85, sfx: 'seal', gain: 0.28 },
   ],
   // S/N trace — defect pulse 0.35–1.0; fog 1.5–2.3, "?" box 1.7; trace-back hops 3.35 / 3.71 / 4.07 →
   // LOT found 4.43; forward wave 4.55 / 4.97 / 5.39 / 5.81; gate blocks 6.15; award 6.60.
@@ -230,9 +223,9 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
     { at: 1.85, sfx: 'seal', gain: 0.42 },
     { at: 1.95, sfx: 'boot', gain: 0.26, pitch: 0.85 },
     { at: [2.05, 2.2, 2.35, 2.5, 2.65, 2.8], sfx: 'tick', gain: 0.14 },
-    { at: [2.9, 3.1, 3.25, 3.9, 4.4, 4.5, 4.9, 5.1, 5.2, 5.3], sfx: 'pop', gain: 0.1 },
-    { at: 4.95, sfx: 'whoosh', gain: 0.18, pitch: 1.1 },
-    { at: 5.8, sfx: 'chime2', gain: 0.26 },
+    { at: [2.9, 3.9, 4.9, 5.3], sfx: 'pop', gain: 0.12 },
+    { at: 4.95, sfx: 'whoosh', gain: 0.16, pitch: 1.05 },
+    { at: 5.8, sfx: 'thud', gain: 0.2 },
   ],
   // Cross-domain — membrane sparks 0.68 / 1.59 / 2.50 / 3.42; rings touch 1.98; tag 2.25;
   // convergence settles ≈ 4.95 (full intersection 5.10); lens bloom 8.32.
@@ -267,8 +260,8 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
     { at: 3.4, sfx: 'data', gain: 0.16 },
     { at: 4.6, sfx: 'swish', gain: 0.14 },
     { at: [4.65, 4.87, 5.09], sfx: 'tick', gain: 0.15 },
-    { at: [5.9, 6.28, 6.66], sfx: 'lock', gain: 0.3 },
-    { at: 6.7, sfx: 'chime', gain: 0.2 },
+    { at: [5.9, 6.28, 6.66], sfx: 'lock', gain: 0.24 },
+    { at: 6.7, sfx: 'tick', gain: 0.14, pitch: 0.8 },
   ],
   // Ending — line 1 reads ≈ 1.0–1.2 (0.50–1.90), status 3.20 / 6.00, line 2 reads ≈ 4.0–4.2
   // (3.40–5.00); warp opens 8.7–11.3 (half 10.0). The iris-out impact lives in FilmControls.
@@ -287,8 +280,8 @@ export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
  */
 export const CUT_CUES = {
   act: [
-    { at: 0, sfx: 'swish', gain: 0.32 },
-    { at: 0, sfx: 'cut', gain: 0.34 },
+    { at: 0, sfx: 'swish', gain: 0.2 },
+    { at: 0, sfx: 'cut', gain: 0.22 },
   ],
-  scene: [{ at: 0, sfx: 'cut', gain: 0.24, pitch: 1.15 }],
+  scene: [{ at: 0, sfx: 'cut', gain: 0.14, pitch: 1.1 }],
 } as const satisfies Record<string, readonly Cue[]>

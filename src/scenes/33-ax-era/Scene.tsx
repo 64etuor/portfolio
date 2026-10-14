@@ -283,7 +283,7 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
         <div className={`${s.l2} ${s.kr}`}>
           <span ref={l2aRef} className={s.ln}>{english ? 'Manufacturing advantage now begins with ' : '이제 제조업의 경쟁력은'}</span>
           <span ref={l2bRef} className={s.ln}>
-            <span className={`${s.core} ${s.hot}`}>{english ? 'data' : '데이터'}</span>{english ? ' and ' : '와'}
+            <span className={`${s.core} ${s.hot}`}>{english ? 'data' : '데이터'}</span>{english ? ' and ' : '와 '}
             <span className={`${s.core} ${s.hot}`}>{english ? 'knowledge.' : '지식'}</span>{english ? '' : '에서 시작됩니다.'}
           </span>
         </div>

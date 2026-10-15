@@ -55,6 +55,13 @@ export const BOOT_OFFSET_S = 0.2
 
 const b = (t: number) => +(t + BOOT_OFFSET_S).toFixed(3)
 
+/**
+ * Scenes that emit their own semantic sound events (src/scenes/_host/sceneSound.ts → the film's
+ * eventMap). Their hand-timed cues below are skipped (kept only as reference until removed);
+ * the picture-cut sounds (CUT_CUES) still play for every shot.
+ */
+export const INSTRUMENTED: ReadonlySet<SceneFile> = new Set<SceneFile>(['05-bios-boot.html', 'x-sn-trace.html'])
+
 export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
   // Boot — Scene.tsx timer chain: CRT line 0.315, logo lines 0.28+0.06k, POST lines 0.67+0.185k,
   // memory counter 1.225→1.907 (32 steps, slowing), [OK] lines 2.107+0.185k, 100 % 3.402, READY 3.762.

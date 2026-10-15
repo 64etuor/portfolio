@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { FILM_SCORE, filmMusic, LEAD_MAX, sfx, type FilmClockSource, type PlayOpts, type SfxName } from '@/lib/sfx'
 import { FILM_SCHEDULE } from './schedule'
-import { CUT_CUES, CUT_GUARD_S, MAX_CUES_PER_SHOT, SOUND_CUES, type Cue } from './soundCues'
+import { CUT_CUES, CUT_GUARD_S, INSTRUMENTED, MAX_CUES_PER_SHOT, SOUND_CUES, type Cue } from './soundCues'
 
 /**
  * Hits older than this (ms) when the clock reaches them are dropped, never played late.
@@ -43,7 +43,8 @@ const FLAT: FlatHit[] = (() => {
   const out: FlatHit[] = []
   let id = 0
   FILM_SCHEDULE.forEach((shot, shotIdx) => {
-    const cues = (SOUND_CUES as Record<string, readonly Cue[] | undefined>)[shot.file] ?? []
+    // instrumented scenes emit their own sound events (useFilmSceneSound) — no hand-timed cues
+    const cues = (INSTRUMENTED as ReadonlySet<string>).has(shot.file) ? [] : ((SOUND_CUES as Record<string, readonly Cue[] | undefined>)[shot.file] ?? [])
     if (process.env.NODE_ENV === 'development' && cues.length > MAX_CUES_PER_SHOT) {
       console.warn(`[soundCues] ${shot.file}: ${cues.length} cues (max ${MAX_CUES_PER_SHOT})`)
     }

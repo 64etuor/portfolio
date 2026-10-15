@@ -2,6 +2,7 @@ import { roomEnvironment } from '../_host/three/env'
 import type * as THREE from 'three'
 import { easeInOutCubic, easeOutCubic, loopT, placeLabel, seg, setData, setStyle } from '../_host/three/helpers'
 import type { ThreeContext, ThreeSetupResult } from '../_host/three/types'
+import { createSoundTimeline, soundAt } from '../_host/sceneSound'
 import {
   buildEdges,
   buildFatEdges,
@@ -250,9 +251,45 @@ export async function setupSnTrace(ctx: ThreeContext): Promise<ThreeSetupResult>
   const fatMats = [aff.mat, path.mat, rings2.mat, shell.mat]
   const camTarget = new T3.Vector3(-1.1, 0.45, 0)
 
+  // ── 사운드 이벤트(필름에서만 울림) — 화면 비트와 같은 T 상수에서 발화, x 는 화면 위치(패닝). ──
+  const cues = createSoundTimeline(ctx.sound)
+  const sx = (x: number) => clamp01(x / Math.max(1, ctx.size.w))
+  const nodeX = (i: number) => sx(nodeScreen(i).x)
+  const elX = (el: HTMLElement | null) => {
+    if (!el) return 0.5
+    const r = el.getBoundingClientRect()
+    const c = ctx.container.getBoundingClientRect()
+    return clamp01((r.left + r.width / 2 - c.left) / Math.max(1, c.width))
+  }
+  const backEndT = T.backStart + 3 * T.backHop
+  const sounds = (t: number) => {
+    if (t >= HERO) return
+    // 필드 불량 펄스 — 낮고 둔한 '결함' 톤
+    soundAt(cues, t, T.defectIn, 'defect', () => ({ id: 'sn.defect', x: nodeX(g.defect) }))
+    // 수기 S/N 안개 — 옅은 데이터 텍스처
+    soundAt(cues, t, T.ambigIn, 'data', () => {
+      const e = extents(allProducts)
+      return { id: 'sn.fog', x: sx((e[0] + e[2]) / 2), intensity: 0.35, durationS: T.ambigOut - T.ambigIn }
+    })
+    // 역추적 — 불량 제품에서 원인 LOT 까지 스캔(패닝이 따라간다)
+    soundAt(cues, t, T.backStart, 'scan', () => ({ id: 'sn.trace', x: nodeX(g.defect), toX: nodeX(g.lot), durationS: 3 * T.backHop }))
+    // 원인 LOT 특정
+    soundAt(cues, t, backEndT, 'lock', () => ({ id: 'sn.lot', x: nodeX(g.lot), intensity: 0.8 }))
+    // 순방향 파면 — LOT 에서 영향 제품 군집으로
+    soundAt(cues, t, T.fwdStart, 'data', () => {
+      const e = extents(affProducts)
+      return { id: 'sn.wave', x: nodeX(g.lot), toX: sx((e[0] + e[2]) / 2), durationS: 3 * T.fwdHop }
+    })
+    // 게이트 차단
+    soundAt(cues, t, T.gateHit, 'block', () => ({ id: 'sn.gate', x: sx(proj(gp.x, gp.y, gp.z).x) }))
+    // 수상 — 이 씬의 결론(페이오프)
+    soundAt(cues, t, T.awardIn, 'payoff', () => ({ id: 'sn.award', x: elX(elSteps[3]) }))
+  }
+
   let lastEdgeKey = -1
   const update = (t: number) => {
     const st = stateAt(t)
+    sounds(t)
 
     // ── 카메라: 느린 돌리 + 스윙 ──
     const hp = easeInOutCubic(seg(t, 0, HERO))

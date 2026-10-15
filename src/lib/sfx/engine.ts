@@ -46,6 +46,15 @@ export type SfxName =
   | 'crack'
   | 'chime'
   | 'chime2'
+  // scene-event palette (eventMap.ts) — procedural only
+  | 'air'
+  | 'keys'
+  | 'shimmer'
+  | 'sweep'
+  | 'dull'
+  | 'buzz'
+  | 'open'
+  | 'warm'
 
 /** 'off' = muted by the user · 'on' = audible · 'blocked' = wants sound, waiting for a gesture */
 export type SfxState = 'off' | 'on' | 'blocked'
@@ -59,6 +68,10 @@ export interface PlayOpts {
   pan?: number
   /** seconds from now to the sound's HIT (scheduled on the audio clock) */
   delay?: number
+  /** length (s) of a continuous voice (keys / shimmer / sweep) */
+  dur?: number
+  /** pan at the end of a continuous voice (glides from `pan`) */
+  panTo?: number
 }
 
 const MASTER = 0.7
@@ -66,7 +79,7 @@ const MASTER = 0.7
 const LIMIT_DB = -10
 const MAX_VOICES = 14
 const STORAGE_KEY = 'pf.sfx.enabled'
-const MIN_GAP: Partial<Record<SfxName, number>> = { type: 0.025, tick: 0.03, count: 0.03, pop: 0.03 }
+const MIN_GAP: Partial<Record<SfxName, number>> = { type: 0.025, tick: 0.03, count: 0.03, pop: 0.03, buzz: 0.01 }
 const DEFAULT_GAP = 0.045
 const SILENT = 0.0001
 /** a drawn frame reaches the screen ≈ one 60 Hz frame after its rAF (filmT) */
@@ -88,6 +101,7 @@ const DUCK: Partial<Record<SfxName, readonly [number, number, number]>> = {
   chime: [0.79, 0.2, 0.4],
   riser: [0.84, 0.1, 0.3],
   confirm: [0.84, 0.15, 0.3],
+  warm: [0.84, 0.3, 0.5],
 }
 
 /**
@@ -493,13 +507,15 @@ class SfxEngine {
       v.reverb(s.send ?? 0).sample(this.sprite, m.start + this.spriteShift, m.dur, m.hit, hit, rate)
       if (s.layer) {
         const lv = new Voice(ctx, this.noiseBuf, this.voiceBus, this.reverbIn, level * s.layer, opts.pan ?? 0, now)
-        RECIPES[name](lv, hit, opts.pitch ?? 1)
+        RECIPES[name](lv, hit, opts.pitch ?? 1, opts)
         this.voices.push({ hit, end: lv.finish(), out: lv.outNode, sources: lv.sources })
       }
     } else {
       const p = (opts.pitch ?? 1) * (TONAL_SYNTH.has(name) ? this.tune : 1)
-      v = new Voice(ctx, this.noiseBuf, this.voiceBus, this.reverbIn, level, opts.pan ?? 0, now)
-      RECIPES[name](v, Math.max(now + 0.005, hit - (SYNTH_LEAD[name] ?? 0)), p)
+      // a pan glide (panTo) is drawn inside the recipe, so the voice itself stays centred
+      const glide = opts.panTo !== undefined
+      v = new Voice(ctx, this.noiseBuf, this.voiceBus, this.reverbIn, level, glide ? 0 : (opts.pan ?? 0), now)
+      RECIPES[name](v, Math.max(now + 0.005, hit - (SYNTH_LEAD[name] ?? 0)), p, opts)
     }
     this.voices.push({ hit, end: v.finish(), out: v.outNode, sources: v.sources })
     const duck = DUCK[name]
@@ -650,13 +666,22 @@ class Voice {
     lowpass?: number
     /** bit-crush: quantise the waveform to a few levels (lo-fi digital grit) */
     crush?: boolean
+    /** per-partial stereo position −1..1 (grains of a panned texture) */
+    pan?: number
   }) {
     const osc = this.ctx.createOscillator()
     osc.type = o.type ?? 'sine'
     osc.detune.value = o.detune ?? 0
     osc.frequency.setValueAtTime(o.f0, o.t)
     if (o.f1 !== undefined) osc.frequency.exponentialRampToValueAtTime(o.f1, o.t + (o.glide ?? o.a + o.d))
-    const g = this.env(o.t, o.peak, o.a, o.d)
+    let dest: AudioNode = this.out
+    if (o.pan !== undefined) {
+      const pn = this.ctx.createStereoPanner()
+      pn.pan.value = Math.max(-1, Math.min(1, o.pan))
+      pn.connect(this.out)
+      dest = pn
+    }
+    const g = this.env(o.t, o.peak, o.a, o.d, dest)
     let src: AudioNode = osc
     if (o.crush) {
       const ws = this.ctx.createWaveShaper()
@@ -743,9 +768,16 @@ function crushCurve(): Float32Array<ArrayBuffer> {
 // ── recipes (procedural fallbacks; also the only voice for cut/boot/reject/pulse/crack) ────
 // Peaks are pre-master amplitudes; each recipe's Σpeak ≤ 0.34 (→ ≤ −12 dBFS out).
 
-type Recipe = (v: Voice, t: number, p: number) => void
+type Recipe = (v: Voice, t: number, p: number, o: PlayOpts) => void
 
-const TONAL_SYNTH: ReadonlySet<SfxName> = new Set<SfxName>(['beep', 'lock', 'confirm', 'chime', 'chime2', 'pop'])
+const TONAL_SYNTH: ReadonlySet<SfxName> = new Set<SfxName>(['beep', 'lock', 'confirm', 'chime', 'chime2', 'pop', 'air', 'shimmer', 'open', 'warm'])
+
+/** Deterministic-enough jitter for textures (no allocation, no Math.random bias concerns). */
+const jit = (i: number, k: number) => {
+  const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453
+  return x - Math.floor(x)
+}
+const clampDur = (d: number | undefined, lo: number, hi: number, def: number) => Math.max(lo, Math.min(hi, d ?? def))
 
 const RECIPES: Record<SfxName, Recipe> = {
   // Soft low thump: sine dropping 120→42 Hz + a dull felt-like click.
@@ -875,7 +907,80 @@ const RECIPES: Record<SfxName, Recipe> = {
       .tone({ t, f0: 523.25 * p, peak: 0.02, a: 0.01, d: 1.2 })
   },
   // Chime 2: the same bell a fourth lower (G5).
-  chime2: (v, t, p) => RECIPES.chime(v, t, 0.749 * p),
+  chime2: (v, t, p, o) => RECIPES.chime(v, t, 0.749 * p, o),
+
+  // ── scene-event palette (eventMap.ts). Pitches are written in C and shifted by `tune`. ──
+
+  // reveal — very soft airy swell: band-passed noise breathing in over 0.22 s + a faint G6 shimmer.
+  air: (v, t, p, o) => {
+    const glide = o.panTo !== undefined ? { panFrom: o.pan ?? 0, panTo: o.panTo } : {}
+    v.reverb(0.45)
+      .noise({ t, filter: 'bandpass', f0: 1800, fMid: 3600, f1: 2600, q: 0.7, peak: 0.07, a: 0.22, d: 0.5, ...glide })
+      .tone({ t: t + 0.05, f0: 1568 * p, peak: 0.012, a: 0.18, d: 0.45 })
+  },
+  // type — ONE soft keyboard texture for `dur`: muffled band-passed clicks at an uneven 45–110 ms
+  // cadence, fading in/out at the run's edges (no per-character events).
+  keys: (v, t, p, o) => {
+    const dur = clampDur(o.dur, 0.2, 3, 0.8)
+    let x = 0
+    for (let i = 0; x < dur && i < 60; i++) {
+      const edge = Math.min(1, x / 0.12, (dur - x) / 0.15)
+      v.noise({ t: t + x, filter: 'bandpass', f0: (1800 + jit(i, 1) * 900) * p, q: 1.6, peak: 0.07 * (0.55 + 0.45 * jit(i, 2)) * Math.max(0.25, edge), a: 0.001, d: 0.018 })
+      x += 0.045 + jit(i, 3) * 0.065
+    }
+  },
+  // data — granular shimmer for `dur`: tiny sine grains on a pentatonic set (C D E G A, 2 octaves),
+  // ~30 grains/s under a swell envelope, panned along x → toX.
+  shimmer: (v, t, p, o) => {
+    const dur = clampDur(o.dur, 0.3, 4, 1)
+    const PENTA = [1046.5, 1174.7, 1318.5, 1568, 1760, 2093, 2349.3, 2637]
+    const n = Math.min(110, Math.round(dur * 30))
+    const from = o.pan ?? 0
+    const to = o.panTo ?? from
+    const glide = o.panTo !== undefined
+    v.reverb(0.3)
+    for (let i = 0; i < n; i++) {
+      const u = i / n
+      const env = Math.sin(Math.PI * Math.min(1, u * 1.05 + 0.03))
+      // with a glide each grain sits on the x → toX line (the voice itself is centred)
+      const pan = glide ? from + (to - from) * u + (jit(i, 7) - 0.5) * 0.15 : undefined
+      v.tone({ t: t + u * dur + jit(i, 4) * 0.02, f0: PENTA[Math.floor(jit(i, 5) * PENTA.length)] * p, peak: 0.018 * env + 0.004, a: 0.004, d: 0.05 + jit(i, 6) * 0.05, lowpass: 5000, pan })
+    }
+  },
+  // scan — gentle filtered sweep across `dur`: low-Q band-pass noise 500 → 2600 Hz with a
+  // soft triangle glide underneath; pans x → toX.
+  sweep: (v, t, p, o) => {
+    const dur = clampDur(o.dur, 0.3, 3, 0.8)
+    // with panTo the voice is centred and the sweep carries the glide; otherwise the voice pans
+    const glide = o.panTo !== undefined ? { panFrom: o.pan ?? 0, panTo: o.panTo } : {}
+    v.reverb(0.3)
+      .noise({ t, filter: 'bandpass', f0: 500 * p, fMid: 1400 * p, f1: 2600 * p, q: 0.9, peak: 0.07, a: dur * 0.55, d: dur * 0.45, ...glide })
+      .tone({ t, type: 'triangle', f0: 330 * p, f1: 660 * p, glide: dur, peak: 0.02, a: dur * 0.5, d: dur * 0.5, lowpass: 1400 })
+  },
+  // defect — low, dull, muted tone (no beep): two slightly detuned triangles at D3, low-passed.
+  dull: (v, t, p) => {
+    v.reverb(0.2)
+      .tone({ t, type: 'triangle', f0: 146.8 * p, f1: 138.6 * p, glide: 0.5, peak: 0.12, a: 0.018, d: 0.55, lowpass: 650 })
+      .tone({ t, type: 'triangle', f0: 147.6 * p, f1: 139.3 * p, glide: 0.5, peak: 0.07, a: 0.025, d: 0.45, lowpass: 500 })
+      .tone({ t, f0: 73.4 * p, peak: 0.06, a: 0.02, d: 0.4 })
+  },
+  // block (layer) — muted buzz: a low square at 92 Hz through a dark low-pass, 0.22 s.
+  buzz: (v, t, p) => {
+    v.reverb(0.1).tone({ t: t + 0.01, type: 'square', f0: 92 * p, peak: 0.05, a: 0.01, d: 0.24, lowpass: 420 })
+  },
+  // approve — soft open tone: C5 → G5 (a fifth up, tuned by `tune`) with a slow bloom.
+  open: (v, t, p) => {
+    v.reverb(0.45)
+      .tone({ t, f0: 523.25 * p, peak: 0.05, a: 0.03, d: 0.7 })
+      .tone({ t: t + 0.09, f0: 783.99 * p, peak: 0.05, a: 0.04, d: 0.9 })
+      .tone({ t: t + 0.09, f0: 1567.98 * p, peak: 0.008, a: 0.05, d: 0.5 })
+  },
+  // resolve — warm soft chord: C3 G3 C4 D4 (an open sus2 → E B E F# after `tune`, in the score's
+  // E minor), low-passed triangles with a slow 0.3 s attack and a long tail.
+  warm: (v, t, p) => {
+    v.reverb(0.55)
+    ;[130.81, 196, 261.63, 293.66].forEach((f, i) => v.tone({ t: t + i * 0.025, type: 'triangle', f0: f * p, peak: [0.07, 0.05, 0.04, 0.025][i], a: 0.3, d: 2.2 - i * 0.2, lowpass: 1600 }))
+  },
 }
 
 export function createEngine() {

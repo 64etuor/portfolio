@@ -41,5 +41,7 @@ faded and normalized (`.omc/score/v3/sprite.mjs`).
 | glitch | Glitch Transition 1 | AleXZavesa | https://pixabay.com/sound-effects/glitch-transition-1-463623/ |
 | riser | Short Sweep 01 - BRVHRTZ | BRVHRTZ | https://pixabay.com/sound-effects/film-special-effects-short-sweep-01-brvhrtz-224283/ |
 
-The `cut`, `boot`, `reject`, `pulse` and `crack` sounds are synthesized in `src/lib/sfx/engine.ts`.
+The `cut`, `boot`, `reject`, `pulse` and `crack` sounds, and the scene-event palette voices `air`, `keys`,
+`shimmer`, `sweep`, `dull`, `buzz`, `open` and `warm` (see `src/lib/sfx/eventMap.ts`), are synthesized in
+`src/lib/sfx/engine.ts` — no third-party audio.
 That file also has a synthesized fallback for every sample, used if the sprite fails to load.

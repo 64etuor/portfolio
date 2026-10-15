@@ -1,6 +1,7 @@
 'use client'
 
 import { createContext, useContext } from 'react'
+import type { SoundEvent, SoundOpts } from './sceneSound'
 
 /**
  * SceneClock — the contract a master clock (currently only the film) hands down
@@ -31,6 +32,12 @@ export interface SceneClock {
    * this. Everything else can ignore it.
    */
   remainingMs?(): number
+  /**
+   * Scene sound emitter (see sceneSound.ts). Set by the film ONLY for the visible, running
+   * slot — absent on the staged slot, while paused, and outside the film (standalone pages
+   * and galleries stay silent). Scenes reach it via useSceneSound() / ThreeContext.sound.
+   */
+  emit?(ev: SoundEvent, opts?: SoundOpts): void
 }
 
 export const SceneClockContext = createContext<SceneClock | null>(null)

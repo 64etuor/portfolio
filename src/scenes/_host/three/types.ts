@@ -1,6 +1,7 @@
 import type * as THREE_NS from 'three'
 import type { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import type { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import type { SceneSound } from '../sceneSound'
 
 export type Three = typeof THREE_NS
 
@@ -18,6 +19,11 @@ export interface ThreeContext {
   container: HTMLDivElement
   /** 현재 CSS px 크기. resize 시 갱신된다. */
   size: { w: number; h: number; dpr: number }
+  /**
+   * 씬 사운드 이벤트 emitter(sceneSound.ts) — 필름의 보이는·재생 중 슬롯에서만 실제로 울린다
+   * (단독 페이지/갤러리/스테이징/일시정지에선 no-op). 결정적 타임라인은 soundAt 과 함께 쓴다.
+   */
+  sound: SceneSound
 }
 
 export interface ThreeSetupResult {

@@ -11,7 +11,10 @@ import { useFilmClock } from './useFilmClock'
 import { useSceneBuffer } from './useSceneBuffer'
 import { useIrisOutro } from './useIrisOutro'
 import { useFilmSoundCues } from './useFilmSoundCues'
+import { useFilmSceneSound } from './useFilmSceneSound'
+import { FilmSoundDebug } from './FilmSoundDebug'
 import type { SceneClock } from '@/scenes/_host/sceneClock'
+import { emitSound } from '@/scenes/_host/sceneSound'
 import { SITE } from '@content/site'
 import { useLocale } from '../LocaleProvider'
 
@@ -33,11 +36,17 @@ const srOnly: CSSProperties = {
   border: 0,
 }
 
-/** Builds the SceneClock passed to a slot: shot-local seconds from the master clock. */
-function clockFor(shot: { start: number; end: number; duration: number }, filmT: number): SceneClock {
+/**
+ * Builds the SceneClock passed to a slot: shot-local seconds from the master clock.
+ * `soundFile` (set only for the visible, running slot) enables the slot's scene-sound emitter;
+ * every other slot gets no `emit`, so a staged or paused scene can never make a sound.
+ */
+function clockFor(shot: { start: number; end: number; duration: number }, filmT: number, soundFile: string | null): SceneClock {
+  const now = () => Math.max(0, Math.min(filmT - shot.start, shot.duration)) / 1000
   return {
-    now: () => Math.max(0, Math.min(filmT - shot.start, shot.duration)) / 1000,
+    now,
     remainingMs: () => shot.end - filmT,
+    emit: soundFile ? (ev, opts) => emitSound(ev, opts, soundFile, now()) : undefined,
   }
 }
 
@@ -65,9 +74,12 @@ export function Film() {
   const [ready, setReady] = useState(false)
   const [ended, setEnded] = useState(false)
   const [paused, setPaused] = useState(false)
+  // /film?sfx=debug — live ticker of scene sound events (dev and prod)
+  const [sfxDebug, setSfxDebug] = useState(false)
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) setReduced(true)
+    if (new URLSearchParams(window.location.search).get('sfx') === 'debug') setSfxDebug(true)
     setReady(true)
   }, [])
 
@@ -97,6 +109,9 @@ export function Film() {
     reduced,
     ready,
   })
+
+  // Scene-driven sound events → eventMap → sfx engine (only the visible running slot emits).
+  const sceneSound = useFilmSceneSound({ clock: clockSource, paused, ended, cutId, debug: sfxDebug })
 
   // Rewind one beat (act). Always lands on that beat's first scene and resumes
   // playback (un-pause), so the control produces visible motion even while paused.
@@ -159,7 +174,7 @@ export function Film() {
           // Match this slot's file against the current/next shot so its scene reads
           // `t` from the master clock — never from a local elapsed-since-mount counter.
           const shotForSlot = f === currentFile ? currentShot : f === nextFile ? nextShot : null
-          const clock = shotForSlot ? clockFor(shotForSlot, filmT) : undefined
+          const clock = shotForSlot ? clockFor(shotForSlot, filmT, isVisible && !paused && !ended ? f : null) : undefined
           return (
             <div
               key={`slot-${i}`}
@@ -241,6 +256,8 @@ export function Film() {
         beat={beat}
         filmT={filmT}
       />
+
+      {sfxDebug && <FilmSoundDebug mapper={sceneSound} />}
 
       {/* Outro iris — at the end, the frame collapses into a point, then routes home */}
       {ended && (

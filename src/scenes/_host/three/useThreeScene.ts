@@ -397,6 +397,10 @@ export function useThreeScene(setup: ThreeSetup, opts: ThreeSceneOptions = {}) {
         bloom: bloomPass,
         container,
         size: { w, h, dpr },
+        // 호출 시점의 클럭을 읽는다 — 보이는·재생 중 슬롯일 때만 clock.emit 이 있다.
+        sound: (ev, sopts) => {
+          if (runningRef.current) clockRef.current?.emit?.(ev, sopts)
+        },
       }
       ctxRef.current = ctx
 

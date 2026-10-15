@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneReady } from '../_host/useSceneReady'
+import { useSceneSound } from '../_host/sceneSound'
 import type { SceneProps } from '../_host/types'
 import s from './scene.module.css'
 
@@ -69,6 +70,11 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const readyRef = useRef<HTMLDivElement | null>(null)
 
   useSceneReady(onReady)
+  // Scene sound events (film only; silent elsewhere). The boot stays near-silent on purpose:
+  // a soft power-on when the CRT lights and a soft 'approve' when SYSTEM READY lands — the
+  // logo / POST lines / memory count make no sound. Emitted from the same timer callbacks that
+  // draw each step, so the sound is on the visual moment by construction.
+  const sound = useSceneSound()
 
   useEffect(() => {
     if (!running) return
@@ -118,6 +124,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       done = true
       setProg(100)
       if (statRef.current) statRef.current.textContent = 'READY'
+      sound('approve', { id: 'boot.ready', x: 0.3, intensity: 0.55 })
       if (readyRef.current) {
         readyRef.current.classList.remove(s.readylineOn)
         void readyRef.current.offsetWidth
@@ -197,6 +204,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
         void fl.offsetWidth
         fl.classList.add(s.flashPoweron)
       }
+      sound('reveal', { id: 'boot.power', x: 0.5, intensity: 0.6 })
       if (screenRef.current) {
         screenRef.current.classList.remove(s.screenLit)
         void screenRef.current.offsetWidth
@@ -219,7 +227,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
       done = true
       timers.forEach(clearTimeout)
     }
-  }, [running])
+  }, [running, sound])
 
   return (
     <SceneHost bg="#050505">

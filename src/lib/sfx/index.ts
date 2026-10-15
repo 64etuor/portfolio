@@ -36,3 +36,4 @@ if (process.env.NODE_ENV === 'development' && typeof window !== 'undefined') {
 }
 
 export { BOOT_SEQUENCE, playSequence } from './sequences'
+export { SoundEventMapper, PALETTE, type SfxEventLog, type SfxEventStatus } from './eventMap'

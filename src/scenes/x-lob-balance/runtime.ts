@@ -1,5 +1,6 @@
 import { ensureSceneFonts } from '../_host/fonts'
 import { roomEnvironment } from '../_host/three/env'
+import { createSoundTimeline, soundAt } from '../_host/sceneSound'
 import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg, setData, setStyle } from '../_host/three/helpers'
 import type { ThreeContext, ThreeSetupResult } from '../_host/three/types'
 import {
@@ -50,6 +51,10 @@ const PACK_SPEED = 2.7
 /** 균형 공정 1사이클(초). 병목은 C/T 비율로 늘어난다. */
 const FILM_TAKT = 0.46
 const smooth = (x: number) => x * x * (3 - 2 * x)
+/** 지그가 절삭 시작보다 먼저 라인 위에 나타나는 시간(초). */
+const JIG_LEAD_S = 0.5
+/** 지그 안착 높이(월드 y). */
+const SEAT_Y = 0.36
 
 /** HUD DOM(형제 오버레이)을 data-h 로 찾는다. 없으면 null — 라벨 없이도 씬은 동작. */
 function findHud(container: HTMLElement) {
@@ -405,6 +410,41 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
   const colAmber = new THREE.Color(COL.amber)
   const h = findHud(ctx.container)
 
+  // ── 사운드 이벤트(필름에서만 울림) — 비주얼과 같은 BOTTLENECKS/T 상수에서 발화, x 는 앵커의 화면 위치. ──
+  const cues = createSoundTimeline(ctx.sound)
+  const sndP = { x: 0, y: 0, visible: false }
+  const sndV = new THREE.Vector3()
+  const screenX = (x: number, y: number, z: number) => {
+    camera.updateMatrixWorld()
+    projectToScreen(ctx, sndV.set(x, y, z), sndP)
+    return Math.min(1, Math.max(0, sndP.x / Math.max(1, ctx.size.w)))
+  }
+  // +24% 카운트가 최종값에 도달하는 순간(round(PCT·easeOutCubic(p)) === PCT 의 역함수).
+  const heroLandAt = T.hero[0] + (1 - Math.cbrt(0.5 / PRODUCTIVITY_PCT)) * (T.hero[1] - T.hero[0])
+  const sounds = (t: number) => {
+    if (t >= T.heroEnd) return
+    for (const r of rigs) {
+      const { b } = r
+      const k = b.key
+      // 지그가 라인 위로 내려오기 시작(새 지그 등장)
+      soundAt(cues, t, b.cut[0] - JIG_LEAD_S, 'node', () => ({ id: `lob.${k}.jig`, x: screenX(r.x, r.h0, CONV_Z), intensity: 0.6 }))
+      // 절삭/개조 시작 — 커터와 불꽃, C/T 막대가 깎이기 시작(부드러운 접촉)
+      soundAt(cues, t, b.cut[0], 'impact', () => ({ id: `lob.${k}.cut`, x: screenX(r.x, r.h0, 0), intensity: 0.35 }))
+      // 지그 안착 — 막대가 takt 레벨에 맞고 −24% / −49% 표시
+      soundAt(cues, t, b.cut[1], 'lock', () => ({ id: `lob.${k}.seat`, x: screenX(r.x, SEAT_Y, CONV_Z) }))
+    }
+    // 병목 평면이 takt 레벨로 내려앉고 카메라가 라인 전체로 빠진다
+    soundAt(cues, t, T.planeDrop[0], 'transition', () => ({ id: 'lob.plane', x: 0.5, durationS: T.planeDrop[1] - T.planeDrop[0] }))
+    // 생산성 +24% — 이 씬의 결론
+    soundAt(cues, t, heroLandAt, 'payoff', () => {
+      const el = h.heroNum ?? h.hero
+      if (!el) return { id: 'lob.hero', x: 0.5 }
+      const rc = el.getBoundingClientRect()
+      const c = ctx.container.getBoundingClientRect()
+      return { id: 'lob.hero', x: Math.min(1, Math.max(0, (rc.left + rc.width / 2 - c.left) / Math.max(1, c.width))) }
+    })
+  }
+
   const update = (t: number) => {
     const amb = t > T.heroEnd ? loopT(t - T.heroEnd, 24) : 0
 
@@ -430,6 +470,7 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
     }
     camera.position.copy(camPos)
     camera.lookAt(tgt)
+    sounds(t)
 
     // ── tower heights ──
     for (let i = 0; i < STATIONS; i++) {
@@ -508,11 +549,11 @@ export async function setupLob(ctx: ThreeContext): Promise<ThreeSetupResult> {
       // 지그 강하는 막대·숫자와 같은 곡선. 숫자가 움직이기 직전에만 살짝 들어온다.
       const isNeck = b.key === 'neck'
       const cutEase = smooth(cutP)
-      const lead = seg(t, b.cut[0] - 0.5, b.cut[0])
+      const lead = seg(t, b.cut[0] - JIG_LEAD_S, b.cut[0])
       const dp = cutEase + (1 - cutEase) * lead * 0.22
       const jigGroup = r.jig.group
-      jigGroup.visible = t >= b.cut[0] - 0.5
-      const seatY = 0.36
+      jigGroup.visible = t >= b.cut[0] - JIG_LEAD_S
+      const seatY = SEAT_Y
       const fromY = isNeck ? 4.85 : 3.15
       const settle = seg(t, b.cut[1] - 0.16, b.cut[1]) * (1 - seg(t, b.cut[1], b.cut[1] + 0.28))
       const working = cutEase > 0.9 ? (isNeck ? headDown(b.idx) : mode0 === 'wake' || mode0 === 'test' ? 1 : 0) : 0

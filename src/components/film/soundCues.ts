@@ -60,7 +60,31 @@ const b = (t: number) => +(t + BOOT_OFFSET_S).toFixed(3)
  * eventMap). Their hand-timed cues below are skipped (kept only as reference until removed);
  * the picture-cut sounds (CUT_CUES) still play for every shot.
  */
-export const INSTRUMENTED: ReadonlySet<SceneFile> = new Set<SceneFile>(['05-bios-boot.html', 'x-sn-trace.html'])
+// Stage 2: every film scene emits its own sound events (src/scenes/_host/sceneSound.ts); the
+// hand-timed SOUND_CUES below are kept only as reference until all scenes are verified.
+export const INSTRUMENTED: ReadonlySet<SceneFile> = new Set<SceneFile>([
+  '05-bios-boot.html',
+  '42-era-shift.html',
+  '33-ax-era.html',
+  '28-gap-reality.html',
+  '29-lost-in-translation.html',
+  '41-perspectives.html',
+  '30-collision.html',
+  '31-cost-cascade.html',
+  '32-the-connector.html',
+  '36-bridge-experts.html',
+  'x-smart-factory.html',
+  'x-vision-reverse.html',
+  'x-weld-doe.html',
+  'x-lob-balance.html',
+  'x-excel-to-db.html',
+  'x-sn-trace.html',
+  'x-mes-line.html',
+  '37-cross-domain.html',
+  'x-work-radar-rails.html',
+  'x-kip-evidence.html',
+  '38-ending-catchphrase.html',
+])
 
 export const SOUND_CUES: Partial<Record<SceneFile, readonly Cue[]>> = {
   // Boot — Scene.tsx timer chain: CRT line 0.315, logo lines 0.28+0.06k, POST lines 0.67+0.185k,

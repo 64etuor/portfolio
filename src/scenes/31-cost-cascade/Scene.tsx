@@ -11,6 +11,8 @@ import { useCallback, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'
+import { createSoundTimeline, soundAt, useSceneSound } from '../_host/sceneSound'
+import type { SoundAtState } from '../_host/sceneSound'
 import { mulberry32 } from '../_host/random'
 import { clamp } from '../_host/math'
 import type { Frame, SceneProps } from '../_host/types'
@@ -37,6 +39,21 @@ const TOTAL = PH.idle + PH.charge + PH.rupture + PH.hold + PH.heal
 /* ---- easing ---- */
 const easeOutQuart = (t: number) => 1 - Math.pow(1 - t, 4)
 const easeInOutQuad = (t: number) => t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2
+
+/* ---- overlay thresholds (shared by syncOverlay and the sound timeline) ---- */
+const HEADLINE_RUPTURE_FRAC = 0.12 // headline shows once rupture frac passes this
+const SUBLINE_HOLD_FRAC = 0.18 // subline shows once hold frac passes this
+
+/* ---- loop-local event times (s), derived from PH + the easing (sound timeline) ---- */
+const T_CHARGE = PH.idle / 1000
+const T_RUPTURE = (PH.idle + PH.charge) / 1000
+const T_HOLD = (PH.idle + PH.charge + PH.rupture) / 1000
+const T_HEAL = (PH.idle + PH.charge + PH.rupture + PH.hold) / 1000
+const T_HEADLINE = T_RUPTURE + (HEADLINE_RUPTURE_FRAC * PH.rupture) / 1000
+const T_SUBLINE = T_HOLD + (SUBLINE_HOLD_FRAC * PH.hold) / 1000
+/* a trunk lands (label slams) when easeOutQuart(frac) reaches its `arrive` → invert the easing */
+const T_ARRIVE = TARGETS_F.map((tg) => T_RUPTURE + ((1 - Math.pow(1 - tg.arrive, 1 / 4)) * PH.rupture) / 1000)
+const ARRIVE_IDS = ['cost.branch.schedule', 'cost.branch.spec', 'cost.branch.site']
 
 type Point = [number, number]
 interface Branch {
@@ -116,6 +133,11 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const labelsRef = useRef<(HTMLDivElement | null)[]>([null, null, null])
 
   useSceneReady(onReady)
+  // Scene sound events (film only; silent elsewhere), on the scene's own loop-local timeline:
+  // the origin charges (rise) → the crack ruptures (impact) → the headline → each trunk slams
+  // into its cost label (defect, panned to that label) → the subline → the crack heals (resolve).
+  const sound = useSceneSound()
+  const cuesRef = useRef<SoundAtState | null>(null)
 
   /* ---- mutable scene state (preserved across frames, reset on regen) ---- */
   const sceneState = useRef({
@@ -305,14 +327,14 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     }
 
     // headline — show through rupture/hold
-    const showHead = (ph === 'rupture' && st.frac > 0.12) || ph === 'hold'
+    const showHead = (ph === 'rupture' && st.frac > HEADLINE_RUPTURE_FRAC) || ph === 'hold'
     if (headlineRef.current) {
       headlineRef.current.classList.toggle(s.show, showHead)
     }
 
     // subline — after all branches landed
     if (sublineRef.current) {
-      sublineRef.current.classList.toggle(s.show, ph === 'hold' && st.frac > 0.18)
+      sublineRef.current.classList.toggle(s.show, ph === 'hold' && st.frac > SUBLINE_HOLD_FRAC)
     }
 
     // terminal labels — slam when their trunk reaches target
@@ -368,6 +390,16 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     }
 
     const st = resolve(tl)
+
+    // sound (fires once per forward crossing of loop-local time; silent on static / hidden frames)
+    const cues = (cuesRef.current ??= createSoundTimeline(sound))
+    const ts = tl / 1000
+    soundAt(cues, ts, T_CHARGE, 'rise', { id: 'cost.charge', x: ORIGIN_F.x, durationS: PH.charge / 1000, intensity: 0.8 })
+    soundAt(cues, ts, T_RUPTURE, 'impact', { id: 'cost.crack', x: ORIGIN_F.x })
+    soundAt(cues, ts, T_HEADLINE, 'reveal', { id: 'cost.headline', x: 0.5, intensity: 0.6 })
+    T_ARRIVE.forEach((at, i) => soundAt(cues, ts, at, 'defect', { id: ARRIVE_IDS[i], x: TARGETS_F[i].x, intensity: 0.7 }))
+    soundAt(cues, ts, T_SUBLINE, 'reveal', { id: 'cost.subline', x: 0.5, intensity: 0.5 })
+    soundAt(cues, ts, T_HEAL, 'resolve', { id: 'cost.heal', x: ORIGIN_F.x, intensity: 0.5 })
     const { ph, frac, p, intensity, charge } = st
     const nowMs = fr.t * 1000  // for deterministic sin tremor (matches original `now`)
 

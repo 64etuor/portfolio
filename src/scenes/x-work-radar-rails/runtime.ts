@@ -1,6 +1,7 @@
 import { roomEnvironment } from '../_host/three/env'
 import type * as T3 from 'three'
 import type { ThreeContext, ThreeSetupResult } from '../_host/three/types'
+import { createSoundTimeline, soundAt } from '../_host/sceneSound'
 import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg, setStyle } from '../_host/three/helpers'
 import {
   buildBox,
@@ -24,6 +25,12 @@ import { COLORS, LAYOUT, PERIOD, SOURCES, TL } from './data'
 
 const win = (x: number, a: number, b: number, c: number, d: number) => seg(x, a, b) * (1 - seg(x, c, d))
 const easeIn = (x: number) => x * x * x
+const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x)
+
+/** 신호 한 사이클(초) · 비행 끝(착지) · 가라앉기 시작 — 사이클 비율. */
+const SIG_CYCLE = 7
+const SIG_FLY = 0.3
+const SIG_SINK = 0.9
 
 /** HUD 라벨 키 — Scene.tsx 의 data-k 와 1:1. */
 const LABEL_KEYS = [
@@ -379,6 +386,35 @@ export async function setupWorkRadar(ctx: ThreeContext): Promise<ThreeSetupResul
   const killHit = new THREE.Vector3()
   const hidden = new THREE.Vector3(0, -50, 0)
 
+  // ── 사운드 이벤트(필름에서만 울림) — 화면 비트와 같은 TL 상수에서 발화, x 는 화면 위치(패닝). ──
+  const cues = createSoundTimeline(ctx.sound)
+  const worldX = (p: T3.Vector3) => clamp01(projectToScreen(ctx, p, scr).x / Math.max(1, ctx.size.w))
+  // 신호 착지(u = SIG_FLY 통과) 시각 — 0.9 s 창마다 하나로 묶어 결정/자동화 job 이 박스에 들기 전까지.
+  const LAND_GROUP_S = 0.9
+  /** 컷 직후(picture-cut guard)는 건너뛴다. */
+  const LAND_FROM_S = 0.35
+  const landings: Array<{ at: number; n: number }> = []
+  {
+    const all: Array<{ at: number; n: number }> = []
+    signals.sigs.forEach((g, n) => {
+      const at = loopT((SIG_FLY - g.phase) * SIG_CYCLE, SIG_CYCLE)
+      if (at > LAND_FROM_S && at < TL.jIn) all.push({ at, n })
+    })
+    all.sort((a, b) => a.at - b.at)
+    for (const l of all) if (!landings.length || l.at - landings[landings.length - 1].at >= LAND_GROUP_S) landings.push(l)
+  }
+  const sounds = (t: number) => {
+    if (t >= PERIOD) return
+    // 수집 신호가 Capture Board 에 착지(묶음)
+    landings.forEach((l, k) => soundAt(cues, t, l.at, 'node', () => ({ id: `wr.signal${k}`, x: worldX(signals.sigs[l.n].l), intensity: 0.5 })))
+    // 사람 승인 게이트 1 개방 — 결정 토큰 통과
+    soundAt(cues, t, TL.gate1[0], 'approve', () => ({ id: 'wr.gate', x: worldX(gateP) }))
+    // cost cap 링에 닿아 job kill
+    soundAt(cues, t, TL.xHit, 'block', () => ({ id: 'wr.kill', x: worldX(bead(2, killHit)) }))
+    // proposal 이 게이트에서 대기 → 사람 승인으로 통과
+    soundAt(cues, t, TL.gate2[0], 'approve', () => ({ id: 'wr.proposal', x: worldX(gateP), intensity: 0.85 }))
+  }
+
   const update = (t: number) => {
     const tc = loopT(t, PERIOD)
     const cyc = Math.floor(t / PERIOD)
@@ -401,9 +437,9 @@ export async function setupWorkRadar(ctx: ThreeContext): Promise<ThreeSetupResul
     box.group.updateMatrixWorld(true)
 
     // ── 신호 ──
-    const CYCLE = 7
-    const FLY = 0.3
-    const SINK = 0.9
+    const CYCLE = SIG_CYCLE
+    const FLY = SIG_FLY
+    const SINK = SIG_SINK
     for (let n = 0; n < nSig; n++) {
       const g = signals.sigs[n]
       const u = loopT(t + g.phase * CYCLE, CYCLE) / CYCLE
@@ -614,7 +650,7 @@ export async function setupWorkRadar(ctx: ThreeContext): Promise<ThreeSetupResul
       const a = TL.log[i]
       fade(el, win(tc, a, a + 0.25, PERIOD - 0.45, PERIOD - 0.05))
     })
-
+    sounds(t)
   }
 
   return {

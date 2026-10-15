@@ -4,6 +4,8 @@ import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'
+import { createSoundTimeline, soundAt, useSceneSound } from '../_host/sceneSound'
+import type { SoundAtState } from '../_host/sceneSound'
 import { rgba, mix } from '../_host/color'
 import type { RGB } from '../_host/color'
 import { PALETTE_WARM, PALETTE_COLD_BLUE } from '../_host/palette'
@@ -43,12 +45,19 @@ const eOut = (t: number) => 1 - Math.pow(1 - t, 3)
 const eInOut = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
 // ---------- phase timeline ----------
+// Loop fractions shared by the visuals (compute / phaseIndex / shock) and the sound timeline.
+const P_L1_IN = 0.03 // line 1 fades in …
+const P_L1_FULL = 0.11 // … until fully visible
+const P_CHARGE = 0.24 // the two armies start charging
+const P_IMPACT = 0.40 // contact: flash + shake + shock ring + debris
+const P_SCATTER = 0.47 // recoil: armies + glyphs fling apart and fade (visible drift-apart)
+const P_DRIFT = 0.66 // DRIFT APART phase (both sides already faded out)
 const PH = ['STAND-OFF', 'CHARGE', 'IMPACT', 'SCATTER', 'DRIFT APART', 'RESET']
 function phaseIndex(p: number): number {
-  if (p < 0.24) return 0
-  if (p < 0.40) return 1
-  if (p < 0.47) return 2
-  if (p < 0.66) return 3
+  if (p < P_CHARGE) return 0
+  if (p < P_IMPACT) return 1
+  if (p < P_SCATTER) return 2
+  if (p < P_DRIFT) return 3
   if (p < 0.86) return 4
   return 5
 }
@@ -65,36 +74,36 @@ interface SceneState {
 
 function compute(p: number): SceneState {
   let charge: number
-  if (p < 0.24) charge = 0
-  else if (p < 0.40) charge = eIn(seg(p, 0.24, 0.40))
-  else if (p < 0.47) charge = 1
-  else if (p < 0.66) charge = lerp(1, -0.35, eOut(seg(p, 0.47, 0.66)))
-  else if (p < 0.86) charge = lerp(-0.35, -1.55, seg(p, 0.66, 0.86))
+  if (p < P_CHARGE) charge = 0
+  else if (p < P_IMPACT) charge = eIn(seg(p, P_CHARGE, P_IMPACT))
+  else if (p < P_SCATTER) charge = 1
+  else if (p < P_DRIFT) charge = lerp(1, -0.35, eOut(seg(p, P_SCATTER, P_DRIFT)))
+  else if (p < 0.86) charge = lerp(-0.35, -1.55, seg(p, P_DRIFT, 0.86))
   else charge = lerp(-1.55, 0, eInOut(seg(p, 0.86, 1.0)))
 
   let shatter: number
-  if (p < 0.40) shatter = 0
-  else if (p < 0.47) shatter = eOut(seg(p, 0.40, 0.47)) * 0.55
-  else if (p < 0.66) shatter = lerp(0.55, 0.82, seg(p, 0.47, 0.66))
-  else if (p < 0.86) shatter = lerp(0.82, 1.0, seg(p, 0.66, 0.86))
+  if (p < P_IMPACT) shatter = 0
+  else if (p < P_SCATTER) shatter = eOut(seg(p, P_IMPACT, P_SCATTER)) * 0.55
+  else if (p < P_DRIFT) shatter = lerp(0.55, 0.82, seg(p, P_SCATTER, P_DRIFT))
+  else if (p < 0.86) shatter = lerp(0.82, 1.0, seg(p, P_DRIFT, 0.86))
   else shatter = lerp(1.0, 0, eInOut(seg(p, 0.86, 1.0)))
 
-  const shake = p >= 0.40 && p < 0.54 ? Math.pow(1 - seg(p, 0.40, 0.54), 2) : 0
-  const flash = p >= 0.40 && p < 0.52 ? Math.pow(1 - seg(p, 0.40, 0.52), 1.6) : 0
+  const shake = p >= P_IMPACT && p < 0.54 ? Math.pow(1 - seg(p, P_IMPACT, 0.54), 2) : 0
+  const flash = p >= P_IMPACT && p < 0.52 ? Math.pow(1 - seg(p, P_IMPACT, 0.52), 1.6) : 0
 
-  const l1 = seg(p, 0.03, 0.11) * (1 - seg(p, 0.30, 0.40))
+  const l1 = seg(p, P_L1_IN, P_L1_FULL) * (1 - seg(p, 0.30, P_IMPACT))
 
   let gA: number
-  if (p < 0.47) gA = 1
+  if (p < P_SCATTER) gA = 1
   // 충돌 직후 더 빠르고 또렷한 fade-out (0.47~0.60). 이후 0.83 까지 완전 소멸 유지 →
   // "흩어져 날아감"이 아니라 "사라짐"으로 읽히도록 강화.
-  else if (p < 0.6) gA = lerp(1, 0, eOut(seg(p, 0.47, 0.6)))
+  else if (p < 0.6) gA = lerp(1, 0, eOut(seg(p, P_SCATTER, 0.6)))
   else if (p < 0.83) gA = 0
   else gA = lerp(0, 1, eInOut(seg(p, 0.83, 1.0)))
 
   let aA: number
-  if (p < 0.47) aA = 1
-  else if (p < 0.72) aA = lerp(1, 0, eOut(seg(p, 0.47, 0.72)))
+  if (p < P_SCATTER) aA = 1
+  else if (p < 0.72) aA = lerp(1, 0, eOut(seg(p, P_SCATTER, 0.72)))
   else if (p < 0.84) aA = 0
   else aA = lerp(0, 1, eInOut(seg(p, 0.84, 1.0)))
 
@@ -170,6 +179,11 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
   const layoutLocaleRef = useRef<string | null>(null)
 
   useSceneReady(onReady)
+  // Scene sound events (film only; silent elsewhere), driven by the same loop-local time and
+  // phase fractions as the drawing: line 1 appears, the armies charge (a rise topping out on
+  // contact), the collision itself, then the two sides drifting apart.
+  const sound = useSceneSound()
+  const cuesRef = useRef<SoundAtState | null>(null)
 
   const ref = useSceneCanvas((g: CanvasRenderingContext2D, fr: Frame) => {
     const W = fr.w
@@ -182,6 +196,14 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
     const p = tt / LOOP
     const S = compute(p)
     const ph = phaseIndex(p)
+
+    // ---- sound (fires once per forward crossing; silent on static / hidden frames) ----
+    const cues = (cuesRef.current ??= createSoundTimeline(sound))
+    // line 1 reveal: at the half-way point of its fade (also clears the film's cut guard)
+    soundAt(cues, tt, ((P_L1_IN + P_L1_FULL) / 2) * LOOP, 'reveal', { id: 'collision.line1', x: 0.5, intensity: 0.5 })
+    soundAt(cues, tt, P_CHARGE * LOOP, 'rise', { id: 'collision.charge', x: 0.5, durationS: (P_IMPACT - P_CHARGE) * LOOP })
+    soundAt(cues, tt, P_IMPACT * LOOP, 'impact', { id: 'collision.impact', x: 0.5 })
+    soundAt(cues, tt, P_SCATTER * LOOP, 'transition', { id: 'collision.drift', x: 0.5, intensity: 0.8 })
 
     // ---- lazy layout on first frame or when size changes ----
     // We re-layout whenever glyphs array is empty or heroFont doesn't match
@@ -361,8 +383,8 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
     }
 
     // ---- drawShock ----
-    if (p >= 0.40 && p <= 0.74) {
-      const lr = seg(p, 0.40, 0.60)
+    if (p >= P_IMPACT && p <= 0.74) {
+      const lr = seg(p, P_IMPACT, 0.60)
       if (lr > 0 && lr < 1) {
         g.save()
         for (let k = 0; k < 2; k++) {
@@ -377,7 +399,7 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
         }
         g.restore()
       }
-      const dl = seg(p, 0.40, 0.74)
+      const dl = seg(p, P_IMPACT, 0.74)
       g.save()
       DEBRIS.forEach((d) => {
         const r = dl * W * 0.42 * d.sp

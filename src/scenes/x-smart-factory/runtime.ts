@@ -1,6 +1,7 @@
 import { roomEnvironment } from '../_host/three/env'
 import type * as THREE from 'three'
-import { easeInOutCubic, easeOutBack, easeOutCubic, loopT, seg, setData, setStyle } from '../_host/three/helpers'
+import { easeInOutCubic, easeOutBack, easeOutCubic, loopT, projectToScreen, seg, setData, setStyle } from '../_host/three/helpers'
+import { createSoundTimeline, soundAt } from '../_host/sceneSound'
 import type { ThreeSetup } from '../_host/three/types'
 import { actAt, bobAt, buildWorld, riseAt } from './build'
 import { loadAddons } from './props'
@@ -10,6 +11,13 @@ import { BENCH_X, COLORS, LIFT, LINES, LOG_IDS, PANELS, SYSTEMS, T } from './dat
 // 4.0/4.6/5.2 ERP·바코드·태블릿 패널 · 6.6 히어로 홀드 → 앰비언트(궤도 드리프트 + 주기 재스캔).
 
 const ERP_LOG_TAGS = ['IN', 'OUT', 'STOCK', 'IN', 'MOVE', 'OUT', 'STOCK', 'IN']
+/** 바코드 패널 재고 카운트: 패널 등장 후 지연 · 행당 카운트 길이 · 행 간 시차(초). */
+const BC_COUNT_DELAY = 0.3
+const BC_COUNT_DUR = 1.0
+const BC_COUNT_STAGGER = 0.15
+/** 스캔 평면 높이/깊이(월드) — 사운드 패닝 앵커. */
+const SCAN_ANCHOR_Y = 1.5
+const SCAN_ANCHOR_Z = -0.6
 
 export function createSetup(): ThreeSetup {
   return async (ctx) => {
@@ -80,6 +88,39 @@ export function createSetup(): ThreeSetup {
 
     let aspect = ctx.size.w / ctx.size.h
 
+    /* ── 사운드 이벤트(필름에서만 울림) — 비주얼과 같은 T 상수에서 발화, x 는 앵커의 화면 위치. ── */
+    const cues = createSoundTimeline(ctx.sound)
+    const scr = { x: 0, y: 0, visible: false }
+    const sndV = new TH.Vector3()
+    const screenX = (x: number, y: number, z: number) => {
+      projectToScreen(ctx, sndV.set(x, y, z), scr)
+      return Math.min(1, Math.max(0, scr.x / Math.max(1, ctx.size.w)))
+    }
+    const riseStart = T.scan0 + T.riseDelay
+    const riseTop = T.scan1 + T.riseDelay + T.riseJitter + T.riseDur
+    const sounds = (t: number) => {
+      if (t >= T.hero) return
+      // 스캔 스윕 — 좌→우로 바닥 라인을 훑는다(패닝이 스캔 평면을 따라감)
+      soundAt(cues, t, T.scan0, 'scan', () => ({
+        id: 'sf.scan',
+        x: screenX(T.x0, SCAN_ANCHOR_Y, SCAN_ANCHOR_Z),
+        toX: screenX(T.x1, SCAN_ANCHOR_Y, SCAN_ANCHOR_Z),
+        durationS: T.scan1 - T.scan0,
+      }))
+      // 트윈 부상 — 스캔이 지나간 자리부터 홀로그램이 떠오른다(마지막 스택이 다 뜰 때까지)
+      soundAt(cues, t, riseStart, 'rise', () => ({ id: 'sf.twin', x: screenX(0, LIFT, 0), intensity: 0.7, durationS: riseTop - riseStart }))
+      // ERP · 바코드 · 태블릿 패널 노드가 자기 위치에서 팝인(easeOutBack). 0.6s 간격이라 'reveal'(≥1.2s 제한) 대신 'node'.
+      for (const p of PANELS) soundAt(cues, t, p.at, 'node', () => ({ id: `sf.panel.${p.key}`, x: screenX(p.pos[0], p.pos[1], p.pos[2]) }))
+      // 바코드 재고 수량이 ERP 로 흘러들어옴(패널 카운트업)
+      const bc = PANELS.find((p) => p.key === 'barcode')!
+      soundAt(cues, t, T.panelBarcode + BC_COUNT_DELAY, 'data', () => ({
+        id: 'sf.barcode',
+        x: screenX(bc.pos[0], bc.pos[1], bc.pos[2]),
+        intensity: 0.6,
+        durationS: BC_COUNT_DUR + (stacks.length - 1) * BC_COUNT_STAGGER,
+      }))
+    }
+
     return {
       resize(w, h) {
         aspect = w / h
@@ -106,6 +147,7 @@ export function createSetup(): ThreeSetup {
         camera.position.copy(camT).add(off)
         camera.lookAt(camT)
         camera.updateMatrixWorld()
+        sounds(t)
 
         /* 스캔 */
         let sx = T.x0
@@ -207,7 +249,8 @@ export function createSetup(): ThreeSetup {
           place(`stk${i}`, st.x, y, st.z, op)
           const cnt = Math.round(st.count * easeOutCubic(seg(r, 0.85, 1)))
           setText(`stc${i}`, String(cnt))
-          const pc = Math.round(st.count * easeOutCubic(seg(t, T.panelBarcode + 0.3 + i * 0.15, T.panelBarcode + 1.3 + i * 0.15)))
+          const bc0 = T.panelBarcode + BC_COUNT_DELAY + i * BC_COUNT_STAGGER
+          const pc = Math.round(st.count * easeOutCubic(seg(t, bc0, bc0 + BC_COUNT_DUR)))
           setText(`pc${i}`, String(pc))
         })
 

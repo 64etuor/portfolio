@@ -1,6 +1,7 @@
 import { roomEnvironment } from '../_host/three/env'
 import type * as THREE from 'three'
 import type { ThreeSetup } from '../_host/three/types'
+import { createSoundTimeline, soundAt } from '../_host/sceneSound'
 import { countUp, easeInOutCubic, easeOutBack, easeOutCubic, loopT, projectToScreen, seg, setStyle, setText } from '../_host/three/helpers'
 import {
   HOT_ROW,
@@ -19,11 +20,24 @@ import {
   loadAddons,
   makeDotTexture,
 } from './build'
-import { CAM_A, CAM_B, CARD, METRICS, PALETTE, TL } from './data'
+import { CAM_A, CAM_B, CARD, METRICS, PALETTE, TEXT, TL } from './data'
 
 // 타임라인: t(초)만으로 전체 상태를 결정한다(정지 프레임/프리스테이징 동일).
 
 const bell = (t: number, c: number, w: number) => Math.exp(-(((t - c) / w) ** 2))
+const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x)
+
+/** 지표 카운트업: 지표별 시작 간격 · 롤 길이(초). */
+const METRIC_STAGGER = 0.16
+const METRIC_ROLL = 0.9
+/** 스레드: 소스별 시작 간격 · 그리는 시간(초). */
+const THREAD_STAGGER = 0.38
+const THREAD_DRAW = 0.95
+/** 진입 경로: 경로별 시작 간격 · 끝 당김(초). */
+const CONDUIT_STAGGER = 0.14
+const CONDUIT_TRIM = 0.15
+/** 표 승격: 소스별 시작 간격(초). */
+const LIFT_STAGGER = 0.3
 
 type Els = Record<string, HTMLElement>
 
@@ -118,6 +132,46 @@ export const setupKip: ThreeSetup = async (ctx) => {
     setStyle(el, 'opacity', op.toFixed(3))
   }
 
+  // ── 사운드 이벤트(필름에서만 울림) — 화면 비트와 같은 TL 상수에서 발화, x 는 화면 위치(패닝). ──
+  const cues = createSoundTimeline(ctx.sound)
+  const sproj = { x: 0, y: 0, visible: false }
+  const worldX = (p: THREE.Vector3) => clamp01(projectToScreen(ctx, p, sproj).x / Math.max(1, ctx.size.w))
+  const elX = (el: Element | undefined) => {
+    if (!el) return 0.5
+    const r = el.getBoundingClientRect()
+    const cr = ctx.container.getBoundingClientRect()
+    return clamp01((r.left + r.width / 2 - cr.left) / Math.max(1, cr.width))
+  }
+  const nConduit = core.conduits.length
+  const conduitEnd = TL.conduitB + (nConduit - 1) * CONDUIT_STAGGER - CONDUIT_TRIM
+  const beamEnd = beam.a.clone().addScaledVector(beam.dir, beam.len)
+  const head = Math.max(0, METRICS.findIndex((m) => m.headline))
+  const hm = METRICS[head]
+  // 헤드라인 지표가 최종 표기(1.0000)로 반올림되는 순간: easeOutCubic(s) ≥ 1 − ½·10^−digits.
+  const headAt = TL.metricA + head * METRIC_STAGGER + (1 - Math.cbrt(0.5 * 10 ** -hm.digits)) * METRIC_ROLL
+  // 타이핑: 둘째 글자가 찍히는 순간부터(첫 글자는 컷 직후라 컷 가드에 걸린다) — HUD 의 round(seg·len) 와 같은 식.
+  const qLen = TEXT.query.ko.length
+  const typeFrom = TL.typeA + (1.5 / qLen) * (TL.typeB - TL.typeA)
+  const sounds = (t: number) => {
+    if (t >= TL.heroEnd) return
+    // 질의 타이핑
+    soundAt(cues, t, typeFrom, 'type', () => ({ id: 'kip.query', x: elX(getEls().query), durationS: TL.typeB - typeFrom }))
+    // CLI · REST · MCP 경로 → retrieval service
+    soundAt(cues, t, TL.conduitA, 'data', () => ({ id: 'kip.conduits', x: worldX(core.conduits[0].curve.getPointAt(0)), toX: worldX(core.group.position), durationS: conduitEnd - TL.conduitA }))
+    // 질의 빔이 라이브러리를 훑는다
+    soundAt(cues, t, TL.beamA, 'scan', () => ({ id: 'kip.beam', x: worldX(beam.a), toX: worldX(beamEnd), durationS: TL.beamB - TL.beamA }))
+    // 표 → 별도 단위로 승격
+    sources.forEach((hs, i) => {
+      if (hs.src.table) soundAt(cues, t, TL.liftA + i * LIFT_STAGGER, 'node', () => ({ id: `kip.table${hs.src.id}`, x: worldX(srcCenters[i]), intensity: 0.75 }))
+    })
+    // 답변 카드
+    soundAt(cues, t, TL.cardA, 'reveal', () => ({ id: 'kip.card', x: elX(getEls().card), intensity: 0.7 }))
+    // 답변 문장 → 원문 위치 스레드 착지
+    sources.forEach((hs, i) => soundAt(cues, t, TL.threadA + i * THREAD_STAGGER + THREAD_DRAW, 'link', () => ({ id: `kip.thread${hs.src.id}`, x: worldX(anchors[i]) })))
+    // lexical Recall@10 = 1.0000
+    soundAt(cues, t, headAt, 'payoff', () => ({ id: 'kip.recall', x: elX(getEls()[`m${head}`]) }))
+  }
+
   const update = (t: number) => {
     const amb = seg(t, TL.heroEnd, TL.heroEnd + 1.5)
     const lt = loopT(t - TL.heroEnd, TL.loop)
@@ -138,6 +192,7 @@ export const setupKip: ThreeSetup = async (ctx) => {
     )
     camera.lookAt(look)
     camera.updateMatrixWorld()
+    sounds(t)
 
     // ── 빔 진행 ──
     const pb = easeOutCubic(seg(t, TL.beamA, TL.beamB))
@@ -177,7 +232,7 @@ export const setupKip: ThreeSetup = async (ctx) => {
     core.heartMat.color.copy(hdr(T, '#bff8ee', 1.6 + flare * 3))
     core.halo.scale.setScalar(3.0 + flare * 1.8 + 0.15 * Math.sin(t * 1.3))
     core.conduits.forEach((cd, k) => {
-      const hp = seg(t, TL.conduitA + k * 0.14, TL.conduitB + k * 0.14 - 0.15)
+      const hp = seg(t, TL.conduitA + k * CONDUIT_STAGGER, TL.conduitB + k * CONDUIT_STAGGER - CONDUIT_TRIM)
       const lp = amb * seg(lt, 0.15 + k * 0.14, 1.25 + k * 0.14)
       const p = hp > 0 && hp < 1 ? hp : lp > 0 && lp < 1 ? lp : -1
       const on = p >= 0 ? 1 : 0
@@ -212,14 +267,14 @@ export const setupKip: ThreeSetup = async (ctx) => {
     // ── 근거 소스: 히트 → 표 승격 → 스레드 착지 ──
     sources.forEach((hs, i) => {
       const hit = seg(t, TL.hitA + 0.4 + i * 0.12, TL.hitA + 0.9 + i * 0.12)
-      const tStart = TL.threadA + i * 0.38
-      const tEnd = tStart + 0.95
+      const tStart = TL.threadA + i * THREAD_STAGGER
+      const tEnd = tStart + THREAD_DRAW
       const arrive = seg(t, tEnd - 0.1, tEnd + 0.2)
       const flash = bell(t, tEnd + 0.05, 0.25) + amb * 0.5 * bell(loopT(t - TL.heroEnd - i * 0.55, TL.loop), 1.75, 0.22)
       hs.face.color.setScalar(0.8 + 0.5 * hit)
       hs.glass.opacity = 0.5 + 0.2 * hit
 
-      const lStart = TL.liftA + i * 0.3
+      const lStart = TL.liftA + i * LIFT_STAGGER
       const pl = easeOutCubic(seg(t, lStart, lStart + 1.0))
       const z = hs.lift * pl
       if (hs.cells && hs.src.table) {
@@ -301,7 +356,7 @@ export const setupKip: ThreeSetup = async (ctx) => {
     const a0 = sources[0]
     place(e.tableTag, a0.group.localToWorld(tmpP.set(a0.rect.x0, a0.rect.y1, a0.lift)), seg(t, TL.liftA + 0.5, TL.liftA + 1.0))
     sources.forEach((hs, i) => {
-      const tEnd = TL.threadA + i * 0.38 + 0.95
+      const tEnd = TL.threadA + i * THREAD_STAGGER + THREAD_DRAW
       const [u, v] = hs.src.label.uv
       place(e[`loc${i}`], hs.group.localToWorld(tmpP.set((u - 0.5) * hs.w, (0.5 - v) * hs.h, 0.05)), seg(t, tEnd - 0.05, tEnd + 0.35))
     })
@@ -344,8 +399,8 @@ export const setupKip: ThreeSetup = async (ctx) => {
     METRICS.forEach((m, i) => {
       const el = e[`m${i}`]
       if (!el) return
-      const p = easeOutCubic(seg(t, TL.metricA + i * 0.16, TL.metricA + i * 0.16 + 0.9))
-      const txt = t < TL.metricA + i * 0.16 ? '—' : (m.prefix ?? '') + countUp(0, m.value, p, m.digits)
+      const p = easeOutCubic(seg(t, TL.metricA + i * METRIC_STAGGER, TL.metricA + i * METRIC_STAGGER + METRIC_ROLL))
+      const txt = t < TL.metricA + i * METRIC_STAGGER ? '—' : (m.prefix ?? '') + countUp(0, m.value, p, m.digits)
       if (lastMetric[i] !== txt) {
         setText(el, txt)
         lastMetric[i] = txt

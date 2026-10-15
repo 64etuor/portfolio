@@ -2,6 +2,7 @@ import type * as THREE_NS from 'three'
 import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg, setStyle, setText } from '../_host/three/helpers'
 import type { ThreeContext, ThreeSetup } from '../_host/three/types'
 import { canvasFont, ensureSceneFonts } from '../_host/fonts'
+import { createSoundTimeline, soundAt } from '../_host/sceneSound'
 import { C, studioScene, buildFloor, buildMachine, buildScanner, buildTray, loadAddons, machineX, materials, shadowTexture } from './build'
 import { CELL_TOP, COLS, HUD_LINES, MACHINES, OK_CELLS, REV_COL, REV_ROW, ROWS, T, TRAY_TOP, cellX, cellZ } from './data'
 
@@ -15,6 +16,13 @@ import { CELL_TOP, COLS, HUD_LINES, MACHINES, OK_CELLS, REV_COL, REV_ROW, ROWS, 
 const qs = <E extends Element>(root: ParentNode, sel: string) => Array.from(root.querySelectorAll<E>(sel))
 
 type Key = { t: number; p: [number, number, number]; q: [number, number, number] }
+
+/** 잠금 시 시트가 완전히 적색으로 바뀌는 데 걸리는 시간(초). */
+const LOCK_RED_S = 0.15
+/** 역삽 셀 1단 리프트(트레이 위로 들림)가 끝나는 시각 — 이후 배출 상승. */
+const LIFT_HOLD_AT = 5.0
+/** 풀백(와이드로 빠지는 카메라 이동)이 시작되는 키 인덱스. */
+const PULLBACK_KEY = 3
 
 export function createSetup(): ThreeSetup {
   return async (ctx: ThreeContext) => {
@@ -135,6 +143,50 @@ export function createSetup(): ThreeSetup {
     const total = COLS * ROWS
     let lastCount = -1
 
+    // ── 사운드 이벤트(필름에서만 울림) — 비주얼과 같은 T 상수에서 발화, x 는 앵커의 화면 위치. ──
+    const cues = createSoundTimeline(ctx.sound)
+    const sndP = { x: 0, y: 0, visible: false }
+    const sndV = new THREE.Vector3()
+    const screenX = (x: number, y: number, z: number) => {
+      camera.updateMatrixWorld()
+      projectToScreen(ctx, sndV.set(x, y, z), sndP)
+      return Math.min(1, Math.max(0, sndP.x / Math.max(1, ctx.size.w)))
+    }
+    /** 스캔 바가 x 에 닿는 시각(barState 의 0..lockAt 구간 역함수). */
+    const barReach = (x: number) => T.lockAt * (1 - Math.sqrt(Math.max(0, 1 - (x - T.barStartX) / (rx - T.barStartX))))
+    const SCAN_SND_AT = 0.05 // 스캔은 첫 프레임부터 진행 — 첫 진행 프레임에서 울린다
+    // "+ OK" 라벨이 뜨는 순간(셀 x 를 바가 통과) — 셀 45개 대신 라벨로 묶는다. 스캔 시작과 겹치는 라벨은 스캔 소리에 포함.
+    const okHits = OK_CELLS.map(([c, r], i) => ({ i, c, r, at: barReach(cellX(c)) })).filter((h) => h.at > SCAN_SND_AT + 0.15)
+    const pullAt = keys[PULLBACK_KEY].t
+    const elX = (el: HTMLElement | undefined) => {
+      if (!el) return 0.5
+      const r = el.getBoundingClientRect()
+      const c = ctx.container.getBoundingClientRect()
+      return Math.min(1, Math.max(0, (r.left + r.width / 2 - c.left) / Math.max(1, c.width)))
+    }
+    const sounds = (t: number) => {
+      if (t >= T.wideAt) return
+      // 구조광 스캔 — 바가 트레이를 훑어 역삽 셀까지(패닝이 바를 따라감)
+      soundAt(cues, t, SCAN_SND_AT, 'scan', () => ({
+        id: 'vr.scan',
+        x: screenX(T.barStartX, CELL_TOP, 0),
+        toX: screenX(rx, CELL_TOP, 0),
+        durationS: T.lockAt - SCAN_SND_AT,
+      }))
+      // 정상 셀 OK 링
+      for (const h of okHits) soundAt(cues, t, h.at, 'node', () => ({ id: `vr.ok${h.i}`, x: screenX(cellX(h.c), CELL_TOP, cellZ(h.r)), intensity: 0.5 }))
+      // 스캔이 역삽 셀에 멈춤(LOCK) → 적색 전환 완료 시 결함 판정
+      soundAt(cues, t, T.lockAt, 'lock', () => ({ id: 'vr.lock', x: screenX(rx, CELL_TOP, rz) }))
+      soundAt(cues, t, T.lockAt + LOCK_RED_S, 'defect', () => ({ id: 'vr.reversed', x: screenX(rx, CELL_TOP, rz) }))
+      // NG 셀 리프트(배출)
+      soundAt(cues, t, T.liftAt, 'rise', () => ({ id: 'vr.reject', x: screenX(rx, CELL_TOP, rz), intensity: 0.6, durationS: LIFT_HOLD_AT - T.liftAt }))
+      // 풀백 → 유휴 비전 M/C 4대
+      soundAt(cues, t, pullAt, 'transition', () => ({ id: 'vr.pullback', x: 0.5, durationS: T.wideAt - pullAt }))
+      // 결론 문구 — 필드 불량 0건
+      const li = HUD_LINES.length - 1
+      soundAt(cues, t, HUD_LINES[li].at, 'reveal', () => ({ id: 'vr.zero', x: elX(lines[li]), intensity: 0.6 }))
+    }
+
     const barState = (t: number) => {
       // x: 스캔 라인 위치, a: 가시도
       if (t < T.ambientStart) {
@@ -177,6 +229,7 @@ export function createSetup(): ThreeSetup {
         }
         camera.position.copy(camPos)
         camera.lookAt(camTgt)
+        sounds(t)
 
         // ── 스캔 시트/라인 ──
         sc.sheetPivot.position.x = bar.x
@@ -185,7 +238,7 @@ export function createSetup(): ThreeSetup {
         sc.lineMat.opacity = bar.a
         scanLight.position.set(bar.x, CELL_TOP + 0.18, 0)
         scanLight.intensity = bar.a * 0.05
-        const lockP = !bar.ambient ? seg(t, T.lockAt, T.lockAt + 0.15) * (1 - seg(t, T.resumeAt + 0.2, T.resumeAt + 0.6)) : 0
+        const lockP = !bar.ambient ? seg(t, T.lockAt, T.lockAt + LOCK_RED_S) * (1 - seg(t, T.resumeAt + 0.2, T.resumeAt + 0.6)) : 0
         // 잠금 중 시트/프러스텀이 적색으로
         col.copy(tealC).lerp(redC, lockP)
         sc.sheetMat.color.copy(col).multiplyScalar(0.14 + lockP * 0.06)
@@ -215,7 +268,7 @@ export function createSetup(): ThreeSetup {
         const det = !bar.ambient && t >= T.lockAt ? 1 : 0
         const flash = det ? Math.exp(-(t - T.lockAt) * 5) : 0
         const pulse = det ? 0.75 + 0.25 * Math.sin((t - T.lockAt) * 14) : 0
-        const lift = easeInOutCubic(seg(t, T.liftAt, 5.0)) * 0.72 + Math.pow(seg(t, 5.0, T.goneAt), 2.2) * 3.2
+        const lift = easeInOutCubic(seg(t, T.liftAt, LIFT_HOLD_AT)) * 0.72 + Math.pow(seg(t, LIFT_HOLD_AT, T.goneAt), 2.2) * 3.2
         tray.rev.position.y = TRAY_TOP + lift
         tray.revBody.rotation.z = Math.sin(seg(t, T.liftAt, T.goneAt) * Math.PI) * 0.18
         tray.rev.visible = t < T.goneAt && !bar.ambient

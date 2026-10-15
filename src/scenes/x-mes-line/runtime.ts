@@ -2,6 +2,7 @@ import { roomEnvironment } from '../_host/three/env'
 import type * as THREE from 'three'
 import { easeInOutCubic, easeOutCubic, placeLabel, projectToScreen, seg, setData, setStyle } from '../_host/three/helpers'
 import type { ThreeContext, ThreeSetupResult } from '../_host/three/types'
+import { createSoundTimeline, soundAt } from '../_host/sceneSound'
 import {
   ARM,
   buildCore,
@@ -63,6 +64,10 @@ function travel(t: number) {
   return tau < A ? (LINE.speed * tau * tau) / (2 * A) : LINE.speed * (tau - A / 2)
 }
 
+/** 라인 전원 램프(초) — 레일·패킷 밝기가 0 → 1 로 오르는 구간. */
+const POWER_RAMP = 0.7
+/** 예산표 "누락" 깜빡임 주파수(Hz). */
+const FLICK_HZ = 14
 const PER_PATH = 5
 const FEED_PER_PANEL = 6
 const CAP = 24
@@ -210,9 +215,53 @@ export async function setupMesLine(ctx: ThreeContext, hudRef: { current: Hud }):
     stk.quill.position.y = plateBottom + 0.02 - ARM.y2
   }
 
+  // ── 사운드 이벤트(필름에서만 울림) — 화면 비트와 같은 T 상수에서 발화, x 는 화면 위치(패닝). ──
+  const cues = createSoundTimeline(ctx.sound)
+  const worldX = (p: THREE.Vector3) => clamp01(projectToScreen(ctx, p, scr).x / Math.max(1, ctx.size.w))
+  const elX = (el: Element | null | undefined) => {
+    if (!el) return 0.5
+    const r = el.getBoundingClientRect()
+    const c = ctx.container.getBoundingClientRect()
+    return clamp01((r.left + r.width / 2 - c.left) / Math.max(1, c.width))
+  }
+  const growStart = Math.min(...pathDefs.map((p) => p.grow[0]))
+  const growEnd = Math.max(...pathDefs.map((p) => p.grow[1]))
+  const firstPath = pathDefs.reduce((a, b) => (b.grow[0] < a.grow[0] ? b : a))
+  const pathFrom = V(firstPath.from[0], firstPath.from[1], firstPath.from[2])
+  const coreMid = V(CORE.x, CORE.y + 1, CORE.z)
+  // 라인 중 화면에 보이는 구간의 가운데(근접 샷에선 라인 대부분이 화면 밖).
+  const lineX = () => (worldX(v3.set(LINE.x0, LINE.topY, 0)) + worldX(v3.set(PICK_X, LINE.topY, 0))) / 2
+  // "누락" 깜빡임: 컷 직후를 피해 첫 '어두운' 깜빡임 프레임(HUD 의 hash(floor(t·14)) ≤ 0.3 과 같은 식).
+  let missingAt = T.missingFrom
+  for (let f = Math.ceil(Math.max(T.missingFrom, 0.4) * FLICK_HZ); f / FLICK_HZ < T.built; f++) {
+    if (hash(f) <= 0.3) {
+      missingAt = f / FLICK_HZ
+      break
+    }
+  }
+  const sounds = (t: number) => {
+    if (t >= T.heroEnd) return
+    const hud = hudRef.current
+    // 예산표 "MES 외주 개발비 · 누락" 깜빡임 — 결함 톤
+    soundAt(cues, t, missingAt, 'defect', () => ({ id: 'mes.missing', x: elX(hud.mesRow), intensity: 0.7 }))
+    // 스탬프 → 자체 개발
+    soundAt(cues, t, T.built, 'lock', () => ({ id: 'mes.stamp', x: elX(hud.mesRow) }))
+    // 라인 전원 — 레일·스테이션이 켜지며 오른다
+    soundAt(cues, t, T.powerOn, 'rise', () => ({ id: 'mes.power', x: lineX(), durationS: POWER_RAMP, intensity: 0.8 }))
+    // 스테이션 → PostgreSQL 데이터 경로가 자란다
+    soundAt(cues, t, growStart, 'data', () => ({ id: 'mes.paths', x: worldX(pathFrom), toX: worldX(coreMid), durationS: growEnd - growStart }))
+    // 코어 점화
+    soundAt(cues, t, T.core[0], 'reveal', () => ({ id: 'mes.core', x: worldX(coreMid) }))
+    // 홀로그램: Python Dash · MES 클라이언트
+    soundAt(cues, t, T.dash[0], 'node', () => ({ id: 'mes.dash', x: worldX(dash.group.position), intensity: 0.7 }))
+    soundAt(cues, t, T.client[0], 'node', () => ({ id: 'mes.client', x: worldX(client.group.position), intensity: 0.7 }))
+    // 헤드라인 "MES 자체 개발" — 결론
+    soundAt(cues, t, T.headline[0], 'payoff', () => ({ id: 'mes.headline', x: elX(hud.head) }))
+  }
+
   function update(t: number) {
     const hud = hudRef.current
-    const power = smooth(seg(t, T.powerOn, T.powerOn + 0.7))
+    const power = smooth(seg(t, T.powerOn, T.powerOn + POWER_RAMP))
     const s = travel(t)
 
     // ── 카메라 ──
@@ -510,7 +559,7 @@ export async function setupMesLine(ctx: ThreeContext, hudRef: { current: Hud }):
     if (hud.mesRow) {
       const built = t >= T.built
       setData(hud.mesRow, 'state', built ? 'built' : 'missing')
-      const fl = t < T.missingFrom ? 0.85 : hash(Math.floor(t * 14)) > 0.3 ? 1 : 0.35
+      const fl = t < T.missingFrom ? 0.85 : hash(Math.floor(t * FLICK_HZ)) > 0.3 ? 1 : 0.35
       setStyle(hud.mesRow, '--flick', built ? '1' : fl.toFixed(2))
       setStyle(hud.mesRow, '--stamp', easeOutCubic(seg(t, T.built, T.built + 0.35)).toFixed(3))
     }
@@ -523,6 +572,7 @@ export async function setupMesLine(ctx: ThreeContext, hudRef: { current: Hud }):
       setStyle(hud.head, 'opacity', h.toFixed(3))
       setStyle(hud.head, 'transform', `translate3d(0, ${(12 * (1 - h)).toFixed(1)}px, 0)`)
     }
+    sounds(t)
   }
 
   const resize = (w: number, h: number) => {

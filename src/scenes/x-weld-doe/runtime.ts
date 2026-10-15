@@ -18,6 +18,7 @@ import {
   TEAL,
 } from './build'
 import { COPY, TL } from './data'
+import { createSoundTimeline, soundAt } from '../_host/sceneSound'
 import { FLOOR_Y, HS, RUNS, SPAN, START, center, defect, descentPath, surfaceY, type SurfState } from './model'
 
 type Hud = {
@@ -36,6 +37,10 @@ type Hud = {
 }
 
 const lerp = (a: number, b: number, k: number) => a + (b - a) * k
+/** 하강 진행도가 이 값을 넘고 불량률이 1% 미만이면 카운터가 '0%대' 로 확정. */
+const DONE_DK = 0.98
+/** DOE 런 팝인 길이(초). */
+const RUN_POP_S = 0.45
 
 /** HUD 는 캔버스 컨테이너의 형제(data-hud="root"); 로케일은 그 data-locale 에서 읽는다. */
 export async function setupWeldDoe(ctx: ThreeContext): Promise<ThreeSetupResult> {
@@ -131,6 +136,70 @@ export async function setupWeldDoe(ctx: ThreeContext): Promise<ThreeSetupResult>
   const T0 = new THREE.Vector3(-1.7, 1.0, 1.7)
   const T1 = new THREE.Vector3(0.35, 0.55, 0.2)
 
+  /** 하강 진행도 dk(0..1) → 경로 위 (a, p). */
+  const pathAt = (dk: number): [number, number] => {
+    const fi = dk * (path2.length - 1)
+    const i0 = Math.floor(fi)
+    const i1 = Math.min(path2.length - 1, i0 + 1)
+    const f = fi - i0
+    return [lerp(path2[i0][0], path2[i1][0], f), lerp(path2[i0][1], path2[i1][1], f)]
+  }
+  const descentK = (t: number) => easeInOutCubic(seg(t, TL.descent[0], TL.descent[1]))
+  const runAt = (i: number) => TL.runs[0] + (i / (RUNS.length - 1)) * (TL.runs[1] - TL.runs[0] - RUN_POP_S)
+
+  // ── 사운드 이벤트(필름에서만 울림) — 비주얼과 같은 TL 상수에서 발화, x 는 앵커의 화면 위치. ──
+  const cues = createSoundTimeline(ctx.sound)
+  const sndP = { x: 0, y: 0, visible: false }
+  const sndV = new THREE.Vector3()
+  const screenX = (x: number, y: number, z: number) => {
+    projectToScreen(ctx, sndV.set(x, y, z), sndP)
+    return Math.min(1, Math.max(0, sndP.x / Math.max(1, ctx.size.w)))
+  }
+  const worldAt = (a: number, p: number) => [a * SPAN, defect(a, p, 0) * HS, p * SPAN] as const
+  // 카운터가 '0%대' 로 바뀌는 순간 — HUD 와 같은 조건(md < 1 && dk > DONE_DK)을 1ms 간격으로 찾는다.
+  const doneAt = (() => {
+    for (let t = TL.descent[0]; t <= TL.descent[1]; t += 0.001) {
+      const dk = descentK(t)
+      const [a, p] = pathAt(dk)
+      if (defect(a, p, 0) < 1 && dk > DONE_DK) return t
+    }
+    return TL.descent[1]
+  })()
+  const HORN_SND_AT = 0.05 // 혼은 첫 프레임부터 용착 중 — 첫 진행 프레임에서 울린다
+  /** DOE 런 11개를 4개 비트로 묶는다. */
+  const RUN_BEATS = [0, 3, 6, 9]
+  const [endA, endP] = path2[path2.length - 1]
+  const sounds = (t: number) => {
+    if (t >= TL.ambient) return
+    // 초음파 혼이 케이스를 때리며 용착(기존 조건 · 불량) — 부드러운 접촉음
+    soundAt(cues, t, HORN_SND_AT, 'impact', () => ({ id: 'wd.horn', x: screenX(START.a * SPAN, 0.3, START.p * SPAN), intensity: 0.35 }))
+    // DOE 런이 하나씩 떨어져 측정점으로 박힘
+    for (const i of RUN_BEATS) {
+      const r = RUNS[i]
+      soundAt(cues, t, runAt(i), 'node', () => ({ id: `wd.run${i}`, x: screenX(r.a * SPAN, runMeasured(r) * HS, r.p * SPAN), intensity: 0.55 }))
+    }
+    // 응답 곡면 적합 — 곡면이 런에 맞춰 솟아오름
+    soundAt(cues, t, TL.fit[0], 'rise', () => ({ id: 'wd.fit', x: screenX(0, 0, 0), intensity: 0.7, durationS: TL.fit[1] - TL.fit[0] }))
+    // 경사 하강 마커 — 기존 조건(15%)에서 최적 창으로 미끄러져 내려감
+    soundAt(cues, t, TL.descent[0], 'scan', () => ({
+      id: 'wd.descent',
+      x: screenX(...worldAt(START.a, START.p)),
+      toX: screenX(...worldAt(endA, endP)),
+      intensity: 0.6,
+      durationS: doneAt - TL.descent[0],
+    }))
+    // '0%대' — 이 씬의 결론
+    soundAt(cues, t, doneAt, 'payoff', () => {
+      const h = getHud()
+      return { id: 'wd.zero', x: h?.counter ? elX(h.counter) : screenX(...worldAt(endA, endP)) }
+    })
+  }
+  const elX = (el: HTMLElement) => {
+    const r = el.getBoundingClientRect()
+    const c = ctx.container.getBoundingClientRect()
+    return Math.min(1, Math.max(0, (r.left + r.width / 2 - c.left) / Math.max(1, c.width)))
+  }
+
   const label = (el: HTMLElement | null, p: THREE_NS.Vector3, o: number) => {
     if (!el) return
     projectToScreen(ctx, p, scr)
@@ -177,10 +246,9 @@ export async function setupWeldDoe(ctx: ThreeContext): Promise<ThreeSetupResult>
     const stC = segBuffer(runs.stems.geometry, 'instanceColorStart')
     const sp = stP.array as Float32Array
     const sc = stC.array as Float32Array
-    const runSpan = TL.runs[1] - TL.runs[0] - 0.45
     RUNS.forEach((r, i) => {
-      const t0 = TL.runs[0] + (i / (RUNS.length - 1)) * runSpan
-      const k = seg(t, t0, t0 + 0.45)
+      const t0 = runAt(i)
+      const k = seg(t, t0, t0 + RUN_POP_S)
       const pop = k > 0 ? Math.max(0, easeOutBack(k)) : 0
       const x = r.a * SPAN
       const z = r.p * SPAN
@@ -214,7 +282,7 @@ export async function setupWeldDoe(ctx: ThreeContext): Promise<ThreeSetupResult>
     runs.sphere.instanceMatrix.needsUpdate = true
 
     // ── 경사 하강 마커 ──
-    const dk = easeInOutCubic(seg(t, TL.descent[0], TL.descent[1]))
+    const dk = descentK(t)
     const showM = seg(t, TL.descent[0] - 0.5, TL.descent[0])
     let ma: number, mp: number
     if (amb > 0) {
@@ -222,12 +290,7 @@ export async function setupWeldDoe(ctx: ThreeContext): Promise<ThreeSetupResult>
       ma = ca
       mp = cp
     } else {
-      const fi = dk * (path2.length - 1)
-      const i0 = Math.floor(fi)
-      const i1 = Math.min(path2.length - 1, i0 + 1)
-      const f = fi - i0
-      ma = lerp(path2[i0][0], path2[i1][0], f)
-      mp = lerp(path2[i0][1], path2[i1][1], f)
+      ;[ma, mp] = pathAt(dk)
     }
     const md = defect(ma, mp, st.w)
     const my = surfaceY(ma, mp, st) + 0.1
@@ -293,13 +356,14 @@ export async function setupWeldDoe(ctx: ThreeContext): Promise<ThreeSetupResult>
     )
     camera.lookAt(target)
     camera.updateMatrixWorld()
+    sounds(t)
 
     // ── HUD ──
     const h = getHud()
     if (!h) return
     const loc = hudRoot?.dataset.locale === 'en' ? 'en' : 'ko'
     const c = COPY[loc]
-    const done = md < 1 && dk > 0.98
+    const done = md < 1 && dk > DONE_DK
     const txt = t < TL.descent[0] ? '15.0%' : done ? c.final : `${Math.max(md, 1).toFixed(1)}%`
     const state = t < TL.descent[0] ? 'hot' : done ? 'cool' : 'mid'
     const ckey = `${loc}|${txt}|${state}`

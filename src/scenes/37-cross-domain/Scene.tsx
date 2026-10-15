@@ -9,6 +9,8 @@ import { PALETTE_LIGHT_GRAY, PALETTE_DIM } from '../_host/palette'
 import { clamp, lerp, smooth01 } from '../_host/math'
 import { mulberry32 } from '../_host/random'
 import { useSceneReady } from '../_host/useSceneReady'
+import { createSoundTimeline, soundAt, useSceneSound } from '../_host/sceneSound'
+import type { SoundAtState } from '../_host/sceneSound'
 import s from './scene.module.css'
 
 /* ════════════════════════════════════════════════════════════════
@@ -125,13 +127,40 @@ const SCENE_DATA = {
 
 /* ════════ TIMELINE ════════ */
 const CYCLE = 15.0 // seconds, seamless period
+const F_CONV0 = 0.08 // the two rings start converging
+const F_CONV1 = 0.34 // fully converged: the intersection lens at full glow
+const F_L1 = 0.12 // hero line 1 starts fading in (over F_FADE)
+const F_L2 = 0.34 // hero line 2 starts fading in (over F_FADE)
+const F_FADE = 0.12
+/* ring-centre offset from CX, in units of R: apart → converged (ringD = lerp(..., cv01)) */
+const RING_D_FAR = 1.06
+const RING_D_NEAR = 0.48
 
 function conv(f: number): number {
-  if (f < 0.08) return 0
-  if (f < 0.34) return smooth((f - 0.08) / 0.26)
+  if (f < F_CONV0) return 0
+  if (f < F_CONV1) return smooth((f - F_CONV0) / (F_CONV1 - F_CONV0))
   if (f < 0.84) return 1
   return 1 - smooth((f - 0.84) / 0.16)
 }
+
+/* ---- sound timeline (cycle-local seconds), derived from the constants above ---- */
+/* the rings first touch (lens appears) when ringD = R → cv01 = (FAR − 1)/(FAR − NEAR); invert smooth01 */
+const CV_TOUCH = (RING_D_FAR - 1) / (RING_D_FAR - RING_D_NEAR)
+function invSmooth01(y: number): number {
+  let lo = 0
+  let hi = 1
+  for (let i = 0; i < 30; i++) {
+    const mid = (lo + hi) / 2
+    if (smooth(mid) < y) lo = mid
+    else hi = mid
+  }
+  return (lo + hi) / 2
+}
+const T_CONV0 = F_CONV0 * CYCLE
+const T_TOUCH = (F_CONV0 + invSmooth01(CV_TOUCH) * (F_CONV1 - F_CONV0)) * CYCLE
+const T_LIT = F_CONV1 * CYCLE
+const T_L1 = (F_L1 + F_FADE / 2) * CYCLE // line 1 half-way faded in
+const T_L2 = (F_L2 + F_FADE / 2) * CYCLE // line 2 half-way faded in
 
 export default function Scene({ running = true, onReady, locale = 'ko' }: SceneProps) {
   const en = locale === 'en'
@@ -139,6 +168,12 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
   const l2Ref = useRef<HTMLHeadingElement | null>(null)
 
   useSceneReady(onReady)
+  // Scene sound events (film only; silent elsewhere), on the cycle-local timeline the drawing
+  // uses: the rings start converging (a rise that tops out when the lens is fully lit), line 1,
+  // the rings first touch (the membrane gives way — link), the intersection lights (THE payoff),
+  // then line 2.
+  const sound = useSceneSound()
+  const cuesRef = useRef<SoundAtState | null>(null)
 
   const ref = useSceneCanvas(
     (g: CanvasRenderingContext2D, fr: Frame) => {
@@ -148,6 +183,15 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
       const f = (t % CYCLE) / CYCLE
       const cv01 = conv(f)
 
+      // sound (fires once per forward crossing of the cycle time; silent on static / hidden frames)
+      const cues = (cuesRef.current ??= createSoundTimeline(sound))
+      const tc = t % CYCLE
+      soundAt(cues, tc, T_CONV0, 'rise', { id: 'cross.converge', x: 0.5, durationS: T_LIT - T_CONV0, intensity: 0.8 })
+      soundAt(cues, tc, T_L1, 'reveal', { id: 'cross.line1', x: 0.5, intensity: 0.5 })
+      soundAt(cues, tc, T_TOUCH, 'link', { id: 'cross.touch', x: 0.5 })
+      soundAt(cues, tc, T_LIT, 'payoff', { id: 'cross.intersection', x: 0.5 })
+      soundAt(cues, tc, T_L2, 'reveal', { id: 'cross.line2', x: 0.5, intensity: 0.5 })
+
       const { mfgField, itField, mfgTerms, itTerms, particles } = SCENE_DATA[locale]
 
       const MIN = Math.min(W, H)
@@ -155,7 +199,7 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
       const CY = H * 0.445
       const R = MIN * 0.235
 
-      const ringD = lerp(R * 1.06, R * 0.48, cv01)
+      const ringD = lerp(R * RING_D_FAR, R * RING_D_NEAR, cv01)
       const LCX = CX - ringD
       const RCX = CX + ringD
       const HY = ringD < R ? Math.sqrt(R * R - ringD * ringD) : 0
@@ -457,15 +501,15 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
       drawLabels()
 
       /* ---- DOM hero text sync ---- */
-      const o1 = smooth((f - 0.12) / 0.12) * (1 - smooth((f - 0.88) / 0.12))
-      const o2 = smooth((f - 0.34) / 0.12) * (1 - smooth((f - 0.9) / 0.1))
+      const o1 = smooth((f - F_L1) / F_FADE) * (1 - smooth((f - 0.88) / 0.12))
+      const o2 = smooth((f - F_L2) / F_FADE) * (1 - smooth((f - 0.9) / 0.1))
       if (l1Ref.current) {
         l1Ref.current.style.opacity = o1.toFixed(3)
-        l1Ref.current.style.transform = `translateX(-50%) translateY(${lerp(10, 0, smooth((f - 0.12) / 0.14)).toFixed(1)}px)`
+        l1Ref.current.style.transform = `translateX(-50%) translateY(${lerp(10, 0, smooth((f - F_L1) / 0.14)).toFixed(1)}px)`
       }
       if (l2Ref.current) {
         l2Ref.current.style.opacity = o2.toFixed(3)
-        l2Ref.current.style.transform = `translateX(-50%) translateY(${lerp(16, 0, smooth((f - 0.34) / 0.14)).toFixed(1)}px)`
+        l2Ref.current.style.transform = `translateX(-50%) translateY(${lerp(16, 0, smooth((f - F_L2) / 0.14)).toFixed(1)}px)`
       }
     },
     { running }

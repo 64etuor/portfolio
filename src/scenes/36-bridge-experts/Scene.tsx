@@ -4,6 +4,8 @@ import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'
+import { createSoundTimeline, soundAt, useSceneSound } from '../_host/sceneSound'
+import type { SoundAtState } from '../_host/sceneSound'
 import { rgba, mix } from '../_host/color'
 import type { RGB } from '../_host/color'
 import { PALETTE_WARM, PALETTE_COLD_BLUE, PALETTE_TEAL, PALETTE_TEAL_HI } from '../_host/palette'
@@ -39,6 +41,17 @@ const CHEVRONS: Chevron[] = Array.from({ length: 2 }, (_, d) =>
 ).flat()
 
 const frac = (x: number) => x - Math.floor(x)
+
+/* chevrons circulate the ∞ at this many loops per second (drawChevrons) */
+const CHEVRON_SPEED = 0.045
+/* Times (s) a chevron pair crosses at the ∞ junction: a forward chevron reaches the centre
+   (curve parameter u = 1/4 or 3/4 → lem() = centre) exactly when its mirrored backward partner
+   does, so the forward crossings are the meeting moments. Sorted, first ~minute. */
+const CHEVRON_MEETS: number[] = CHEVRONS.filter((cv) => cv.dir > 0)
+  .flatMap((cv) => [0.25, 0.75].flatMap((c) => [0, 1, 2].map((k) => (frac(c - cv.base) + k) / CHEVRON_SPEED)))
+  .sort((a, b) => a - b)
+/* the ∞ completes a cycle (wave + ring re-emit from the junction) at every CYCLE multiple */
+const CYCLE_ENDS: number[] = [1, 2, 3, 4, 5, 6, 7, 8].map((k) => k * CYCLE)
 
 function lem(t: number, cx: number, cy: number, a: number, ys: number): [number, number] {
   const c = Math.cos(t)
@@ -133,7 +146,7 @@ function drawParticles(g: CanvasRenderingContext2D, time: number, cx: number, cy
 }
 
 function drawChevrons(g: CanvasRenderingContext2D, time: number, cx: number, cy: number, a: number, ys: number) {
-  const speed = 0.045
+  const speed = CHEVRON_SPEED
   g.save()
   CHEVRONS.forEach((cv) => {
     const t = frac(cv.base + cv.dir * time * speed) * Math.PI * 2
@@ -257,6 +270,12 @@ export default function Scene({ running = true, locale = 'ko', onReady }: SceneP
   const timeOffset = useRef<number | null>(null)
 
   useSceneReady(onReady)
+  // Scene sound events (film only; silent elsewhere). A calm scene: the hero text is CSS and
+  // already settled when the shot is cut in, so only the ∞ itself speaks — a soft glass tick
+  // each time a chevron pair crosses at the junction, and a warm resolve when the ∞ completes
+  // its cycle (the wave + ring re-emit from the centre node).
+  const sound = useSceneSound()
+  const cuesRef = useRef<SoundAtState | null>(null)
 
   const ref = useSceneCanvas((g: CanvasRenderingContext2D, f: Frame) => {
     if (timeOffset.current === null) {
@@ -271,6 +290,11 @@ export default function Scene({ running = true, locale = 'ko', onReady }: SceneP
     const YS = H / W > 0.62 ? YS_TALL : YS_WIDE
     const time = f.t + timeOffset.current
     const beat = 0.5 + 0.5 * Math.sin((time * (Math.PI * 2)) / CYCLE)
+
+    // sound (fires once per forward crossing; silent on static / hidden frames)
+    const cues = (cuesRef.current ??= createSoundTimeline(sound))
+    CHEVRON_MEETS.forEach((at, i) => soundAt(cues, time, at, 'link', { id: `bridge.meet${i + 1}`, x: CX / W, intensity: 0.8 }))
+    CYCLE_ENDS.forEach((at) => soundAt(cues, time, at, 'resolve', { id: 'bridge.cycle', x: CX / W, intensity: 0.55 }))
 
     g.clearRect(0, 0, W, H)
 

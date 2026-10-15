@@ -5,6 +5,8 @@ import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { canvasFont } from '../_host/fonts'
 import { useSceneReady } from '../_host/useSceneReady'
+import { createSoundTimeline, soundAt, useSceneSound } from '../_host/sceneSound'
+import type { SoundAtState } from '../_host/sceneSound'
 import { rgba, mix } from '../_host/color'
 import type { RGB } from '../_host/color'
 import { PALETTE_TEAL, PALETTE_TEAL_HI } from '../_host/palette'
@@ -19,6 +21,13 @@ const T_WARM0 = 5.6
 const T_WARM1 = 7.4
 const T_HOLD1 = 10.8
 const T_DIS1 = 13.3
+/* "not technology" strike-through draws over [T_STRIKE0, T_STRIKE1] */
+const T_STRIKE0 = 0.6
+const T_STRIKE1 = 2.4
+/* link flash at the far anchor starts just before the filament lands */
+const T_FLASH0 = T_REACH1 - 0.12
+/* line 2 (the headline) fades in with `warm`; its smoothstep is half-way here */
+const T_HEADLINE = (T_WARM0 + T_WARM1) / 2
 
 type Color = RGB
 type Point = [number, number]
@@ -265,6 +274,17 @@ function drawChasm(ctx: CanvasRenderingContext2D, W: number, H: number, time: nu
   ctx.restore()
 }
 
+/** Horizontal screen position (0..1) of a DOM element's [left, center, right] inside the scene root. */
+function domX(el: HTMLElement | null): [number, number, number] | null {
+  if (!el) return null
+  const root = el.closest(`.${s.root}`) ?? el.ownerDocument.documentElement
+  const rr = root.getBoundingClientRect()
+  const r = el.getBoundingClientRect()
+  if (rr.width <= 0) return null
+  const f = (px: number) => (px - rr.left) / rr.width
+  return [f(r.left), f(r.left + r.width / 2), f(r.right)]
+}
+
 function drawLabels(ctx: CanvasRenderingContext2D, leftNodes: NodePoint[], rightNodes: NodePoint[], warm: number) {
   const col = mix([120, 120, 120], TEAL, warm)
   ctx.save()
@@ -292,6 +312,12 @@ export default function Scene({ running = true, locale = 'ko', onReady }: SceneP
   const lastStatus = useRef('')
 
   useSceneReady(onReady)
+  // Scene sound events (film only; silent elsewhere), on the cycle-local timeline the drawing
+  // uses: the strike through "not technology" (scan), the filament reaching across (data, panned
+  // left → right shore), the link landing on the far anchor (link), the headline line 2 (THE
+  // payoff), and the connection dissolving into afterglow (resolve).
+  const sound = useSceneSound()
+  const cuesRef = useRef<SoundAtState | null>(null)
 
   const ref = useSceneCanvas((ctx: CanvasRenderingContext2D, fr: Frame) => {
     const W = fr.w
@@ -306,8 +332,8 @@ export default function Scene({ running = true, locale = 'ko', onReady }: SceneP
     const sync = warm
     const reaching = tt > T_REACH0 && tt < T_REACH1
     let flash = 0
-    if (tt > T_REACH1 - 0.12 && tt < T_REACH1 + 0.75) {
-      flash = Math.max(0, 1 - (tt - (T_REACH1 - 0.12)) / 0.87)
+    if (tt > T_FLASH0 && tt < T_REACH1 + 0.75) {
+      flash = Math.max(0, 1 - (tt - T_FLASH0) / 0.87)
       flash *= flash
     }
 
@@ -326,7 +352,7 @@ export default function Scene({ running = true, locale = 'ko', onReady }: SceneP
     else setStatus('연결 유지 · 잔광', 'rgba(141,141,141,1)')
 
     if (line1Ref.current) line1Ref.current.style.opacity = (0.92 - 0.55 * warm).toFixed(3)
-    if (line1negRef.current) line1negRef.current.style.setProperty('--strike', (ease(ramp(0.6, 2.4, tt)) * (1 - warm)).toFixed(3))
+    if (line1negRef.current) line1negRef.current.style.setProperty('--strike', (ease(ramp(T_STRIKE0, T_STRIKE1, tt)) * (1 - warm)).toFixed(3))
     if (line2Ref.current) {
       line2Ref.current.style.opacity = warm.toFixed(3)
       line2Ref.current.style.transform = `translateY(${(14 * (1 - warm)).toFixed(1)}px)`
@@ -336,6 +362,17 @@ export default function Scene({ running = true, locale = 'ko', onReady }: SceneP
 
     const lA = leftNodes[anchorI]
     const rA = rightNodes[anchorI]
+
+    // sound (fires once per forward crossing of the cycle time; silent on static / hidden frames)
+    const cues = (cuesRef.current ??= createSoundTimeline(sound))
+    soundAt(cues, tt, T_STRIKE0, 'scan', () => {
+      const nx = domX(line1negRef.current)
+      return { id: 'connector.strike', x: nx?.[0] ?? 0.5, toX: nx?.[2] ?? 0.7, durationS: T_STRIKE1 - T_STRIKE0, intensity: 0.5 }
+    })
+    soundAt(cues, tt, T_REACH0, 'data', { id: 'connector.reach', x: lA.x / W, toX: rA.x / W, durationS: T_REACH1 - T_REACH0, intensity: 0.7 })
+    soundAt(cues, tt, T_FLASH0, 'link', { id: 'connector.link', x: rA.x / W })
+    soundAt(cues, tt, T_HEADLINE, 'payoff', () => ({ id: 'connector.headline', x: domX(line2Ref.current)?.[1] ?? 0.5 }))
+    soundAt(cues, tt, T_HOLD1, 'resolve', { id: 'connector.afterglow', x: 0.5, intensity: 0.4 })
 
     drawChasm(ctx, W, H, time, warm)
     drawShoreLinks(ctx, leftNodes, time, 0, warm, sync)

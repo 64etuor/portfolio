@@ -7,6 +7,8 @@ import type { Frame, SceneProps } from '../_host/types'
 import { type RGB, rgba, mix } from '../_host/color'
 import { clamp, smoothstep } from '../_host/math'
 import { useSceneReady } from '../_host/useSceneReady'
+import { createSoundTimeline, soundAt, useSceneSound } from '../_host/sceneSound'
+import type { SoundAtState } from '../_host/sceneSound'
 import s from './scene.module.css'
 
 const ACC: RGB = [82, 230, 207]
@@ -14,6 +16,13 @@ const ACCH: RGB = [199, 251, 241]
 const WARM: RGB = [224, 163, 90]
 const RINGS = 5
 const LOOP = 13.0
+/* loop-local windows (s) shared by the drawing and the sound timeline */
+const REV1_0 = 0.5 // catchphrase line 1 reveal
+const REV1_1 = 1.9
+const REV2_0 = 3.4 // catchphrase line 2 reveal
+const REV2_1 = 5.0
+const OPEN_0 = 8.7 // the tunnel opens toward "next"
+const OPEN_1 = 11.3 // …fully open
 
 interface Streak {
   ang: number
@@ -48,6 +57,11 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
   const lastStatusRef = useRef('')
   const streaksRef = useRef<Streak[]>([])
   useSceneReady(onReady)
+  // Scene sound events (film only; silent elsewhere), on the loop-local timeline the drawing
+  // uses: each catchphrase line as it resolves into focus (reveal, at the half-way point of its
+  // fade), the tunnel opening toward "next" (a rise) and the final warm resolve when it is open.
+  const sound = useSceneSound()
+  const cuesRef = useRef<SoundAtState | null>(null)
 
   const ref = useSceneCanvas((ctx: CanvasRenderingContext2D, f: Frame) => {
     if (streaksRef.current.length === 0) streaksRef.current = buildStreaks()
@@ -59,19 +73,26 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
     const elapsed = f.t
     const c = elapsed % LOOP
 
+    // sound (fires once per forward crossing of loop time; silent on static / hidden frames)
+    const cues = (cuesRef.current ??= createSoundTimeline(sound))
+    soundAt(cues, c, (REV1_0 + REV1_1) / 2, 'reveal', { id: 'ending.line1', x: 0.5, intensity: 0.75 })
+    soundAt(cues, c, (REV2_0 + REV2_1) / 2, 'reveal', { id: 'ending.line2', x: 0.5, intensity: 0.85 })
+    soundAt(cues, c, OPEN_0, 'rise', { id: 'ending.open', x: 0.5, durationS: OPEN_1 - OPEN_0, intensity: 0.8 })
+    soundAt(cues, c, OPEN_1, 'resolve', { id: 'ending.resolve', x: 0.5 })
+
     const fadeIn = smooth(0.0, 0.9, c)
     const fadeOut = 1 - smooth(11.7, 12.85, c)
     const master = fadeIn * fadeOut
 
-    const rev1 = smooth(0.5, 1.9, c)
-    const rev2 = smooth(3.4, 5.0, c)
+    const rev1 = smooth(REV1_0, REV1_1, c)
+    const rev2 = smooth(REV2_0, REV2_1, c)
 
-    const open = smooth(8.7, 11.3, c) * (1 - smooth(12.3, 12.9, c))
+    const open = smooth(OPEN_0, OPEN_1, c) * (1 - smooth(12.3, 12.9, c))
     const diss = smooth(10.5, 12.2, c)
     const textScale = 1 + open * 0.17
 
     let status = '신호 정렬'
-    if (c >= 8.7) status = '다음으로 →'
+    if (c >= OPEN_0) status = '다음으로 →'
     else if (c >= 6.0) status = '결정'
     else if (c >= 3.2) status = '수렴'
     if (status !== lastStatusRef.current) {

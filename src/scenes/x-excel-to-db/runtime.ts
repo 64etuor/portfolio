@@ -3,6 +3,7 @@ import type * as THREE_NS from 'three'
 import type { ThreeContext, ThreeSetupResult } from '../_host/three/types'
 import { easeInOutCubic, easeOutCubic, loopT, placeLabel, projectToScreen, seg, setStyle, setText } from '../_host/three/helpers'
 import { fractHash } from '../_host/random'
+import { createSoundTimeline, soundAt } from '../_host/sceneSound'
 import {
   COL,
   SEED_STRIDE,
@@ -23,7 +24,7 @@ import {
   slabY,
   type StreamSpec,
 } from './build'
-import { DAY_MIN, N_MAIN, SAVED_MIN, SLABS, T, TILE_SCALE } from './data'
+import { COLS, DAY_MIN, N_MAIN, ROWS, SAVED_MIN, SLABS, T, TILE_SCALE } from './data'
 import { REPORT_H, makeReport, type VisualKind } from './report'
 
 export const BG = '#05070a'
@@ -419,6 +420,66 @@ export async function setupScene(ctx: ThreeContext, hudRoot: () => HTMLElement |
     placeLabel(hud.gateway, scr.x, scr.y, seg(t, T.dash + 0.15, T.dash + 0.7) * (1 - 0.55 * seg(t, T.dial, T.dial + 0.6)))
   }
 
+  // ── 사운드 이벤트(필름에서만 울림) — 화면 비트와 같은 T 상수·시드에서 발화, x 는 화면 위치(패닝). ──
+  const cues = createSoundTimeline(ctx.sound)
+  const clamp01 = (x: number) => (x < 0 ? 0 : x > 1 ? 1 : x)
+  const sx = (px: number) => clamp01(px / Math.max(1, ctx.size.w))
+  const worldX = (x: number, y: number, z: number) => sx(projectToScreen(ctx, v3.set(x, y, z), scr).x)
+  const tileX = (i: number) => worldX(TG[i * 3], TG[i * 3 + 1], TG[i * 3 + 2])
+  const elX = (el: Element | null) => {
+    if (!el) return 0.5
+    const r = el.getBoundingClientRect()
+    const c = ctx.container.getBoundingClientRect()
+    return clamp01((r.left + r.width / 2 - c.left) / Math.max(1, c.width))
+  }
+  /** updateSheets 의 검증 스윕 시각(시트별) — 같은 식. */
+  const validateAt = (i: number) => T.validate + sheets.slab[i] * 0.13 + sheets.row[i] * 0.07 + sheets.col[i] * 0.012
+  // 비행: 첫 출발 → 마지막 착지(시드 지연의 최댓값).
+  let flySpread = 0
+  for (let i = 0; i < N_MAIN; i++) flySpread = Math.max(flySpread, S[i * SEED_STRIDE + 11])
+  // 검증 스윕: 첫 시트(아래 슬랩 첫 칸) → 마지막 시트(맨 위 슬랩 끝 칸).
+  let vFirst = 0
+  let vLast = 0
+  for (let i = 0; i < N_MAIN; i++) {
+    if (validateAt(i) < validateAt(vFirst)) vFirst = i
+    if (validateAt(i) > validateAt(vLast)) vLast = i
+  }
+  const scanDur = (SLABS.length - 1) * 0.13 + (ROWS - 1) * 0.07 + (COLS - 1) * 0.012
+  // 잘못된 행: 스윕이 닿는 순간 — 0.45 s 안쪽은 한 번으로 묶는다(최대 3).
+  const badHits: Array<{ at: number; i: number }> = []
+  {
+    const list: Array<{ at: number; i: number }> = []
+    for (let i = 0; i < N_MAIN; i++) if (sheets.bad[i]) list.push({ at: validateAt(i), i })
+    list.sort((a, b) => a.at - b.at)
+    for (const b of list) if (badHits.length < 3 && (!badHits.length || b.at - badHits[badHits.length - 1].at > 0.45)) badHits.push(b)
+  }
+  const visualX = (g: number) => {
+    let sum = 0
+    let n = 0
+    for (const v of report.visuals) if (v.def.group === g) {
+      sum += worldX(v.center.x, v.center.y, v.center.z)
+      n++
+    }
+    return n ? sum / n : 0.5
+  }
+  // 451 이 화면 숫자로 완성되는 순간(Math.round(SAVED_MIN·easeOutCubic(s)) === SAVED_MIN).
+  const landAt = T.dial + (1 - Math.cbrt(0.5 / SAVED_MIN)) * (T.dialEnd - T.dial)
+  const sounds = (t: number) => {
+    if (t >= T.ambient) return
+    // 흩어진 시트가 나선으로 모여 슬랩에 착지 — 데이터 흐름
+    soundAt(cues, t, T.flyStart, 'data', () => ({ id: 'excel.spiral', x: worldX(0, 0.4, 0), toX: worldX(0, slabY(SLABS.length - 1), 0), durationS: flySpread + T.flyDur, intensity: 0.8 }))
+    // 무결성 검증 스윕 — 아래 슬랩 → 위 슬랩
+    soundAt(cues, t, T.validate, 'scan', () => ({ id: 'excel.validate', x: tileX(vFirst), toX: tileX(vLast), durationS: scanDur }))
+    // 잘못된 행이 걸림 — 부드러운 결함 톤(묶음)
+    badHits.forEach((b, k) => soundAt(cues, t, b.at, 'defect', () => ({ id: `excel.bad${k}`, x: tileX(b.i), intensity: 0.45 })))
+    // Power BI 리포트 등장 → 둘째 비주얼 그룹 펼침(셋째는 다이얼 직전이라 묶는다)
+    soundAt(cues, t, T.dash, 'reveal', () => ({ id: 'excel.dash', x: visualX(0) }))
+    soundAt(cues, t, T.dash + GROUP_AT[1], 'node', () => ({ id: 'excel.visual1', x: visualX(1), intensity: 0.7 }))
+    // 451 다이얼 스윕 → −451 분/일 착지(이 씬의 결론)
+    soundAt(cues, t, T.dial, 'rise', () => ({ id: 'excel.dial', x: elX(hud.count), durationS: landAt - T.dial, intensity: 0.7 }))
+    soundAt(cues, t, landAt, 'payoff', () => ({ id: 'excel.451', x: elX(hud.count) }))
+  }
+
   return {
     resize(w, h) {
       for (const m of fat) m.resolution.set(w, h)
@@ -440,6 +501,7 @@ export async function setupScene(ctx: ThreeContext, hudRoot: () => HTMLElement |
       updateDial(t)
       dust.rotation.y = t * 0.01
       updateHud(t)
+      sounds(t)
     },
   }
 }

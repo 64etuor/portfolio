@@ -20,22 +20,28 @@ function buildTokens() {
   return toks
 }
 
+/** rack focus FIELD → DEV runs over f ∈ [PULL_A, PULL_B] (shared with the sound beats) */
+export const PULL_A = 0.38
+export const PULL_B = 0.5
+/** a side panel starts fading in PAN_IN_W before its centre c (panEnv) */
+export const PAN_IN_W = 0.026
+
 export function persp(f: number) {
   if (f < 0.1) return 0
-  if (f < 0.38) return 0 // FIELD 홀드
-  if (f < 0.5) return ease((f - 0.38) / 0.12) // → DEV 전환
+  if (f < PULL_A) return 0 // FIELD 홀드
+  if (f < PULL_B) return ease((f - PULL_A) / (PULL_B - PULL_A)) // → DEV 전환
   if (f < 0.9) return 1 // DEV 홀드(연장: 필름이 개발자 관점을 충분히 보여준 뒤 컷)
   return 1 - ease((f - 0.9) / 0.1) // → FIELD 복귀(루프 봉합, 마지막 0.1 구간)
 }
 
 export function focalBreath(f: number, time: number) {
-  const inPull = (f >= 0.38 && f < 0.5) || (f >= 0.78 && f < 0.9)
+  const inPull = (f >= PULL_A && f < PULL_B) || (f >= 0.78 && f < 0.9)
   const amp = inPull ? 0.012 : 0.055
   return Math.sin(time * 0.9) * amp + Math.sin(time * 0.37 + 1.3) * amp * 0.5
 }
 
 export function panEnv(f: number, c: number) {
-  const inW = 0.026
+  const inW = PAN_IN_W
   const hold = 0.03
   const outW = 0.024
   const t = f - (c - inW)

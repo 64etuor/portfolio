@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'
+import { createSoundTimeline, soundAt, useSceneSound, type SoundAtState } from '../_host/sceneSound'
 import { rgba, mix } from '../_host/color'
 import type { RGB } from '../_host/color'
 import { PALETTE_LIGHT_GRAY, PALETTE_DIM } from '../_host/palette'
@@ -44,6 +45,18 @@ const STR_Y = [0.235, 0.135]
 const PCOUNT = 78
 
 const CYCLE = 15.0
+
+// Phase boundaries (f, 0..1 of CYCLE) — shared by the scalars (visuals) and the sound beats.
+const F = {
+  l1In: 0.02, // first headline word (DX) starts resolving
+  crossA: 0.15, crossB: 0.27, // horizon surge sweeps x0 → x1
+  axA: 0.18, axB: 0.36, // AX ignites
+  l2aA: 0.36, l2aB: 0.45,
+  l2bA: 0.46, l2bB: 0.60,
+  dataA: 0.47, dataB: 0.66, // data/knowledge motes rise, stratum forms
+  newEra: 0.62, // status → 'A new era — AX'
+} as const
+const THRESH_X0 = 0.10, THRESH_X1 = 0.90 // horizon line extent (fraction of W)
 
 interface SubNode { x: number; y: number; c: number; r: number; ph: number }
 interface StrNode { x: number; y: number; c: number; r: number; ph: number }
@@ -123,17 +136,17 @@ function scalars(f: number, time: number): Scalars {
   return {
     seam: 1 - ramp(0.86, 0.975, f),
     wRev: [
-      ramp(0.02, 0.10, f),
+      ramp(F.l1In, 0.10, f),
       ramp(0.06, 0.13, f),
       ramp(0.11, 0.19, f),
       ramp(0.17, 0.27, f),
       ramp(0.23, 0.31, f),
     ],
-    cross: ramp(0.15, 0.27, f),
-    ax: ramp(0.18, 0.36, f),
-    l2a: ramp(0.36, 0.45, f),
-    l2b: ramp(0.46, 0.60, f),
-    data: ramp(0.47, 0.66, f),
+    cross: ramp(F.crossA, F.crossB, f),
+    ax: ramp(F.axA, F.axB, f),
+    l2a: ramp(F.l2aA, F.l2aB, f),
+    l2b: ramp(F.l2bA, F.l2bB, f),
+    data: ramp(F.dataA, F.dataB, f),
     time,
   }
 }
@@ -158,6 +171,12 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
   const lastSizeRef = useRef({ w: 0, h: 0 })
 
   useSceneReady(onReady)
+  // Scene sound events (film only; silent elsewhere). Calm declaration: a reveal per headline
+  // line, the horizon surge as a scan panning with it, THE chime when AX has ignited (surge
+  // reaches the far side, AX at full reveal), a data texture as knowledge rises, a warm resolve
+  // on 'A new era'. Fired from the draw loop on the same F constants the visuals use.
+  const sound = useSceneSound()
+  const cues = useRef<SoundAtState | null>(null)
 
   const ref = useSceneCanvas((g: CanvasRenderingContext2D, fr: Frame) => {
     const W = fr.w, H = fr.h
@@ -177,7 +196,7 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
     let statusTxt = '', statusCol = ''
     if (f < 0.15)      { statusTxt = english ? 'Declaration — DX' : '선언 — DX';           statusCol = 'rgba(141,141,141,1)' }
     else if (f < 0.34) { statusTxt = english ? 'Transition — AX' : '전환 — AX로';          statusCol = 'rgba(78,163,240,1)' }
-    else if (f < 0.62) { statusTxt = english ? 'Emergence — data · knowledge' : '부상 — 데이터·지식';   statusCol = 'rgba(78,163,240,1)' }
+    else if (f < F.newEra) { statusTxt = english ? 'Emergence — data · knowledge' : '부상 — 데이터·지식';   statusCol = 'rgba(78,163,240,1)' }
     else               { statusTxt = english ? 'A new era — AX' : '새 시대 — AX';          statusCol = 'rgba(141,141,141,1)' }
 
     if (statusRef.current && statusTxt !== lastStatusRef.current) {
@@ -242,6 +261,28 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
     drawMotes(g, geo, S)
     drawStratum(g, geo, S)
     drawLabels(g, W, H, S)
+
+    // ---- SOUND ----
+    const tl = f * CYCLE
+    const c = (cues.current ??= createSoundTimeline(sound))
+    const xOf = (el: HTMLElement | null) => {
+      const box = g.canvas.getBoundingClientRect()
+      const r = el?.getBoundingClientRect()
+      return r && box.width > 0 ? (r.left + r.width / 2 - box.left) / box.width : 0.5
+    }
+    soundAt(c, tl, F.l1In * CYCLE, 'reveal', () => ({ id: 'ax.line1', x: xOf(l1w0Ref.current), intensity: 0.7 }))
+    soundAt(c, tl, F.crossA * CYCLE, 'scan', {
+      id: 'ax.horizon',
+      x: THRESH_X0,
+      toX: THRESH_X1,
+      durationS: (F.crossB - F.crossA) * CYCLE,
+      intensity: 0.8,
+    })
+    soundAt(c, tl, F.crossB * CYCLE, 'payoff', () => ({ id: 'ax.ignite', x: xOf(l1w3Ref.current) }))
+    soundAt(c, tl, F.l2aA * CYCLE, 'reveal', () => ({ id: 'ax.line2a', x: xOf(l2aRef.current), intensity: 0.6 }))
+    soundAt(c, tl, F.l2bA * CYCLE, 'reveal', () => ({ id: 'ax.line2b', x: xOf(l2bRef.current), intensity: 0.6 }))
+    soundAt(c, tl, F.dataA * CYCLE, 'data', { id: 'ax.rise', x: 0.5, durationS: (F.dataB - F.dataA) * CYCLE, intensity: 0.6 })
+    soundAt(c, tl, F.newEra * CYCLE, 'resolve', { id: 'ax.newEra', x: 0.5, intensity: 0.5 })
   }, { running })
 
   return (
@@ -358,7 +399,7 @@ function drawThreshold(
 ) {
   const time = S.time, seam = S.seam
   const open = S.ax
-  const y = geo.yHorizon, x0 = W * 0.10, x1 = W * 0.90
+  const y = geo.yHorizon, x0 = W * THRESH_X0, x1 = W * THRESH_X1
 
   const baseA = 0.18 * seam * S.wRev[0]
   const g = ctx.createLinearGradient(x0, 0, x1, 0)

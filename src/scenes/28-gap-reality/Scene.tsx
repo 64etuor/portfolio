@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'
+import { createSoundTimeline, soundAt, useSceneSound, type SoundAtState } from '../_host/sceneSound'
 import { clamp, lerp, smooth01 as smooth } from '../_host/math'
 import type { Frame, SceneProps } from '../_host/types'
 import s from './scene.module.css'
@@ -32,16 +33,33 @@ function rgba(hex: string, a: number) {
   return `rgba(${r},${gg},${b},${a})`
 }
 
+// Phase boundaries (f) — shared by the visuals and the sound beats.
+const GAP_OPEN = 0.1 // lines start to diverge
+const GAP_WIDEST = 0.62 // void reaches its maximum
+const GAP_CLOSE = 0.82
+const S2_IN = 0.3 // second headline starts rising
+const CALIPER_GV = 0.02 // caliper bracket + 격차/GAP label drawn above this opening
+
 // 격차 개방량 0(포개짐)..1(최대)
 function G(f: number) {
-  if (f < 0.1) return 0
-  if (f < 0.62) return smooth((f - 0.1) / 0.52)
-  if (f < 0.82) {
-    const b = (f - 0.62) / 0.2
+  if (f < GAP_OPEN) return 0
+  if (f < GAP_WIDEST) return smooth((f - GAP_OPEN) / (GAP_WIDEST - GAP_OPEN))
+  if (f < GAP_CLOSE) {
+    const b = (f - GAP_WIDEST) / (GAP_CLOSE - GAP_WIDEST)
     return 1 - 0.05 * (0.5 - 0.5 * Math.cos(b * Math.PI * 2))
   }
-  return 1 - smooth((f - 0.82) / 0.18)
+  return 1 - smooth((f - GAP_CLOSE) / (1 - GAP_CLOSE))
 }
+// f where the caliper first appears (G crosses CALIPER_GV while opening) — bisection on G.
+const CALIPER_F = (() => {
+  let lo = GAP_OPEN, hi = GAP_WIDEST
+  for (let i = 0; i < 40; i++) {
+    const mid = (lo + hi) / 2
+    if (G(mid) > CALIPER_GV) hi = mid
+    else lo = mid
+  }
+  return hi
+})()
 // 화면 밝기 배수 1..0.34..1 (루프 봉합 호흡)
 function dip(f: number) {
   if (f < 0.8) return 1
@@ -86,6 +104,12 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
   const gridScroll = useRef(0)
 
   useSceneReady(onReady)
+  // Scene sound events (film only; silent elsewhere). Calm problem statement: a slow scan as
+  // the two lines begin to diverge, a lock when the caliper starts measuring the gap, a reveal
+  // for the 'but…' headline, and a dull 'defect' when the gap is at its widest. Fired from the
+  // draw loop on the same f constants the visuals use.
+  const sound = useSceneSound()
+  const cues = useRef<SoundAtState | null>(null)
 
   const ref = useSceneCanvas((g: CanvasRenderingContext2D, fr: Frame) => {
     const W = fr.w,
@@ -218,7 +242,7 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
     const rlDx = rx[N],
       rlDy = ry[N]
 
-    if (gv > 0.02) {
+    if (gv > CALIPER_GV) {
       const bx = exDx + 26
       g.strokeStyle = rgba(GAPC, 0.55 * dv)
       g.lineWidth = 1.2
@@ -283,7 +307,7 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
 
     /* 8) 타이포/레전드 밝기·등장 동기화 */
     const s1op = smooth((f - 0.0) / 0.08) * (f < 0.86 ? 1 : lerp(1, 0.35, smooth((f - 0.86) / 0.14)))
-    const s2op = smooth((f - 0.3) / 0.16) * (f < 0.8 ? 1 : 1 - smooth((f - 0.8) / 0.1))
+    const s2op = smooth((f - S2_IN) / 0.16) * (f < 0.8 ? 1 : 1 - smooth((f - 0.8) / 0.1))
     if (eyebrowRef.current) eyebrowRef.current.style.opacity = (0.9 * dv).toFixed(3)
     if (s1Ref.current) s1Ref.current.style.opacity = (s1op * dv).toFixed(3)
     if (s2Ref.current) {
@@ -291,6 +315,25 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
       s2Ref.current.style.transform = `translateY(${lerp(14, 0, clamp(s2op, 0, 1))}px)`
     }
     if (legendRef.current) legendRef.current.style.opacity = (0.85 * dv).toFixed(3)
+
+    /* 9) sound */
+    const tl = f * CYCLE
+    const c = (cues.current ??= createSoundTimeline(sound))
+    const caliperX = (exDx + 26) / W
+    soundAt(c, tl, GAP_OPEN * CYCLE, 'scan', {
+      id: 'gap.open',
+      x: q.Lx / W,
+      toX: q.Rx / W,
+      durationS: (GAP_WIDEST - GAP_OPEN) * CYCLE,
+      intensity: 0.6,
+    })
+    soundAt(c, tl, CALIPER_F * CYCLE, 'lock', { id: 'gap.caliper', x: caliperX, intensity: 0.8 })
+    soundAt(c, tl, S2_IN * CYCLE, 'reveal', () => {
+      const box = g.canvas.getBoundingClientRect()
+      const r = s2Ref.current?.getBoundingClientRect()
+      return { id: 'gap.headline2', x: r && box.width > 0 ? (r.left + r.width / 2 - box.left) / box.width : 0.25, intensity: 0.7 }
+    })
+    soundAt(c, tl, GAP_WIDEST * CYCLE, 'defect', { id: 'gap.widest', x: caliperX, intensity: 0.7 })
   }, { running })
 
   return (

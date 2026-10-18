@@ -7,8 +7,9 @@ import { rgba, mix } from '../_host/color'
 import { clamp, lerp, ease } from '../_host/math'
 import { useSceneReady } from '../_host/useSceneReady'
 import { useSceneClock } from '../_host/sceneClock'
+import { createSoundTimeline, soundAt, useSceneSound, type SoundAtState } from '../_host/sceneSound'
 import { COLD, COLDB, CYCLE, DEV, FIELD, NB, WARM, WARMB } from './constants'
-import { applyHero, devC, drawGears, drawSeam, drawSystem, drawTokens, fieldC, focalBreath, persp, setLabel } from './draw'
+import { applyHero, devC, drawGears, drawSeam, drawSystem, drawTokens, fieldC, focalBreath, PAN_IN_W, persp, PULL_A, PULL_B, setLabel } from './draw'
 import { makeProcNodes, syncLayout, syncSide, unloadAll } from './runtime'
 import type { BucketItem, LayoutState, ProcNode } from './types'
 import { PerspectivesView } from './view'
@@ -41,6 +42,11 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
 
   useSceneReady(onReady)
   const clock = useSceneClock()
+  // Scene sound events (film only; silent elsewhere). Emitted from this React scene's draw loop
+  // only — never from inside the iframed lab pages. A soft pop as each side panel fades in (at
+  // its own screen side), and one swish at the peak of the FIELD → DEV rack-focus shift.
+  const sound = useSceneSound()
+  const cues = useRef<SoundAtState | null>(null)
 
   const getOffset = () => {
     if (offsetRef.current === null) {
@@ -96,6 +102,18 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
       puck.style.boxShadow = `0 0 14px ${rgba(pc, 0.7)}`
     }
     setLabel(vlabelRef.current, p, pc, labelStateRef.current, locale)
+
+    // ---- sound (loop-local time; same pan / pull constants as the visuals) ----
+    const tl = time % CYCLE
+    const c = (cues.current ??= createSoundTimeline(sound))
+    const edge = 0.045 + layout.pw / 2 / W // panel centre, fraction of W (layoutSide)
+    for (let i = 0; i < FIELD.length; i++) {
+      soundAt(c, tl, (fieldC(i) - PAN_IN_W) * CYCLE, 'node', { id: `persp.field${i}`, x: edge, intensity: 0.5 })
+    }
+    soundAt(c, tl, ((PULL_A + PULL_B) / 2) * CYCLE, 'transition', { id: 'persp.rackFocus', x: 0.5 })
+    for (let i = 0; i < DEV.length; i++) {
+      soundAt(c, tl, (devC(i) - PAN_IN_W) * CYCLE, 'node', { id: `persp.dev${i}`, x: 1 - edge, intensity: 0.5 })
+    }
   }, { running })
 
   return (

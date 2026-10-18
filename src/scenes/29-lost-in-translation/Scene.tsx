@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import { SceneHost } from '../_host/SceneHost'
 import { useSceneCanvas } from '../_host/useSceneCanvas'
 import { useSceneReady } from '../_host/useSceneReady'
+import { createSoundTimeline, soundAt, useSceneSound, type SoundAtState } from '../_host/sceneSound'
 import { lerp, smooth01 } from '../_host/math'
 import type { SceneProps } from '../_host/types'
 import s from './scene.module.css'
@@ -78,6 +79,13 @@ const T_PEEL = 12.5
 const T_RESOLVE = 16.0
 const LOOP = 19.0
 
+// Stagger constants shared by the visuals and the sound beats.
+const SRC_STAGGER = 0.1 // source word i intro starts at pPose = i·SRC_STAGGER
+const ANS_STAGGER = 0.07 // answer word i starts at pPeel = i·ANS_STAGGER
+const ANS_RAMP = 0.4 // … and is fully in ANS_RAMP later
+const ANS_HL_KO = A.findIndex((a) => a.hl)
+const ANS_HL_EN = A_EN.findIndex((a) => a.hl)
+
 const BLOCKS = ['▚', '▞', '▒', '▓', '░', '█']
 
 const clamp = (v: number, a = 0, b = 1) => (v < a ? a : v > b ? b : v)
@@ -132,6 +140,13 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
   const uRef = useRef(0)
 
   useSceneReady(onReady)
+  // Scene sound events (film only; silent elsewhere). Question → answer: a reveal as the
+  // question resolves, the translation head as one scan panning with it, a reveal when the
+  // layers start peeling and the answer rises, THE chime when the highlighted '소통' /
+  // 'communication' word is half in, a warm resolve on COMMUNICATION. Fired from the draw loop
+  // on the same timeline constants the visuals use (loop-local time).
+  const sound = useSceneSound()
+  const cues = useRef<SoundAtState | null>(null)
 
   /* build dynamic DOM once on mount */
   useEffect(() => {
@@ -241,7 +256,7 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
     /* SOURCE words */
     const srcMaster = clamp(pPose) * (1 - smooth(pPeel))
     srcWRef.current.forEach((el, i) => {
-      const intro = smooth((pPose - i * 0.1) / 0.5)
+      const intro = smooth((pPose - i * SRC_STAGGER) / 0.5)
       const wordX = (i + 0.5) / Q.length
       const headPos = pTr
       const near = Math.exp(-Math.pow((wordX - headPos) / 0.14, 2))
@@ -313,7 +328,7 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
 
     /* ANSWER words */
     ansWRef.current.forEach((el, i) => {
-      const inP = smooth((pPeel - i * 0.07) / 0.4)
+      const inP = smooth((pPeel - i * ANS_STAGGER) / ANS_RAMP)
       const op = inP * (1 - smooth(pRel))
       const blur = (1 - inP) * 4.0 * (1 - pRel)
       const dy = lerp(10, 0, inP)
@@ -347,6 +362,29 @@ export default function Scene({ running = true, onReady, locale = 'ko' }: SceneP
     /* film flicker */
     if (flickRef.current)
       flickRef.current.style.opacity = (0.5 + 0.5 * Math.sin(time / 55)).toFixed(2)
+
+    /* sound */
+    const c = (cues.current ??= createSoundTimeline(sound))
+    const xOf = (el: Element | null | undefined, fb = 0.5) => {
+      const box = _g.canvas.getBoundingClientRect()
+      const r = el?.getBoundingClientRect()
+      return r && r.width > 0 && box.width > 0 ? (r.left + r.width / 2 - box.left) / box.width : fb
+    }
+    soundAt(c, t, SRC_STAGGER * T_POSE, 'reveal', () => ({ id: 'lit.question', x: xOf(sourceContainerRef.current), intensity: 0.7 }))
+    soundAt(c, t, T_POSE, 'scan', {
+      id: 'lit.translate',
+      x: (22 * U) / fr.w,
+      toX: (fr.w - 6 * U) / fr.w,
+      durationS: T_TRANS - T_POSE,
+      intensity: 0.6,
+    })
+    soundAt(c, t, T_TRANS, 'reveal', () => ({ id: 'lit.answer', x: xOf(answerContainerRef.current), intensity: 0.7 }))
+    const hlI = locale === 'en' ? ANS_HL_EN : ANS_HL_KO
+    soundAt(c, t, T_TRANS + (T_PEEL - T_TRANS) * (hlI * ANS_STAGGER + ANS_RAMP / 2), 'payoff', () => ({
+      id: 'lit.communication',
+      x: xOf(ansWRef.current[hlI]),
+    }))
+    soundAt(c, t, T_PEEL, 'resolve', () => ({ id: 'lit.resolve', x: xOf(lyrElsRef.current[4], 0.2), intensity: 0.5 }))
   }, { running })
 
   return (

@@ -6,6 +6,7 @@ import { useSceneCanvas } from '../_host/useSceneCanvas'
 import type { Frame, SceneProps } from '../_host/types'
 import { clamp, ease } from '../_host/math'
 import { useSceneReady } from '../_host/useSceneReady'
+import { createSoundTimeline, soundAt, useSceneSound, type SoundAtState } from '../_host/sceneSound'
 import s from './scene.module.css'
 
 /* ════════════════════════════════════════════════════════════════════════
@@ -70,6 +71,12 @@ const CUM = DURS.map((dur) => {
   return v
 })
 
+// Sound beats (cut indices into CUM). The first slow cuts tick like a shutter; from SOUND_STREAM_CUT
+// the accelerating rest is one data texture until the montage stops at ACCEL_END.
+const SOUND_SHUTTER_CUTS = [1, 2, 3]
+const SOUND_STREAM_CUT = 14
+const HEADLINE_IN = 0.6 // f where the headline starts resolving (hv)
+
 const assetUrl = (url: string) => (url.startsWith('/') ? url : `/lab/${url}`)
 
 // The montage used to fetch every photo on mount (the largest originals were
@@ -119,6 +126,11 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
   }, [])
 
   useSceneReady(onReady)
+  // Scene sound events (film only; silent elsewhere). Calm opener: a soft shutter on the first
+  // slow cuts, one data stream for the accelerating montage, a reveal when the headline resolves.
+  // Fired from the draw loop on the same f constants the visuals use (loop-local time).
+  const sound = useSceneSound()
+  const cues = useRef<SoundAtState | null>(null)
 
   const showCut = (ci: number) => {
     const slideA = slideARef.current
@@ -173,7 +185,7 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
       flash.style.opacity = flashStart.current >= 0 && age >= 0 && age < 0.26 ? (0.5 * (1 - age / 0.26)).toFixed(3) : '0'
     }
 
-    const hv = clamp((f - 0.6) / 0.1, 0, 1)
+    const hv = clamp((f - HEADLINE_IN) / 0.1, 0, 1)
     const hOut = clamp((f - 0.94) / 0.05, 0, 1)
     const appear = ease(hv) * (1 - hOut)
     const hb = (1 - ease(hv)) * 7 + hOut * 5
@@ -185,6 +197,26 @@ export default function Scene({ locale = 'ko', running = true, onReady }: SceneP
       headline.style.transform = `scale(${(1.1 - 0.1 * ease(hv)).toFixed(3)})`
     }
     if (subRef.current) subRef.current.style.opacity = (appear * 0.9).toFixed(3)
+
+    const tl = (time % CYCLE) / 1000
+    const atF = (fv: number) => (fv * CYCLE) / 1000
+    const c = (cues.current ??= createSoundTimeline(sound))
+    for (const k of SOUND_SHUTTER_CUTS) {
+      if (k < N) soundAt(c, tl, atF(CUM[k]), 'node', { id: `era.cut${k}`, x: 0.5, intensity: 0.5 })
+    }
+    if (SOUND_STREAM_CUT < N) {
+      soundAt(c, tl, atF(CUM[SOUND_STREAM_CUT]), 'data', {
+        id: 'era.stream',
+        x: 0.5,
+        intensity: 0.7,
+        durationS: atF(ACCEL_END - CUM[SOUND_STREAM_CUT]),
+      })
+    }
+    soundAt(c, tl, atF(HEADLINE_IN), 'reveal', () => {
+      const box = g.canvas.getBoundingClientRect()
+      const r = headlineRef.current?.getBoundingClientRect()
+      return { id: 'era.headline', x: r && box.width > 0 ? (r.left + r.width / 2 - box.left) / box.width : 0.5 }
+    })
   }, { running })
 
   return (

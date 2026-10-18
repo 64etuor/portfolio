@@ -66,6 +66,12 @@ export interface SoundOpts {
   /** stable id per event (e.g. 'sn.award') — labels the debug overlay. */
   id?: string
   /**
+   * Part of the build into the next 'payoff' (the last thread / lock right before the hit): it
+   * still plays — ducked — inside the payoff's pre-silence instead of being held. 'link', 'lock'
+   * and 'rise' count as build events without it.
+   */
+  lead?: boolean
+  /**
    * The event lands this many seconds from now (scheduled on the audio clock). soundAt sets it
    * for 'payoff' so the mapper can clear a short pre-silence before the hit. Rarely set by hand.
    */

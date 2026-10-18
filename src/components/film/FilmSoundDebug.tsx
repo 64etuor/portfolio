@@ -40,7 +40,7 @@ export function FilmSoundDebug({ mapper }: { mapper: SoundEventMapper }) {
         return (
           <div key={e.n} data-sfx-row data-status={e.status} style={{ opacity: ok ? 1 : 0.4 }}>
             {(e.filmT / 1000).toFixed(2)}s {e.scene.replace(/\.html$/, '')} <b>{e.ev}</b> {e.id} {fmtX(e)}
-            {e.inS > 0 ? ` +${e.inS.toFixed(2)}s` : ''} {ok ? `→ ${e.sounds.join('+')}` : `· ${e.status}: ${e.reason}`}
+            {e.inS > 0 ? ` +${e.inS.toFixed(2)}s` : ''} {ok ? `→ ${e.sounds.join('+')} [${e.section}${e.variant >= 0 ? ` v${e.variant}` : ''}]${e.reason ? ` · ${e.reason}` : ''}` : `· ${e.status}: ${e.reason}`}
           </div>
         )
       })}

@@ -41,8 +41,8 @@ function toggleSound() {
 
 /**
  * FilmControls — rewind + play/pause + sound (bottom-right) and immediate return home (top-right).
- * Also owns the sound toggle, audio pause and the iris-out sound; picture-cut sounds, scene-synced
- * cues and the score are played by useFilmSoundCues off the master clock (cue sheet: soundCues.ts).
+ * Also owns the sound toggle, audio pause and the iris-out sound; picture-cut sounds and the score
+ * are played by useFilmSoundCues off the master clock, scene sound events by useFilmSceneSound.
  */
 export function FilmControls({ paused, onRewind, onTogglePause, onSkip, beat, filmT = Infinity }: FilmControlsProps) {
   const { t, locale, setLocale } = useLocale()

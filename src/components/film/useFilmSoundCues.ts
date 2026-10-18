@@ -1,7 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { FILM_SCORE, filmMusic, LEAD_MAX, sfx, type FilmClockSource, type PlayOpts, type SfxName } from '@/lib/sfx'
 import { FILM_SCHEDULE } from './schedule'
-import { CUT_CUES, CUT_GUARD_S, INSTRUMENTED, MAX_CUES_PER_SHOT, SOUND_CUES, type Cue } from './soundCues'
 
 /**
  * Hits older than this (ms) when the clock reaches them are dropped, never played late.
@@ -19,7 +18,7 @@ const LOOKAHEAD_MS = 1500
 const ENGINE_HEADROOM_S = 0.01
 
 interface FlatHit {
-  /** absolute film ms of the hit (the visual event) */
+  /** absolute film ms of the hit (the picture cut) */
   abs: number
   /** film ms at which to hand it to the engine (abs − lead − lookahead) */
   trig: number
@@ -33,44 +32,48 @@ interface FlatHit {
 
 const MAX_LEAD_MS = Math.max(...Object.values(LEAD_MAX).map((s) => (s ?? 0) * 1000))
 
-function expand(c: Cue): { at: number; gain?: number; pitch?: number }[] {
-  const ats = typeof c.at === 'number' ? (c.repeat ? Array.from({ length: c.repeat[0] }, (_, i) => (c.at as number) + i * c.repeat![1]) : [c.at]) : [...c.at]
-  return ats.map((at, i) => ({ at, gain: c.gain, pitch: (c.pitch ?? 1) * Math.pow(c.step ?? 1, i) }))
+/**
+ * Picture-cut sounds — the only hand-timed cues left (every scene emits its own sound events:
+ * useFilmSceneSound → eventMap). Shot-local 0 of every shot after the first: on an act change a
+ * swish whose crest lands on the cut + a soft low thump; montage cuts inside an act get a lighter
+ * thump only. Subtle by design (the scene's first beat is the accent), and never the same twice
+ * in a row: the pitch steps through CUT_PITCH by shot index.
+ */
+interface CutCue {
+  sfx: SfxName
+  gain: number
+  pitch?: number
 }
+const CUT_CUES = {
+  act: [
+    { sfx: 'swish', gain: 0.16 },
+    { sfx: 'cut', gain: 0.18 },
+  ],
+  scene: [{ sfx: 'cut', gain: 0.12, pitch: 1.1 }],
+} as const satisfies Record<string, readonly CutCue[]>
+const CUT_PITCH = [1, 0.92, 1.08, 0.96] as const
 
-/** The whole film's hits flattened onto absolute film time, sorted by trigger time. Built once. */
+/** The whole film's cut hits on absolute film time, sorted by trigger time. Built once. */
 const FLAT: FlatHit[] = (() => {
   const out: FlatHit[] = []
   let id = 0
   FILM_SCHEDULE.forEach((shot, shotIdx) => {
-    // instrumented scenes emit their own sound events (useFilmSceneSound) — no hand-timed cues
-    const cues = (INSTRUMENTED as ReadonlySet<string>).has(shot.file) ? [] : ((SOUND_CUES as Record<string, readonly Cue[] | undefined>)[shot.file] ?? [])
-    if (process.env.NODE_ENV === 'development' && cues.length > MAX_CUES_PER_SHOT) {
-      console.warn(`[soundCues] ${shot.file}: ${cues.length} cues (max ${MAX_CUES_PER_SHOT})`)
+    if (shotIdx === 0) return // the opening shot has no cut
+    const cut = shot.actIdx !== FILM_SCHEDULE[shotIdx - 1].actIdx ? CUT_CUES.act : CUT_CUES.scene
+    const step = CUT_PITCH[shotIdx % CUT_PITCH.length]
+    for (const c of cut) {
+      const pitch = ('pitch' in c ? c.pitch : 1) * step
+      out.push({
+        abs: shot.start,
+        trig: shot.start - (LEAD_MAX[c.sfx] ?? 0) * 1000 - LOOKAHEAD_MS,
+        id: id++,
+        shotIdx,
+        file: shot.file,
+        at: 0,
+        sfx: c.sfx,
+        opts: { gain: c.gain, pitch, delay: 0 },
+      })
     }
-    const cut = shotIdx === 0 ? [] : shot.actIdx !== FILM_SCHEDULE[shotIdx - 1].actIdx ? CUT_CUES.act : CUT_CUES.scene
-    const push = (c: Cue, guard: boolean) => {
-      for (const h of expand(c)) {
-        // The opening shot has no cut to protect; elsewhere the first 250 ms belong to the cut sound.
-        if ((guard && shotIdx > 0 && h.at < CUT_GUARD_S) || h.at * 1000 >= shot.duration) {
-          if (process.env.NODE_ENV === 'development') console.warn(`[soundCues] ${shot.file}: hit at ${h.at}s dropped`)
-          continue
-        }
-        const abs = shot.start + h.at * 1000
-        out.push({
-          abs,
-          trig: abs - (LEAD_MAX[c.sfx] ?? 0) * 1000 - LOOKAHEAD_MS,
-          id: id++,
-          shotIdx,
-          file: shot.file,
-          at: h.at,
-          sfx: c.sfx,
-          opts: { gain: h.gain, pitch: h.pitch, pan: c.pan, delay: 0 },
-        })
-      }
-    }
-    for (const c of cut) push(c, false)
-    for (const c of cues) push(c, true)
   })
   return out.sort((a, b) => a.trig - b.trig || a.abs - b.abs)
 })()
@@ -117,7 +120,7 @@ interface Args {
 }
 
 /**
- * useFilmSoundCues — plays the cue sheet (soundCues.ts) and the score off the film's master clock.
+ * useFilmSoundCues — plays the picture-cut sounds (CUT_CUES) and the score off the film's master clock.
  *
  * Runs once per clock tick (the clock already re-renders Film every frame); the evaluation walks
  * a pre-sorted hit array with a cursor, so a tick allocates nothing.

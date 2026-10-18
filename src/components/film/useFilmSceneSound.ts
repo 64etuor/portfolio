@@ -1,6 +1,10 @@
 import { useEffect, useMemo } from 'react'
 import { sfx, SoundEventMapper, type FilmClockSource, type SfxEventLog } from '@/lib/sfx'
 import { setSoundSink } from '@/scenes/_host/sceneSound'
+import { FILM_SCHEDULE } from './schedule'
+
+/** scene file → its FILM_SCHEDULE act id (the eventMap's section colour) */
+const ACT_OF_FILE: ReadonlyMap<string, string> = new Map(FILM_SCHEDULE.map((s) => [s.file, s.actId]))
 
 type DebugWindow = Window & { __sceneSfxLog?: SfxEventLog[] }
 
@@ -29,6 +33,9 @@ export function useFilmSceneSound({ clock, paused, ended, cutId, debug }: Args):
       new SoundEventMapper({
         play: (name, opts) => sfx.play(name, opts),
         duck: (t, depth, hold, release) => sfx.duck(t, depth, hold, release),
+        hush: (t, depth) => sfx.hush(t, depth),
+        fadeTextures: () => sfx.fadeTextures(),
+        actOf: (scene) => ACT_OF_FILE.get(scene),
         audioNow: () => sfx.musicTarget()?.ctx.currentTime ?? null,
         outputLag: () => sfx.outputLag(),
         audible: () => sfx.state === 'on',

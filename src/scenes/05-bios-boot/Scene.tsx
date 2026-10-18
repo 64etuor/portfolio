@@ -42,6 +42,22 @@ const LOGO = [
   '|_|     \\___/|_| |_|   SYS-BIOS  CORE',
 ]
 
+/* Step timings (ms) shared by the timer chain and its sound beats. */
+const LOGO_STEP_MS = 60
+const POST_STEP_MS = 185
+const MEM_STEP_MS = 22
+const MEM_TARGET = 2048
+const memNext = (v: number) => Math.min(MEM_TARGET, v + Math.max(1, Math.round((MEM_TARGET - v) / 5)))
+/** steps the memory count takes 0 → MEM_TARGET */
+const MEM_STEPS = (() => {
+  let n = 0
+  for (let v = 0; v < MEM_TARGET; v = memNext(v)) n++
+  return n
+})()
+/** first POST line of the tagged run after the memory count (one 'type' texture for the run) */
+const POST_RUN = POST.findIndex((p) => p.tag)
+const POST_RUN_S = ((POST.length - POST_RUN) * POST_STEP_MS) / 1000
+
 /* POST log lines are built as DOM nodes (text + styled spans), not HTML strings. */
 function span(className: string, ...children: (string | Node)[]) {
   const el = document.createElement('span')
@@ -70,10 +86,11 @@ export default function Scene({ running = true, onReady }: SceneProps) {
   const readyRef = useRef<HTMLDivElement | null>(null)
 
   useSceneReady(onReady)
-  // Scene sound events (film only; silent elsewhere). The boot stays near-silent on purpose:
-  // a soft power-on when the CRT lights and a soft 'approve' when SYSTEM READY lands — the
-  // logo / POST lines / memory count make no sound. Emitted from the same timer callbacks that
-  // draw each step, so the sound is on the visual moment by construction.
+  // Scene sound events (film only; silent elsewhere). The boot stays quiet and sparse: a soft
+  // power-on when the CRT lights, one low keyboard texture for the logo type-on, a short data
+  // shimmer under the memory count, one texture for the tagged POST run, and a soft 'approve'
+  // when SYSTEM READY lands. Emitted from the same timer callbacks that draw each step, so the
+  // sound is on the visual moment by construction.
   const sound = useSceneSound()
 
   useEffect(() => {
@@ -90,12 +107,13 @@ export default function Scene({ running = true, onReady }: SceneProps) {
 
     function typeLogo(cb: () => void) {
       let i = 0
+      sound('type', { id: 'boot.logo', x: 0.3, durationS: (LOGO.length * LOGO_STEP_MS) / 1000, intensity: 0.4 })
       ;(function step() {
         if (done) return
         if (logoRef.current) logoRef.current.textContent = LOGO.slice(0, i + 1).join('\n')
         i++
         if (i < LOGO.length) {
-          timers.push(setTimeout(step, 60))
+          timers.push(setTimeout(step, LOGO_STEP_MS))
         } else {
           timers.push(setTimeout(cb, 150))
         }
@@ -103,15 +121,14 @@ export default function Scene({ running = true, onReady }: SceneProps) {
     }
 
     function memCount(lineEl: HTMLElement, cb: () => void) {
-      const TARGET = 2048
       let v = 0
+      sound('data', { id: 'boot.mem', x: 0.35, durationS: (MEM_STEPS * MEM_STEP_MS) / 1000, intensity: 0.35 })
       const step = () => {
         if (done) return
-        v += Math.max(1, Math.round((TARGET - v) / 5))
-        if (v >= TARGET) v = TARGET
+        v = memNext(v)
         fillMemLine(lineEl, String(v).padStart(4, ' '))
-        if (v < TARGET) {
-          timers.push(setTimeout(step, 22))
+        if (v < MEM_TARGET) {
+          timers.push(setTimeout(step, MEM_STEP_MS))
         } else {
           timers.push(setTimeout(cb, 200))
         }
@@ -163,12 +180,13 @@ export default function Scene({ running = true, onReady }: SceneProps) {
             return
           }
 
+          if (idx === POST_RUN) sound('type', { id: 'boot.post', x: 0.3, durationS: POST_RUN_S, intensity: 0.3 })
           const ln = document.createElement('div')
           ln.className = s.line + ' ' + (item.s === 'ok' ? s.ok : s.dim)
           fillPostLine(ln, item)
           logRef.current?.appendChild(ln)
           idx++
-          timers.push(setTimeout(next, 185))
+          timers.push(setTimeout(next, POST_STEP_MS))
         }
         next()
       })
@@ -184,7 +202,7 @@ export default function Scene({ running = true, onReady }: SceneProps) {
           const ln = document.createElement('div')
           if (item.mem) {
             ln.className = s.line
-            fillMemLine(ln, '2048')
+            fillMemLine(ln, String(MEM_TARGET))
           } else {
             ln.className = s.line + ' ' + (item.s === 'ok' ? s.ok : s.dim)
             fillPostLine(ln, item)

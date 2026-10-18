@@ -72,6 +72,10 @@ export interface PlayOpts {
   dur?: number
   /** pan at the end of a continuous voice (glides from `pan`) */
   panTo?: number
+  /** voice low-pass (Hz) — section colour (eventMap FLAVOR: darker problem acts, warm ending) */
+  lp?: number
+  /** a continuous texture (keys / shimmer / sweep): faded out on a picture cut (fadeTextures) */
+  tex?: boolean
 }
 
 const MASTER = 0.7
@@ -140,6 +144,9 @@ const SAMPLE: Partial<Record<SfxName, SampleDef>> = {
 /** Procedural hit offsets (s from voice start to the perceptual peak). */
 const SYNTH_LEAD: Partial<Record<SfxName, number>> = { whoosh: 0.32, swish: 0.16, riser: 0.55, thud: 0.004 }
 
+/** Longest continuous texture (s) — long scans / data flows follow the whole visual (eventMap). */
+export const MAX_TEXTURE_S = 8
+
 /** Upper bound of lead() per sound — schedule at least this far ahead to land the hit on time. */
 export const LEAD_MAX: Partial<Record<SfxName, number>> = { whoosh: 0.9, swish: 0.52, riser: 1.7, thud: 0.3, seal: 0.3, chime2: 0.15, glitch: 0.03 }
 
@@ -156,6 +163,9 @@ interface Pending {
   end: number
   out: GainNode
   sources: AudioScheduledSourceNode[]
+  /** the voice's out level (hush ramps from it) */
+  level: number
+  tex: boolean
 }
 
 class SfxEngine {
@@ -330,6 +340,32 @@ class SfxEngine {
     })
   }
 
+  /**
+   * Pull every voice already SOUNDING at audio time `t` down to `depth` × its level (τ 50 ms) —
+   * a payoff's pre-silence: tails of earlier accents stop ringing into it. Voices whose hit is
+   * still ahead (the payoff itself, its build-up) are untouched.
+   */
+  hush(t: number, depth: number): void {
+    for (const v of this.voices) {
+      if (v.hit > t + 0.005 || v.end <= t) continue
+      v.out.gain.cancelScheduledValues(t)
+      v.out.gain.setTargetAtTime(v.level * depth, t, 0.05)
+    }
+  }
+
+  /** Picture cut: continuous textures still running fade out (τ 120 ms) instead of crossing the cut. */
+  fadeTextures(t?: number): void {
+    const ctx = this.ctx
+    if (!ctx) return
+    const at = t ?? ctx.currentTime
+    for (const v of this.voices) {
+      // only the previous shot's textures (a new shot's first texture may already be scheduled)
+      if (!v.tex || v.end <= at || v.hit > at - 0.05) continue
+      v.out.gain.cancelScheduledValues(at)
+      v.out.gain.setTargetAtTime(0, at, 0.12)
+    }
+  }
+
   /** Cut every pending/ringing one-shot (e.g. leaving the film). Music untouched (see music.ts). */
   stopAll(): void {
     const ctx = this.ctx
@@ -501,23 +537,25 @@ class SfxEngine {
     const s = SAMPLE[name]
     const m = s && this.sprite && this.spriteMap?.[s.key]
     let v: Voice
+    let vLevel = level
     if (s && m && this.sprite) {
       const rate = (opts.pitch ?? 1) * (s.tonal ? this.tune : 1)
-      v = new Voice(ctx, this.noiseBuf, this.voiceBus, this.reverbIn, level * s.gain, opts.pan ?? 0, now)
+      v = new Voice(ctx, this.noiseBuf, this.voiceBus, this.reverbIn, level * s.gain, opts.pan ?? 0, now, opts.lp)
       v.reverb(s.send ?? 0).sample(this.sprite, m.start + this.spriteShift, m.dur, m.hit, hit, rate)
+      vLevel = level * s.gain
       if (s.layer) {
-        const lv = new Voice(ctx, this.noiseBuf, this.voiceBus, this.reverbIn, level * s.layer, opts.pan ?? 0, now)
+        const lv = new Voice(ctx, this.noiseBuf, this.voiceBus, this.reverbIn, level * s.layer, opts.pan ?? 0, now, opts.lp)
         RECIPES[name](lv, hit, opts.pitch ?? 1, opts)
-        this.voices.push({ hit, end: lv.finish(), out: lv.outNode, sources: lv.sources })
+        this.voices.push({ hit, end: lv.finish(), out: lv.outNode, sources: lv.sources, level: level * s.layer, tex: false })
       }
     } else {
       const p = (opts.pitch ?? 1) * (TONAL_SYNTH.has(name) ? this.tune : 1)
       // a pan glide (panTo) is drawn inside the recipe, so the voice itself stays centred
       const glide = opts.panTo !== undefined
-      v = new Voice(ctx, this.noiseBuf, this.voiceBus, this.reverbIn, level, glide ? 0 : (opts.pan ?? 0), now)
+      v = new Voice(ctx, this.noiseBuf, this.voiceBus, this.reverbIn, level, glide ? 0 : (opts.pan ?? 0), now, opts.lp)
       RECIPES[name](v, Math.max(now + 0.005, hit - (SYNTH_LEAD[name] ?? 0)), p, opts)
     }
-    this.voices.push({ hit, end: v.finish(), out: v.outNode, sources: v.sources })
+    this.voices.push({ hit, end: v.finish(), out: v.outNode, sources: v.sources, level: vLevel, tex: !!opts.tex })
     const duck = DUCK[name]
     if (duck) this.duck(hit, duck[0], duck[1], duck[2])
     this.onPlay?.(name, hit, !!m)
@@ -576,12 +614,21 @@ class Voice {
     level: number,
     pan: number,
     private now: number,
+    lp?: number,
   ) {
     this.out = ctx.createGain()
     this.out.gain.value = level
     this.send = ctx.createGain()
     this.send.gain.value = 0
     let head: AudioNode = this.out
+    if (lp) {
+      const f = ctx.createBiquadFilter()
+      f.type = 'lowpass'
+      f.frequency.value = lp
+      f.Q.value = 0.5
+      head.connect(f)
+      head = f
+    }
     if (pan) {
       const p = ctx.createStereoPanner()
       p.pan.value = Math.max(-1, Math.min(1, pan))
@@ -630,13 +677,14 @@ class Voice {
     return this
   }
 
-  /** Attack/decay envelope on a fresh gain node feeding `dest` (default: voice out). */
-  private env(t: number, peak: number, a: number, d: number, dest: AudioNode = this.out): GainNode {
+  /** Attack / (hold) / decay envelope on a fresh gain node feeding `dest` (default: voice out). */
+  private env(t: number, peak: number, a: number, d: number, dest: AudioNode = this.out, hold = 0): GainNode {
     const g = this.ctx.createGain()
     g.gain.setValueAtTime(0, t)
     g.gain.linearRampToValueAtTime(peak, t + a)
-    g.gain.exponentialRampToValueAtTime(SILENT, t + a + d)
-    g.gain.setValueAtTime(0, t + a + d + 0.005)
+    if (hold > 0) g.gain.setValueAtTime(peak, t + a + hold)
+    g.gain.exponentialRampToValueAtTime(SILENT, t + a + hold + d)
+    g.gain.setValueAtTime(0, t + a + hold + d + 0.005)
     g.connect(dest)
     return g
   }
@@ -711,6 +759,8 @@ class Voice {
     peak: number
     a: number
     d: number
+    /** sustain at peak (s) between attack and decay — long textures */
+    hold?: number
     panFrom?: number
     panTo?: number
   }) {
@@ -719,7 +769,10 @@ class Voice {
     const f = this.ctx.createBiquadFilter()
     f.type = o.filter
     f.Q.value = o.q ?? 0.8
-    const dur = o.a + o.d
+    const hold = o.hold ?? 0
+    const dur = o.a + hold + o.d
+    // the shared noise buffer is 2 s long (read from a random offset): loop it so a long voice isn't cut short
+    if (dur > 0.7) src.loop = true
     f.frequency.setValueAtTime(o.f0, o.t)
     if (o.fMid !== undefined) f.frequency.exponentialRampToValueAtTime(o.fMid, o.t + o.a)
     if (o.f1 !== undefined) f.frequency.exponentialRampToValueAtTime(o.f1, o.t + dur)
@@ -731,7 +784,7 @@ class Voice {
       p.connect(this.out)
       dest = p
     }
-    const g = this.env(o.t, o.peak, o.a, o.d, dest)
+    const g = this.env(o.t, o.peak, o.a, o.d, dest, hold)
     src.connect(f).connect(g)
     this.track(src, o.t, o.t + dur + 0.02, Math.random() * 1.2)
     return this
@@ -915,58 +968,78 @@ const RECIPES: Record<SfxName, Recipe> = {
   air: (v, t, p, o) => {
     const glide = o.panTo !== undefined ? { panFrom: o.pan ?? 0, panTo: o.panTo } : {}
     v.reverb(0.45)
-      .noise({ t, filter: 'bandpass', f0: 1800, fMid: 3600, f1: 2600, q: 0.7, peak: 0.07, a: 0.22, d: 0.5, ...glide })
+      // the band follows the pitch (√ — a gentle shift): eventMap's darker / brighter variants
+      .noise({ t, filter: 'bandpass', f0: 1800 * Math.sqrt(p), fMid: 3600 * Math.sqrt(p), f1: 2600 * Math.sqrt(p), q: 0.7, peak: 0.07, a: 0.22, d: 0.5, ...glide })
       .tone({ t: t + 0.05, f0: 1568 * p, peak: 0.012, a: 0.18, d: 0.45 })
   },
   // type — ONE soft keyboard texture for `dur`: muffled band-passed clicks at an uneven 45–110 ms
   // cadence, fading in/out at the run's edges (no per-character events).
   keys: (v, t, p, o) => {
-    const dur = clampDur(o.dur, 0.2, 3, 0.8)
+    const dur = clampDur(o.dur, 0.2, 5, 0.8)
     let x = 0
-    for (let i = 0; x < dur && i < 60; i++) {
+    for (let i = 0; x < dur && i < 90; i++) {
       const edge = Math.min(1, x / 0.12, (dur - x) / 0.15)
       v.noise({ t: t + x, filter: 'bandpass', f0: (1800 + jit(i, 1) * 900) * p, q: 1.6, peak: 0.07 * (0.55 + 0.45 * jit(i, 2)) * Math.max(0.25, edge), a: 0.001, d: 0.018 })
       x += 0.045 + jit(i, 3) * 0.065
     }
   },
   // data — granular shimmer for `dur`: tiny sine grains on a pentatonic set (C D E G A, 2 octaves),
-  // ~30 grains/s under a swell envelope, panned along x → toX.
+  // ~30 grains/s under a swell envelope, panned along x → toX. Long flows (> 2.5 s, up to
+  // MAX_TEXTURE_S) get a natural shape instead: slow attack, sustained bed, gentle tail, sparser grains.
   shimmer: (v, t, p, o) => {
-    const dur = clampDur(o.dur, 0.3, 4, 1)
+    const dur = clampDur(o.dur, 0.3, MAX_TEXTURE_S, 1)
     const PENTA = [1046.5, 1174.7, 1318.5, 1568, 1760, 2093, 2349.3, 2637]
-    const n = Math.min(110, Math.round(dur * 30))
+    const long = dur > 2.5
+    const n = long ? Math.min(200, Math.round(dur * 22)) : Math.min(110, Math.round(dur * 30))
+    const atk = Math.min(0.9, dur * 0.25)
+    const rel = Math.min(1.6, dur * 0.3)
+    const ss = (k: number) => k * k * (3 - 2 * k)
+    const shape = (u: number) => {
+      if (!long) return Math.sin(Math.PI * Math.min(1, u * 1.05 + 0.03))
+      const x = u * dur
+      return 0.85 * (x < atk ? ss(x / atk) : x > dur - rel ? ss(Math.max(0, (dur - x) / rel)) : 1)
+    }
     const from = o.pan ?? 0
     const to = o.panTo ?? from
     const glide = o.panTo !== undefined
     v.reverb(0.3)
     for (let i = 0; i < n; i++) {
       const u = i / n
-      const env = Math.sin(Math.PI * Math.min(1, u * 1.05 + 0.03))
+      const env = shape(u)
       // with a glide each grain sits on the x → toX line (the voice itself is centred)
       const pan = glide ? from + (to - from) * u + (jit(i, 7) - 0.5) * 0.15 : undefined
-      v.tone({ t: t + u * dur + jit(i, 4) * 0.02, f0: PENTA[Math.floor(jit(i, 5) * PENTA.length)] * p, peak: 0.018 * env + 0.004, a: 0.004, d: 0.05 + jit(i, 6) * 0.05, lowpass: 5000, pan })
+      v.tone({ t: t + u * dur + jit(i, 4) * 0.02, f0: PENTA[Math.floor(jit(i, 5) * PENTA.length)] * p, peak: 0.028 * env + 0.006, a: 0.004, d: 0.05 + jit(i, 6) * 0.05, lowpass: 5000, pan })
     }
   },
   // scan — gentle filtered sweep across `dur`: low-Q band-pass noise 500 → 2600 Hz with a
   // soft triangle glide underneath; pans x → toX.
   sweep: (v, t, p, o) => {
-    const dur = clampDur(o.dur, 0.3, 3, 0.8)
+    const dur = clampDur(o.dur, 0.3, MAX_TEXTURE_S, 0.8)
     // with panTo the voice is centred and the sweep carries the glide; otherwise the voice pans
     const glide = o.panTo !== undefined ? { panFrom: o.pan ?? 0, panTo: o.panTo } : {}
+    if (dur > 2.5) {
+      // long scan (follows the whole visual): slow attack, a sustained band that keeps opening, gentle tail
+      const a = Math.min(1.2, dur * 0.28)
+      const d = Math.min(1.6, dur * 0.3)
+      v.reverb(0.35)
+        .noise({ t, filter: 'bandpass', f0: 450 * p, fMid: 900 * p, f1: 2200 * p, q: 0.8, peak: 0.16, a, hold: dur - a - d, d, ...glide })
+        .tone({ t, type: 'triangle', f0: 247 * p, f1: 494 * p, glide: dur, peak: 0.035, a, d: dur - a, lowpass: 1200 })
+      return
+    }
     v.reverb(0.3)
-      .noise({ t, filter: 'bandpass', f0: 500 * p, fMid: 1400 * p, f1: 2600 * p, q: 0.9, peak: 0.07, a: dur * 0.55, d: dur * 0.45, ...glide })
+      .noise({ t, filter: 'bandpass', f0: 500 * p, fMid: 1400 * p, f1: 2600 * p, q: 0.9, peak: 0.1, a: dur * 0.55, d: dur * 0.45, ...glide })
       .tone({ t, type: 'triangle', f0: 330 * p, f1: 660 * p, glide: dur, peak: 0.02, a: dur * 0.5, d: dur * 0.5, lowpass: 1400 })
   },
   // defect — low, dull, muted tone (no beep): two slightly detuned triangles at D3, low-passed.
   dull: (v, t, p) => {
     v.reverb(0.2)
-      .tone({ t, type: 'triangle', f0: 146.8 * p, f1: 138.6 * p, glide: 0.5, peak: 0.12, a: 0.018, d: 0.55, lowpass: 650 })
-      .tone({ t, type: 'triangle', f0: 147.6 * p, f1: 139.3 * p, glide: 0.5, peak: 0.07, a: 0.025, d: 0.45, lowpass: 500 })
-      .tone({ t, f0: 73.4 * p, peak: 0.06, a: 0.02, d: 0.4 })
+      .tone({ t, type: 'triangle', f0: 146.8 * p, f1: 138.6 * p, glide: 0.3, peak: 0.12, a: 0.012, d: 0.32, lowpass: 600 })
+      .tone({ t, type: 'triangle', f0: 147.6 * p, f1: 139.3 * p, glide: 0.3, peak: 0.07, a: 0.018, d: 0.26, lowpass: 480 })
+      .tone({ t, f0: 73.4 * p, peak: 0.06, a: 0.015, d: 0.24 })
   },
   // block (layer) — muted buzz: a low square at 92 Hz through a dark low-pass, 0.22 s.
   buzz: (v, t, p) => {
-    v.reverb(0.1).tone({ t: t + 0.01, type: 'square', f0: 92 * p, peak: 0.05, a: 0.01, d: 0.24, lowpass: 420 })
+    v.reverb(0.08).tone({ t: t + 0.01, type: 'square', f0: 92 * p, peak: 0.05, a: 0.008, d: 0.16, lowpass: 400 })
   },
   // approve — soft open tone: C5 → G5 (a fifth up, tuned by `tune`) with a slow bloom.
   open: (v, t, p) => {

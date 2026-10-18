@@ -25,6 +25,10 @@ export const PULL_A = 0.38
 export const PULL_B = 0.5
 /** a side panel starts fading in PAN_IN_W before its centre c (panEnv) */
 export const PAN_IN_W = 0.026
+const PAN_HOLD = 0.03
+const PAN_OUT_W = 0.024
+/** a side panel's whole envelope (fade-in + hold + fade-out), in loop phase */
+export const PAN_SPAN = PAN_IN_W + PAN_HOLD + PAN_OUT_W
 
 export function persp(f: number) {
   if (f < 0.1) return 0
@@ -42,8 +46,8 @@ export function focalBreath(f: number, time: number) {
 
 export function panEnv(f: number, c: number) {
   const inW = PAN_IN_W
-  const hold = 0.03
-  const outW = 0.024
+  const hold = PAN_HOLD
+  const outW = PAN_OUT_W
   const t = f - (c - inW)
   if (t < 0) return 0
   if (t < inW) return ease(t / inW)

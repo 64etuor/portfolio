@@ -5,6 +5,7 @@ import type { Locale } from '@/i18n/content'
 import { localizeSceneText } from '../_host/localize'
 import { SceneHost } from '../_host/SceneHost'
 import { DEV, FIELD } from './constants'
+import { posterUrl } from './runtime'
 import type { ProcNode, Screen } from './types'
 import s from './scene.module.css'
 
@@ -37,6 +38,9 @@ function ProcPanel({
           refs.current[index].scr = el
         }}
       >
+        {/* a fixed-size static poster under the iframe — not an LCP/layout image, so no next/image */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img className={s.poster} src={posterUrl(item.file, locale)} alt="" aria-hidden="true" draggable={false} decoding="async" />
         <iframe
           scrolling="no"
           title={localizeSceneText(item.title, locale)}

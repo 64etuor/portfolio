@@ -282,6 +282,20 @@
 .scr {
   position: relative;
   overflow: hidden;
+  background: #070707;
+}
+
+/* static stand-in for the lab page (public/lab/posters, see make-posters.mjs) — shown
+   whenever this panel is not the single live iframe, incl. both sides of a crossfade */
+.poster {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+  user-select: none;
 }
 
 .scr iframe {
@@ -293,7 +307,9 @@
   background: #070707;
   border: 0;
   pointer-events: none;
+  opacity: 0;
   transform-origin: top left;
+  transition: opacity 0.22s linear; /* FADE_MS in runtime.ts */
 }
 
 /* bottom perspective rail */

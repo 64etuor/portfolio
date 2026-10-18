@@ -1,4 +1,10 @@
-export type Screen = { file: string; title: string; tag: string }
+export type Screen = {
+  file: string
+  title: string
+  tag: string
+  /** poster only — never mounted live (see constants.ts) */
+  still?: true
+}
 export type Token = {
   t: string
   side: 'F' | 'S'
@@ -13,6 +19,12 @@ export type ProcNode = {
   root: HTMLDivElement | null
   scr: HTMLDivElement | null
   iframe: HTMLIFrameElement | null
+  /** this panel owns the scene's single live iframe */
+  live: boolean
+  /** the live page has painted and is faded in over the poster */
+  shown: boolean
+  /** pending settle / fade-out timeout (0 = none) */
+  timer: number
 }
 export type Gear = { x: number; y: number; r: number; teeth: number; ph: number; spd: number }
 export type CodeCol = { x: number; y: number; lines: string[]; lh: number }

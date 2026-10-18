@@ -12,12 +12,15 @@ export const DIM: RGB = PALETTE_DIM
 
 
 
+// `still`: the x-* entries redirect to full app pages (/s/<slug>: Next + three.js). Booting
+// one inside the panel's ~1.1 s live window costs far more main-thread time than it ever
+// shows live, so those panels stay on their poster (public/lab/posters, make-posters.mjs).
 export const FIELD: Screen[] = [
-  { file: 'x-weld-doe.html', title: '초음파 용착', tag: 'ULTRASONIC' },
+  { file: 'x-weld-doe.html', title: '초음파 용착', tag: 'ULTRASONIC', still: true },
   { file: 'weld-thermal.html', title: 'Nd:YAG 레이저 용접', tag: 'Nd:YAG' },
   { file: 'robot-pendant.html', title: '스팟 용접 티칭', tag: 'SPOT' },
   { file: 'gcode-printer.html', title: '적층제조', tag: 'AM' },
-  { file: 'x-vision-reverse.html', title: '비전 검사', tag: 'VISION' },
+  { file: 'x-vision-reverse.html', title: '비전 검사', tag: 'VISION', still: true },
 ]
 export const DEV: Screen[] = [
   { file: 'pid-scheme.html', title: '시스템 토폴로지', tag: 'P&ID' },

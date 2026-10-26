@@ -6,20 +6,19 @@ export const kip: ProjectContent = {
   order: 12,
   enabled: true,
   hero: {
-    title: 'KIP — 근거 우선 지식 패브릭 스타터킷',
+    title: 'KIP — 출처까지 함께 답하는 사내 문서 검색 (RAG)',
     company: '개인 프로젝트',
     companyKey: 'startup',
     period: '2026.08–',
-    role: '제품 설계, 검색 파이프라인, 파서 격리, 운영 문서 체계',
+    role: '1인 개발 · 설계, 검색 파이프라인, 문서 파싱',
   },
   summary:
-    'NAS 파일과 HWP/HWPX·PDF·PPTX·XLSX·Slack·메일에 흩어진 문서를 하나의 색인으로 모으고, 답변마다 근거가 된 원문 위치를 함께 제시하는 agent-first 지식 검색 기반. CLI(버전 고정 JSON)와 REST/OpenAPI·MCP 어댑터가 같은 애플리케이션 서비스를 호출해, 사람과 AI agent가 동일한 검색 의미론을 공유한다. 목표 문구와 구현 현황을 다른 문서로 분리해 "PRD에 썼으니 됐다"를 구조적으로 막은 것이 설계의 축이다.',
+    'RAG(검색 증강 생성) 기반 사내 문서 검색 시스템. 답변마다 근거가 된 원문 위치(페이지·표)를 함께 보여줘, 사람이 바로 확인하고 업무에 쓸 수 있게 했다. PDF 파싱을 19.2배 빠르게 하면서도 검색 정확도는 그대로 유지했다.',
   metrics: [
-    { label: '진입 경로', value: 'CLI · REST · MCP', note: '동일 use-case 서비스를 호출 — 의미론 parity' },
-    { label: '파싱 속도', value: '19.2x', note: 'hybrid PDF 백엔드 전환 후 raw 파싱 (public PDF 6종)' },
-    { label: '검색 품질', value: 'Recall@10 1.0000', note: 'MRR 0.9861 · ACL 유출 0건' },
-    { label: '설계 결정', value: 'ADR 43건', note: '되돌릴 수 없는 선택을 근거와 함께 고정' },
-    { label: '기준 스토어', value: 'PostgreSQL 18', note: 'lexical search 기본 · pgvector는 미승격' },
+    { label: '파싱 속도', value: '19.2배', note: 'PDF 파싱 (공개 PDF 6종 기준)' },
+    { label: 'DB 동기화', value: '3.23배', note: '파서 교체 후 DB 반영 속도' },
+    { label: '검색 정확도', value: 'Recall@10 1.0', note: 'MRR 0.986 · 속도 개선 후에도 유지' },
+    { label: '권한 밖 노출', value: '0건', note: '권한 없는 문서는 결과에서 차단' },
   ],
   stack: [
     'Python 3.12',
@@ -34,29 +33,24 @@ export const kip: ProjectContent = {
   ],
   sections: [
     {
-      heading: '문제 — 검색은 되는데 믿을 수가 없다',
+      heading: '문제',
       body:
-        '사내 지식은 NAS 공유 폴더, 한글 문서, 스캔 PDF, 발표자료, 스프레드시트, 메신저에 흩어져 있다. 여기에 RAG를 붙이면 답은 나오지만 **그 답이 어디서 나왔는지 확인할 수 없어** 업무에 쓸 수 없다. 특히 한국 제조 현장 문서는 HWP/HWPX 비중이 높고 표가 의미의 대부분을 담는데, 일반 파서는 표를 문단으로 뭉개 근거 추적을 불가능하게 만든다.\n\n그래서 목표를 "잘 찾는 검색"이 아니라 **"근거를 항상 같이 내는 검색"**으로 잡았다. 모든 응답은 원문 위치(locator)를 동반하고, 그 locator가 실제 페이지·블록을 가리키는지 평가로 검증한다.',
+        '사내 문서는 NAS 공유 폴더, 한글(HWP) 문서, 스캔 PDF, 발표자료, 스프레드시트, 메신저에 흩어져 있다.\n\n- RAG를 붙이면 답은 나오지만 **출처를 확인할 수 없어** 업무에 쓰기 어렵다\n- 제조 현장 문서는 **HWP·스캔 PDF** 비중이 높다\n- 내용 대부분이 표에 있는데, 일반 파서는 **표를 문단으로 뭉갠다**\n- 그래서 목표를 "잘 찾는 검색"이 아니라 **"근거를 항상 같이 내는 검색"**으로 잡았다',
     },
     {
-      heading: '두 진입 경로, 하나의 서비스',
+      heading: '어떻게 풀었나',
       body:
-        'agent와 사람이 서로 다른 코드를 타면 의미론이 갈라진다. 그래서 edge를 얇게 두고 검색 서비스 하나만 두었다.\n\n- **agent/터미널:** 버전이 고정된 JSON을 출력하는 CLI — 파이프라인에 그대로 꽂힌다\n- **애플리케이션:** REST/OpenAPI + 선택형 MCP 어댑터 — SDK가 안정 계약을 소비\n\n`SearchRequest`의 mode와 filter는 CLI/REST/MCP/SDK가 동일하게 노출하고, 모든 edge가 같은 retrieval service를 호출한다. MCP edge는 프로토콜 2.0을 쓰되 legacy client 협상을 유지한다.',
+        '모든 답변에 원문 위치를 붙이고, 그 위치가 실제로 맞는지 자동 평가로 확인한다.\n\n- **CLI·REST API·MCP**가 같은 검색 엔진을 호출해 사람과 AI 에이전트가 같은 결과를 받는다\n- PDF 파서를 **Rust 기반 엔진**으로 교체하고, 표는 문단과 분리해 별도 단위로 추출\n- 파서를 **별도 프로세스로 격리**해 손상된 파일이 서비스를 멈추지 않게 함\n- 문제가 생기면 **이전 파서로 되돌릴 수 있는 경로**를 남김',
     },
     {
-      heading: '측정 전에는 승격하지 않는다',
+      heading: '결과',
       body:
-        '이 프로젝트에서 가장 많이 한 일은 기능 추가가 아니라 **승격 거부**다.\n\n- `pgvector`는 기준 이미지에 설치돼 있지만 **semantic search는 비활성**이다. lexical 대비 이득을 평가로 입증하기 전까지 켜지 않는다.\n- Neo4j는 canonical store가 아니다. 향후 선택형 read projection으로만 취급한다.\n\n승인된 목표(PRD/TRD)와 현재 구현·측정 근거·남은 격차를 `PRODUCTION_DESIGN_ALIGNMENT.md`에 분리해 기록하고, 문서 첫머리에 "PRD의 목표 문구만 보고 현재 준비 상태를 추정하지 말 것"을 명시했다. 목표와 현실을 같은 문서에 두면 반드시 섞인다.',
+        '공개 PDF 6종으로 파서 교체 전후를 측정했다.\n\n- PDF 파싱 **19.2배**, DB 동기화 3.23배 빨라짐\n- 속도를 올리는 동안 검색 정확도 **Recall@10 1.0 · MRR 0.986** 유지\n- 권한 밖 문서 노출 **0건**',
     },
     {
-      heading: '파서 격리 — 성능과 안전을 같이',
+      heading: '지킨 원칙',
       body:
-        'PDF 백엔드를 bounded Rust 엔진 기반 hybrid로 교체하면서 rollback 경로(`pymupdf`)를 명시적으로 남겼다. 유효한 Markdown 표는 `pdf_table` 단위로 승격하고, 표로 감지됐지만 구조화되지 않은 페이지만 선택적으로 PyMuPDF fallback을 태운다.\n\npublic PDF 6종 측정에서 **raw 파싱 19.2배, PostgreSQL 동기화 3.23배** 빨라지는 동안 lexical **Recall@10 1.0000 / MRR 0.9861**을 유지했고 **ACL 유출은 0건**이었다. 파서는 bounded 프로세스로 격리해(ADR-050) 손상된 입력이 서비스를 끌고 내려가지 못하게 했다.',
-    },
-    {
-      heading: '전달물도 검증 대상이다',
-      body:
-        '인터넷 격리 환경에 넘길 때 작업 디렉터리를 그냥 압축하면 credential·로컬 DB·내부 plan이 함께 나간다. 그래서 결정적(deterministic) starter ZIP 빌더를 만들었다 — allowlist 기반으로 소스·잠긴 의존성·테스트·migration·contract·ontology·예제·운영 문서만 담고, 로컬 상태와 비밀·평가 자료·릴리스 바이너리는 제외한다.\n\n버전 manifest, 파일별 checksum, 외부 archive digest, path/expansion 방어, **비밀 내용 스캔**을 붙여 받는 쪽이 독립적으로 검증할 수 있게 했다. 정식 릴리스는 clean tree에서만 만든다.',
+        '기능을 늘리기보다, 효과가 확인된 것만 켜는 데 집중했다.\n\n- 벡터 검색은 설치만 해두고 **효과가 측정되기 전까지 끔** (키워드 검색이 기본)\n- 목표 문서와 실제 구현 현황을 **따로 기록**해 계획을 완료로 착각하지 않게 함\n- 외부 전달용 패키지는 필요한 파일만 담고 **비밀정보 검사**를 거침\n- 받는 쪽이 **파일별 체크섬**으로 패키지를 직접 검증할 수 있음',
     },
   ],
   links: [{ label: 'GitHub', href: 'https://github.com/64etuor' }],

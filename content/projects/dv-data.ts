@@ -10,27 +10,27 @@ export const dv_data: ProjectContent = {
     company: "솔라엣지",
     companyKey: "sol",
     period: "2024.08–10",
-    role: "개발품 DV 데이터 전산 관리",
+    role: "기획, 앱 개발, 데이터 분석·시각화",
   },
-  summary: '한정된 DV(Design Verification) 기간 동안 여러 현장의 공정 데이터를 고품질로 확보하기 위해 Google AppSheet 앱·Sheets 대시보드·QR 이력 추적 시스템을 직접 기획하고 개발했습니다.',
+  summary: '여러 현장에서 동시에 진행되는 DV(설계 검증) 데이터를 짧은 기간 안에 빠짐없이 모아야 했다. AppSheet 입력 앱, Google Sheets 실시간 대시보드, QR 이력 조회 시제품을 직접 만들었다. 여러 현장의 DV 현황을 한 곳에서 실시간으로 확인할 수 있게 됐다.',
   metrics: [
-    { label: '대시보드 갱신', value: '5분 주기', note: '여러 현장 DV 현황 실시간 통합 파악' },
-    { label: 'QR 이력 추적', value: 'S/N 기반', note: 'EU 배터리 패스포트 대응 프로토타입 — Apps Script 구현' },
-    { label: '데이터 분석', value: 'CPK 포함', note: 'Python Matplotlib 공정 능력 지수 자동 계산 및 차트 생성' },
+    { label: '대시보드 갱신', value: '5분 주기', note: '여러 현장 현황 자동 집계' },
+    { label: '공정 능력 분석', value: 'CPK 자동화', note: 'Python으로 계산·차트 생성' },
+    { label: '이력 추적', value: 'QR 시제품', note: 'EU 배터리 패스포트 대응 검토' },
   ],
   stack: ['Google AppSheet', 'Google Sheets', 'Google Apps Script', 'Python', 'Matplotlib'],
   sections: [
     {
-      heading: '추진 배경',
-      body: 'DV 단계는 기간이 한정되어 있어 짧은 시간 안에 고품질 데이터를 최대한 확보해야 했습니다. 동시에 여러 현장에서 병행 진행되는 DV 현황을 실시간으로 파악하고, EU 배터리 패스포트 대응을 위한 QR 이력 추적 체계를 마련하기 위해 프로젝트를 기획했습니다.',
+      heading: '배경',
+      body: '- DV 기간이 짧아 **고품질 데이터**를 빠르게 확보해야 함\n- 여러 현장에서 병행 진행 → 현황을 실시간으로 파악할 수단 필요\n- EU 배터리 패스포트 대응을 위한 이력 추적 체계 검토',
     },
     {
-      heading: '개발 내용',
-      body: '- **AppSheet 앱**: 모듈·BPU·System Rack 별 생산 실적·불량 내역 등록, S/N 유효성·고유성·공정 이력·부품 사양 검증 로직 내장\n- **데이터 분석 (Python Matplotlib)**: CPK 등 공정 능력 지수 자동 계산 및 차트 생성\n- **실시간 대시보드**: Google Sheets + Apps Script — 5분 주기 자동 갱신, 현장별 현황 집계\n- **QR 이력 조회**: Apps Script 기반 — 제품 S/N QR 스캔 시 전체 생산 이력 자동 표시 (프로토타입)',
+      heading: '한 일',
+      body: '- **AppSheet 앱**: 모듈·BPU·System Rack별 생산 실적·불량 등록, S/N·공정 이력·부품 사양 검증\n- **실시간 대시보드**: Google Sheets + Apps Script로 현장별 현황 자동 집계\n- **데이터 분석**: Python Matplotlib로 CPK 등 공정 능력 지수 계산·차트화\n- **QR 이력 조회**: 제품 S/N QR 스캔 시 전체 생산 이력 표시 (Apps Script)',
     },
     {
-      heading: '성과',
-      body: '단기 DV 기간 동안 다수 현장의 데이터를 단일 플랫폼에서 통합 관리했습니다.\n\nQR 기반 이력 추적 프로토타입을 완성해 EU 배터리 패스포트 대응 가능성을 검증했으며, 이 경험은 후속 MES 프로젝트의 데이터베이스 설계 기반으로 활용되었습니다.',
+      heading: '결과',
+      body: '- 여러 현장의 DV 데이터를 **단일 플랫폼**에서 통합 관리\n- QR 이력 추적 시제품으로 EU 배터리 패스포트 대응 가능성 검증\n- 이후 MES 프로젝트 DB 설계의 기반으로 활용',
     },
   ],
   gallery: [

@@ -92,6 +92,7 @@ export function toResumeData(p: Profile): ResumeData {
         ...pr.impact.map(
           (i) => `${i.metric}: ${i.value}${i.krw ? ` (${i.krw})` : ''}`,
         ),
+        ...(pr.awards ?? []).map((a) => `수상: ${a}`),
       ],
       keywords: pr.tech,
       roles: [pr.role],

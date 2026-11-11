@@ -12,6 +12,26 @@
   overflow: hidden;
   background: #050505;
 }
+/* 로봇이 도착하기 전(데스크톱 ~4s, 4G ~16s, saveData 는 끝까지)의 상단 절반은 빈 검정이었다.
+   로봇 자리에 차가운 광원 하나를 먼저 켜 두고, 로봇이 들어오면 물러난다. 베일(z 2) 아래. */
+.lp-root::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    radial-gradient(34% 30% at 50% 31%, rgba(150, 196, 208, 0.13) 0%, rgba(110, 150, 170, 0.05) 45%, transparent 72%),
+    radial-gradient(60% 18% at 50% 52%, color-mix(in srgb, var(--accent-cool) 5%, transparent) 0%, transparent 70%);
+  animation: lp-glow 7s ease-in-out infinite alternate;
+  transition: opacity 1400ms ease;
+}
+.lp-root--robot::before { opacity: 0; animation-play-state: paused; }
+@keyframes lp-glow {
+  from { opacity: 0.65; transform: scale(0.97); }
+  to { opacity: 1; transform: scale(1.03); }
+}
+@media (prefers-reduced-motion: reduce) { .lp-root::before { animation: none; } }
 .lp-spline {
   position: absolute;
   inset: 0;
@@ -93,50 +113,11 @@
   right: clamp(16px, 3vw, 32px);
   z-index: 8;
 }
-.lp-eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--fs-xs);
-  letter-spacing: var(--track-label);
-  color: #8d8d8d;
-  margin: 0 0 14px;
-}
-.lp-tagline {
-  font-family: var(--font-sans);
-  font-weight: 800;
-  font-size: clamp(40px, 5.4vw, 72px);
-  line-height: 1.04;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-  color: #f1f4f8;
-  margin: 0 0 12px;
-  text-shadow: 0 2px 30px rgba(0, 0, 0, 0.85);
-}
-.lp-sub {
-  font-family: var(--font-sans);
-  font-size: clamp(12px, 1.2vw, 15px);
-  letter-spacing: 0.02em;
-  color: #aab0b8;
-  margin: 0 0 30px;
-  text-shadow: 0 1px 16px rgba(0, 0, 0, 0.85);
-}
-
-/* entrance — staggered fade/slide/blur-in, timed to settle with the robot zoom-in */
-@keyframes lp-in {
-  from { opacity: 0; transform: translateY(16px); filter: blur(8px); }
-  to { opacity: 1; transform: translateY(0); filter: blur(0); }
-}
-.lp-eyebrow,
-.lp-tagline,
-.lp-actions { opacity: 0; }
-.lp-eyebrow { animation: lp-in 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) 0.2s forwards; }
-.lp-tagline { animation: lp-in 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) 0.35s forwards; }
-/* buttons: plain fade, no delay (opacity-only so it never fights the hover transform) */
-.lp-actions { animation: lp-fade 0.6s ease 0.1s forwards; }
+/* buttons: plain fade (opacity-only so it never fights the hover transform) */
+.lp-actions { opacity: 0; animation: lp-fade 0.6s ease 0.1s forwards; }
 @keyframes lp-fade { from { opacity: 0; } to { opacity: 1; } }
 @media (prefers-reduced-motion: reduce) {
-  .lp-eyebrow,
-  .lp-tagline,
-  .lp-actions { animation: none !important; opacity: 1 !important; transform: none !important; filter: none !important; }
+  .lp-actions { animation: none !important; opacity: 1 !important; }
 }
 .lp-actions {
   display: flex;
@@ -185,17 +166,17 @@
 /* Primary variant — Portfolio button, accent-tinted with CRT cyan */
 .lp-btn-primary {
   color: #eafcff;
-  border-color: rgba(95, 181, 194, 0.45);
-  background: rgba(95, 181, 194, 0.04);
+  border-color: color-mix(in srgb, var(--accent-cool) 45%, transparent);
+  background: color-mix(in srgb, var(--accent-cool) 4%, transparent);
 }
 .lp-btn-primary .lp-ic {
-  color: #5fb5c2;
+  color: var(--accent-cool);
 }
 .lp-btn-primary:hover {
-  border-color: rgba(95, 181, 194, 0.9);
+  border-color: color-mix(in srgb, var(--accent-cool) 90%, transparent);
   color: #fff;
-  background: rgba(95, 181, 194, 0.07);
-  box-shadow: 0 0 18px rgba(95, 181, 194, 0.28);
+  background: color-mix(in srgb, var(--accent-cool) 7%, transparent);
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent-cool) 28%, transparent);
 }
 .lp-btn-primary:hover .lp-ic {
   color: #7fe3ef;
@@ -324,9 +305,9 @@ html[data-from-film='1'] .lp-enter {
   transition: border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 .film-ctrl:hover {
-  border-color: rgba(224, 122, 95, 0.6);
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
   background: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 0 14px rgba(224, 122, 95, 0.25);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 25%, transparent);
 }
 .film-ctrl:active {
   transform: scale(0.94);
@@ -344,9 +325,9 @@ html[data-from-film='1'] .lp-enter {
   transition: border-color 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
 }
 .film-skip:hover {
-  border-color: rgba(224, 122, 95, 0.6);
+  border-color: color-mix(in srgb, var(--accent) 60%, transparent);
   background: rgba(255, 255, 255, 0.09);
-  box-shadow: 0 0 14px rgba(224, 122, 95, 0.22);
+  box-shadow: 0 0 14px color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 /* ===== Landing navigation transition — glitch slash + bloom on button press ===== */

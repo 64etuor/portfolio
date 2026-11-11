@@ -6,6 +6,7 @@ import { enabledProjects, projectBySlug } from '@content/projects'
 import { COMPANY_ACCENT } from '@content/projects/types'
 import { ProjectBody } from '@/components/projects/ProjectBody'
 import { ProjectNav } from '@/components/projects/ProjectNav'
+import { SiteFooter } from '@/components/SiteFooter'
 
 export function generateStaticParams() {
   return enabledProjects().map((p) => ({ slug: p.slug }))
@@ -32,6 +33,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
   const rootStyle = { '--pj-acc': COMPANY_ACCENT[project.hero.companyKey] } as CSSProperties
 
   return (
+    <>
     <main className="pj-root" style={rootStyle}>
       <div className="pj-scan" aria-hidden />
       <div className="pj-vignette" aria-hidden />
@@ -40,5 +42,7 @@ export default async function ProjectPage({ params }: { params: Promise<{ slug: 
         <ProjectNav prev={prev} next={next} />
       </div>
     </main>
+    <SiteFooter width={880} />
+    </>
   )
 }

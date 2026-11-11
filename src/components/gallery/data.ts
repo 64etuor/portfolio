@@ -109,7 +109,7 @@ export const SKILL_AREAS: SkillArea[] = [
 // 허브/스킬 페이지 헤더 (skills.html). label 라인은 .al 텍스트.
 export const SKILLS_HUB = {
   title: copy('Skills · 영역별 실작업', 'Skills · Hands-on Work by Area'),
-  sub: copy('실제로 만든 시안 21종을 5개 영역으로 나눴습니다. 각 영역 페이지는 해당 시안만 지연로딩하여 가볍게 열립니다.', 'Twenty-one hands-on pieces grouped into five areas. Each area page lazy-loads only its own pieces for a lightweight experience.'),
+  sub: copy('직접 만든 인터랙티브 작업 21종을 5개 영역으로 묶었습니다. 영역을 열어 각 화면을 직접 조작해 볼 수 있습니다.', 'Twenty-one interactive pieces I built, grouped into five areas. Open an area to try each one hands-on.'),
 }
 
 // 영역별 헤더 (skills-<area>.html) + 허브 카드 라벨 라인(.al).

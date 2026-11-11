@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { SITE } from '@content/site'
 import { pageMetadata } from '../seo'
 import { ProjectsIndexContent } from '@/components/projects/ProjectsIndexContent'
+import { SiteFooter } from '@/components/SiteFooter'
 
 export const metadata: Metadata = pageMetadata({
   title: SITE.pages.projects.ko,
@@ -10,5 +11,10 @@ export const metadata: Metadata = pageMetadata({
 })
 
 export default function ProjectsIndex() {
-  return <ProjectsIndexContent />
+  return (
+    <>
+      <ProjectsIndexContent />
+      <SiteFooter />
+    </>
+  )
 }

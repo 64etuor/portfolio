@@ -98,7 +98,7 @@ test('switching language live updates projects and the career gantt without relo
   })
   await page.goto('/projects/kip', { waitUntil: 'domcontentloaded' })
   await page.waitForFunction(() => localStorage.getItem('pf-locale') === 'ko')
-  await expect(page.getByRole('heading', { level: 1 })).toContainText('근거 우선')
+  await expect(page.getByRole('heading', { level: 1 })).toContainText('출처까지')
   await page.getByRole('button', { name: /^EN/ }).click()
   await expect(page.getByRole('heading', { level: 1 })).toContainText('Evidence-first')
   expect(await page.locator('main').innerText()).not.toMatch(HANGUL)

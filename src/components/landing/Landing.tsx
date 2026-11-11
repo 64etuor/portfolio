@@ -25,19 +25,19 @@ const SPLINE_WASM = '/spline'
 
 // Thin line icons that match the film's technical HUD aesthetic.
 const ICON: Record<string, ReactNode> = {
-  projects: (
+  '/s/gantt-cpm': (
     <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round">
       <line x1="3" y1="4" x2="10" y2="4" />
       <line x1="3" y1="8" x2="13" y2="8" />
       <line x1="3" y1="12" x2="7" y2="12" />
     </svg>
   ),
-  portfolio: (
+  '/film': (
     <svg viewBox="0 0 16 16" width="14" height="14" fill="currentColor" stroke="none">
       <path d="M5 3.2 L12.5 8 L5 12.8 Z" />
     </svg>
   ),
-  scenes: (
+  '/scenes': (
     <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.4">
       <rect x="2.5" y="2.5" width="4.5" height="4.5" rx="0.6" />
       <rect x="9" y="2.5" width="4.5" height="4.5" rx="0.6" />
@@ -45,46 +45,28 @@ const ICON: Record<string, ReactNode> = {
       <rect x="9" y="9" width="4.5" height="4.5" rx="0.6" />
     </svg>
   ),
-  skills: (
+  '/skills': (
     <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round">
       <path d="M8 2 L14 5.4 L8 8.8 L2 5.4 Z" />
       <path d="M2.4 9.3 L8 12.6 L13.6 9.3" />
     </svg>
   ),
-  resume: (
+  '/resume': (
     <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round">
       <path d="M4 2.3 H9.5 L12.7 5.5 V13.7 H4 Z" />
       <line x1="6" y1="8" x2="11" y2="8" />
       <line x1="6" y1="10.6" x2="11" y2="10.6" />
     </svg>
   ),
-  contact: (
-    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round">
-      <rect x="2.2" y="3.6" width="11.6" height="8.8" rx="1" />
-      <path d="M2.6 4.4 L8 8.6 L13.4 4.4" />
-    </svg>
-  ),
 }
 
-type NavItem = { href: string; label: string; icon: ReactNode; primary?: boolean; external?: boolean; mail?: boolean }
+type NavItem = { href: string; label: string; icon: ReactNode; primary: boolean }
 
 const TX_MS = 720
 // Film → home keeps the long assemble so it still reads as one shot after the iris.
 // A direct visit paints the name within a few hundred ms (that canvas is the LCP).
 const FILM_DELAYS = [2400, 2500, 3500, 4100] as const
 const DIRECT_DELAYS = [80, 160, 280, 400] as const
-
-const SR_ONLY: React.CSSProperties = {
-  position: 'absolute',
-  width: 1,
-  height: 1,
-  padding: 0,
-  margin: -1,
-  overflow: 'hidden',
-  clip: 'rect(0 0 0 0)',
-  whiteSpace: 'nowrap',
-  border: 0,
-}
 
 /**
  * Landing — the portfolio home. A full-screen Spline robot (runtime) under the
@@ -96,13 +78,13 @@ export function Landing() {
   const router = useRouter()
   const { t } = useLocale()
   const [heroPortfolio, heroItsMe, heroName, heroTagline] = SITE.landing.hero.map((value) => t(value))
-  const nav: NavItem[] = [
-    { ...SITE.landing.nav[0], label: t(SITE.landing.nav[0].label), icon: ICON.portfolio, primary: true },
-    { ...SITE.landing.nav[1], label: t(SITE.landing.nav[1].label), icon: ICON.projects, external: false },
-    { ...SITE.landing.nav[2], label: t(SITE.landing.nav[2].label), icon: ICON.scenes, external: false },
-    { ...SITE.landing.nav[3], label: t(SITE.landing.nav[3].label), icon: ICON.skills, external: false },
-    { ...SITE.landing.nav[4], label: t(SITE.landing.nav[4].label), icon: ICON.resume },
-  ]
+  // Same five destinations as the site header (SITE.landing.nav); the first is the film.
+  const nav: NavItem[] = SITE.landing.nav.map((item, index) => ({
+    href: item.href,
+    label: t(item.label),
+    icon: ICON[item.href],
+    primary: index === 0,
+  }))
   const splineRef = useRef<Application | null>(null)
   const navigatingRef = useRef(false)
   const [leaving, setLeaving] = useState(false)
@@ -200,20 +182,16 @@ export function Landing() {
   }
 
   function handleNav(e: React.MouseEvent, item: NavItem) {
-    if (item.mail) return // let mailto open the mail client normally
     e.preventDefault()
     if (navigatingRef.current) return
     navigatingRef.current = true
     setLeaving(true)
     cameraWarp()
-    window.setTimeout(() => {
-      if (item.external) window.location.href = item.href
-      else router.push(item.href)
-    }, TX_MS)
+    window.setTimeout(() => router.push(item.href), TX_MS)
   }
 
   return (
-    <main className="lp-root">
+    <main className={`lp-root${robotIn ? ' lp-root--robot' : ''}`}>
       <LocaleSwitcher className="lp-locale" />
       {/* The robot is decorative and third-party — it must never be able to take the
           page with it. Spline throws on a failed scene/WASM fetch (CDN down, offline,
@@ -246,10 +224,10 @@ export function Landing() {
         {/* The visible hero copy below is canvas-painted (letter physics), which AT and
             crawlers cannot read — so the same copy ships as real, visually-hidden text:
             the page's single <h1> (name) plus its tagline. */}
-        <h1 style={SR_ONLY}>
+        <h1 className="sr-only">
           {heroName} — {heroPortfolio}
         </h1>
-        <p style={SR_ONLY}>
+        <p className="sr-only">
           {heroItsMe} {heroTagline}
         </p>
         {/* all landing text rendered with the pretext letter-physics, 2.5s in */}

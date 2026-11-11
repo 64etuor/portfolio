@@ -3,6 +3,7 @@ import { pageMetadata } from '../../seo'
 import { notFound } from 'next/navigation'
 import { AREA_META, SKILL_AREAS, type SkillAreaKey } from '@/components/gallery/data'
 import { SkillAreaContent } from '@/components/gallery/SkillAreaContent'
+import { SiteFooter } from '@/components/SiteFooter'
 
 export async function generateMetadata({
   params,
@@ -24,5 +25,10 @@ export default async function SkillAreaPage({ params }: { params: Promise<{ area
   const { area } = await params
   const found = SKILL_AREAS.find((a) => a.key === area)
   if (!found) notFound()
-  return <SkillAreaContent areaKey={found.key as SkillAreaKey} />
+  return (
+    <>
+      <SkillAreaContent areaKey={found.key as SkillAreaKey} />
+      <SiteFooter width={1360} />
+    </>
+  )
 }

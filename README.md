@@ -15,7 +15,7 @@
 | 씬 | HTML5 Canvas 2D · three.js(`x-*` 씬) · 공유 rAF 스케줄러 |
 | 사운드 | Web Audio 효과음 엔진(`src/lib/sfx`) + 필름 큐 시트(`soundCues.ts`) |
 | 3D 히어로 | Spline (`@splinetool/react-spline`, 랜딩에서 지연 로드) |
-| 폰트 | Fontsource 셀프호스팅 (`src/app/fonts.ts`) |
+| 폰트 | Fontsource 셀프호스팅 (`src/app/fonts.ts`) — 제목 세리프는 Playfair Display + Noto Serif KR 하나 |
 | 계측 · 배포 | Vercel Analytics · Speed Insights · Vercel → `yanghapark.com` |
 
 ## 실행
@@ -80,6 +80,8 @@ src/
     gallery/           /scenes · /skills 카드 데이터(data.ts) + 그리드
     projects/ resume/  프로젝트 상세 · 이력서 렌더
     LocaleProvider     KO/EN 상태 (씬 텍스트는 _host/localize.tsx + 씬별 en.ts)
+    SiteHeader         문서 라우트(/projects·/scenes·/skills·/resume)는 섹션 내비, 씬 라우트(/s·/c)는 HOME 바
+    SiteFooter         문서 라우트 끝의 연락 푸터 (연락처는 content/profile.ts 에서 서버에서만 읽음)
   lib/sfx/             효과음 엔진
   scenes/
     catalog.ts         씬 SSOT · loaders.ts · registry.ts
@@ -98,6 +100,10 @@ scripts/               gen-resume · ingest-projects · gen-image-dims
 3. `/resume` 에 자동 반영된다.
 
 ## 메모
+
+- **디자인 토큰**: 색·선·배경·모서리·모션은 `src/app/globals.css` `:root` 가 단일 출처다. 페이지 스코프 변수
+  (`--pj-*`, `--rz-*`, 갤러리 모듈)는 이 토큰을 참조만 한다. 액센트는 코랄(`--accent`)=조작·강조,
+  시안(`--accent-cool`)=필름·CRT 계열, 고용사 색(`--pj-acc`)=데이터 구분.
 
 - **필름**: 마스터 시계가 비트 전환·씬 프리롤·효과음 큐를 한 시간축으로 구동. 씬은 차례가 오기 전
   코드스플릿 로드 후 더블버퍼 크로스페이드로 컷. 일시정지/이전/SKIP·사운드(M)·언어 토글 제공.

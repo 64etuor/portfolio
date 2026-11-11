@@ -68,13 +68,21 @@ export const SITE = {
     openFullscreen: copy('전체화면으로 열기 ↗', 'Open full screen ↗'),
     scenes: {
       title: copy('Scenes · 필름 서사', 'Scenes · Film Narrative'),
-      sub: copy('DX→AX 매니페스토 필름 — 부팅 + SCENE 01–10 + 엔딩을 서사 순서대로 봅니다. SCENE 09·10 뒤에는 실제 작업 장면(Work Radar·KIP / 스마트 팩토리·엑셀→DB·MES)이 이어집니다. 미리보기는 화면에 보일 때만 재생됩니다. 각 카드에서 전체화면 인터랙션을 열고, 사운드와 KO/EN 전환이 있는 자동 재생 필름은 홈의 Portfolio에서 볼 수 있습니다.', 'The DX→AX manifesto film — boot, SCENE 01–10, and ending in narrative order. SCENE 09 and 10 are followed by real work scenes (Work Radar and KIP; smart factory, Excel → DB, and MES). Previews play only when visible. Open each card for the full-screen interaction, or watch the auto-playing film, with sound and a KO/EN toggle, from Portfolio on the home page.'),
-      footer: copy('부팅 + SCENE 01–10 + 엔딩 · 미리보기는 뷰포트 진입 시 재생 · 자동 재생은 홈 → Portfolio.', 'Boot + SCENE 01–10 + ending · previews play on viewport entry · autoplay is at Home → Portfolio.'),
+      sub: copy('DX→AX 매니페스토 필름을 부팅 · SCENE 01–10 · 엔딩의 서사 순서대로 한 장면씩 봅니다. SCENE 09·10 뒤에는 실제 작업 장면(Work Radar·KIP / 스마트 팩토리·엑셀→DB·MES)이 이어집니다. 사운드와 함께 이어서 보려면 홈의 Portfolio에서 필름을 재생하세요.', 'The DX→AX manifesto film, one scene at a time in narrative order — boot, SCENE 01–10, and ending. SCENE 09 and 10 are followed by real work scenes (Work Radar and KIP; smart factory, Excel → DB, and MES). To watch it straight through with sound, play the film from Portfolio on the home page.'),
+      footer: copy('부팅 + SCENE 01–10 + 엔딩 · 전체 필름은 홈 → Portfolio', 'Boot + SCENE 01–10 + ending · the full film plays from Home → Portfolio'),
     },
     skills: {
-      footer: copy('총 {count}종 · 영역별 페이지는 지연로딩(뷰포트 진입 시 미리보기 렌더).', '{count} pieces · area pages lazy-load previews when they enter the viewport.'),
+      footer: copy('총 {count}종의 인터랙티브 작업', '{count} interactive pieces'),
       areaFooter: copy('{area} · {count}종', '{area} · {count} pieces'),
     },
+  },
+  footer: {
+    eyebrow: copy('Contact', 'Contact'),
+    resume: copy('Résumé', 'Résumé'),
+    github: copy('GitHub ↗', 'GitHub ↗'),
+    blog: copy('Blog ↗', 'Blog ↗'),
+    top: copy('↑ Top', '↑ Top'),
+    label: copy('연락처', 'Contact'),
   },
   project: {
     indexTitle: copy('직접 기획하고 구현한 것들', 'Work I planned and built'),

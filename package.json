@@ -16,7 +16,6 @@
     "gen:image-dims": "node scripts/gen-image-dims.mjs"
   },
   "dependencies": {
-    "@fontsource/cormorant-garamond": "^5.2.11",
     "@fontsource/dm-mono": "^5.2.7",
     "@fontsource/ibm-plex-mono": "^5.2.7",
     "@fontsource/jetbrains-mono": "^5.2.8",

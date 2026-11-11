@@ -16,10 +16,11 @@ export function SkillsHubContent() {
       <div className={styles.areas}>
         {SKILL_AREAS.map((area) => (
           <Link key={area.key} className={styles.area} href={`/skills/${area.key}`}>
-            <span className={styles.ac}>{area.cards.length}</span>
+            <span className={styles.ac}>{String(area.cards.length).padStart(2, '0')}</span>
             <div className={styles.an}>{t(area.label)}</div>
             <div className={styles.ad}>{t(area.blurb)}</div>
             <div className={styles.al}>{t(AREA_META[area.key].labelLine)}</div>
+            <span className={styles.go} aria-hidden>→</span>
           </Link>
         ))}
       </div>

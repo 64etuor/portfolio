@@ -34,7 +34,8 @@ import './shell-fonts.css'
 // Cormorant Garamond(/projects 전용)·Noto Serif KR 600(랜딩 '박양하' + /projects 한글 세리프)은
 // 전역에서 빼서 쓰는 라우트에서만 로드한다 — Noto Serif KR CSS 만 ~92KB(유니코드 서브셋 @font-face
 // 수백 개)라 씬/필름/이력서 라우트의 렌더 블로킹 CSS 를 키우고 있었다.
-//   - app/projects/layout.tsx → cormorant-garamond/* + noto-serif-kr/600
+//   - app/projects/layout.tsx · components/gallery/GalleryPageShell.tsx → noto-serif-kr/600
+//   (Cormorant Garamond 는 더 이상 로드하지 않는다 — 제목 세리프는 Playfair Display 하나.)
 // (전역 토큰 --font-serif/--font-display 의 스택에는 그대로 남아 있어, 미로드 라우트에선 Pretendard 로 폴백.)
 
 // Playfair Display is registered in shell-fonts.css (500/600/700 + 500/600 italic).

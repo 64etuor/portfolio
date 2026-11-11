@@ -3,6 +3,7 @@ import { SCENES_GALLERY } from '@/components/gallery/data'
 import { GalleryPageShell } from '@/components/gallery/GalleryPageShell'
 import { SITE } from '@content/site'
 import { pageMetadata } from '../seo'
+import { SiteFooter } from '@/components/SiteFooter'
 
 export const metadata = pageMetadata({
   title: SITE.pages.scenes.ko,
@@ -13,6 +14,7 @@ export const metadata = pageMetadata({
 
 export default function ScenesPage() {
   return (
+    <>
     <GalleryPageShell
       title={SITE.gallery.scenes.title}
       sub={SITE.gallery.scenes.sub}
@@ -20,5 +22,7 @@ export default function ScenesPage() {
     >
       <GalleryGrid cards={SCENES_GALLERY} />
     </GalleryPageShell>
+    <SiteFooter width={1360} />
+    </>
   )
 }

@@ -4,16 +4,16 @@
    accent injected as --pj-acc (see Hero). Long-form Korean prose is sans. */
 
 .pj-root {
-  --pj-bg: #070809;
-  --pj-bg2: #0c0f14;
-  --pj-ink: #e9e9ec;
-  --pj-dim: #9096a0;
+  /* 값은 globals.css 의 셸 토큰을 참조 — 이 페이지 고유값은 --pj-deep·--pj-acc 뿐 */
+  --pj-bg: var(--bg-deep);
+  --pj-ink: var(--ink);
+  --pj-dim: var(--muted);
   --pj-deep: #4a4f57;
-  --pj-line: rgba(233, 233, 236, 0.11);
+  --pj-line: var(--line);
   --pj-acc: var(--accent); /* overridden per-company inline */
   position: relative;
   min-height: 100vh;
-  background: radial-gradient(ellipse 130% 120% at 50% 0%, var(--pj-bg2) 0%, var(--pj-bg) 62%, #000 100%);
+  background: var(--page-wash);
   color: var(--pj-ink);
   font-family: var(--font-sans);
   padding: clamp(28px, 5vw, 64px) 20px 96px;
@@ -25,7 +25,7 @@
   inset: 0;
   z-index: 2;
   pointer-events: none;
-  opacity: 0.45;
+  opacity: var(--scan-opacity);
   mix-blend-mode: multiply;
   background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0) 0 2px, rgba(0, 0, 0, 0.13) 3px, rgba(0, 0, 0, 0.13) 4px);
 }
@@ -72,12 +72,12 @@
 }
 .pj-eyebrow .pj-acc { color: var(--pj-acc); }
 .pj-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-display);
   font-weight: 600; /* Noto Serif KR 은 600 만 로드 */
   font-size: var(--fs-3xl);
   line-height: var(--lh-tight);
   letter-spacing: var(--track-heading);
-  color: #f3f4f6;
+  color: var(--ink-hi);
   margin: 0 0 12px;
 }
 .pj-role {
@@ -121,6 +121,9 @@
 .pj-links a { color: var(--pj-acc); font-family: var(--font-mono); font-size: var(--fs-sm); text-decoration: none; }
 .pj-links a:hover { text-decoration: underline; }
 .pj-h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   font-family: var(--font-mono);
   font-size: var(--fs-sm);
   font-weight: 600;
@@ -165,6 +168,16 @@
   color: #dfe3e8;
 }
 
+.pj-h2::before {
+  content: "";
+  flex: none;
+  width: 5px;
+  height: 5px;
+  border-radius: 1px;
+  background: var(--pj-acc);
+  box-shadow: 0 0 10px color-mix(in oklab, var(--pj-acc) 70%, transparent);
+}
+
 /* ── metric grid ── */
 .pj-metrics {
   display: grid;
@@ -173,9 +186,11 @@
 }
 .pj-metric {
   border: 1px solid var(--pj-line);
-  border-radius: 10px;
-  padding: 16px 16px 14px;
-  background: rgba(255, 255, 255, 0.012);
+  border-radius: var(--radius-sm);
+  padding: 18px 18px 16px;
+  background:
+    radial-gradient(120% 140% at 0% 0%, color-mix(in oklab, var(--pj-acc) 9%, transparent) 0%, transparent 60%),
+    var(--surface-1);
 }
 .pj-metric-v {
   font-family: var(--font-mono);
@@ -183,8 +198,9 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--pj-acc);
+  letter-spacing: -0.01em;
   line-height: 1;
-  margin: 0 0 8px;
+  margin: 0 0 10px;
 }
 .pj-metric-l { font-size: var(--fs-sm); font-weight: 600; line-height: var(--lh-snug); color: #e2e5e9; margin: 0; }
 .pj-metric-n { font-size: var(--fs-xs); color: var(--pj-dim); margin: 4px 0 0; line-height: var(--lh-snug); }
@@ -197,8 +213,9 @@
   width: 100%;
   height: auto;
   border: 1px solid var(--pj-line);
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   background: #000;
+  box-shadow: var(--shadow-lift);
 }
 .pj-cap { font-family: var(--font-mono); font-size: var(--fs-xs); letter-spacing: var(--track-kr); color: var(--pj-dim); margin: 9px 0 0; }
 
@@ -243,34 +260,113 @@
 }
 .pj-nav a:hover { color: var(--pj-acc); }
 .pj-nav-back { color: var(--pj-ink) !important; }
+/* 이전/다음 — 3칸 그리드로 좌·중·우를 고정해 제목 길이에 따라 가운데 링크가 밀리지 않게 */
+@media (min-width: 561px) {
+  .pj-nav { display: grid; grid-template-columns: 1fr auto 1fr; }
+  .pj-nav > span:last-child { text-align: right; }
+}
 
 /* ── index grid ── */
-.pj-index-head { max-width: 880px; margin: 0 auto 34px; }
+.pj-index-head { max-width: 1040px; margin: 0 auto 38px; }
+.pj-index-head .pj-title { margin-bottom: 0; }
 .pj-index-grid {
-  max-width: 880px;
+  max-width: 1040px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
 }
 .pj-card {
   position: relative;
   display: flex;
   flex-direction: column;
   border: 1px solid var(--pj-line);
-  border-radius: 12px;
+  border-radius: var(--radius-card);
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.014);
-  transition: border-color 0.18s, transform 0.18s;
-  content-visibility: auto;
-  contain-intrinsic-size: auto 420px;
+  background: linear-gradient(180deg, var(--surface-2), var(--surface-1));
+  transition: border-color 0.24s var(--ease-out), transform 0.24s var(--ease-out), box-shadow 0.24s var(--ease-out);
+  animation: pj-card-in 560ms var(--ease-out) both;
+  animation-delay: calc(var(--pj-i, 0) * 45ms);
 }
-.pj-card:hover { border-color: color-mix(in oklab, var(--pj-acc) 45%, var(--pj-line)); transform: translateY(-2px); }
-.pj-card-thumb { aspect-ratio: 16 / 10; background: #000; object-fit: cover; width: 100%; height: auto; border-bottom: 1px solid var(--pj-line); }
-.pj-card-body { padding: 15px 16px 17px; display: flex; flex-direction: column; gap: 7px; }
+@keyframes pj-card-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+.pj-card:hover {
+  border-color: color-mix(in oklab, var(--pj-acc) 55%, var(--pj-line));
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-lift), 0 0 0 1px color-mix(in oklab, var(--pj-acc) 12%, transparent);
+}
+/* 썸네일 — 밝은 업무 화면 캡처가 어두운 시트에서 튀지 않게 살짝 눌러 두고, 호버에서 원래 밝기로. */
+.pj-card-thumb {
+  display: block;
+  aspect-ratio: 16 / 10;
+  background: #000;
+  object-fit: cover;
+  object-position: top left;
+  width: 100%;
+  height: auto;
+  border-bottom: 1px solid var(--pj-line);
+  filter: brightness(0.86) saturate(0.9);
+  transition: filter 0.3s var(--ease-out);
+}
+.pj-card:hover .pj-card-thumb { filter: none; }
+/* 스크린샷 없는 카드의 타이포그래피 썸네일 — 고용사 액센트의 은은한 광원 + 계측 그리드 */
+.pj-card-thumb--type {
+  display: grid;
+  place-items: center;
+  padding: 0 18px;
+  filter: none;
+  background:
+    radial-gradient(90% 120% at 18% 0%, color-mix(in oklab, var(--pj-acc) 22%, transparent) 0%, transparent 62%),
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px) 0 0 / 100% 28px,
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px) 0 0 / 28px 100%,
+    #090b0e;
+}
+.pj-card-thumb-v {
+  font-family: var(--font-mono);
+  font-size: clamp(26px, 3.2vw, 38px);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  text-align: center;
+  color: var(--pj-acc);
+  text-shadow: 0 0 28px color-mix(in oklab, var(--pj-acc) 45%, transparent);
+}
+.pj-card-body { flex: 1; padding: 16px 18px 17px; display: flex; flex-direction: column; gap: 8px; }
 .pj-card-eyebrow { font-family: var(--font-mono); font-size: var(--fs-2xs); letter-spacing: var(--track-label); font-variant-numeric: tabular-nums; color: var(--pj-acc); text-transform: uppercase; }
-.pj-card-title { font-family: var(--font-serif); font-size: var(--fs-lg); font-weight: 600; letter-spacing: var(--track-heading); color: #eef1f4; margin: 0; line-height: var(--lh-tight); }
-.pj-card-kpi { font-family: var(--font-mono); font-size: var(--fs-xs); font-variant-numeric: tabular-nums; color: var(--pj-dim); margin-top: auto; }
+.pj-card-title { font-family: var(--font-display); font-size: var(--fs-lg); font-weight: 600; letter-spacing: var(--track-heading); color: #eef1f4; margin: 0 0 6px; line-height: 1.3; text-wrap: balance; }
+.pj-card-kpi {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  padding-top: 11px;
+  border-top: 1px solid var(--pj-line);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--pj-dim);
+}
+.pj-card-go {
+  flex: none;
+  color: var(--pj-acc);
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.24s var(--ease-out), transform 0.24s var(--ease-out);
+}
+.pj-card:hover .pj-card-go,
+.pj-card:focus-visible .pj-card-go { opacity: 1; transform: none; }
+@media (hover: none) {
+  .pj-card-go { opacity: 0.7; transform: none; }
+  .pj-card-thumb { filter: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pj-card { animation: none; transition: border-color 0.2s; }
+  .pj-card:hover { transform: none; }
+}
 
 /* 한글이 들어가는 라벨(회사명·섹션명)은 KO 로케일에서 트래킹 0 — 넓은 자간은 라틴 전용 */
 .pj-eyebrow:lang(ko),

@@ -28,7 +28,7 @@ export function ProjectsIndexContent() {
           const thumbnail = project.gallery?.find((g) => IMAGE_DIMS[g.src])?.src
           const cardStyle = { '--pj-acc': COMPANY_ACCENT[project.hero.companyKey] } as CSSProperties
           return (
-            <Link key={project.slug} href={`/projects/${project.slug}`} className="pj-card" style={cardStyle}>
+            <Link key={project.slug} href={`/projects/${project.slug}`} className="pj-card" style={{ ...cardStyle, '--pj-i': Math.min(index, 8) } as CSSProperties}>
               {thumbnail ? (
                 <Image
                   className="pj-card-thumb"
@@ -43,11 +43,22 @@ export function ProjectsIndexContent() {
                   // instead of lazy-loading after layout. The rest stay lazy.
                   priority={index < 2}
                 />
-              ) : null}
+              ) : (
+                // 스크린샷이 없는 프로젝트 — 빈 카드 대신 대표 지표를 타이포그래피 썸네일로.
+                // 값·라벨은 아래 본문에 그대로 있으므로 장식(aria-hidden)이다.
+                <div className="pj-card-thumb pj-card-thumb--type" aria-hidden>
+                  <span className="pj-card-thumb-v">{topKpi?.value ?? project.hero.period}</span>
+                </div>
+              )}
               <div className="pj-card-body">
                 <span className="pj-card-eyebrow">{project.hero.company} · {project.hero.period}</span>
                 <h2 className="pj-card-title">{project.hero.title}</h2>
-                {topKpi ? <span className="pj-card-kpi">{topKpi.value}{topKpi.label ? ` · ${topKpi.label}` : ''}</span> : null}
+                {topKpi ? (
+                  <span className="pj-card-kpi">
+                    <span>{topKpi.value}{topKpi.label ? ` · ${topKpi.label}` : ''}</span>
+                    <span className="pj-card-go" aria-hidden>→</span>
+                  </span>
+                ) : null}
               </div>
             </Link>
           )
